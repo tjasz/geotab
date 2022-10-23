@@ -48,7 +48,12 @@ html, body {
 }
 
 #map { height: 100%; }
+
 .leaflet-container {
   width: 100%;
   height: 100%;
+}
+
+.leaflet-control-layers-list {
+  text-align: left;
 }
