@@ -17,7 +17,7 @@ class TabView extends React.Component {
               label => <Tab key={label} label={label} active={this.state[label]} toggle={this.toggle} />
             )}
           </div>
-          <MapView />
+          { this.state.Map ? <MapView /> : null}
         </div>
       );
     }
