@@ -14,7 +14,7 @@ class MapView extends React.Component {
   
     render() {
       return (
-        <div id="mapview">
+        <div id="mapview" style={this.props.style}>
           <MapContainer center={[47.5, -122.3]} zoom={10} scrollWheelZoom={true}>
             <LayersControl position="topright">
               <LayersControl.BaseLayer checked name="OpenStreetMap">

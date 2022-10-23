@@ -69,13 +69,23 @@ html, body {
 
 .tabs p:hover {
   background-color: #5387b9;
+  color: white;
 }
 .tabs p.active {
   background-color: #73a7d9;
   color: black;
 }
+.tabs p.active:hover {
+  background-color: #5387b9;
+  color: white;
+}
+
+.tabBodies {
+  height: 82.5vh;
+}
 
 #mapview {
+  float: left;
   height: 82.5vh;
 }
 
@@ -87,5 +97,11 @@ html, body {
 }
 
 .leaflet-control-layers-list {
+  display: inline-block;
   text-align: left;
+}
+
+#tableview {
+  float: left;
+  height: 82.5vh;
 }

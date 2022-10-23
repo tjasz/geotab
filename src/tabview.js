@@ -1,5 +1,6 @@
 import React from 'react';
 import MapView from './mapview.js'
+import TableView from './tableview.js'
 
 class TabView extends React.Component {
     constructor(props) {
@@ -10,6 +11,8 @@ class TabView extends React.Component {
     }
   
     render() {
+      let tabwidth = 100 / Object.values(this.state).reduce(
+        (accumulator, value) => value === true ? accumulator + 1 : accumulator, 0);
       return (
         <div id="tabview">
           <div className="tabs">
@@ -17,7 +20,10 @@ class TabView extends React.Component {
               label => <Tab key={label} label={label} active={this.state[label]} toggle={this.toggle} />
             )}
           </div>
-          { this.state.Map ? <MapView /> : null}
+          <div className="tabBodies">
+            { this.state.Map ? <MapView style={{width: tabwidth + '%'}} /> : null}
+            { this.state.Table ? <TableView style={{width: tabwidth + '%'}} /> : null}
+          </div>
         </div>
       );
     }
