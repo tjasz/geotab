@@ -19,18 +19,27 @@ class MapView extends React.Component {
             <LayersControl position="topright">
               <LayersControl.BaseLayer checked name="OpenStreetMap">
                 <TileLayer
+                    maxZoom={18}
+                    tileSize={512}
+                    zoomOffset={-1}
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                 />
               </LayersControl.BaseLayer>
               <LayersControl.BaseLayer name="OpenTopoMap">
                 <TileLayer
+                    maxZoom={18}
+                    tileSize={512}
+                    zoomOffset={-1}
                     url="https://a.tile.opentopomap.org/{z}/{x}/{y}.png"
                     attribution='Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery &copy; <a href="https://www.opentopomap.org/">opentopomap.org</a>'
                 />
               </LayersControl.BaseLayer>
               <LayersControl.BaseLayer name="Mapbox Outdoors">
                 <TileLayer
+                    maxZoom={18}
+                    tileSize={512}
+                    zoomOffset={-1}
                     id='mapbox/outdoors-v11'
                     url="https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoidGphc3oiLCJhIjoiY2wxcDQ4eG1pMHZxNDNjcGM3djJ4eGphMCJ9.aH-D5oeZHZVzcWQZeeRviQ"
                     attribution='Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>'
@@ -38,6 +47,9 @@ class MapView extends React.Component {
               </LayersControl.BaseLayer>
               <LayersControl.BaseLayer name="Mapbox Satellite">
                 <TileLayer
+                    maxZoom={18}
+                    tileSize={512}
+                    zoomOffset={-1}
                     id='mapbox/satellite-v9'
                     url="https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoidGphc3oiLCJhIjoiY2wxcDQ4eG1pMHZxNDNjcGM3djJ4eGphMCJ9.aH-D5oeZHZVzcWQZeeRviQ"
                     attribution='Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>'
