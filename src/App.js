@@ -1,6 +1,5 @@
 import './App.css';
 import TabView from './tabview.js'
-import MapView from './mapview.js'
 
 function App() {
   return (
@@ -33,7 +32,6 @@ function AppBody() {
   return (
     <div id="App-body">
       <TabView />
-      <MapView />
     </div>
   );
 }

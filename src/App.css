@@ -44,12 +44,6 @@ html, body {
 }
 
 #tabview {
-  height: 2.5vh;
-  background-color: white;
-  margin: 0;
-  padding: 0;
-  align-items: left;
-  justify-content: left;
 }
 
 .tabs {
