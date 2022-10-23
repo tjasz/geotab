@@ -4,7 +4,7 @@ import MapView from './mapview.js'
 
 function App() {
   return (
-    <div className="App">
+    <div id="App">
       <AppHeader />
       <AppBody />
       <AppFooter />
@@ -14,7 +14,7 @@ function App() {
 
 function AppHeader() {
   return (
-    <header className="App-header">
+    <header id="App-header">
         <h1>OpenRoutes</h1>
         <p>An open tool for viewing and filtering GPS routes.</p>
       </header>
@@ -23,7 +23,7 @@ function AppHeader() {
 
 function AppFooter() {
   return (
-    <footer className="App-footer">
+    <footer id="App-footer">
         <p>&copy; 2022 Tyler Jaszkowiak</p>
       </footer>
   );
@@ -31,7 +31,7 @@ function AppFooter() {
 
 function AppBody() {
   return (
-    <div class="App-body">
+    <div id="App-body">
       <MapView />
     </div>
   );

@@ -3,11 +3,11 @@ html, body {
   margin: 0;
 }
 
-.App {
+#App {
   text-align: center;
 }
 
-.App-header {
+#App-header {
   background-color: #336799;
   height: 10vh;
   display: flex;
@@ -18,14 +18,14 @@ html, body {
   color: white;
   border-bottom: 2px solid black;
 }
-.App-header h1 {
+#App-header h1 {
   margin: 0.2em;
 }
-.App-header p {
+#App-header p {
   margin: 0.2em;
 }
 
-.App-footer {
+#App-footer {
   background-color: #336799;
   position: fixed;
   bottom: 0;
@@ -39,11 +39,11 @@ html, body {
   color: white;
   border-top: 2px solid black;
 }
-.App-footer p {
+#App-footer p {
   margin: 0.2em;
 }
 
-.mapview {
+#mapview {
   height: calc(85vh - 4px);
 }
 
