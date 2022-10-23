@@ -4,21 +4,33 @@ import './App.css';
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <AppHeader />
+      <AppBody />
+      <AppFooter />
     </div>
+  );
+}
+
+function AppHeader() {
+  return (
+    <header className="App-header">
+        <h1>OpenRoutes</h1>
+        <p>An open tool for viewing and filtering GPS routes.</p>
+      </header>
+  );
+}
+
+function AppFooter() {
+  return (
+    <footer className="App-footer">
+        <p>&copy; 2022 Tyler Jaszkowiak</p>
+      </footer>
+  );
+}
+
+function AppBody() {
+  return (
+    <div class="App-body"></div>
   );
 }
 
