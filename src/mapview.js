@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapContainer, TileLayer, LayersControl } from 'react-leaflet';
+import { MapContainer, TileLayer, WMSTileLayer, LayersControl } from 'react-leaflet';
 
 class MapView extends React.Component {
     constructor(props) {
@@ -43,6 +43,20 @@ class MapView extends React.Component {
                     attribution='Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>'
                 />
               </LayersControl.BaseLayer>
+              <LayersControl.Overlay name="NOAA Snow Depth">
+                <WMSTileLayer
+                    layers={'show%3A3'}
+                    f={'image'}
+                    imageSR={102100}
+                    bboxSR={102100}
+                    format={'png8'}
+                    transparent={true}
+                    opacity={0.6}
+                    dpi={96}
+                    url="https://idpgis.ncep.noaa.gov/arcgis/rest/services/NWS_Observations/NOHRSC_Snow_Analysis/MapServer/export?"
+                    attribution='Snow data &copy; <a href="https://idpgis.ncep.noaa.gov/arcgis/rest/services/NWS_Observations/NOHRSC_Snow_Analysis/MapServer/legend">NOAA</a>'
+                />
+              </LayersControl.Overlay>
             </LayersControl>
           </MapContainer>
         </div>
