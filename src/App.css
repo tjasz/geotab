@@ -9,7 +9,7 @@ html, body {
 
 .App-header {
   background-color: #336799;
-  height: 10%;
+  height: 10vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -29,7 +29,7 @@ html, body {
   background-color: #336799;
   position: fixed;
   bottom: 0;
-  height: 5%;
+  height: 5vh;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -41,4 +41,14 @@ html, body {
 }
 .App-footer p {
   margin: 0.2em;
+}
+
+.mapview {
+  height: 85vh;
+}
+
+#map { height: 85vh; }
+.leaflet-container {
+  width: 100%;
+  height: 85vh;
 }

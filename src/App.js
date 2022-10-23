@@ -1,5 +1,6 @@
 import logo from './logo.svg';
 import './App.css';
+import MapView from './mapview.js'
 
 function App() {
   return (
@@ -30,7 +31,9 @@ function AppFooter() {
 
 function AppBody() {
   return (
-    <div class="App-body"></div>
+    <div class="App-body">
+      <MapView />
+    </div>
   );
 }
 
