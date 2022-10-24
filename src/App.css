@@ -144,3 +144,9 @@ html, body {
   padding: 0.25em;
   cursor: pointer;
 }
+
+#dataview {
+  float: left;
+  height: 81.5vh;
+  padding: 0.5em 0;
+}

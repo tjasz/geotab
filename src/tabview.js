@@ -1,4 +1,5 @@
 import React from 'react';
+import DataView from './dataview.js'
 import MapView from './mapview.js'
 import TableView from './tableview.js'
 
@@ -6,7 +7,7 @@ class TabView extends React.Component {
     constructor(props) {
       super(props);
       this.props = props;
-      this.state = { Map: true, Table: true};
+      this.state = { Data: true, Map: false, Table: false};
       this.toggle = this.toggle.bind(this);
     }
   
@@ -21,8 +22,9 @@ class TabView extends React.Component {
             )}
           </div>
           <div className="tabBodies">
-            { this.state.Map ? <MapView style={{width: tabwidth + '%'}} /> : null}
-            { this.state.Table ? <TableView style={{width: tabwidth + '%'}} /> : null}
+            { this.state.Data && <DataView style={{width: tabwidth + '%'}} />}
+            { this.state.Map && <MapView style={{width: tabwidth + '%'}} />}
+            { this.state.Table && <TableView style={{width: tabwidth + '%'}} />}
           </div>
         </div>
       );
