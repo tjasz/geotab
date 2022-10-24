@@ -54,7 +54,7 @@ html, body {
 }
 
 .tabs p {
-  height: calc(2.5vh);
+  height: calc(2.5vh - 3px);
   display: inline-block;
   width: auto;
   background-color: #336799;
