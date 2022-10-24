@@ -1,19 +1,8 @@
 import React from 'react';
 
-class TableView extends React.Component {
-    constructor(props) {
-      super(props);
-    }
-  
-    componentDidMount() {
-    }
-  
-    componentWillUnmount() {
-    }
-  
-    render() {
+function TableView(props) {
       return (
-        <div id="tableview" style={this.props.style}>
+        <div id="tableview" style={props.style}>
           <table id="data-table" cellSpacing={0}>
             <tbody>
               <tr>
@@ -36,6 +25,5 @@ class TableView extends React.Component {
         </div>
       );
     }
-  }
 
 export default TableView;

@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import DataView from './dataview.js'
 import MapView from './mapview.js'
 import TableView from './tableview.js'
+
+const DataContext = React.createContext(null);
 
 class TabView extends React.Component {
     constructor(props) {
@@ -12,7 +14,7 @@ class TabView extends React.Component {
     }
   
     render() {
-      let tabwidth = 100 / Object.values(this.state).reduce(
+      const tabwidth = 100 / Object.values(this.state).reduce(
         (accumulator, value) => value === true ? accumulator + 1 : accumulator, 0);
       return (
         <div id="tabview">
@@ -21,11 +23,7 @@ class TabView extends React.Component {
               label => <Tab key={label} label={label} active={this.state[label]} toggle={this.toggle} />
             )}
           </div>
-          <div className="tabBodies">
-            { this.state.Data && <DataView style={{width: tabwidth + '%'}} />}
-            { this.state.Map && <MapView style={{width: tabwidth + '%'}} />}
-            { this.state.Table && <TableView style={{width: tabwidth + '%'}} />}
-          </div>
+          <TabBodies tabwidth={tabwidth} Data={this.state.Data} Map={this.state.Map} Table={this.state.Table}></TabBodies>
         </div>
       );
     }
@@ -36,6 +34,17 @@ class TabView extends React.Component {
       }));
     }
   }
+
+function TabBodies(props) {
+  const [data, setData] = useState(null);
+  return (<div className="tabBodies">
+    <DataContext.Provider value={data}>
+    { props.Data && <DataView style={{width: props.tabwidth + '%'}} />}
+    { props.Map && <MapView style={{width: props.tabwidth + '%'}} />}
+    { props.Table && <TableView style={{width: props.tabwidth + '%'}} />}
+    </DataContext.Provider>
+  </div>);
+}
 
 class Tab extends React.Component {
     constructor(props) {
