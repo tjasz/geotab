@@ -33,11 +33,11 @@ function DataTable() {
     <table id="data-table" cellSpacing={0}>
       <tbody>
         <tr>
-          <th>Index</th>
+          <th></th>
           {Array.from(properties).map((key) => <th key={key}>{key}</th>)}
         </tr>
         {features.map((feature, fidx) => <tr key={fidx}>
-            <td>{fidx}</td>
+            <th>{fidx}</th>
             {Array.from(properties).map((key) => <td key={`${fidx}-${key}`}>{JSON.stringify(feature["properties"][key])}</td>)}
           </tr>)}
       </tbody>
