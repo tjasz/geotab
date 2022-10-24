@@ -7,8 +7,7 @@ class App extends React.Component {
   constructor(props) {
     super(props);
 
-    const sampleGeoJSON = { "type": "FeatureCollection",
-    "features": [
+    const sampleGeoJSON = [
       { "type": "Feature",
         "geometry": {"type": "Point", "coordinates": [102.0, 0.5]},
         "properties": {"prop0": "value0"}
@@ -39,11 +38,12 @@ class App extends React.Component {
            "prop2": {"this": "that"}
            }
          }
-      ]
-    }; // TODO replace
+      ]; // TODO replace
     this.state = {
       data: sampleGeoJSON,
-      setData: (newData) => {this.setState({data: newData})}
+      setData: (newData) => {this.setState({data: newData})},
+      active: null,
+      setActive: (newActive) => {this.setState({active: newActive})}
     };
   }
 

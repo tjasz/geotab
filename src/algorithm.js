@@ -15,6 +15,7 @@ export function getFeatures(data) {
 }
 
 export function getPropertiesUnion(features) {
+  console.log(features);
   const keys = features.map((feature) => Object.keys(feature["properties"])).flat();
   return new Set(keys);
 }
