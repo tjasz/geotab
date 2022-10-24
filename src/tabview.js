@@ -23,7 +23,7 @@ class TabView extends React.Component {
               label => <Tab key={label} label={label} active={this.state[label]} toggle={this.toggle} />
             )}
           </div>
-          <TabBodies tabwidth={tabwidth} Data={this.state.Data} Map={this.state.Map} Table={this.state.Table}></TabBodies>
+          <TabBodies tabwidth={tabwidth} {...this.state}></TabBodies>
         </div>
       );
     }
