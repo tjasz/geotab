@@ -104,6 +104,7 @@ html, body {
 #tableview {
   float: left;
   height: 82.5vh;
+  overflow: scroll;
 }
 
 
