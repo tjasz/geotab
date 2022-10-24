@@ -105,3 +105,42 @@ html, body {
   float: left;
   height: 82.5vh;
 }
+
+
+#data-table {
+  border-top: 2px solid black;
+}
+#data-table th {
+  background-color: #336799;
+  color: white;
+  border: 1px solid black;
+  border-bottom: 2px solid black;
+  padding: 0.25em;
+}
+#data-table th a {
+  color: #b3e7ff;
+}
+#data-table th a:link {
+  color: #b3e7ff;
+}
+#data-table th a:visited {
+  color: #b3e7ff;
+}
+#data-table th a:hover {
+  color: #93c7df;
+}
+#data-table th a:active {
+  color: #73a7bf;
+}
+#data-table tr {
+}
+#data-table tr:nth-child(odd) {
+  background-color: #f3f6fa;
+}
+#data-table tr td {
+  text-align: left;
+  border: 1px solid black;
+  margin: 0;
+  padding: 0.25em;
+  cursor: pointer;
+}
