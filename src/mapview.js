@@ -16,7 +16,10 @@ function MapView(props) {
       return (
         <div id="mapview" style={props.style}>
           <MapContainer center={[47.5, -122.3]} zoom={10} scrollWheelZoom={true} ref={mapRef} whenReady={() => resizeMap(mapRef)}>
-            <GeoJSON data={context.data} key={hashCode(JSON.stringify(context.data))} />
+            <GeoJSON data={context.data} key={hashCode(JSON.stringify(context.data))} style={(feature) => { return {
+              color: context.active !== null && context.active === feature.hash ? "#e0e000" : "#336799",
+              weight: 2 + (context.active !== null && context.active === feature.hash ? 3: 0)
+            }}} />
             <LayersControl position="topright">
               <LayersControl.BaseLayer checked name="OpenStreetMap">
                 <TileLayer

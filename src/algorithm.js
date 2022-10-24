@@ -5,7 +5,6 @@ export function hashCode(str) {
 export function getFeatures(data) {
   if (data["type"] === "Feature") {
     data.hash = hashCode(JSON.stringify(data));
-    console.log(data.hash);
     return data;
   }
   else if (data["type"] === "FeatureCollection") {
