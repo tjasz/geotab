@@ -1,7 +1,7 @@
 import React, {useRef, useContext} from 'react';
-import { MapContainer, TileLayer, WMSTileLayer, LayersControl, GeoJSON } from 'react-leaflet';
+import { MapContainer, TileLayer, WMSTileLayer, LayersControl, GeoJSON, Popup } from 'react-leaflet';
 import {DataContext} from './dataContext.js'
-import {hashCode} from './algorithm.js'
+import {getCentralCoord, hashCode} from './algorithm.js'
 
 function MapView(props) {
     const context = useContext(DataContext);
@@ -20,6 +20,7 @@ function MapView(props) {
               color: context.active !== null && context.active === feature.hash ? "#e0e000" : "#336799",
               weight: 2 + (context.active !== null && context.active === feature.hash ? 3: 0)
             }}} />
+            {context.active !== null && <ActivePopup feature={context.data.find((feature) => feature.hash === context.active)} />}
             <LayersControl position="topright">
               <LayersControl.BaseLayer checked name="OpenStreetMap">
                 <TileLayer
@@ -79,5 +80,11 @@ function MapView(props) {
       );
     }
 
+function ActivePopup(props) {
+  return (
+    props.feature === null ? null :
+      <Popup position={getCentralCoord(props.feature).slice().reverse()}>{props.feature.properties.title}</Popup>
+  );
+};
 
 export default MapView;
