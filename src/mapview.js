@@ -1,7 +1,9 @@
-import React, {useRef} from 'react';
+import React, {useRef, useContext} from 'react';
 import { MapContainer, TileLayer, WMSTileLayer, LayersControl, GeoJSON } from 'react-leaflet';
+import {DataContext} from './dataContext.js'
 
 function MapView(props) {
+    const context = useContext(DataContext);
       const resizeMap = ( mapRef ) => {
         const resizeObserver = new ResizeObserver(() => mapRef.current?.invalidateSize())
         const container = document.getElementById('mapview')
@@ -10,20 +12,10 @@ function MapView(props) {
         }
       };
       const mapRef = useRef();
-      const sampleGeoJSON = {
-        "type": "Feature",
-        "properties": {
-            "name": "Seattle",
-        },
-        "geometry": {
-            "type": "Point",
-            "coordinates": [-122.3, 47.5]
-        }
-    }; // TODO replace
       return (
         <div id="mapview" style={props.style}>
           <MapContainer center={[47.5, -122.3]} zoom={10} scrollWheelZoom={true} ref={mapRef} whenReady={() => resizeMap(mapRef)}>
-            <GeoJSON data={sampleGeoJSON} />
+            <GeoJSON data={context.data} />
             <LayersControl position="topright">
               <LayersControl.BaseLayer checked name="OpenStreetMap">
                 <TileLayer

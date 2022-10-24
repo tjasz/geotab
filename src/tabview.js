@@ -3,8 +3,6 @@ import DataView from './dataview.js'
 import MapView from './mapview.js'
 import TableView from './tableview.js'
 
-const DataContext = React.createContext(null);
-
 class TabView extends React.Component {
     constructor(props) {
       super(props);
@@ -23,7 +21,11 @@ class TabView extends React.Component {
               label => <Tab key={label} label={label} active={this.state[label]} toggle={this.toggle} />
             )}
           </div>
-          <TabBodies tabwidth={tabwidth} {...this.state}></TabBodies>
+          <div className="tabBodies">
+            { this.state.Data && <DataView style={{width: tabwidth + '%'}} />}
+            { this.state.Map && <MapView style={{width: tabwidth + '%'}} />}
+            { this.state.Table && <TableView style={{width: tabwidth + '%'}} />}
+          </div>
         </div>
       );
     }
@@ -34,17 +36,6 @@ class TabView extends React.Component {
       }));
     }
   }
-
-function TabBodies(props) {
-  const [data, setData] = useState(null);
-  return (<div className="tabBodies">
-    <DataContext.Provider value={data}>
-    { props.Data && <DataView style={{width: props.tabwidth + '%'}} />}
-    { props.Map && <MapView style={{width: props.tabwidth + '%'}} />}
-    { props.Table && <TableView style={{width: props.tabwidth + '%'}} />}
-    </DataContext.Provider>
-  </div>);
-}
 
 class Tab extends React.Component {
     constructor(props) {
