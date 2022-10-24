@@ -133,10 +133,14 @@ html, body {
 #data-table th a:active {
   color: #73a7bf;
 }
-#data-table tr {
+#data-table tr.active {
+  background-color: #ffff00;
 }
 #data-table tr:nth-child(odd) {
   background-color: #f3f6fa;
+}
+#data-table tr.active:nth-child(odd) {
+  background-color: #f3f600;
 }
 #data-table tr td {
   text-align: left;

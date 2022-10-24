@@ -21,7 +21,8 @@ function DataTable() {
           <th></th>
           {Array.from(properties).map((key) => <th key={key}>{key}</th>)}
         </tr>
-        {features.map((feature, fidx) => <tr key={fidx} onClick={() => context.setActive(feature.hash)}>
+        {features.map((feature, fidx) =>
+          <tr key={fidx} onClick={() => context.setActive(feature.hash)} className={context.active !== null && feature.hash === context.active ? "active" : ""}>
             <th>{fidx}</th>
             {Array.from(properties).map((key) => <td key={`${fidx}-${key}`}>{JSON.stringify(feature["properties"][key])}</td>)}
           </tr>)}
