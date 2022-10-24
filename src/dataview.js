@@ -1,5 +1,6 @@
 import React, {useContext} from 'react';
 import {DataContext} from './dataContext.js'
+import {getFeatures} from './algorithm.js'
 
 function DataView(props) {
   const context = useContext(DataContext);
@@ -9,7 +10,8 @@ function DataView(props) {
     const reader = new FileReader();
     reader.addEventListener('load', (event) => {
       const jso = JSON.parse(event.target.result);
-      context.setData(jso);
+      const flattened = getFeatures(jso);
+      context.setData(flattened);
     });
     reader.readAsText(fname);
   };
