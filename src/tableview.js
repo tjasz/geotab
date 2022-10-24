@@ -14,7 +14,7 @@ class TableView extends React.Component {
     render() {
       return (
         <div id="tableview" style={this.props.style}>
-          <table cellspacing={0}>
+          <table cellSpacing={0}>
             <tbody>
               <tr>
                 <td>Name</td>

@@ -1,21 +1,18 @@
-import React from 'react';
+import React, {useRef} from 'react';
 import { MapContainer, TileLayer, WMSTileLayer, LayersControl } from 'react-leaflet';
 
-class MapView extends React.Component {
-    constructor(props) {
-      super(props);
-    }
-  
-    componentDidMount() {
-    }
-  
-    componentWillUnmount() {
-    }
-  
-    render() {
+function MapView(props) {
+      const resizeMap = ( mapRef ) => {
+        const resizeObserver = new ResizeObserver(() => mapRef.current?.invalidateSize())
+        const container = document.getElementById('mapview')
+        if (container) {
+          resizeObserver.observe(container)
+        }
+      };
+      const mapRef = useRef();
       return (
-        <div id="mapview" style={this.props.style}>
-          <MapContainer center={[47.5, -122.3]} zoom={10} scrollWheelZoom={true}>
+        <div id="mapview" style={props.style}>
+          <MapContainer center={[47.5, -122.3]} zoom={10} scrollWheelZoom={true} ref={mapRef} whenReady={() => resizeMap(mapRef)}>
             <LayersControl position="topright">
               <LayersControl.BaseLayer checked name="OpenStreetMap">
                 <TileLayer
@@ -74,6 +71,6 @@ class MapView extends React.Component {
         </div>
       );
     }
-  }
+
 
 export default MapView;

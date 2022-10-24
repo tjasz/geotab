@@ -29,7 +29,6 @@ class TabView extends React.Component {
     }
 
     toggle(label) {
-      console.log(`toggle: ${label} from ${this.state[label]}`)
       this.setState((state, props) => ({
         [label]: !state[label]
       }));
