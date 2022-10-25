@@ -37,15 +37,99 @@ export function getStartingCoord(feature) {
 export function getCentralCoord(feature) {
   switch(feature.geometry.type) {
     case "Point":
-      return feature.geometry.coordinates;
+      return feature.geometry.coordinates.slice(0,2).reverse();
     case "MultiPoint":
     case "LineString":
     case "Polygon":
-      return feature.geometry.coordinates[Math.floor(feature.geometry.coordinates.length/2)];
+      return feature.geometry.coordinates[Math.floor(feature.geometry.coordinates.length/2)].slice(0,2).reverse();
     case "MultiLineString":
     case "MultiPolygon":
-      return feature.geometry.coordinates[0][0];
+      return feature.geometry.coordinates[0][0].slice(0,2).reverse();
     default:
       return null;
   }
+}
+
+export function getFeatureBounds(feature) {
+  // TODO: what about going over 0 lon?
+  switch(feature.geometry.type) {
+    case "Point":
+      const latlon = feature.geometry.coordinates.slice(0,2).reverse();
+      return [
+        latlon,
+        latlon
+      ];
+    case "MultiPoint":
+    case "LineString":
+    case "Polygon":
+      let sw = feature.geometry.coordinates[0].slice(0,2).reverse();
+      let ne = sw.slice();
+      for (const coord of feature.geometry.coordinates) {
+        const latlon = coord.slice(0,2).reverse();
+        if (latlon[0] < sw[0]) {
+          sw[0] = latlon[0];
+        }
+        if (latlon[1] < sw[1]) {
+          sw[1] = latlon[1];
+        }
+        if (latlon[0] > ne[0]) {
+          ne[0] = latlon[0];
+        }
+        if (latlon[1] > ne[1]) {
+          ne[1] = latlon[1];
+        }
+      }
+      return [
+        sw,
+        ne
+      ];
+    case "MultiLineString":
+    case "MultiPolygon":
+      sw = feature.geometry.coordinates[0][0].slice(0,2).reverse();
+      ne = sw.slice();
+      for (const part of feature.geometry.coordinates) {
+        for (const coord in part) {
+          const latlon = coord.slice(0,2).reverse();
+          if (latlon[0] < sw[0]) {
+            sw[0] = latlon[0];
+          }
+          if (latlon[1] < sw[1]) {
+            sw[1] = latlon[1];
+          }
+          if (latlon[0] > ne[0]) {
+            ne[0] = latlon[0];
+          }
+          if (latlon[1] > ne[1]) {
+            ne[1] = latlon[1];
+          }
+        }
+      }
+      return [
+        sw,
+        ne
+      ];
+    default:
+      return null;
+  }
+}
+
+export function getFeatureListBounds(features) {
+  let bounds = getFeatureBounds(features[0]);
+  for (const feature of features) {
+    const fBounds = getFeatureBounds(feature);
+    if (fBounds[0][0] < -90 || fBounds[1][0] > 90)
+    if (fBounds[0][0] < bounds[0][0]) {
+      bounds[0][0] = fBounds[0][0];
+    }
+    if (fBounds[0][1] < bounds[0][1]) {
+      bounds[0][1] = fBounds[0][1];
+    }
+    if (fBounds[1][0] > bounds[1][0]) {
+      bounds[1][0] = fBounds[1][0];
+    }
+    if (fBounds[1][1] > bounds[1][1]) {
+      bounds[1][1] = fBounds[1][1];
+    }
+  }
+  return bounds;
 }

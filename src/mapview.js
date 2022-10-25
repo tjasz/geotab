@@ -1,7 +1,7 @@
 import React, {useRef, useContext} from 'react';
-import { MapContainer, TileLayer, WMSTileLayer, LayersControl, GeoJSON, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, WMSTileLayer, LayersControl, GeoJSON, Popup, useMap } from 'react-leaflet';
 import {DataContext} from './dataContext.js'
-import {getCentralCoord, hashCode} from './algorithm.js'
+import {getCentralCoord, hashCode, getFeatureListBounds} from './algorithm.js'
 
 function MapView(props) {
     const context = useContext(DataContext);
@@ -15,7 +15,8 @@ function MapView(props) {
       const mapRef = useRef();
       return (
         <div id="mapview" style={props.style}>
-          <MapContainer center={[47.5, -122.3]} zoom={10} scrollWheelZoom={true} ref={mapRef} whenReady={() => resizeMap(mapRef)}>
+          <MapContainer scrollWheelZoom={true} ref={mapRef} whenReady={() => resizeMap(mapRef)}>
+            <ChangeView />
             <GeoJSON data={context.data} key={hashCode(JSON.stringify(context.data))} style={(feature) => { return {
               color: context.active !== null && context.active === feature.hash ? "#e0e000" : "#336799",
               weight: 2 + (context.active !== null && context.active === feature.hash ? 3: 0)
@@ -83,8 +84,22 @@ function MapView(props) {
 function ActivePopup(props) {
   return (
     props.feature === null ? null :
-      <Popup position={getCentralCoord(props.feature).slice().reverse()}>{props.feature.properties.title}</Popup>
+      <Popup position={getCentralCoord(props.feature)}>{props.feature.properties.title}</Popup>
   );
 };
+
+function ChangeView({ center, zoom }) {
+  const context = useContext(DataContext);
+  const map = useMap();
+  if (context.active !== null) {
+    const feature = context.data.find((feature) => feature.hash === context.active);
+    if (feature !== null) {
+      map.flyTo(getCentralCoord(feature));
+    }
+  } else {
+    map.fitBounds(getFeatureListBounds(context.data));
+  }
+  return null;
+}
 
 export default MapView;
