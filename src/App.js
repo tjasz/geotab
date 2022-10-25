@@ -63,9 +63,9 @@ class App extends React.Component {
 function AppHeader() {
   return (
     <header id="App-header">
-        <h1>OpenRoutes</h1>
-        <p>An open tool for viewing and filtering GPS routes.</p>
-      </header>
+      <h1>geotab</h1>
+      <p>View, interact with, and edit geographical/tabular data.</p>
+    </header>
   );
 }
 
