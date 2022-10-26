@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/geotab/static/css/main.61364f10.css",
+    "main.js": "/geotab/static/js/main.891a617d.js",
+    "static/js/787.cf7b3329.chunk.js": "/geotab/static/js/787.cf7b3329.chunk.js",
+    "index.html": "/geotab/index.html",
+    "main.61364f10.css.map": "/geotab/static/css/main.61364f10.css.map",
+    "main.891a617d.js.map": "/geotab/static/js/main.891a617d.js.map",
+    "787.cf7b3329.chunk.js.map": "/geotab/static/js/787.cf7b3329.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.61364f10.css",
+    "static/js/main.891a617d.js"
+  ]
+}
