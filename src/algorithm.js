@@ -35,7 +35,7 @@ export function getStartingCoord(feature) {
 }
 
 export function getCentralCoord(feature) {
-  switch(feature.geometry.type) {
+  switch(feature.geometry?.type) {
     case "Point":
       return feature.geometry.coordinates.slice(0,2).reverse();
     case "MultiPoint":

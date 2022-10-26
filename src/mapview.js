@@ -88,7 +88,7 @@ function MapView(props) {
 
 function ActivePopup(props) {
   return (
-    props.feature === null ? null :
+    props.feature !== null && props.feature.geometry !== null &&
       <Popup position={getCentralCoord(props.feature)}>{props.feature.properties.title}</Popup>
   );
 };
@@ -98,8 +98,8 @@ function ChangeView({ center, zoom }) {
   const map = useMap();
   if (context.active !== null) {
     const feature = context.data.find((feature) => feature.hash === context.active);
-    if (feature !== null) {
-      map.setView(getCentralCoord(feature), map.getZoom() ? map.getZoom() : 6);
+    if (feature !== null && feature.geometry !== null) {
+      map.setView(getCentralCoord(feature) || [47.5,-122.3], map.getZoom() || 6);
     }
   } else if (context.data) {
     const featureListBounds = getFeatureListBounds(context.data);
