@@ -99,7 +99,7 @@ function ChangeView({ center, zoom }) {
   if (context.active !== null) {
     const feature = context.data.find((feature) => feature.hash === context.active);
     if (feature !== null) {
-      map.flyTo(getCentralCoord(feature));
+      map.setView(getCentralCoord(feature), map.getZoom() ? map.getZoom() : 6);
     }
   } else if (context.data) {
     const featureListBounds = getFeatureListBounds(context.data);
