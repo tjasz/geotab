@@ -113,6 +113,9 @@ html, body {
   border-top: 2px solid black;
 }
 #data-table th {
+  position: sticky;
+  top: 0;
+  left: 0;
   background-color: #336799;
   color: white;
   border: 1px solid black;
