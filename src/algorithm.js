@@ -24,8 +24,8 @@ export function getStartingCoord(feature) {
       return feature.geometry.coordinates;
     case "MultiPoint":
     case "LineString":
-    case "Polygon":
       return feature.geometry.coordinates[0];
+    case "Polygon":
     case "MultiLineString":
     case "MultiPolygon":
       return feature.geometry.coordinates[0][0];
@@ -40,11 +40,12 @@ export function getCentralCoord(feature) {
       return feature.geometry.coordinates.slice(0,2).reverse();
     case "MultiPoint":
     case "LineString":
-    case "Polygon":
       return feature.geometry.coordinates[Math.floor(feature.geometry.coordinates.length/2)].slice(0,2).reverse();
     case "MultiLineString":
     case "MultiPolygon":
-      return feature.geometry.coordinates[0][0].slice(0,2).reverse();
+    case "Polygon":
+      const part = feature.geometry.coordinates[Math.floor(feature.geometry.coordinates.length/2)];
+      return part[Math.floor(part.length/2)].slice(0,2).reverse();
     default:
       return null;
   }
