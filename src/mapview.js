@@ -101,8 +101,9 @@ function ChangeView({ center, zoom }) {
     if (feature !== null) {
       map.flyTo(getCentralCoord(feature));
     }
-  } else {
-    map.fitBounds(getFeatureListBounds(context.data));
+  } else if (context.data) {
+    const featureListBounds = getFeatureListBounds(context.data);
+    featureListBounds && map.fitBounds(featureListBounds);
   }
   return null;
 }

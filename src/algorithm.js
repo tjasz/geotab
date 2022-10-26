@@ -52,7 +52,7 @@ export function getCentralCoord(feature) {
 
 export function getFeatureBounds(feature) {
   // TODO: what about going over 0 lon?
-  switch(feature.geometry.type) {
+  switch(feature.geometry?.type) {
     case "Point":
       const latlon = feature.geometry.coordinates.slice(0,2).reverse();
       return [
@@ -114,22 +114,23 @@ export function getFeatureBounds(feature) {
 }
 
 export function getFeatureListBounds(features) {
-  let bounds = getFeatureBounds(features[0]);
+  let bounds = [[null, null], [null, null]];
   for (const feature of features) {
     const fBounds = getFeatureBounds(feature);
-    if (fBounds[0][0] < -90 || fBounds[1][0] > 90)
-    if (fBounds[0][0] < bounds[0][0]) {
-      bounds[0][0] = fBounds[0][0];
-    }
-    if (fBounds[0][1] < bounds[0][1]) {
-      bounds[0][1] = fBounds[0][1];
-    }
-    if (fBounds[1][0] > bounds[1][0]) {
-      bounds[1][0] = fBounds[1][0];
-    }
-    if (fBounds[1][1] > bounds[1][1]) {
-      bounds[1][1] = fBounds[1][1];
+    if (fBounds !== null) {
+      if (bounds[0][0] === null || fBounds[0][0] < bounds[0][0]) {
+        bounds[0][0] = fBounds[0][0];
+      }
+      if (bounds[0][1] === null || fBounds[0][1] < bounds[0][1]) {
+        bounds[0][1] = fBounds[0][1];
+      }
+      if (bounds[1][0] === null || fBounds[1][0] > bounds[1][0]) {
+        bounds[1][0] = fBounds[1][0];
+      }
+      if (bounds[1][1] === null || fBounds[1][1] > bounds[1][1]) {
+        bounds[1][1] = fBounds[1][1];
+      }
     }
   }
-  return bounds;
+  return bounds.flat().some((bound) => bound === null) ? null : bounds;
 }

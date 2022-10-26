@@ -12,6 +12,7 @@ function DataView(props) {
       const jso = JSON.parse(event.target.result);
       const flattened = getFeatures(jso);
       context.setData(flattened);
+      context.setActive(null);
     });
     reader.readAsText(fname);
   };
