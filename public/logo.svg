@@ -1,0 +1,14 @@
+<svg height="100" width="100" style="background-color:white;">
+  <path id="track" d="M4 96 Q 33 33 50 50 67 67 96 4" 
+    fill-opacity="0"
+    style="stroke:#99cdff;stroke-width:3"
+    stroke-dasharray="3,3" />
+  <path id="grid" d="M2 2 L2 98 L98 98 L98 2 Z M0 33 L100 33 M0 67 L100 67 M33 0 L33 100 M67 0 L67 100" 
+    fill-opacity="0"
+    style="stroke:rgb(0,0,0);stroke-width:4" />
+  <path id="pin" d="M24 36 A26 26 180 0 1 76 36 Q76 53 50 90 Q24 53 24 36" 
+    fill-opacity="1"
+    style="stroke:black;stroke-width:1;fill:#336799;" />
+  <circle id="pincenter" cx="50" cy="36" r="8" stroke="black" stroke-width="1" fill="black" />
+  Sorry, your browser does not support inline SVG.
+</svg>
