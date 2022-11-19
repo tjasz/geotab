@@ -42,10 +42,18 @@ export function getCentralCoord(feature) {
     case "LineString":
       return feature.geometry.coordinates[Math.floor(feature.geometry.coordinates.length/2)].slice(0,2).reverse();
     case "MultiLineString":
-    case "MultiPolygon":
-    case "Polygon":
       const part = feature.geometry.coordinates[Math.floor(feature.geometry.coordinates.length/2)];
       return part[Math.floor(part.length/2)].slice(0,2).reverse();
+    case "MultiPolygon":
+    case "Polygon":
+      const polypart = feature.geometry.coordinates[Math.floor(feature.geometry.coordinates.length/2)];
+      const lonSum = polypart
+        .map((coordinate) => coordinate[0])
+        .reduce((partialSum, a) => partialSum + a, 0);
+      const latSum = polypart
+        .map((coordinate) => coordinate[1])
+        .reduce((partialSum, a) => partialSum + a, 0);
+      return [latSum / polypart.length, lonSum / polypart.length];
     default:
       return null;
   }
