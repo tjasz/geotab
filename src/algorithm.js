@@ -47,13 +47,9 @@ export function getCentralCoord(feature) {
     case "MultiPolygon":
     case "Polygon":
       const polypart = feature.geometry.coordinates[Math.floor(feature.geometry.coordinates.length/2)];
-      const lonSum = polypart
-        .map((coordinate) => coordinate[0])
-        .reduce((partialSum, a) => partialSum + a, 0);
-      const latSum = polypart
-        .map((coordinate) => coordinate[1])
-        .reduce((partialSum, a) => partialSum + a, 0);
-      return [latSum / polypart.length, lonSum / polypart.length];
+      const lons = polypart.map((coordinate) => coordinate[0]);
+      const lats = polypart.map((coordinate) => coordinate[1]);
+      return [(Math.max(...lats) + Math.min(...lats))/2, (Math.max(...lons) + Math.min(...lons))/2];
     default:
       return null;
   }
