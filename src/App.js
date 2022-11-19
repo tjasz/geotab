@@ -129,7 +129,9 @@ class App extends React.Component {
       data: getFeatures(sampleGeoJSON),
       setData: (newData) => {this.setState({data: newData})},
       active: null,
-      setActive: (newActive) => {this.setState({active: newActive})}
+      setActive: (newActive) => {this.setState({active: newActive})},
+      sorting: null,
+      setSorting: (newSorting) => {this.setState({sorting: newSorting})}
     };
   }
 

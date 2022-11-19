@@ -13,6 +13,7 @@ function DataView(props) {
       const flattened = getFeatures(jso);
       context.setData(flattened);
       context.setActive(null);
+      context.setSorting([]);
     });
     reader.readAsText(fname);
   };
