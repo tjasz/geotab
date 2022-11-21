@@ -121,6 +121,7 @@ html, body {
   border: 1px solid black;
   border-bottom: 2px solid black;
   padding: 0.25em;
+  cursor: pointer;
 }
 #data-table th a {
   color: #b3e7ff;
