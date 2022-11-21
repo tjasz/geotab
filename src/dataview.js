@@ -1,6 +1,6 @@
 import React, {useContext} from 'react';
 import {DataContext} from './dataContext.js'
-import {getFeatures} from './algorithm.js'
+import {getFeatures, getPropertiesUnion} from './algorithm.js'
 
 function DataView(props) {
   const context = useContext(DataContext);
@@ -12,8 +12,9 @@ function DataView(props) {
       const jso = JSON.parse(event.target.result);
       const flattened = getFeatures(jso);
       context.setData(flattened);
+      context.setColumns(getPropertiesUnion(flattened));
       context.setActive(null);
-      context.setSorting([]);
+      context.setSorting(null);
     });
     reader.readAsText(fname);
   };
