@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import './App.css';
 import TabView from './tabview.js'
 import {DataContext} from './dataContext.js'
@@ -133,7 +133,9 @@ class App extends React.Component {
       active: null,
       setActive: (newActive) => {this.setState({active: newActive})},
       sorting: null,
-      setSorting: (newSorting) => {this.setState({sorting: newSorting})}
+      setSorting: (newSorting) => {this.setState({sorting: newSorting})},
+      filter: null,
+      setFilter: (newFilter) => {this.setState({filter: newFilter})},
     };
   }
 

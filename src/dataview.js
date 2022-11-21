@@ -23,6 +23,15 @@ function DataView(props) {
       <input type="file" id="file-selector" />
       <input type="button" id="next-button" value="Process" onClick={process} />
       <p id="getting-started">Need an example file to try to the viewer? Try <a href="data/Backpacking_Washington.json">Backpacking Washington</a>.</p>
+      <FilterDefinition filter={context.filter} />
+    </div>
+  );
+}
+
+function FilterDefinition(props) {
+  return (
+    <div id="filter-definition">
+      <h3>Filter</h3>
     </div>
   );
 }

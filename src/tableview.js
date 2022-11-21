@@ -1,6 +1,6 @@
 import React, {useContext} from 'react';
 import {DataContext} from './dataContext.js'
-import {hashCode, getFeatures, getPropertiesUnion} from './algorithm'
+import {evaluateFilter} from './filter.js'
 
 function TableView(props) {
   return (
@@ -26,7 +26,7 @@ function sortBy(features, sorting) {
 
 function DataTable() {
   const context = useContext(DataContext);
-  const features = context.data;
+  const features = context.data.filter((row) => evaluateFilter(row, context.filter));
   if (context.sorting !== null) {
     sortBy(features, context.sorting);
   }

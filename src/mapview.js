@@ -2,6 +2,7 @@ import React, {useRef, useContext} from 'react';
 import { MapContainer, TileLayer, WMSTileLayer, LayersControl, ScaleControl, GeoJSON, Popup, useMap } from 'react-leaflet';
 import {DataContext} from './dataContext.js'
 import {getCentralCoord, hashCode, getFeatureListBounds} from './algorithm.js'
+import {evaluateFilter} from './filter.js'
 
 function MapView(props) {
     const context = useContext(DataContext);
@@ -13,12 +14,13 @@ function MapView(props) {
         }
       };
       const mapRef = useRef();
+      const features = context.data.filter((row) => evaluateFilter(row, context.filter));
       return (
         <div id="mapview" style={props.style}>
           <MapContainer scrollWheelZoom={true} ref={mapRef} whenReady={() => resizeMap(mapRef)}>
             <ChangeView />
             <ScaleControl position="bottomleft" />
-            <GeoJSON data={context.data} key={hashCode(JSON.stringify(context.data))} style={(feature) => { return {
+            <GeoJSON data={features} key={hashCode(JSON.stringify(features))} style={(feature) => { return {
               color: context.active !== null && context.active === feature.hash ? "#e0e000" : "#336799",
               weight: 2 + (context.active !== null && context.active === feature.hash ? 3: 0)
             }}}
@@ -27,7 +29,7 @@ function MapView(props) {
                 click: () => { context.setActive(feature.hash) }
               })
             }} />
-            {context.active !== null && <ActivePopup feature={context.data.find((feature) => feature.hash === context.active)} />}
+            {context.active !== null && <ActivePopup feature={features.find((feature) => feature.hash === context.active)} />}
             <LayersControl position="topright">
               <LayersControl.BaseLayer checked name="OpenStreetMap">
                 <TileLayer
@@ -96,14 +98,15 @@ function ActivePopup(props) {
 
 function ChangeView({ center, zoom }) {
   const context = useContext(DataContext);
+  const features = context.data.filter((row) => evaluateFilter(row, context.filter));
   const map = useMap();
   if (context.active !== null) {
-    const feature = context.data.find((feature) => feature.hash === context.active);
+    const feature = features.find((feature) => feature.hash === context.active);
     if (feature !== null && feature.geometry !== null) {
       map.setView(getCentralCoord(feature) || [47.5,-122.3], map.getZoom() || 6);
     }
-  } else if (context.data) {
-    const featureListBounds = getFeatureListBounds(context.data);
+  } else if (features) {
+    const featureListBounds = getFeatureListBounds(features);
     featureListBounds && map.fitBounds(featureListBounds);
   }
   return null;
