@@ -1,10 +1,6 @@
-export const defaultFilter = {
-  type: "ConditionGroup",
-  operator: "and",
-  conditions: []
-};
+import { setEquals } from './algorithm.js'
 
-function ConditionGroup(operator, conditions) {
+export function ConditionGroup(operator, conditions) {
   this.type = "ConditionGroup";
   this.operator = operator.toLowerCase();
   this.conditions = conditions;
@@ -60,7 +56,7 @@ const parametersMap = {
   InMonthOfYear: ["month"],
 };
 
-function Condition(operator, fieldname, parameters, negate=false) {
+export function Condition(operator, fieldname, parameters, negate=false) {
   this.type = "Condition";
   this.operator = operator;
   if (!conditionOperators.includes(this.operator)) {
@@ -70,7 +66,7 @@ function Condition(operator, fieldname, parameters, negate=false) {
   this.fieldname = fieldname;
   // TODO verify fieldname is in data table and of correct type
   this.parameters = parameters;
-  if (Object.keys(this.parameters) !== parametersMap[this.operator]) {
+  if (!setEquals(Object.keys(this.parameters), parametersMap[this.operator])) {
     throw Error(`Condition.parameters: Found ${JSON.stringify(this.parameters)}. Expected keys ${parametersMap[this.operator]}.`);
   }
   // TODO ensure parameters are of correct dataType?
@@ -79,6 +75,8 @@ function Condition(operator, fieldname, parameters, negate=false) {
     throw Error(`Condition.negate: Found ${this.negate}. Expected true or false.`);
   }
 }
+
+export const defaultFilter = new ConditionGroup("and", []);
 
 export function evaluateFilter(row, filter) {
   if (filter === null) {
@@ -107,19 +105,19 @@ function evaluateConditionGroup(row, group) {
 }
 
 function isEmpty(row, fieldname) {
-  return row[fieldname] === null || row[fieldname] === "";
+  return row.properties[fieldname] === null || row.properties[fieldname] === "";
 }
 
 function equalTo(row, fieldname, value) {
-  return row[fieldname] === value;
+  return row.properties[fieldname] === value;
 }
 
 function greaterThan(row, fieldname, value) {
-  return row[fieldname] > value;
+  return row.properties[fieldname] > value;
 }
 
 function lessThan(row, fieldname, value) {
-  return row[fieldname] < value;
+  return row.properties[fieldname] < value;
 }
 
 function evaluateCondition(row, condition) {

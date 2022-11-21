@@ -2,6 +2,10 @@ export function hashCode(str) {
   return Array.from(str).reduce((hash, char) => 0 | (31 * hash + char.charCodeAt(0)), 0);
 }
 
+export function setEquals(a, b) {
+  return a.every(item => b.includes(item)) && b.every(item => a.includes(item));
+}
+
 export function getFeatures(data) {
   if (data["type"] === "Feature") {
     data.hash = hashCode(JSON.stringify(data));

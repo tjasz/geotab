@@ -3,7 +3,7 @@ import './App.css';
 import TabView from './tabview.js'
 import {DataContext} from './dataContext.js'
 import {getFeatures, getPropertiesUnion} from './algorithm.js'
-import {defaultFilter} from './filter.js'
+import {Condition, ConditionGroup} from './filter.js'
 
 class App extends React.Component {
   constructor(props) {
@@ -126,11 +126,11 @@ class App extends React.Component {
         }
       ]
     }; // TODO replace
-    const defaultFilter = {
-      type: "ConditionGroup",
-      operator: "and",
-      conditions: []
-    };
+    const sampleFilter = new ConditionGroup("and",
+    [
+      new Condition("GreaterThan", "elevation", {value: 10000}),
+    ]
+  );
     this.state = {
       data: getFeatures(sampleGeoJSON),
       setData: (newData) => {this.setState({data: newData})},
@@ -140,7 +140,7 @@ class App extends React.Component {
       setActive: (newActive) => {this.setState({active: newActive})},
       sorting: null,
       setSorting: (newSorting) => {this.setState({sorting: newSorting})},
-      filter: defaultFilter,
+      filter: sampleFilter,
       setFilter: (newFilter) => {this.setState({filter: newFilter})},
     };
   }
