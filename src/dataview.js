@@ -1,6 +1,7 @@
 import React, {useContext} from 'react';
 import {DataContext} from './dataContext.js'
 import {getFeatures, getPropertiesUnion} from './algorithm.js'
+import {defaultFilter} from './filter.js'
 
 function DataView(props) {
   const context = useContext(DataContext);
@@ -15,6 +16,7 @@ function DataView(props) {
       context.setColumns(getPropertiesUnion(flattened));
       context.setActive(null);
       context.setSorting(null);
+      context.setFilter(defaultFilter);
     });
     reader.readAsText(fname);
   };
@@ -32,8 +34,22 @@ function FilterDefinition(props) {
   return (
     <div id="filter-definition">
       <h3>Filter</h3>
+      <ConditionGroupView group={props.filter} />
     </div>
   );
+}
+
+function ConditionGroupView(props) {
+  return (
+    <p>{JSON.stringify(props.group)}</p>
+  );
+  // switch (props.group.type) {
+  //   case "ConditionGroup":
+  //   case "Condition":
+  //     return (
+
+  //     );
+  // }
 }
 
 export default DataView;

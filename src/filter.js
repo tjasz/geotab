@@ -1,3 +1,9 @@
+export const defaultFilter = {
+  type: "ConditionGroup",
+  operator: "and",
+  conditions: []
+};
+
 function ConditionGroup(operator, conditions) {
   this.type = "ConditionGroup";
   this.operator = operator.toLowerCase();

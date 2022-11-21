@@ -160,3 +160,8 @@ html, body {
   height: 85.5vh;
   padding: 0.5em 0;
 }
+
+#filter-definition {
+  text-align: left;
+  padding: 1em;
+}
