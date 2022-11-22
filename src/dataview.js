@@ -49,7 +49,7 @@ function DataView(props) {
       <input type="file" id="file-selector" />
       <input type="button" id="next-button" value="Process" onClick={process} />
       <p id="getting-started">Need an example file to try to the viewer? Try&nbsp;
-      <a href="#" onClick={() => { processServerFile("Backpacking_Washington.json"); }}>Backpacking Washington</a>.</p>
+      <a href="#" onClick={() => { processServerFile("json/backpacking-washington.json"); }}>Backpacking Washington</a>.</p>
       {context.filter && <FilterDefinition filter={context.filter} onSave={onFilterSave} />}
     </div>
   );
