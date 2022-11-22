@@ -14,6 +14,7 @@ function MapView(props) {
         }
       };
       const mapRef = useRef();
+      if (!context.data) return null;
       const features = context.data.filter((row) => evaluateFilter(row, context.filter));
       return (
         <div id="mapview" style={props.style}>

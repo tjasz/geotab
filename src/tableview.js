@@ -26,6 +26,7 @@ function sortBy(features, sorting) {
 
 function DataTable() {
   const context = useContext(DataContext);
+  if (!context.data) return null;
   const features = context.data.filter((row) => evaluateFilter(row, context.filter));
   if (context.sorting !== null) {
     sortBy(features, context.sorting);
