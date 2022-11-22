@@ -44,23 +44,25 @@ function FilterDefinition(props) {
 }
 
 function ConditionGroupView(props) {
+  const [operator, setOperator] = useState(props.filter.operator);
+  const [conditions, setConditions] = useState(props.filter.conditions);
   const onChildEdit = (childState, idx) => {
-    props.filter.conditions[idx] = childState;
-    props.onEdit(props.filter, props.indexInGroup);
+    setConditions((conditions) => { conditions[idx] = childState; return conditions; });
+    props.onEdit({type: "ConditionGroup", operator, conditions}, props.indexInGroup);
   };
   const onOperatorEdit = (event) => {
-    props.filter.operator = event.target.value;
-    props.onEdit(props.filter, props.indexInGroup);
+    setOperator(event.target.value);
+    props.onEdit({type: "ConditionGroup", operator: event.target.value, conditions}, props.indexInGroup);
   };
   return (
     <div className="conditionGroupView" style={{paddingLeft: `${props.indent*2}em`}}>
       <select id={`condition-group-operator-${props.indent}`}
               name={`condition-group-operator-${props.indent}`}
-              defaultValue={props.filter.operator}
+              defaultValue={operator}
               onChange={onOperatorEdit}>
         {conditionGroupOperators.map((operator) => <option value={operator} key={`condition-group-operator-${props.indent}-${operator}`}>{operator.toUpperCase()}</option>)}
       </select>
-      {props.filter.conditions.map((condition, idx) => <FilterView filter={condition} indent={props.indent+1} indexInGroup={idx} onEdit={onChildEdit} key={`condition-group-${props.indent}-child-${idx}`} />)}
+      {conditions.map((condition, idx) => <FilterView filter={condition} indent={props.indent+1} indexInGroup={idx} onEdit={onChildEdit} key={`condition-group-${props.indent}-child-${idx}`} />)}
     </div>
   );
 }
