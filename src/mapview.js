@@ -102,7 +102,7 @@ function ChangeView({ center, zoom }) {
   const map = useMap();
   if (context.active !== null) {
     const feature = features.find((feature) => feature.hash === context.active);
-    if (feature !== null && feature.geometry !== null) {
+    if (feature !== null && feature !== undefined && feature.geometry !== null && feature.geometry !== undefined) {
       map.setView(getCentralCoord(feature) || [47.5,-122.3], map.getZoom() || 6);
     }
   } else if (features) {
