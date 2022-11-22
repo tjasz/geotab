@@ -1,7 +1,7 @@
 import React, {useContext, useState} from 'react';
 import {DataContext} from './dataContext.js'
 import {getFeatures, getPropertiesUnion} from './algorithm.js'
-import {defaultFilter, conditionOperators, conditionGroupOperators, parametersMap} from './filter.js'
+import {defaultFilter, conditionOperators, conditionGroupOperators, parametersMap, Condition, filterEquals} from './filter.js'
 
 function DataView(props) {
   const context = useContext(DataContext);
@@ -32,8 +32,9 @@ function DataView(props) {
 }
 
 function FilterDefinition(props) {
-  const saveDraft = () => { props.onSave(props.filter); };
-  const updateDraft = (newDraft) => { ; }; // props.filter is not editable. only properties down the tree are
+  const [draft, setDraft] = useState(props.filter);
+  const saveDraft = () => { props.onSave(draft); };
+  const updateDraft = (newDraft) => { setDraft(newDraft); };
   return (
     <div id="filter-definition">
       <h3>Filter</h3>
@@ -44,15 +45,23 @@ function FilterDefinition(props) {
 }
 
 function ConditionGroupView(props) {
+  const context = useContext(DataContext);
   const [operator, setOperator] = useState(props.filter.operator);
   const [conditions, setConditions] = useState(props.filter.conditions);
-  const onChildRemove = (idx) => {
-    setConditions((conditions) => { return conditions.splice(idx, 1); });
-    props.onEdit({type: "ConditionGroup", operator, conditions}, props.indexInGroup);
+  const onChildAdd = () => {
+    const newConditions = [...conditions, new Condition("IsNotEmpty", context.columns[0], {})];
+    setConditions(newConditions);
+    props.onEdit({type: "ConditionGroup", operator, conditions: newConditions}, props.indexInGroup);
+  };
+  const onChildRemove = (child) => {
+    const newConditions = conditions.filter((condition) => !filterEquals(condition, child));
+    setConditions(newConditions);
+    props.onEdit({type: "ConditionGroup", operator, conditions: newConditions}, props.indexInGroup);
   };
   const onChildEdit = (childState, idx) => {
-    setConditions((conditions) => { conditions[idx] = childState; return conditions; });
-    props.onEdit({type: "ConditionGroup", operator, conditions}, props.indexInGroup);
+    const newConditions = conditions.map((c, i) => i === idx ? childState : c);
+    setConditions(newConditions);
+    props.onEdit({type: "ConditionGroup", operator, conditions: newConditions}, props.indexInGroup);
   };
   const onOperatorEdit = (event) => {
     setOperator(event.target.value);
@@ -66,8 +75,9 @@ function ConditionGroupView(props) {
               onChange={onOperatorEdit}>
         {conditionGroupOperators.map((operator) => <option value={operator} key={`condition-group-operator-${props.indent}-${operator}`}>{operator.toUpperCase()}</option>)}
       </select>
-      {props.indent ? <a onClick={() => {props.removeCondition(props.indexInGroup)}}>-</a> : null}
+      {props.indent ? <a onClick={() => {props.removeCondition(props.filter)}}>-</a> : null}
       {conditions.map((condition, idx) => <FilterView filter={condition} indent={props.indent+1} indexInGroup={idx} onEdit={onChildEdit} removeCondition={onChildRemove} key={`condition-group-${props.indent}-child-${idx}`} />)}
+      <a onClick={onChildAdd}>+</a>
     </div>
   );
 }
@@ -116,7 +126,7 @@ function ConditionView(props) {
                onChange={onParameterEdit}
                key={`${props.key}-${param}`}/>
       )}
-      {props.indent ? <a onClick={() => {props.removeCondition(props.indexInGroup)}}>-</a> : null}
+      {props.indent ? <a onClick={() => {props.removeCondition(props.filter)}}>-</a> : null}
     </div>
   );
 }

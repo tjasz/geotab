@@ -78,6 +78,22 @@ export function Condition(operator, fieldname, parameters, negate=false) {
   }
 }
 
+export function filterEquals(a, b) {
+  if (a.type !== b.type) return false;
+  if (a.operator !== b.operator) return false;
+  if (a.type === "ConditionGroup") {
+    return a.conditions.every((acondition) => b.conditions.some((bcondition) => filterEquals(acondition, bcondition))) &&
+           b.conditions.every((bcondition) => a.conditions.some((acondition) => filterEquals(acondition, bcondition)));
+  }
+  else if (a.type === "Condition") {
+    if (a.fieldname !== b.fieldname) return false;
+    if (a.negate !== b.negate) return false;
+    return Object.keys(a.parameters).every((key) => a.parameters[key] === b.parameters[key]) &&
+           Object.keys(b.parameters).every((key) => a.parameters[key] === b.parameters[key]);
+  }
+  throw Error(`Filter.type: Found ${a.type}. Expected 'ConditionGroup' or 'Condition'.`);
+}
+
 export const defaultFilter = new ConditionGroup("and", []);
 
 export function evaluateFilter(row, filter) {
