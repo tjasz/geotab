@@ -1,5 +1,7 @@
 import { setEquals } from './algorithm.js'
 
+export const filterTypes = ["Condition", "ConditionGroup"];
+
 export const conditionGroupOperators = ["and", "or"];
 
 export function ConditionGroup(operator, conditions) {
@@ -113,7 +115,7 @@ export function evaluateFilter(row, filter) {
 function evaluateConditionGroup(row, group) {
   switch (group.operator) {
     case "and":
-      return group.conditions.every((condition) => evaluateCondition(row, condition));
+      return group.conditions.every((condition) => evaluateFilter(row, condition));
     case "or":
       // child can be a condition or another group
       return group.conditions.some((condition) => evaluateFilter(row, condition));

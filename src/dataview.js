@@ -1,7 +1,7 @@
 import React, {useContext, useState} from 'react';
 import {DataContext} from './dataContext.js'
 import {getFeatures, getPropertiesUnion} from './algorithm.js'
-import {defaultFilter, conditionOperators, conditionGroupOperators, parametersMap, Condition, filterEquals} from './filter.js'
+import {defaultFilter, conditionOperators, conditionGroupOperators, parametersMap, Condition, ConditionGroup, filterEquals, filterTypes} from './filter.js'
 
 function DataView(props) {
   const context = useContext(DataContext);
@@ -48,9 +48,17 @@ function ConditionGroupView(props) {
   const context = useContext(DataContext);
   const [operator, setOperator] = useState(props.filter.operator);
   const [conditions, setConditions] = useState(props.filter.conditions);
-  const onChildAdd = () => {
-    const newConditions = [...conditions, new Condition("IsNotEmpty", context.columns[0], {})];
-    setConditions(newConditions);
+  const [childSelectorVisible, setChildSelectorVisible] = useState(false);
+  const onChildAdd = (ftype) => {
+    let newConditions = null;
+    if (ftype === "Condition") {
+      newConditions = [...conditions, new Condition("IsNotEmpty", context.columns[0], {})];
+      setConditions(newConditions);
+    }
+    else {
+      newConditions = [...conditions, new ConditionGroup("and", [])];
+      setConditions(newConditions);
+    }
     props.onEdit({type: "ConditionGroup", operator, conditions: newConditions}, props.indexInGroup);
   };
   const onChildRemove = (child) => {
@@ -77,7 +85,12 @@ function ConditionGroupView(props) {
       </select>
       {props.indent ? <a onClick={() => {props.removeCondition(props.filter)}}>-</a> : null}
       {conditions.map((condition, idx) => <FilterView filter={condition} indent={props.indent+1} indexInGroup={idx} onEdit={onChildEdit} removeCondition={onChildRemove} key={`condition-group-${props.indent}-child-${idx}`} />)}
-      <a onClick={onChildAdd}>+</a>
+      <a onClick={() => { setChildSelectorVisible(true); }}>+</a>
+      {childSelectorVisible
+      ? <div id={`condition-group-child-selector-${props.indent}`}>
+        {filterTypes.map((ftype) => <input type="button" value={ftype} key={`condition-group-child-selector-${props.indent}-${ftype}`} onClick={(event) => { setChildSelectorVisible(false); onChildAdd(event.target.value); }} />)}
+      </div>
+      : null}
     </div>
   );
 }
