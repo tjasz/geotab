@@ -1,10 +1,13 @@
 import React, {useContext, useState} from 'react';
+import { useSearchParams } from "react-router-dom";
 import {DataContext} from './dataContext.js'
 import {getFeatures, getPropertiesUnion} from './algorithm.js'
 import {defaultFilter, conditionOperators, conditionGroupOperators, parametersMap, Condition, ConditionGroup, filterEquals, filterTypes} from './filter.js'
 
 function DataView(props) {
   const context = useContext(DataContext);
+  const [urlParams, setUrlParams] = useSearchParams();
+  const urlSrc = urlParams.get("src") ?? "wa-ultras";
   const setDataFromJson = (json) => {
     const flattened = getFeatures(json);
     context.setData(flattened);
@@ -43,13 +46,16 @@ function DataView(props) {
         }
       )
   };
+  if (!context.data || !context.data.length) {
+    processServerFile(`json/${urlSrc}.json`);
+  }
   const onFilterSave = (draft) => { context.setFilter(draft); };
   return (
     <div id="dataview" style={props.style}>
       <input type="file" id="file-selector" />
       <input type="button" id="next-button" value="Process" onClick={process} />
       <p id="getting-started">Need an example file to try to the viewer? Try&nbsp;
-      <a href="#" onClick={() => { processServerFile("json/backpacking-washington.json"); }}>Backpacking Washington</a>.</p>
+      <a href="#" onClick={() => { setUrlParams({src: "backpacking-washington"}); processServerFile("json/backpacking-washington.json"); }}>Backpacking Washington</a>.</p>
       {context.filter && <FilterDefinition filter={context.filter} onSave={onFilterSave} />}
     </div>
   );

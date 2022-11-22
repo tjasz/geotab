@@ -1,4 +1,5 @@
 import React from 'react';
+import {BrowserRouter} from 'react-router-dom'
 import './App.css';
 import TabView from './tabview.js'
 import {DataContext} from './dataContext.js'
@@ -28,7 +29,9 @@ class App extends React.Component {
       <div id="App">
         <DataContext.Provider value={this.state}>
           <AppHeader />
-          <AppBody />
+          <BrowserRouter>
+            <AppBody />
+          </BrowserRouter>
           <AppFooter />
         </DataContext.Provider>
       </div>
