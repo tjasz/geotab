@@ -146,6 +146,10 @@ function between(row, fieldname, a, b) {
          row.properties[fieldname] <= a && row.properties[fieldname] >= b;
 }
 
+function isIn(row, fieldname, values) {
+  return values.includes(row.properties[fieldname]);
+}
+
 function contains(row, fieldname, substring) {
   // TODO make case sensitivity a parameter for string operators?
   return row.properties[fieldname].toUpperCase().includes(substring.toUpperCase());
@@ -202,12 +206,10 @@ function evaluateCondition(row, condition) {
       result = !between(row, condition.fieldname, condition.parameters.min, condition.parameters.max);
       break;
     case "In":
-      // TODO
-      throw Error("Unimplemented function In");
+      result = isIn(row, condition.fieldname, condition.parameters.values.split(','));
       break;
     case "NotIn":
-      // TODO
-      throw Error("Unimplemented function NotIn");
+      result = !isIn(row, condition.fieldname, condition.parameters.values.split(','));
       break;
     case "Contains":
       result = contains(row, condition.fieldname, condition.parameters.substring);
@@ -216,12 +218,10 @@ function evaluateCondition(row, condition) {
       result = !contains(row, condition.fieldname, condition.parameters.substring);
       break;
     case "ContainsAny":
-      // TODO
-      throw Error("Unimplemented function ContainsAny");
+      result = condition.parameters.substrings.split(',').some((substring) => contains(row, condition.fieldname, substring));
       break;
     case "ContainsNone":
-      // TODO
-      throw Error("Unimplemented function ContainsNone");
+      result = condition.parameters.substrings.split(',').every((substring) => !contains(row, condition.fieldname, substring));
       break;
     case "StartsWith":
       result = startsWith(row, condition.fieldname, condition.parameters.prefix);
