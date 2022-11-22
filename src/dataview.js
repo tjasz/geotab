@@ -33,7 +33,7 @@ function DataView(props) {
 
 function FilterDefinition(props) {
   const saveDraft = () => { props.onSave(props.filter); };
-  const updateDraft = (newDraft) => { props.filter = newDraft; };
+  const updateDraft = (newDraft) => { ; }; // props.filter is not editable. only properties down the tree are
   return (
     <div id="filter-definition">
       <h3>Filter</h3>
@@ -67,15 +67,24 @@ function ConditionGroupView(props) {
 
 function ConditionView(props) {
   const context = useContext(DataContext);
+  const onFieldnameEdit = (event) => {
+    props.filter.fieldname = event.target.value;
+    props.onEdit(props.filter, props.indexInGroup);
+  };
   const onOperatorEdit = (event) => {
     props.filter.operator = event.target.value;
+    props.onEdit(props.filter, props.indexInGroup);
+  };
+  const onParameterEdit = (event) => {
+    props.filter.parameters[event.target.name] = event.target.value;
     props.onEdit(props.filter, props.indexInGroup);
   };
   return (
     <div className="conditionView" style={{paddingLeft: `${props.indent*2}em`}}>
       <select id={`${props.key}-fieldname`}
               name={`${props.key}-fieldname`}
-              defaultValue={props.filter.fieldname}>
+              defaultValue={props.filter.fieldname}
+              onChange={onFieldnameEdit}>
         {context.columns.map((fieldname) => <option value={fieldname} key={`${props.key}-${fieldname}`}>{fieldname}</option>)}
       </select>
 
@@ -88,8 +97,9 @@ function ConditionView(props) {
 
       {Object.keys(props.filter.parameters).map((param) =>
         <input id={`${props.key}-${param}`}
-               name={`${props.key}-${param}`}
+               name={param}
                defaultValue={props.filter.parameters[param]}
+               onChange={onParameterEdit}
                key={`${props.key}-${param}`}/>
       )}
     </div>

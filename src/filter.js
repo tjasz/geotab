@@ -111,6 +111,7 @@ function isEmpty(row, fieldname) {
 }
 
 function equalTo(row, fieldname, value) {
+  // TODO support numeric and dates; this just does string compare
   return row.properties[fieldname] === value;
 }
 
