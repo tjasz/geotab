@@ -1,17 +1,19 @@
 import { setEquals } from './algorithm.js'
 
+export const conditionGroupOperators = ["and", "or"];
+
 export function ConditionGroup(operator, conditions) {
   this.type = "ConditionGroup";
   this.operator = operator.toLowerCase();
   this.conditions = conditions;
-  if (this.operator !== "and" && this.operator !== "or") {
-    throw Error(`ConditionGroup.operator: Found '${this.operator}'. Expected 'and' or 'or'.`);
+  if (!conditionGroupOperators.includes(this.operator)) {
+    throw Error(`ConditionGroup.operator: Found ${this.operator}. Expected one of ${conditionGroupOperators}.`);
   }
 }
 
 // TODO location-based conditions (ex: WithinRange)
 // TODO multi-field formula conditions (ex: prominence > 0.1 * elevation)
-const conditionOperators = [
+export const conditionOperators = [
   "IsEmpty", "IsNotEmpty",
   "EqualTo", "NotEqualTo",
   "GreaterThan", "GreaterThanOrEqualTo", "LessThan", "LessThanOrEqualTo",

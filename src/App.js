@@ -134,7 +134,7 @@ class App extends React.Component {
     this.state = {
       data: getFeatures(sampleGeoJSON),
       setData: (newData) => {this.setState({data: newData})},
-      columns: getPropertiesUnion(getFeatures(sampleGeoJSON)),
+      columns: [...getPropertiesUnion(getFeatures(sampleGeoJSON))],
       setColumns: (newColumns) => {this.setState({columns: newColumns})},
       active: null,
       setActive: (newActive) => {this.setState({active: newActive})},
