@@ -46,6 +46,10 @@ function FilterDefinition(props) {
 function ConditionGroupView(props) {
   const [operator, setOperator] = useState(props.filter.operator);
   const [conditions, setConditions] = useState(props.filter.conditions);
+  const onChildRemove = (idx) => {
+    setConditions((conditions) => { return conditions.splice(idx, 1); });
+    props.onEdit({type: "ConditionGroup", operator, conditions}, props.indexInGroup);
+  };
   const onChildEdit = (childState, idx) => {
     setConditions((conditions) => { conditions[idx] = childState; return conditions; });
     props.onEdit({type: "ConditionGroup", operator, conditions}, props.indexInGroup);
@@ -62,7 +66,8 @@ function ConditionGroupView(props) {
               onChange={onOperatorEdit}>
         {conditionGroupOperators.map((operator) => <option value={operator} key={`condition-group-operator-${props.indent}-${operator}`}>{operator.toUpperCase()}</option>)}
       </select>
-      {conditions.map((condition, idx) => <FilterView filter={condition} indent={props.indent+1} indexInGroup={idx} onEdit={onChildEdit} key={`condition-group-${props.indent}-child-${idx}`} />)}
+      {props.indent ? <a onClick={() => {props.removeCondition(props.indexInGroup)}}>-</a> : null}
+      {conditions.map((condition, idx) => <FilterView filter={condition} indent={props.indent+1} indexInGroup={idx} onEdit={onChildEdit} removeCondition={onChildRemove} key={`condition-group-${props.indent}-child-${idx}`} />)}
     </div>
   );
 }
@@ -111,6 +116,7 @@ function ConditionView(props) {
                onChange={onParameterEdit}
                key={`${props.key}-${param}`}/>
       )}
+      {props.indent ? <a onClick={() => {props.removeCondition(props.indexInGroup)}}>-</a> : null}
     </div>
   );
 }
@@ -118,9 +124,9 @@ function ConditionView(props) {
 function FilterView(props) {
   switch (props.filter.type) {
     case "ConditionGroup":
-      return (<ConditionGroupView filter={props.filter} indent={props.indent} onEdit={props.onEdit} indexInGroup={props.indexInGroup} />);
+      return (<ConditionGroupView filter={props.filter} indent={props.indent} onEdit={props.onEdit} removeCondition={props.removeCondition} indexInGroup={props.indexInGroup} />);
     case "Condition":
-      return (<ConditionView filter={props.filter} indent={props.indent} onEdit={props.onEdit} indexInGroup={props.indexInGroup} />);
+      return (<ConditionView filter={props.filter} indent={props.indent} onEdit={props.onEdit} removeCondition={props.removeCondition} indexInGroup={props.indexInGroup} />);
     default:
       return (
         <div className="defaultFilterView" style={{paddingLeft: `${props.indent*2}em`}}>
