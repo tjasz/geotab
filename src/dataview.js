@@ -5,27 +5,51 @@ import {defaultFilter, conditionOperators, conditionGroupOperators, parametersMa
 
 function DataView(props) {
   const context = useContext(DataContext);
+  const setDataFromJson = (json) => {
+    const flattened = getFeatures(json);
+    context.setData(flattened);
+    context.setColumns([...getPropertiesUnion(flattened)]);
+    context.setActive(null);
+    context.setSorting(null);
+    context.setFilter(defaultFilter);
+  };
   const process = () => {
     const fileSelector = document.getElementById('file-selector');
     const fname = fileSelector.files[0];
     const reader = new FileReader();
     reader.addEventListener('load', (event) => {
       const jso = JSON.parse(event.target.result);
-      const flattened = getFeatures(jso);
-      context.setData(flattened);
-      context.setColumns([...getPropertiesUnion(flattened)]);
-      context.setActive(null);
-      context.setSorting(null);
-      context.setFilter(defaultFilter);
+      setDataFromJson(jso);
     });
     reader.readAsText(fname);
+  };
+  const processServerFile = (fname) => {
+    fetch(fname,{
+        headers : {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+         }
+      })
+      .then(res => res.json())
+      .then(
+        (result) => {
+          setDataFromJson(result);
+        },
+        // Note: it's important to handle errors here
+        // instead of a catch() block so that we don't swallow
+        // exceptions from actual bugs in components.
+        (error) => {
+          alert(error);
+        }
+      )
   };
   const onFilterSave = (draft) => { context.setFilter(draft); };
   return (
     <div id="dataview" style={props.style}>
       <input type="file" id="file-selector" />
       <input type="button" id="next-button" value="Process" onClick={process} />
-      <p id="getting-started">Need an example file to try to the viewer? Try <a href="data/Backpacking_Washington.json">Backpacking Washington</a>.</p>
+      <p id="getting-started">Need an example file to try to the viewer? Try&nbsp;
+      <a href="#" onClick={() => { processServerFile("Backpacking_Washington.json"); }}>Backpacking Washington</a>.</p>
       <FilterDefinition filter={context.filter} onSave={onFilterSave} />
     </div>
   );
