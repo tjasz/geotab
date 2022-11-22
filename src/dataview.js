@@ -1,7 +1,7 @@
 import React, {useContext, useState} from 'react';
 import {DataContext} from './dataContext.js'
 import {getFeatures, getPropertiesUnion} from './algorithm.js'
-import {defaultFilter, conditionOperators, conditionGroupOperators} from './filter.js'
+import {defaultFilter, conditionOperators, conditionGroupOperators, parametersMap} from './filter.js'
 
 function DataView(props) {
   const context = useContext(DataContext);
@@ -67,38 +67,45 @@ function ConditionGroupView(props) {
 
 function ConditionView(props) {
   const context = useContext(DataContext);
+  const [fieldname, setFieldname] = useState(props.filter.fieldname);
+  const [operator, setOperator] = useState(props.filter.operator);
+  const [parameters, setParameters] = useState(props.filter.parameters);
+  const [negate, setNegate] = useState(props.filter.negate);
   const onFieldnameEdit = (event) => {
-    props.filter.fieldname = event.target.value;
-    props.onEdit(props.filter, props.indexInGroup);
+    setFieldname(event.target.value);
+    props.onEdit({type: "Condition", fieldname: event.target.value, operator, parameters, negate}, props.indexInGroup);
   };
   const onOperatorEdit = (event) => {
-    props.filter.operator = event.target.value;
-    props.onEdit(props.filter, props.indexInGroup);
+    setOperator(event.target.value);
+    setParameters(parametersMap[event.target.value].reduce((accumulator, value) => {
+      return {...accumulator, [value]: ''};
+    }, {}));
+    props.onEdit({type: "Condition", fieldname, operator: event.target.value, parameters, negate}, props.indexInGroup);
   };
   const onParameterEdit = (event) => {
-    props.filter.parameters[event.target.name] = event.target.value;
-    props.onEdit(props.filter, props.indexInGroup);
+    setParameters(values => ({ ...values, [event.target.name]: event.target.value }));
+    props.onEdit({type: "Condition", fieldname, operator, parameters: { ...parameters, [event.target.name]: event.target.value }, negate}, props.indexInGroup);
   };
   return (
     <div className="conditionView" style={{paddingLeft: `${props.indent*2}em`}}>
       <select id={`${props.key}-fieldname`}
               name={`${props.key}-fieldname`}
-              defaultValue={props.filter.fieldname}
+              defaultValue={fieldname}
               onChange={onFieldnameEdit}>
         {context.columns.map((fieldname) => <option value={fieldname} key={`${props.key}-${fieldname}`}>{fieldname}</option>)}
       </select>
 
       <select id={`${props.key}-operator`}
               name={`${props.key}-operator`}
-              defaultValue={props.filter.operator}
+              defaultValue={operator}
               onChange={onOperatorEdit}>
         {conditionOperators.map((operator) => <option value={operator} key={`${props.key}-${operator}`}>{operator}</option>)}
       </select>
 
-      {Object.keys(props.filter.parameters).map((param) =>
+      {Object.keys(parameters).map((param) =>
         <input id={`${props.key}-${param}`}
                name={param}
-               defaultValue={props.filter.parameters[param]}
+               defaultValue={parameters[param]}
                onChange={onParameterEdit}
                key={`${props.key}-${param}`}/>
       )}

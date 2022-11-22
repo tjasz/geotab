@@ -26,7 +26,7 @@ export const conditionOperators = [
   "InWeekOfMonth", "InWeekOfYear", "InMonthOfYear",
 ];
 
-const parametersMap = {
+export const parametersMap = {
   IsEmpty: [],
   IsNotEmpty: [],
   EqualTo: ["value"],
