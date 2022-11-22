@@ -35,7 +35,7 @@ const parametersMap = {
   GreaterThanOrEqualTo: ["value"],
   LessThan: ["value"],
   LessThanOrEqualTo: ["value"],
-  Between: ["min", "max"],
+  Between: ["min", "max"], // min < max not actually enforced
   NotBetween: ["min", "max"],
   In: ["values"],
   NotIn: ["values"],
@@ -111,7 +111,7 @@ function isEmpty(row, fieldname) {
 }
 
 function equalTo(row, fieldname, value) {
-  // TODO support numeric and dates; this just does string compare
+  // TODO support numeric and dates; this just does string compare; same for below
   return row.properties[fieldname] === value;
 }
 
@@ -121,6 +121,33 @@ function greaterThan(row, fieldname, value) {
 
 function lessThan(row, fieldname, value) {
   return row.properties[fieldname] < value;
+}
+
+function between(row, fieldname, a, b) {
+  return row.properties[fieldname] >= a && row.properties[fieldname] <= b ||
+         row.properties[fieldname] <= a && row.properties[fieldname] >= b;
+}
+
+function contains(row, fieldname, substring) {
+  // TODO make case sensitivity a parameter for string operators?
+  return row.properties[fieldname].toUpperCase().includes(substring.toUpperCase());
+}
+
+function startsWith(row, fieldname, prefix) {
+  return row.properties[fieldname].toUpperCase().startsWith(prefix.toUpperCase());
+}
+
+function endsWith(row, fieldname, suffix) {
+  return row.properties[fieldname].toUpperCase().endsWith(suffix.toUpperCase());
+}
+
+function like(row, fieldname, regex) {
+  return new RegExp(regex).test(row.properties[fieldname]);
+}
+
+function onDayOfWeek(row, fieldname, dayOfWeek) {
+  // TODO UI should show strings Monday for 1, etc.
+  return Date.parse(row.parameters[fieldname]).getDay() === (dayOfWeek % 7);
 }
 
 function evaluateCondition(row, condition) {
@@ -150,7 +177,79 @@ function evaluateCondition(row, condition) {
     case "LessThanOrEqualTo":
       result = !greaterThan(row, condition.fieldname, condition.parameters.value);
       break;
-    // TODO more operators
+    case "Between":
+      result = between(row, condition.fieldname, condition.parameters.min, condition.parameters.max);
+      break;
+    case "NotBetween":
+      result = !between(row, condition.fieldname, condition.parameters.min, condition.parameters.max);
+      break;
+    case "In":
+      // TODO
+      throw Error("Unimplemented function In");
+      break;
+    case "NotIn":
+      // TODO
+      throw Error("Unimplemented function NotIn");
+      break;
+    case "Contains":
+      result = contains(row, condition.fieldname, condition.parameters.substring);
+      break;
+    case "DoesNotContain":
+      result = !contains(row, condition.fieldname, condition.parameters.substring);
+      break;
+    case "ContainsAny":
+      // TODO
+      throw Error("Unimplemented function ContainsAny");
+      break;
+    case "ContainsNone":
+      // TODO
+      throw Error("Unimplemented function ContainsNone");
+      break;
+    case "StartsWith":
+      result = startsWith(row, condition.fieldname, condition.parameters.prefix);
+      break;
+    case "DoesNotStartWith":
+      result = !startsWith(row, condition.fieldname, condition.parameters.prefix);
+      break;
+    case "EndsWith":
+      result = endsWith(row, condition.fieldname, condition.parameters.suffix);
+      break;
+    case "DoesNotEndWith":
+      result = !endsWith(row, condition.fieldname, condition.parameters.suffix);
+      break;
+    case "Like":
+      result = like(row, condition.fieldname, condition.parameters.regex);
+      break;
+    case "NotLike":
+      result = !like(row, condition.fieldname, condition.parameters.regex);
+      break;
+    case "OnDayOfWeek":
+      result = onDayOfWeek(row, condition.fieldname, condition.parameters.day);
+      break;
+    case "OnDayOfMonth":
+      // TODO
+      throw Error("Unimplemented function OnDayOfMonth");
+      break;
+    case "OnDayOfYear":
+      // TODO
+      throw Error("Unimplemented function OnDayOfYear");
+      break;
+    case "OnDayMonthOfYear":
+      // TODO
+      throw Error("Unimplemented function OnDayMonthOfYear");
+      break;
+    case "InWeekOfMonth":
+      // TODO
+      throw Error("Unimplemented function InWeekOfMonth");
+      break;
+    case "InWeekOfYear":
+      // TODO
+      throw Error("Unimplemented function InWeekOfYear");
+      break;
+    case "InMonthOfYear":
+      // TODO
+      throw Error("Unimplemented function InMonthOfYear");
+      break;
     default:
       throw Error(`Condition.operator: Found ${condition.operator}. Expected one of ${conditionOperators}.`);
   }
