@@ -21,6 +21,11 @@ class App extends React.Component {
       setSorting: (newSorting) => {this.setState({sorting: newSorting})},
       filter: null,
       setFilter: (newFilter) => {this.setState({filter: newFilter})},
+      symbology: (feature) => { return {
+        color: "#336799",
+        weight: 2
+      }},
+      setSymbology: (newSymbology) => {this.setState({symbology: newSymbology})},
     };
   }
 

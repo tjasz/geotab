@@ -21,10 +21,7 @@ function MapView(props) {
           <MapContainer scrollWheelZoom={true} ref={mapRef} whenReady={() => resizeMap(mapRef)}>
             <ChangeView />
             <ScaleControl position="bottomleft" />
-            <GeoJSON data={features} key={hashCode(JSON.stringify(features))} style={(feature) => { return {
-              color: context.active !== null && context.active === feature.hash ? "#e0e000" : "#336799",
-              weight: 2 + (context.active !== null && context.active === feature.hash ? 3: 0)
-            }}}
+            <GeoJSON data={features} key={hashCode(JSON.stringify(features))} style={context.symbology}
             onEachFeature={(feature, layer) => {
               layer.on({
                 click: () => { context.setActive(feature.hash) }
