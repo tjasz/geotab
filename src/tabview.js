@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import DataView from './dataview.js'
 import MapView from './mapview.js'
 import TableView from './tableview.js'
+import SymbologyView from './symbologyview.js';
 
 class TabView extends React.Component {
     constructor(props) {
       super(props);
       this.props = props;
-      this.state = { Data: true, Map: false, Table: false};
+      this.state = { Data: true, Map: false, Table: false, Symbology: false};
       this.toggle = this.toggle.bind(this);
     }
   
@@ -25,6 +26,7 @@ class TabView extends React.Component {
             { this.state.Data && <DataView style={{width: tabwidth + '%'}} />}
             { this.state.Map && <MapView style={{width: tabwidth + '%'}} />}
             { this.state.Table && <TableView style={{width: tabwidth + '%'}} />}
+            { this.state.Symbology && <SymbologyView style={{width: tabwidth + '%'}} />}
           </div>
         </div>
       );

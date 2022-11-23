@@ -165,3 +165,9 @@ html, body {
   text-align: left;
   padding: 1em;
 }
+
+#symbologyview {
+  float: left;
+  height: 85.5vh;
+  padding: 0.5em 0;
+}
