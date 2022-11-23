@@ -1,7 +1,6 @@
 import React, {useContext} from 'react';
-import L from 'leaflet'
 import {DataContext} from './dataContext.js'
-import {svgPolygon} from './algorithm'
+import {PolygonMarker} from './iconlib.js'
 
 const hasCaltopoSymbology = (columns) => {
   const caltopoParams = ["marker-color", "marker-size", "marker-symbol", "marker-rotation",
@@ -10,23 +9,12 @@ const hasCaltopoSymbology = (columns) => {
   return caltopoParams.some((param) => columns.includes(param));
 };
 
-function svgMarker(latlng, svg) {
-  return new L.marker(latlng, {icon: svgIcon(svg)});
-}
-
-function svgIcon(svg) {
-  return new L.divIcon({
-    html: svg,
-    className: "",
-  });
-}
-
 function SymbologyView(props) {
   const context = useContext(DataContext);
   const caltopoSymbology = (feature, latlng) => {
     if (feature.geometry?.type == "Point") {
       // TODO caltopo marker-size, marker-symbol, marker-rotation
-      return svgMarker(latlng, svgPolygon(Infinity, 5*(feature.properties["marker-size"] ?? 1), feature.properties["marker-color"] ?? "#336799"));
+      return PolygonMarker(latlng, Infinity, 5*(feature.properties["marker-size"] ?? 1), feature.properties["marker-color"] ?? "#336799");
     } else {
       const color = feature.properties["marker-color"] ?? feature.properties["stroke"] ?? "#336799";
       const weight = feature.properties["stroke-width"] ?? 2;

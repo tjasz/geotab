@@ -1,11 +1,9 @@
 import React from 'react';
-import L from 'leaflet'
 import {BrowserRouter} from 'react-router-dom'
 import './App.css';
 import TabView from './tabview.js'
 import {DataContext} from './dataContext.js'
-import {getFeatures, getPropertiesUnion} from './algorithm.js'
-import {Condition, ConditionGroup} from './filter.js'
+import {PolygonMarker} from './iconlib.js'
 
 class App extends React.Component {
   constructor(props) {
@@ -22,7 +20,7 @@ class App extends React.Component {
       setSorting: (newSorting) => {this.setState({sorting: newSorting})},
       filter: null,
       setFilter: (newFilter) => {this.setState({filter: newFilter})},
-      symbology: (feature, latlng) => { return feature.geometry?.type === "Point" ? new L.marker(latlng) : {
+      symbology: (feature, latlng) => { return feature.geometry?.type === "Point" ? PolygonMarker(latlng, Infinity, 5, "#336799") : {
         color: "#336799",
         weight: 2
       }},
