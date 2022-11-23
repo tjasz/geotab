@@ -1,18 +1,32 @@
 import React, {useContext} from 'react';
 import L from 'leaflet'
 import {DataContext} from './dataContext.js'
+import {svgPolygon} from './algorithm'
+
+const hasCaltopoSymbology = (columns) => {
+  const caltopoParams = ["marker-color", "marker-size", "marker-symbol", "marker-rotation",
+  "stroke", "stroke-width", "stroke-opacity", "pattern" in columns ||
+  "fill", "fill-opacity"];
+  return caltopoParams.some((param) => columns.includes(param));
+};
+
+function svgMarker(latlng, svg) {
+  return new L.marker(latlng, {icon: svgIcon(svg)});
+}
+
+function svgIcon(svg) {
+  return new L.divIcon({
+    html: svg,
+    className: "",
+  });
+}
 
 function SymbologyView(props) {
   const context = useContext(DataContext);
-  const hasCaltopoSymbology = (columns) => {
-    const caltopoParams = ["marker-color", "marker-size", "marker-symbol", "marker-rotation",
-    "stroke", "stroke-width", "stroke-opacity", "pattern" in columns ||
-    "fill", "fill-opacity"];
-    return caltopoParams.some((param) => columns.includes(param));
-  };
   const caltopoSymbology = (feature, latlng) => {
     if (feature.geometry?.type == "Point") {
-      return new L.marker(latlng);
+      // TODO caltopo marker-size, marker-symbol, marker-rotation
+      return svgMarker(latlng, svgPolygon(Infinity, 5*(feature.properties["marker-size"] ?? 1), feature.properties["marker-color"] ?? "#336799"));
     } else {
       const color = feature.properties["marker-color"] ?? feature.properties["stroke"] ?? "#336799";
       const weight = feature.properties["stroke-width"] ?? 2;
@@ -37,8 +51,6 @@ function SymbologyView(props) {
       const lineCap="butt";
       const fillColor = feature.properties["fill"] ?? "#b3e7ff";
       const fillOpacity = feature.properties["fill-opacity"] ?? 1;
-      // TODO caltopo marker-size, marker-symbol, marker-rotation
-
       return {color, weight, opacity, dashArray, lineCap, fillColor, fillOpacity};
     }
   };

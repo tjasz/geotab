@@ -27,7 +27,6 @@ function MapView(props) {
               return (context.symbology && context.symbology(feature, latlng)) ?? new L.marker(latlng);
             }}
             onEachFeature={(feature, layer) => {
-              console.log(layer)
               layer.on({
                 click: () => { context.setActive(feature.hash) }
               })
