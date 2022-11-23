@@ -1,5 +1,6 @@
 import React, {useRef, useContext} from 'react';
 import { MapContainer, TileLayer, WMSTileLayer, LayersControl, ScaleControl, GeoJSON, Popup, useMap } from 'react-leaflet';
+import L from 'leaflet'
 import {DataContext} from './dataContext.js'
 import {getCentralCoord, hashCode, getFeatureListBounds} from './algorithm.js'
 import {evaluateFilter} from './filter.js'
@@ -22,7 +23,11 @@ function MapView(props) {
             <ChangeView />
             <ScaleControl position="bottomleft" />
             <GeoJSON data={features} key={hashCode(JSON.stringify(features))} style={context.symbology}
+            pointToLayer={(feature, latlng) => {
+              return (context.symbology && context.symbology(feature, latlng)) ?? new L.marker(latlng);
+            }}
             onEachFeature={(feature, layer) => {
+              console.log(layer)
               layer.on({
                 click: () => { context.setActive(feature.hash) }
               })

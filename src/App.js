@@ -1,4 +1,5 @@
 import React from 'react';
+import L from 'leaflet'
 import {BrowserRouter} from 'react-router-dom'
 import './App.css';
 import TabView from './tabview.js'
@@ -21,7 +22,7 @@ class App extends React.Component {
       setSorting: (newSorting) => {this.setState({sorting: newSorting})},
       filter: null,
       setFilter: (newFilter) => {this.setState({filter: newFilter})},
-      symbology: (feature) => { return {
+      symbology: (feature, latlng) => { return feature.geometry?.type === "Point" ? new L.marker(latlng) : {
         color: "#336799",
         weight: 2
       }},
