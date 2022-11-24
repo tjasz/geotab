@@ -143,8 +143,23 @@ function ConditionView(props) {
     props.onEdit({type: "Condition", fieldname, operator: event.target.value, parameters, negate}, props.indexInGroup);
   };
   const onParameterEdit = (event) => {
-    setParameters(values => ({ ...values, [event.target.name]: event.target.value }));
-    props.onEdit({type: "Condition", fieldname, operator, parameters: { ...parameters, [event.target.name]: event.target.value }, negate}, props.indexInGroup);
+    let value = event.target.value;
+    const colType = context.columns.find((col) => col.name === fieldname)?.type;
+    if (colType === "number") {
+      value = Number(value);
+      if (isNaN(value)) {
+        alert(`Expected number for filter parameter ${event.target.name} on numeric field ${fieldname}. Found ${event.target.value}.`)
+      }
+    }
+    else if (colType === "date") {
+      const ms = Date.parse(value);
+      if (isNaN(ms)) {
+        alert(`Expected date for filter parameter ${event.target.name} on numeric field ${fieldname}. Found ${event.target.value}.`)
+      }
+      value = new Date(ms);
+    }
+    setParameters(values => ({ ...values, [event.target.name]: value }));
+    props.onEdit({type: "Condition", fieldname, operator, parameters: { ...parameters, [event.target.name]: value }, negate}, props.indexInGroup);
   };
   return (
     <div className="conditionView" style={{paddingLeft: `${props.indent*2}em`}}>
