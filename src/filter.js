@@ -29,6 +29,7 @@ export const conditionOperators = [
 ];
 
 export const parametersMap = {
+  // TODO fill in correct types
   IsEmpty: [],
   IsNotEmpty: [],
   EqualTo: {value: {type: "auto"}},
@@ -39,8 +40,8 @@ export const parametersMap = {
   LessThanOrEqualTo: {value: {type: "auto"}},
   Between: {min: {type: "auto"}, max: {type: "auto"}},
   NotBetween: {min: {type: "auto"}, max: {type: "auto"}},
-  In: {values: {type: "auto"}},
-  NotIn: {values: {type: "auto"}},
+  In: {values: {type: "auto"}}, // TODO set(auto)
+  NotIn: {values: {type: "auto"}}, // TODO set(auto)
   Contains: {substring: {type: "auto"}},
   DoesNotContain: {substring: {type: "auto"}},
   ContainsAny: {substrings: {type: "auto"}},
@@ -126,52 +127,52 @@ function evaluateConditionGroup(row, group) {
   }
 }
 
-function isEmpty(row, fieldname) {
-  return row.properties[fieldname] === null || row.properties[fieldname] === undefined || row.properties[fieldname] === "";
+function isEmpty(rowValue) {
+  return rowValue === null || rowValue === undefined || rowValue === "";
 }
 
-function equalTo(row, fieldname, value) {
+function equalTo(rowValue, value) {
   // TODO support numeric and dates; this just does string compare; same for below
-  return row.properties[fieldname] === value;
+  return rowValue === value;
 }
 
-function greaterThan(row, fieldname, value) {
-  return row.properties[fieldname] > value;
+function greaterThan(rowValue, value) {
+  return rowValue > value;
 }
 
-function lessThan(row, fieldname, value) {
-  return row.properties[fieldname] < value;
+function lessThan(rowValue, value) {
+  return rowValue < value;
 }
 
-function between(row, fieldname, a, b) {
-  return row.properties[fieldname] >= a && row.properties[fieldname] <= b ||
-         row.properties[fieldname] <= a && row.properties[fieldname] >= b;
+function between(rowValue, a, b) {
+  return rowValue >= a && rowValue <= b ||
+         rowValue <= a && rowValue >= b;
 }
 
-function isIn(row, fieldname, values) {
-  return values.includes(row.properties[fieldname]);
+function isIn(rowValue, values) {
+  return values.includes(rowValue);
 }
 
-function contains(row, fieldname, substring) {
+function contains(rowValue, substring) {
   // TODO make case sensitivity a parameter for string operators?
-  return row.properties[fieldname].toUpperCase().includes(substring.toUpperCase());
+  return rowValue.toUpperCase().includes(substring.toUpperCase());
 }
 
-function startsWith(row, fieldname, prefix) {
-  return row.properties[fieldname].toUpperCase().startsWith(prefix.toUpperCase());
+function startsWith(rowValue, prefix) {
+  return rowValue.toUpperCase().startsWith(prefix.toUpperCase());
 }
 
-function endsWith(row, fieldname, suffix) {
-  return row.properties[fieldname].toUpperCase().endsWith(suffix.toUpperCase());
+function endsWith(rowValue, suffix) {
+  return rowValue.toUpperCase().endsWith(suffix.toUpperCase());
 }
 
-function like(row, fieldname, regex) {
-  return new RegExp(regex).test(row.properties[fieldname]);
+function like(rowValue, regex) {
+  return new RegExp(regex).test(rowValue);
 }
 
-function onDayOfWeek(row, fieldname, dayOfWeek) {
+function onDayOfWeek(rowValue, dayOfWeek) {
   // TODO UI should show strings Monday for 1, etc.
-  return new Date(Date.parse(row.properties[fieldname])).getDay() === (dayOfWeek % 7);
+  return new Date(Date.parse(rowValue)).getDay() === (dayOfWeek % 7);
 }
 
 function evaluateCondition(row, condition) {
@@ -189,73 +190,73 @@ function evaluateCondition(row, condition) {
   }
   switch (condition.operator) {
     case "IsEmpty":
-      result = isEmpty(row, condition.fieldname);
+      result = isEmpty(value);
       break;
     case "IsNotEmpty":
-      result = !isEmpty(row, condition.fieldname);
+      result = !isEmpty(value);
       break;
     case "EqualTo":
-      result = equalTo(row, condition.fieldname, condition.parameters.value);
+      result = equalTo(value, condition.parameters.value);
       break;
     case "NotEqualTo":
-      result = !equalTo(row, condition.fieldname, condition.parameters.value);
+      result = !equalTo(value, condition.parameters.value);
       break;
     case "GreaterThan":
-      result = greaterThan(row, condition.fieldname, condition.parameters.value);
+      result = greaterThan(value, condition.parameters.value);
       break;
     case "GreaterThanOrEqualTo":
-      result = !lessThan(row, condition.fieldname, condition.parameters.value);
+      result = !lessThan(value, condition.parameters.value);
       break;
     case "LessThan":
-      result = lessThan(row, condition.fieldname, condition.parameters.value);
+      result = lessThan(value, condition.parameters.value);
       break;
     case "LessThanOrEqualTo":
-      result = !greaterThan(row, condition.fieldname, condition.parameters.value);
+      result = !greaterThan(value, condition.parameters.value);
       break;
     case "Between":
-      result = between(row, condition.fieldname, condition.parameters.min, condition.parameters.max);
+      result = between(value, condition.parameters.min, condition.parameters.max);
       break;
     case "NotBetween":
-      result = !between(row, condition.fieldname, condition.parameters.min, condition.parameters.max);
+      result = !between(value, condition.parameters.min, condition.parameters.max);
       break;
     case "In":
-      result = isIn(row, condition.fieldname, condition.parameters.values.split(',').map((s) => s.trim()));
+      result = isIn(value, condition.parameters.values.split(',').map((s) => s.trim()));
       break;
     case "NotIn":
-      result = !isIn(row, condition.fieldname, condition.parameters.values.split(',').map((s) => s.trim()));
+      result = !isIn(value, condition.parameters.values.split(',').map((s) => s.trim()));
       break;
     case "Contains":
-      result = contains(row, condition.fieldname, condition.parameters.substring);
+      result = contains(value, condition.parameters.substring);
       break;
     case "DoesNotContain":
-      result = !contains(row, condition.fieldname, condition.parameters.substring);
+      result = !contains(value, condition.parameters.substring);
       break;
     case "ContainsAny":
-      result = condition.parameters.substrings.split(',').map((s) => s.trim()).some((substring) => contains(row, condition.fieldname, substring));
+      result = condition.parameters.substrings.split(',').map((s) => s.trim()).some((substring) => contains(value, substring));
       break;
     case "ContainsNone":
-      result = condition.parameters.substrings.split(',').map((s) => s.trim()).every((substring) => !contains(row, condition.fieldname, substring));
+      result = condition.parameters.substrings.split(',').map((s) => s.trim()).every((substring) => !contains(value, substring));
       break;
     case "StartsWith":
-      result = startsWith(row, condition.fieldname, condition.parameters.prefix);
+      result = startsWith(value, condition.parameters.prefix);
       break;
     case "DoesNotStartWith":
-      result = !startsWith(row, condition.fieldname, condition.parameters.prefix);
+      result = !startsWith(value, condition.parameters.prefix);
       break;
     case "EndsWith":
-      result = endsWith(row, condition.fieldname, condition.parameters.suffix);
+      result = endsWith(value, condition.parameters.suffix);
       break;
     case "DoesNotEndWith":
-      result = !endsWith(row, condition.fieldname, condition.parameters.suffix);
+      result = !endsWith(value, condition.parameters.suffix);
       break;
     case "Like":
-      result = like(row, condition.fieldname, condition.parameters.regex);
+      result = like(value, condition.parameters.regex);
       break;
     case "NotLike":
-      result = !like(row, condition.fieldname, condition.parameters.regex);
+      result = !like(value, condition.parameters.regex);
       break;
     case "OnDayOfWeek":
-      result = onDayOfWeek(row, condition.fieldname, condition.parameters.day);
+      result = onDayOfWeek(value, condition.parameters.day);
       break;
     case "OnDayOfMonth":
       // TODO
@@ -335,7 +336,6 @@ function validateCondition(condition, context) {
     return `Condition.parameters: Found ${JSON.stringify(condition.parameters)}. Expected keys ${Object.keys(parametersMap[condition.operator])}.`;
   }
   // validate parameter values are defined
-  // not all operators require parameters of same type as operand (ex: OnDayOfWeek takes a number, but applies to Date)
   // TODO allow for optional operands (like case sensitive)
   for (const [key, value] of Object.entries(condition.parameters)) {
     // validate that parameter values are defined
