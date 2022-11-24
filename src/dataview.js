@@ -2,7 +2,7 @@ import React, {useContext, useState} from 'react';
 import { useSearchParams } from "react-router-dom";
 import {DataContext} from './dataContext.js'
 import {getFeatures, getPropertiesUnion} from './algorithm.js'
-import {defaultFilter, conditionOperators, conditionGroupOperators, parametersMap, Condition, ConditionGroup, filterEquals, filterTypes} from './filter.js'
+import {defaultFilter, conditionOperators, conditionGroupOperators, parametersMap, Condition, ConditionGroup, filterEquals, filterTypes, validateFilter} from './filter.js'
 
 function DataView(props) {
   const context = useContext(DataContext);
@@ -49,7 +49,13 @@ function DataView(props) {
   if (!context.data || !context.data.length) {
     processServerFile(`json/${urlSrc}.json`);
   }
-  const onFilterSave = (draft) => { context.setFilter(draft); };
+  const onFilterSave = (draft) => {
+    const errors = validateFilter(draft, context);
+    if (errors) {
+      alert(errors);
+    } else {
+      context.setFilter(draft); 
+    }};
   return (
     <div id="dataview" style={props.style}>
       <input type="file" id="file-selector" />
@@ -144,20 +150,6 @@ function ConditionView(props) {
   };
   const onParameterEdit = (event) => {
     let value = event.target.value;
-    const colType = context.columns.find((col) => col.name === fieldname)?.type;
-    if (colType === "number") {
-      value = Number(value);
-      if (isNaN(value)) {
-        alert(`Expected number for filter parameter ${event.target.name} on numeric field ${fieldname}. Found ${event.target.value}.`)
-      }
-    }
-    else if (colType === "date") {
-      const ms = Date.parse(value);
-      if (isNaN(ms)) {
-        alert(`Expected date for filter parameter ${event.target.name} on numeric field ${fieldname}. Found ${event.target.value}.`)
-      }
-      value = new Date(ms);
-    }
     setParameters(values => ({ ...values, [event.target.name]: value }));
     props.onEdit({type: "Condition", fieldname, operator, parameters: { ...parameters, [event.target.name]: value }, negate}, props.indexInGroup);
   };

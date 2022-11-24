@@ -25,7 +25,7 @@ export const conditionOperators = [
   "StartsWith", "DoesNotStartWith", "EndsWith", "DoesNotEndWith",
   "Like", "NotLike",
   "OnDayOfWeek", "OnDayOfMonth", "OnDayOfYear", "OnDayMonthOfYear",
-  "InWeekOfMonth", "InWeekOfYear", "InMonthOfYear",
+  "InWeekOfMonth", "InWeekOfYear", "InMonthOfYear", "InYear"
 ];
 
 export const parametersMap = {
@@ -58,6 +58,7 @@ export const parametersMap = {
   InWeekOfMonth: ["week"],
   InWeekOfYear: ["week"],
   InMonthOfYear: ["month"],
+  InYear: ["year"],
 };
 
 export function Condition(operator, fieldname, parameters, negate=false) {
@@ -268,8 +269,68 @@ function evaluateCondition(row, condition) {
       // TODO
       throw Error("Unimplemented function InMonthOfYear");
       break;
+    case "InYear":
+      // TODO
+      throw Error("Unimplemented function InYear");
+      break;
     default:
       throw Error(`Condition.operator: Found ${condition.operator}. Expected one of ${conditionOperators}.`);
   }
   return condition.negate ? !result : result;
+}
+
+export function validateFilter(filter, context) {
+  if (filter === null) {
+    return null;
+  }
+  switch(filter.type) {
+    case "ConditionGroup":
+      return validateConditionGroup(filter, context);
+    case "Condition":
+      return validateCondition(filter, context);
+    default:
+      return `Filter.type: Found ${filter.type}. Expected 'ConditionGroup' or 'Condition'.`;
+  }
+}
+
+function validateConditionGroup(group, context) {
+  switch (group.operator) {
+    case "and":
+      return group.conditions.map((condition) => validateFilter(condition, context)).join("\n");
+    case "or":
+      // child can be a condition or another group
+      return group.conditions.map((condition) => validateFilter(condition, context)).join("\n");
+    default:
+      return `ConditionGroup.operator: Found '${group.operator}'. Expected 'and' or 'or'.`;
+  }
+}
+
+function validateCondition(condition, context) {
+  // validate negate
+  if (condition.negate !== true && condition.negate !== false) {
+    return `Condition.negate: Found ${condition.negate}. Expected true or false.`;
+  }
+  // validate fieldname
+  const column = context.columns.find((column) => column.name === condition.fieldname);
+  if (!column) {
+    return `Condition.fieldname: Found '${condition.fieldname}'. Expected one of ${context.columns.map((column) => column.name).join(", ")}.`;
+  }
+  // validate parameters
+  if (!setEquals(Object.keys(condition.parameters), parametersMap[condition.operator])) {
+    return `Condition.parameters: Found ${JSON.stringify(condition.parameters)}. Expected keys ${parametersMap[condition.operator]}.`;
+  }
+  // validate parameter values are defined
+  // TODO validate type of parameter values
+  // not all operators require operands of same type (ex: OnDayOfWeek)
+  // TODO allow for optional operands (like case sensitive)
+  for (const [key, value] of Object.entries(condition.parameters)) {
+    if (value === null || value === undefined) {
+      return `Condition.parameters.${key}: Found ${value}. Expected value.`;
+    }
+  }
+  // validate operator
+  if (!conditionOperators.includes(condition.operator)) {
+    return `Condition.operator: Found ${condition.operator}. Expected one of ${conditionOperators}.`;
+  }
+  return null;
 }
