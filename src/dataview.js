@@ -88,7 +88,7 @@ function ConditionGroupView(props) {
   const onChildAdd = (ftype) => {
     let newConditions = null;
     if (ftype === "Condition") {
-      newConditions = [...conditions, new Condition("IsNotEmpty", context.columns[0].name, {})];
+      newConditions = [...conditions, new Condition("IsNotEmpty", context.columns[0].type, context.columns[0].name, {})];
       setConditions(newConditions);
     }
     else {
@@ -135,23 +135,25 @@ function ConditionView(props) {
   const context = useContext(DataContext);
   const [fieldname, setFieldname] = useState(props.filter.fieldname);
   const [operator, setOperator] = useState(props.filter.operator);
+  const [operandType, setOperandType] = useState(props.filter.operandType);
   const [parameters, setParameters] = useState(props.filter.parameters);
   const [negate, setNegate] = useState(props.filter.negate);
   const onFieldnameEdit = (event) => {
     setFieldname(event.target.value);
-    props.onEdit({type: "Condition", fieldname: event.target.value, operator, parameters, negate}, props.indexInGroup);
+    setOperandType(context.columns.find((column) => column.name === event.target.value)?.type);
+    props.onEdit({type: "Condition", fieldname: event.target.value, operandType: context.columns.find((column) => column.name === event.target.value)?.type, operator, parameters, negate}, props.indexInGroup);
   };
   const onOperatorEdit = (event) => {
     setOperator(event.target.value);
-    setParameters(parametersMap[event.target.value].reduce((accumulator, value) => {
+    setParameters(Object.keys(parametersMap[event.target.value]).reduce((accumulator, value) => {
       return {...accumulator, [value]: ''};
     }, {}));
-    props.onEdit({type: "Condition", fieldname, operator: event.target.value, parameters, negate}, props.indexInGroup);
+    props.onEdit({type: "Condition", fieldname, operator: event.target.value, operandType, parameters, negate}, props.indexInGroup);
   };
   const onParameterEdit = (event) => {
     let value = event.target.value;
     setParameters(values => ({ ...values, [event.target.name]: value }));
-    props.onEdit({type: "Condition", fieldname, operator, parameters: { ...parameters, [event.target.name]: value }, negate}, props.indexInGroup);
+    props.onEdit({type: "Condition", fieldname, operator, operandType, parameters: { ...parameters, [event.target.name]: value }, negate}, props.indexInGroup);
   };
   return (
     <div className="conditionView" style={{paddingLeft: `${props.indent*2}em`}}>

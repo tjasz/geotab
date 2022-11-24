@@ -31,39 +31,40 @@ export const conditionOperators = [
 export const parametersMap = {
   IsEmpty: [],
   IsNotEmpty: [],
-  EqualTo: ["value"],
-  NotEqualTo: ["value"],
-  GreaterThan: ["value"],
-  GreaterThanOrEqualTo: ["value"],
-  LessThan: ["value"],
-  LessThanOrEqualTo: ["value"],
-  Between: ["min", "max"], // min < max not actually enforced
-  NotBetween: ["min", "max"],
-  In: ["values"],
-  NotIn: ["values"],
-  Contains: ["substring"],
-  DoesNotContain: ["substring"],
-  ContainsAny: ["substrings"],
-  ContainsNone: ["substrings"],
-  StartsWith: ["prefix"],
-  DoesNotStartWith: ["prefix"],
-  EndsWith: ["suffix"],
-  DoesNotEndWith: ["suffix"],
-  Like: ["regex"],
-  NotLike: ["regex"],
-  OnDayOfWeek: ["day"],
-  OnDayOfMonth: ["day"],
-  OnDayOfYear: ["day"],
-  OnDayMonthOfYear: ["day", "month"],
-  InWeekOfMonth: ["week"],
-  InWeekOfYear: ["week"],
-  InMonthOfYear: ["month"],
-  InYear: ["year"],
+  EqualTo: {value: {type: "auto"}},
+  NotEqualTo: {value: {type: "auto"}},
+  GreaterThan: {value: {type: "auto"}},
+  GreaterThanOrEqualTo: {value: {type: "auto"}},
+  LessThan: {value: {type: "auto"}},
+  LessThanOrEqualTo: {value: {type: "auto"}},
+  Between: {min: {type: "auto"}, max: {type: "auto"}},
+  NotBetween: {min: {type: "auto"}, max: {type: "auto"}},
+  In: {values: {type: "auto"}},
+  NotIn: {values: {type: "auto"}},
+  Contains: {substring: {type: "auto"}},
+  DoesNotContain: {substring: {type: "auto"}},
+  ContainsAny: {substrings: {type: "auto"}},
+  ContainsNone: {substrings: {type: "auto"}},
+  StartsWith: {prefix: {type: "auto"}},
+  DoesNotStartWith: {prefix: {type: "auto"}},
+  EndsWith: {suffix: {type: "auto"}},
+  DoesNotEndWith: {suffix: {type: "auto"}},
+  Like: {regex: {type: "auto"}},
+  NotLike: {regex: {type: "auto"}},
+  OnDayOfWeek: {day: {type: "auto"}},
+  OnDayOfMonth: {day: {type: "auto"}},
+  OnDayOfYear: {day: {type: "auto"}},
+  OnDayMonthOfYear: {day: {type: "auto"}, month: {type: "auto"}},
+  InWeekOfMonth: {week: {type: "auto"}},
+  InWeekOfYear: {week: {type: "auto"}},
+  InMonthOfYear: {month: {type: "auto"}},
+  InYear: {year: {type: "auto"}},
 };
 
-export function Condition(operator, fieldname, parameters, negate=false) {
+export function Condition(operator, operandType, fieldname, parameters, negate=false) {
   this.type = "Condition";
   this.operator = operator;
+  this.operandType = operandType
   if (!conditionOperators.includes(this.operator)) {
     throw Error(`Condition.operator: Found ${this.operator}. Expected one of ${conditionOperators}.`);
   }
@@ -71,8 +72,8 @@ export function Condition(operator, fieldname, parameters, negate=false) {
   this.fieldname = fieldname;
   // TODO verify fieldname is in data table and of correct type
   this.parameters = parameters;
-  if (!setEquals(Object.keys(this.parameters), parametersMap[this.operator])) {
-    throw Error(`Condition.parameters: Found ${JSON.stringify(this.parameters)}. Expected keys ${parametersMap[this.operator]}.`);
+  if (!setEquals(Object.keys(this.parameters), Object.keys(parametersMap[this.operator]))) {
+    throw Error(`Condition.parameters: Found ${JSON.stringify(this.parameters)}. Expected keys ${Object.keys(parametersMap[this.operator])}.`);
   }
   // TODO ensure parameters are of correct dataType?
   this.negate = negate;
@@ -175,6 +176,17 @@ function onDayOfWeek(row, fieldname, dayOfWeek) {
 
 function evaluateCondition(row, condition) {
   let result = true;
+  let value = row.properties[condition.fieldname];
+  switch (condition.operandType) {
+    case "number":
+      value = Number(value);
+      break;
+    case "date":
+      value = new Date(Date.parse(value));
+      break;
+    default:
+      break;
+  }
   switch (condition.operator) {
     case "IsEmpty":
       result = isEmpty(row, condition.fieldname);
@@ -315,17 +327,55 @@ function validateCondition(condition, context) {
   if (!column) {
     return `Condition.fieldname: Found '${condition.fieldname}'. Expected one of ${context.columns.map((column) => column.name).join(", ")}.`;
   }
+  if (column.type !== condition.operandType) {
+    return `Condition.operandType on field ${column.name}: Expected '${column.type}'. Found '${condition.operandType}'.`;
+  }
   // validate parameters
-  if (!setEquals(Object.keys(condition.parameters), parametersMap[condition.operator])) {
-    return `Condition.parameters: Found ${JSON.stringify(condition.parameters)}. Expected keys ${parametersMap[condition.operator]}.`;
+  if (!setEquals(Object.keys(condition.parameters), Object.keys(parametersMap[condition.operator]))) {
+    return `Condition.parameters: Found ${JSON.stringify(condition.parameters)}. Expected keys ${Object.keys(parametersMap[condition.operator])}.`;
   }
   // validate parameter values are defined
-  // TODO validate type of parameter values
-  // not all operators require operands of same type (ex: OnDayOfWeek)
+  // not all operators require parameters of same type as operand (ex: OnDayOfWeek takes a number, but applies to Date)
   // TODO allow for optional operands (like case sensitive)
   for (const [key, value] of Object.entries(condition.parameters)) {
+    // validate that parameter values are defined
     if (value === null || value === undefined) {
       return `Condition.parameters.${key}: Found ${value}. Expected value.`;
+    }
+    // validate parameter value types
+    switch (parametersMap[condition.operator][key].type) {
+      case "number":
+        if (isNaN(Number(value))) {
+          return `Condition.parameters.${key}: Found '${value}'. Expected number.`;
+        }
+        condition.parameters[key] = Number(value);
+        break;
+      case "date":
+        if (isNaN(Date.parse(value))) {
+          return `Condition.parameters.${key}: Found '${value}'. Expected date.`;
+        }
+        condition.parameters[key] = new Date(Date.parse(value));
+        break;
+      default: // including auto
+        // match type of operand
+        switch (condition.operandType) {
+          // TODO remove copypasta
+          case "number":
+            if (isNaN(Number(value))) {
+              return `Condition.parameters.${key}: Found '${value}'. Expected number.`;
+            }
+            condition.parameters[key] = Number(value);
+            break;
+          case "date":
+            if (isNaN(Date.parse(value))) {
+              return `Condition.parameters.${key}: Found '${value}'. Expected date.`;
+            }
+            condition.parameters[key] = new Date(Date.parse(value));
+            break;
+          default:
+            break;
+        }
+        break;
     }
   }
   // validate operator
