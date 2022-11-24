@@ -11,7 +11,7 @@ function DataView(props) {
   const setDataFromJson = (json) => {
     const flattened = getFeatures(json);
     context.setData(flattened);
-    context.setColumns([...getPropertiesUnion(flattened)]);
+    context.setColumns(getPropertiesUnion(flattened));
     context.setActive(null);
     context.setSorting(null);
     context.setFilter(defaultFilter);
@@ -82,7 +82,7 @@ function ConditionGroupView(props) {
   const onChildAdd = (ftype) => {
     let newConditions = null;
     if (ftype === "Condition") {
-      newConditions = [...conditions, new Condition("IsNotEmpty", context.columns[0], {})];
+      newConditions = [...conditions, new Condition("IsNotEmpty", context.columns[0].name, {})];
       setConditions(newConditions);
     }
     else {
@@ -152,7 +152,7 @@ function ConditionView(props) {
               name={`${props.key}-fieldname`}
               defaultValue={fieldname}
               onChange={onFieldnameEdit}>
-        {context.columns.map((fieldname) => <option value={fieldname} key={`${props.key}-${fieldname}`}>{fieldname}</option>)}
+        {context.columns.map((field) => <option value={field.name} key={`${props.key}-${field.name}`}>{field.name}</option>)}
       </select>
 
       <select id={`${props.key}-operator`}

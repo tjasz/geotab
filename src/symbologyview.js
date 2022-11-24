@@ -4,9 +4,9 @@ import {PolygonMarker} from './iconlib.js'
 
 const hasCaltopoSymbology = (columns) => {
   const caltopoParams = ["marker-color", "marker-size", "marker-symbol", "marker-rotation",
-  "stroke", "stroke-width", "stroke-opacity", "pattern" in columns ||
+  "stroke", "stroke-width", "stroke-opacity", "pattern" ||
   "fill", "fill-opacity"];
-  return caltopoParams.some((param) => columns.includes(param));
+  return caltopoParams.some((param) => columns.some((column) => column.name === param));
 };
 
 function SymbologyView(props) {

@@ -31,19 +31,19 @@ function DataTable() {
   if (context.sorting !== null) {
     sortBy(features, context.sorting);
   }
-  let properties = context.columns;
+  let columns = context.columns;
   return (
     <table id="data-table" cellSpacing={0}>
       <tbody>
         <tr>
           <th></th>
-          {Array.from(properties).map((key) => <th key={key} onClick={() => {
-            context.setSorting([key, (context.sorting && context.sorting[0] === key) ? !context.sorting[1] : true]); }}>{key}</th>)}
+          {Array.from(columns).map((column) => <th key={column.name} onClick={() => {
+            context.setSorting([column.name, (context.sorting && context.sorting[0] === column.name) ? !context.sorting[1] : true]); }}>{column.name}</th>)}
         </tr>
         {features.map((feature, fidx) =>
           <tr key={fidx} onClick={() => context.setActive(feature.hash)} className={context.active !== null && feature.hash === context.active ? "active" : ""}>
             <th>{1+fidx}</th>
-            {Array.from(properties).map((key) => <td key={`${fidx}-${key}`}>{JSON.stringify(feature["properties"][key])}</td>)}
+            {Array.from(columns).map((column) => <td key={`${fidx}-${column.name}`}>{JSON.stringify(feature["properties"][column.name])}</td>)}
           </tr>)}
       </tbody>
     </table>

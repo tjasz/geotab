@@ -18,8 +18,15 @@ export function getFeatures(data) {
 }
 
 export function getPropertiesUnion(features) {
-  const keys = features.map((feature) => Object.keys(feature["properties"])).flat();
-  return new Set(keys);
+  const keylist = features.map((feature) => Object.keys(feature["properties"])).flat();
+  const keyset = new Set(keylist);
+  const columns = Array.from(keyset).map((key) => { return {
+    name: key,
+    visible: true,
+    // TODO datetime type
+    type: features.every((feature) => !isNaN(Number(feature.properties[key]))) ? "number" : "string"
+  }});
+  return columns;
 }
 
 export function getStartingCoord(feature) {
