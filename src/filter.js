@@ -125,7 +125,7 @@ function evaluateConditionGroup(row, group) {
 }
 
 function isEmpty(row, fieldname) {
-  return row.properties[fieldname] === null || row.properties[fieldname] === "";
+  return row.properties[fieldname] === null || row.properties[fieldname] === undefined || row.properties[fieldname] === "";
 }
 
 function equalTo(row, fieldname, value) {
@@ -169,7 +169,7 @@ function like(row, fieldname, regex) {
 
 function onDayOfWeek(row, fieldname, dayOfWeek) {
   // TODO UI should show strings Monday for 1, etc.
-  return Date.parse(row.parameters[fieldname]).getDay() === (dayOfWeek % 7);
+  return new Date(Date.parse(row.properties[fieldname])).getDay() === (dayOfWeek % 7);
 }
 
 function evaluateCondition(row, condition) {
