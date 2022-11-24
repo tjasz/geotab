@@ -93,7 +93,7 @@ function MapView(props) {
 
 function ActivePopup(props) {
   return (
-    props.feature !== null && props.feature.geometry !== null &&
+    props.feature && props.feature.geometry &&
       <Popup position={getCentralCoord(props.feature)}>{props.feature.properties.title}</Popup>
   );
 };
