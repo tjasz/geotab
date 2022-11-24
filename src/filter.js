@@ -28,6 +28,9 @@ export const conditionOperators = [
   "InWeekOfMonth", "InWeekOfYear", "InMonthOfYear", "InYear"
 ];
 
+// TODO some operators have a non-auto operandType. ex: Contains always operates on strings
+// effect: "firstAscent contains 187" results in TypeError
+
 export const parametersMap = {
   // TODO fill in correct types
   IsEmpty: [],
@@ -42,24 +45,24 @@ export const parametersMap = {
   NotBetween: {min: {type: "auto"}, max: {type: "auto"}},
   In: {values: {type: "auto"}}, // TODO set(auto)
   NotIn: {values: {type: "auto"}}, // TODO set(auto)
-  Contains: {substring: {type: "auto"}},
-  DoesNotContain: {substring: {type: "auto"}},
-  ContainsAny: {substrings: {type: "auto"}},
-  ContainsNone: {substrings: {type: "auto"}},
-  StartsWith: {prefix: {type: "auto"}},
-  DoesNotStartWith: {prefix: {type: "auto"}},
-  EndsWith: {suffix: {type: "auto"}},
-  DoesNotEndWith: {suffix: {type: "auto"}},
-  Like: {regex: {type: "auto"}},
-  NotLike: {regex: {type: "auto"}},
-  OnDayOfWeek: {day: {type: "auto"}},
-  OnDayOfMonth: {day: {type: "auto"}},
-  OnDayOfYear: {day: {type: "auto"}},
-  OnDayMonthOfYear: {day: {type: "auto"}, month: {type: "auto"}},
-  InWeekOfMonth: {week: {type: "auto"}},
-  InWeekOfYear: {week: {type: "auto"}},
-  InMonthOfYear: {month: {type: "auto"}},
-  InYear: {year: {type: "auto"}},
+  Contains: {substring: {type: "string"}},
+  DoesNotContain: {substring: {type: "string"}},
+  ContainsAny: {substrings: {type: "string"}}, // TODO set(string)
+  ContainsNone: {substrings: {type: "string"}}, // TODO set(string)
+  StartsWith: {prefix: {type: "string"}},
+  DoesNotStartWith: {prefix: {type: "string"}},
+  EndsWith: {suffix: {type: "string"}},
+  DoesNotEndWith: {suffix: {type: "string"}},
+  Like: {regex: {type: "string"}},
+  NotLike: {regex: {type: "string"}},
+  OnDayOfWeek: {day: {type: "number"}},
+  OnDayOfMonth: {day: {type: "number"}},
+  OnDayOfYear: {day: {type: "number"}},
+  OnDayMonthOfYear: {day: {type: "number"}, month: {type: "number"}},
+  InWeekOfMonth: {week: {type: "number"}},
+  InWeekOfYear: {week: {type: "number"}},
+  InMonthOfYear: {month: {type: "number"}},
+  InYear: {year: {type: "number"}},
 };
 
 export function Condition(operator, operandType, fieldname, parameters, negate=false) {
