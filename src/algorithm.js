@@ -24,7 +24,11 @@ export function getPropertiesUnion(features) {
     name: key,
     visible: true,
     // TODO datetime type
-    type: features.every((feature) => !isNaN(Number(feature.properties[key]))) ? "number" : "string"
+    type: features.every((feature) => !isNaN(Number(feature.properties[key])))
+          ? "number"
+          : features.every((feature) => !isNaN(Date.parse(feature.properties[key])))
+          ? "date"
+          : "string"
   }});
   return columns;
 }

@@ -19,7 +19,10 @@ function sortBy(features, sorting) {
       av = Number(av);
       bv = Number(bv);
     }
-    // TODO datetime type
+    if (col.type === "date") {
+      av = new Date(Date.parse(av));
+      bv = new Date(Date.parse(bv));
+    }
     if (av === bv) {
       return 0;
     } else if (av < bv) {
