@@ -11,11 +11,18 @@ function TableView(props) {
 }
 
 function sortBy(features, sorting) {
-  const [key, asc] = sorting;
+  const [col, asc] = sorting;
   const fsort = (a, b) => {
-    if (a.properties[key] === b.properties[key]) {
+    let av = a.properties[col.name];
+    let bv = b.properties[col.name];
+    if (col.type === "number") {
+      av = Number(av);
+      bv = Number(bv);
+    }
+    // TODO datetime type
+    if (av === bv) {
       return 0;
-    } else if (a.properties[key] < b.properties[key]) {
+    } else if (av < bv) {
       return asc ? -1 : 1;
     }
     return asc ? 1 : -1;
@@ -38,7 +45,7 @@ function DataTable() {
         <tr>
           <th></th>
           {Array.from(columns).map((column) => <th key={column.name} onClick={() => {
-            context.setSorting([column.name, (context.sorting && context.sorting[0] === column.name) ? !context.sorting[1] : true]); }}>{column.name}</th>)}
+            context.setSorting([column, (context.sorting && context.sorting[0].name === column.name) ? !context.sorting[1] : true]); }}>{column.name}</th>)}
         </tr>
         {features.map((feature, fidx) =>
           <tr key={fidx} onClick={() => context.setActive(feature.hash)} className={context.active !== null && feature.hash === context.active ? "active" : ""}>
