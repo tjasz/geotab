@@ -206,10 +206,10 @@ function evaluateCondition(row, condition) {
       result = !between(row, condition.fieldname, condition.parameters.min, condition.parameters.max);
       break;
     case "In":
-      result = isIn(row, condition.fieldname, condition.parameters.values.split(','));
+      result = isIn(row, condition.fieldname, condition.parameters.values.split(',').map((s) => s.trim()));
       break;
     case "NotIn":
-      result = !isIn(row, condition.fieldname, condition.parameters.values.split(','));
+      result = !isIn(row, condition.fieldname, condition.parameters.values.split(',').map((s) => s.trim()));
       break;
     case "Contains":
       result = contains(row, condition.fieldname, condition.parameters.substring);
@@ -218,10 +218,10 @@ function evaluateCondition(row, condition) {
       result = !contains(row, condition.fieldname, condition.parameters.substring);
       break;
     case "ContainsAny":
-      result = condition.parameters.substrings.split(',').some((substring) => contains(row, condition.fieldname, substring));
+      result = condition.parameters.substrings.split(',').map((s) => s.trim()).some((substring) => contains(row, condition.fieldname, substring));
       break;
     case "ContainsNone":
-      result = condition.parameters.substrings.split(',').every((substring) => !contains(row, condition.fieldname, substring));
+      result = condition.parameters.substrings.split(',').map((s) => s.trim()).every((substring) => !contains(row, condition.fieldname, substring));
       break;
     case "StartsWith":
       result = startsWith(row, condition.fieldname, condition.parameters.prefix);
