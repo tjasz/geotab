@@ -14,7 +14,8 @@
         "county": "Pierce",
         "national park": "Mount Rainier",
         "wilderness": "Mount Rainier",
-        "forest": ""
+        "forest": "",
+        "peakbagger": "https://peakbagger.com/peak.aspx?pid=2296"
       }
     },
     {
@@ -30,7 +31,8 @@
         "county": "Whatcom",
         "national park": "",
         "wilderness": "Mount Baker",
-        "forest": "Mount Baker"
+        "forest": "Mount Baker",
+        "peakbagger": "https://peakbagger.com/peak.aspx?pid=1633"
       }
     },
     {
@@ -46,7 +48,8 @@
         "county": "Yakima",
         "national park": "",
         "wilderness": "Mount Adams",
-        "forest": "Gifford Pinchot"
+        "forest": "Gifford Pinchot",
+        "peakbagger": "https://peakbagger.com/peak.aspx?pid=2365"
       }
     },
     {
@@ -62,7 +65,8 @@
         "county": "Jefferson",
         "national park": "Olympic",
         "wilderness": "Olympic",
-        "forest": ""
+        "forest": "",
+        "peakbagger": "https://peakbagger.com/peak.aspx?pid=950"
       }
     },
     {
@@ -78,7 +82,8 @@
         "county": "Snohomish",
         "national park": "",
         "wilderness": "Glacier Peak",
-        "forest": "Mount Baker"
+        "forest": "Mount Baker",
+        "peakbagger": "https://peakbagger.com/peak.aspx?pid=1972"
       }
     },
     {
@@ -94,7 +99,8 @@
         "county": "Chelan",
         "national park": "",
         "wilderness": "Alpine Lakes",
-        "forest": "Wenatchee"
+        "forest": "Wenatchee",
+        "peakbagger": "https://peakbagger.com/peak.aspx?pid=2182"
       }
     },
     {
@@ -110,7 +116,8 @@
         "county": "Stevens",
         "national park": "",
         "wilderness": "",
-        "forest": "Colville"
+        "forest": "Colville",
+        "peakbagger": "https://peakbagger.com/peak.aspx?pid=3042"
       }
     }
   ]

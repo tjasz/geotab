@@ -53,7 +53,20 @@ function DataTable() {
         {features.map((feature, fidx) =>
           <tr key={fidx} onClick={() => context.setActive(feature.hash)} className={context.active !== null && feature.hash === context.active ? "active" : ""}>
             <th>{1+fidx}</th>
-            {Array.from(columns).map((column) => <td key={`${fidx}-${column.name}`}>{JSON.stringify(feature["properties"][column.name])}</td>)}
+            {Array.from(columns).map((column) => <td key={`${fidx}-${column.name}`}>{
+              feature["properties"][column.name] &&
+              feature["properties"][column.name].startsWith("http")
+                ? <a target="_blank" href={feature["properties"][column.name]}>
+                    {feature["properties"][column.name].length > 21
+                     ? `${feature["properties"][column.name].slice(0,9)}...${feature["properties"][column.name].slice(-9)}`
+                     : feature["properties"][column.name]}
+                  </a>
+                : column.type === "number"
+                  ? Number(feature["properties"][column.name])
+                  : column.type === "date"
+                    ? new Date(Date.parse(feature["properties"][column.name]))
+                    : JSON.stringify(feature["properties"][column.name])
+            }</td>)}
           </tr>)}
       </tbody>
     </table>
