@@ -2,7 +2,7 @@ import React, {useContext, useState} from 'react';
 import { useSearchParams } from "react-router-dom";
 import {DataContext} from './dataContext.js'
 import {getFeatures, getPropertiesUnion} from './algorithm.js'
-import {defaultFilter, conditionOperators, conditionGroupOperators, parametersMap, Condition, ConditionGroup, filterEquals, filterTypes, validateFilter} from './filter.js'
+import {defaultFilter, conditionOperators, conditionGroupOperators, parametersMap, operandTypes, Condition, ConditionGroup, filterEquals, filterTypes, validateFilter} from './filter.js'
 
 function DataView(props) {
   const context = useContext(DataContext);
@@ -139,16 +139,23 @@ function ConditionView(props) {
   const [parameters, setParameters] = useState(props.filter.parameters);
   const [negate, setNegate] = useState(props.filter.negate);
   const onFieldnameEdit = (event) => {
+    const column = context.columns.find((column) => column.name === event.target.value);
+    if (column === undefined) { throw `Cannot find column with name ${event.target.value}.` }
+    const newOperandType = operandTypes[operator] === "auto" ? column.type : operandTypes[operator];
     setFieldname(event.target.value);
-    setOperandType(context.columns.find((column) => column.name === event.target.value)?.type);
-    props.onEdit({type: "Condition", fieldname: event.target.value, operandType: context.columns.find((column) => column.name === event.target.value)?.type, operator, parameters, negate}, props.indexInGroup);
+    setOperandType(newOperandType);
+    props.onEdit({type: "Condition", fieldname: event.target.value, operandType: newOperandType, operator, parameters, negate}, props.indexInGroup);
   };
   const onOperatorEdit = (event) => {
+    const column = context.columns.find((column) => column.name === fieldname);
+    if (column === undefined) { throw `Cannot find column with name ${event.target.value}.` }
+    const newOperandType = operandTypes[event.target.value] === "auto" ? column.type : operandTypes[event.target.value];
+    setOperandType(newOperandType);
     setOperator(event.target.value);
     setParameters(Object.keys(parametersMap[event.target.value]).reduce((accumulator, value) => {
       return {...accumulator, [value]: ''};
     }, {}));
-    props.onEdit({type: "Condition", fieldname, operator: event.target.value, operandType, parameters, negate}, props.indexInGroup);
+    props.onEdit({type: "Condition", fieldname, operator: event.target.value, operandType: newOperandType, parameters, negate}, props.indexInGroup);
   };
   const onParameterEdit = (event) => {
     let value = event.target.value;

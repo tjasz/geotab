@@ -28,11 +28,40 @@ export const conditionOperators = [
   "InWeekOfMonth", "InWeekOfYear", "InMonthOfYear", "InYear"
 ];
 
-// TODO some operators have a non-auto operandType. ex: Contains always operates on strings
-// effect: "firstAscent contains 187" results in TypeError
+export const operandTypes = {
+  IsEmpty: "auto",
+  IsNotEmpty: "auto",
+  EqualTo: "auto",
+  NotEqualTo: "auto",
+  GreaterThan: "auto",
+  GreaterThanOrEqualTo: "auto",
+  LessThan: "auto",
+  LessThanOrEqualTo: "auto",
+  Between: "auto",
+  NotBetween: "auto",
+  In: "auto",
+  NotIn: "auto",
+  Contains: "string",
+  DoesNotContain: "string",
+  ContainsAny: "string",
+  ContainsNone: "string",
+  StartsWith: "string",
+  DoesNotStartWith: "string",
+  EndsWith: "string",
+  DoesNotEndWith: "string",
+  Like: "string",
+  NotLike: "string",
+  OnDayOfWeek: "date",
+  OnDayOfMonth: "date",
+  OnDayOfYear: "date",
+  OnDayMonthOfYear: "date",
+  InWeekOfMonth: "date",
+  InWeekOfYear: "date",
+  InMonthOfYear: "date",
+  InYear: "date",
+};
 
 export const parametersMap = {
-  // TODO fill in correct types
   IsEmpty: [],
   IsNotEmpty: [],
   EqualTo: {value: {type: "auto"}},
@@ -135,7 +164,6 @@ function isEmpty(rowValue) {
 }
 
 function equalTo(rowValue, value) {
-  // TODO support numeric and dates; this just does string compare; same for below
   return rowValue === value;
 }
 
@@ -158,15 +186,15 @@ function isIn(rowValue, values) {
 
 function contains(rowValue, substring) {
   // TODO make case sensitivity a parameter for string operators?
-  return rowValue.toUpperCase().includes(substring.toUpperCase());
+  return rowValue && rowValue.toUpperCase().includes(substring.toUpperCase());
 }
 
 function startsWith(rowValue, prefix) {
-  return rowValue.toUpperCase().startsWith(prefix.toUpperCase());
+  return rowValue && rowValue.toUpperCase().startsWith(prefix.toUpperCase());
 }
 
 function endsWith(rowValue, suffix) {
-  return rowValue.toUpperCase().endsWith(suffix.toUpperCase());
+  return rowValue && rowValue.toUpperCase().endsWith(suffix.toUpperCase());
 }
 
 function like(rowValue, regex) {
@@ -330,9 +358,6 @@ function validateCondition(condition, context) {
   const column = context.columns.find((column) => column.name === condition.fieldname);
   if (!column) {
     return `Condition.fieldname: Found '${condition.fieldname}'. Expected one of ${context.columns.map((column) => column.name).join(", ")}.`;
-  }
-  if (column.type !== condition.operandType) {
-    return `Condition.operandType on field ${column.name}: Expected '${column.type}'. Found '${condition.operandType}'.`;
   }
   // validate parameters
   if (!setEquals(Object.keys(condition.parameters), Object.keys(parametersMap[condition.operator]))) {
