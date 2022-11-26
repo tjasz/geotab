@@ -114,7 +114,7 @@ function ConditionGroupView(props) {
     props.onEdit({type: "ConditionGroup", operator: event.target.value, conditions}, props.indexInGroup);
   };
   return (
-    <div className="conditionGroupView" style={{paddingLeft: `${props.indent*2}em`}}>
+    <div className="conditionGroupView" style={{paddingLeft: '2em'}}>
       <Select
         id={`condition-group-operator-${props.indent}`}
         name={`condition-group-operator-${props.indent}`}
@@ -166,7 +166,7 @@ function ConditionView(props) {
     props.onEdit({type: "Condition", fieldname, operator, operandType, parameters: { ...parameters, [event.target.name]: value }, negate}, props.indexInGroup);
   };
   return (
-    <div className="conditionView" style={{paddingLeft: `${props.indent*2}em`}}>
+    <div className="conditionView" style={{paddingLeft: '2em'}}>
       <Select 
         id={`${props.key}-fieldname`}
         name={`${props.key}-fieldname`}
