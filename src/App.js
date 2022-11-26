@@ -3,7 +3,6 @@ import {BrowserRouter} from 'react-router-dom'
 import './App.css';
 import TabView from './tabview.js'
 import {DataContext} from './dataContext.js'
-import {PolygonMarker} from './iconlib.js'
 
 class App extends React.Component {
   constructor(props) {
@@ -20,10 +19,12 @@ class App extends React.Component {
       setSorting: (newSorting) => {this.setState({sorting: newSorting})},
       filter: null,
       setFilter: (newFilter) => {this.setState({filter: newFilter})},
-      symbology: (feature, latlng) => { return feature.geometry?.type === "Point" ? PolygonMarker(latlng, Infinity, 5, "#336799") : {
-        color: "#336799",
-        weight: 2
-      }},
+      symbology: {
+        "hue": {mode: "discrete", values: [209], fieldname: null, breaks: []},
+        "saturation": {mode: "discrete", values: [50], fieldname: null, breaks: []},
+        "lightness": {mode: "discrete", values: [40], fieldname: null, breaks: []},
+        "alpha": {mode: "discrete", values: [1], fieldname: null, breaks: []},
+      },
       setSymbology: (newSymbology) => {this.setState({symbology: newSymbology})},
     };
   }

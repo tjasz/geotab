@@ -5,6 +5,7 @@ import {DataContext} from './dataContext.js'
 import {getCentralCoord, hashCode, getFeatureListBounds} from './algorithm.js'
 import {evaluateFilter} from './filter.js'
 import mapLayers from './maplayers.js'
+import {painter} from './painter.js'
 
 function MapView(props) {
     const context = useContext(DataContext);
@@ -23,10 +24,8 @@ function MapView(props) {
           <MapContainer scrollWheelZoom={true} ref={mapRef} whenReady={() => resizeMap(mapRef)}>
             <ChangeView />
             <ScaleControl position="bottomleft" />
-            <GeoJSON data={features} key={hashCode(JSON.stringify(features))} style={context.symbology}
-            pointToLayer={(feature, latlng) => {
-              return (context.symbology && context.symbology(feature, latlng)) ?? new L.marker(latlng);
-            }}
+            <GeoJSON data={features} key={hashCode(JSON.stringify(features))} style={painter(context.symbology)}
+            pointToLayer={painter(context.symbology)}
             onEachFeature={(feature, layer) => {
               layer.on({
                 click: () => { context.setActive(feature.hash) }
