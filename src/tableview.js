@@ -41,36 +41,74 @@ function DataTable() {
   if (context.sorting !== null) {
     sortBy(features, context.sorting);
   }
-  let columns = context.columns;
   return (
     <table id="data-table" cellSpacing={0}>
       <tbody>
-        <tr>
-          <th></th>
-          {Array.from(columns).map((column) => <th key={column.name} onClick={() => {
-            context.setSorting([column, (context.sorting && context.sorting[0].name === column.name) ? !context.sorting[1] : true]); }}>{column.name}</th>)}
-        </tr>
+        <TableHeader columns={context.columns} sorting={context.sorting} setSorting={context.setSorting} />
         {features.map((feature, fidx) =>
-          <tr key={fidx} onClick={() => context.setActive(feature.hash)} className={context.active !== null && feature.hash === context.active ? "active" : ""}>
-            <th>{1+fidx}</th>
-            {Array.from(columns).map((column) => <td key={`${fidx}-${column.name}`}>{
-              feature["properties"][column.name] !== undefined &&
-              (feature["properties"][column.name].startsWith("http")
-                ? <a target="_blank" href={feature["properties"][column.name]}>
-                    {feature["properties"][column.name].length > 21
-                     ? `${feature["properties"][column.name].slice(0,9)}...${feature["properties"][column.name].slice(-9)}`
-                     : feature["properties"][column.name]}
-                  </a>
-                : column.type === "number"
-                  ? Number(feature["properties"][column.name])
-                  : column.type === "date"
-                    ? new Date(Date.parse(feature["properties"][column.name])).toISOString()
-                    : JSON.stringify(feature["properties"][column.name])
-              )
-            }</td>)}
-          </tr>)}
+          <TableRow
+            key={fidx}
+            columns={context.columns}
+            fidx={fidx}
+            feature={feature}
+            active={context.active !== null && feature.hash === context.active}
+            setActive={context.setActive} />)}
       </tbody>
     </table>
+  );
+}
+
+function TableHeader(props) {
+  return (
+    <tr>
+      <th></th>
+      {Array.from(props.columns).map((column) =>
+        <th
+          key={column.name}
+          onClick={() => {
+            props.setSorting([column, (props.sorting && props.sorting[0].name === column.name) ? !props.sorting[1] : true]);
+          }}>
+          {column.name}
+        </th>)}
+    </tr>
+  );
+}
+
+function TableRow(props) {
+  return (
+    <tr onClick={() => props.setActive(props.feature.hash)} className={props.active ? "active" : ""}>
+      <th>{1+props.fidx}</th>
+      {Array.from(props.columns).map((column) =>
+        <TableCell key={`${column.name}`} column={column} value={props.feature.properties[column.name]} />)}
+    </tr>
+  );
+}
+
+function TableCell(props) {
+  return (
+    <td>{
+      props.value !== undefined &&
+      (props.value.startsWith("http")
+        ? <AbridgedUrlLink target="_blank" href={props.value} length={21} />
+        : props.column.type === "number"
+          ? Number(props.value)
+          : props.column.type === "date"
+            ? new Date(Date.parse(props.value)).toISOString()
+            : JSON.stringify(props.value)
+      )
+    }</td>
+  );
+}
+
+function AbridgedUrlLink(props) {
+  const firstHalfLength = Math.floor((props.length - 3)/2);
+  const secondHalfLength = props.length % 2 ? firstHalfLength : firstHalfLength+1;
+  const withoutProtocol = props.href.split('//')[1];
+  const abridged = `${withoutProtocol.slice(0,firstHalfLength)}...${withoutProtocol.slice(-secondHalfLength)}`
+  return (
+    <a target={props.target} href={props.href}>
+      {abridged}
+    </a>
   );
 }
 

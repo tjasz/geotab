@@ -126,7 +126,7 @@ function ConditionGroupView(props) {
       <PlusSquare className="addCondition" onClick={() => { setChildSelectorVisible(true); }} />
       {childSelectorVisible
       ? <div id={`condition-group-child-selector-${props.indent}`}>
-        {filterTypes.map((ftype) => <input type="button" value={ftype} key={`condition-group-child-selector-${props.indent}-${ftype}`} onClick={(event) => { setChildSelectorVisible(false); onChildAdd(event.target.value); }} />)}
+        {filterTypes.map((ftype) => <button type="button" key={`condition-group-child-selector-${props.indent}-${ftype}`} onClick={(event) => { setChildSelectorVisible(false); onChildAdd(event.target.value); }}>{ftype}</button>)}
       </div>
       : null}
     </div>
