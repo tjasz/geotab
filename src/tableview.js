@@ -87,8 +87,8 @@ function TableRow(props) {
 function TableCell(props) {
   return (
     <td>{
-      props.value !== undefined &&
-      (props.value.startsWith("http")
+      props.value !== null && props.value !== undefined &&
+      (typeof props.value === "string" && props.value.startsWith("http")
         ? <AbridgedUrlLink target="_blank" href={props.value} length={21} />
         : props.column.type === "number"
           ? Number(props.value)
