@@ -1,18 +1,24 @@
 import {PolygonMarker} from './iconlib.js'
 
+function findIndex(array, value) {
+  // set i to the index where value is first greater than array[i]
+  let i = 0;
+  for (; i < array.length; i++) { // TODO binary search?
+    if (value < array[i]) {
+      break;
+    }
+  }
+  // console.log(`${value} : ${array} : ${i}`)
+  return i;
+}
+
 function discreteInterpolation(definition, feature) {
   if (definition.values.length !== definition.breaks.length + 1) {
     throw Error(`Discrete Symbology.values should have 1 more value than Symbology.breaks. Values: ${definition.values}; Breaks: ${definition.breaks}.`)
   }
   if (definition.breaks.length === 0) return definition.values[0];
   // set i to the index where the feature value is first greater than the break value
-  let i = 0;
-  for (; i < definition.breaks.length; i++) { // TODO binary search?
-    if (feature.properties[definition.fieldname] < definition.breaks[i]) {
-      break;
-    }
-  }
-  //console.log(`${feature.properties[definition.fieldname]} : ${definition.breaks} : ${i}`)
+  let i = findIndex(definition.breaks, feature.properties[definition.fieldname]);
   return definition.values[i];
 }
 
@@ -29,15 +35,11 @@ function continuousInterpolation(definition, feature) {
   }
   if (definition.breaks.length === 0) return definition.values[0];
   // set i to the index where the feature value is first greater than the break value
-  let i = 0;
-  for (; i < definition.breaks.length; i++) { // TODO binary search?
-    if (feature.properties[definition.fieldname] < definition.breaks[i]) {
-      break;
-    }
-  }
-  console.log(`${feature.properties[definition.fieldname]} : ${definition.breaks} : ${i}`)
-  if (i < 1 || i >= definition.breaks.length) {
-    throw Error(`Continuous interpolation failed. ${feature.properties[definition.fieldname]} not in range ${definition.breaks}.`);
+  let i = findIndex(definition.breaks, feature.properties[definition.fieldname]);
+  if (i < 1) {
+    return definition.values[i];
+  } else if (i >= definition.breaks.length) {
+    return definition.values[definition.values.length-1];
   }
   return linearInterpolation(
     definition.breaks[i-1], definition.values[i-1],
