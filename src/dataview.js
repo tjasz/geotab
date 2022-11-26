@@ -126,7 +126,7 @@ function ConditionGroupView(props) {
       <PlusSquare className="addCondition" onClick={() => { setChildSelectorVisible(true); }} />
       {childSelectorVisible
       ? <div id={`condition-group-child-selector-${props.indent}`}>
-        {filterTypes.map((ftype) => <button type="button" key={`condition-group-child-selector-${props.indent}-${ftype}`} onClick={(event) => { setChildSelectorVisible(false); onChildAdd(event.target.value); }}>{ftype}</button>)}
+        {filterTypes.map((ftype) => <button type="button" key={`condition-group-child-selector-${props.indent}-${ftype}`} onClick={(event) => { setChildSelectorVisible(false); onChildAdd(event.target.value); }} value={ftype}>{ftype}</button>)}
       </div>
       : null}
     </div>
@@ -172,13 +172,14 @@ function ConditionView(props) {
               onChange={onFieldnameEdit}>
         {context.columns.map((field) => <option value={field.name} key={`${props.key}-${field.name}`}>{field.name}</option>)}
       </select>
-
-      <select id={`${props.key}-operator`}
-              name={`${props.key}-operator`}
-              defaultValue={operator}
-              onChange={onOperatorEdit}>
-        {conditionOperators.map((operator) => <option value={operator} key={`${props.key}-${operator}`}>{operator}</option>)}
-      </select>
+      
+      <Select
+        id={`${props.key}-operator`}
+        name={`${props.key}-operator`}
+        defaultValue={operator}
+        onChange={onOperatorEdit}
+        options={conditionOperators}
+      />
 
       {Object.keys(parameters).map((param) =>
         <input id={`${props.key}-${param}`}
@@ -205,6 +206,14 @@ function FilterView(props) {
         </div>
       );
   }
+}
+
+function Select(props) {
+  return (
+    <select {...props}>
+      {props.options.map((option) => <option value={option} key={option}>{option}</option>)}
+    </select>
+  );
 }
 
 export default DataView;
