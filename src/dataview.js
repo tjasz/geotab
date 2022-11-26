@@ -3,6 +3,8 @@ import { useSearchParams } from "react-router-dom";
 import {DataContext} from './dataContext.js'
 import {getFeatures, getPropertiesUnion} from './algorithm.js'
 import {defaultFilter, conditionOperators, conditionGroupOperators, parametersMap, operandTypes, Condition, ConditionGroup, filterEquals, filterTypes, validateFilter} from './filter.js'
+import {ReactComponent as MinusSquare} from './feather/minus-square.svg'
+import {ReactComponent as PlusSquare} from './feather/plus-square.svg'
 
 function DataView(props) {
   const context = useContext(DataContext);
@@ -119,9 +121,9 @@ function ConditionGroupView(props) {
               onChange={onOperatorEdit}>
         {conditionGroupOperators.map((operator) => <option value={operator} key={`condition-group-operator-${props.indent}-${operator}`}>{operator.toUpperCase()}</option>)}
       </select>
-      {props.indent ? <a onClick={() => {props.removeCondition(props.filter)}}>-</a> : null}
+      {props.indent ? <MinusSquare className="removeCondition" onClick={() => {props.removeCondition(props.filter)}} /> : null}
       {conditions.map((condition, idx) => <FilterView filter={condition} indent={props.indent+1} indexInGroup={idx} onEdit={onChildEdit} removeCondition={onChildRemove} key={`condition-group-${props.indent}-child-${idx}`} />)}
-      <a onClick={() => { setChildSelectorVisible(true); }}>+</a>
+      <PlusSquare className="addCondition" onClick={() => { setChildSelectorVisible(true); }} />
       {childSelectorVisible
       ? <div id={`condition-group-child-selector-${props.indent}`}>
         {filterTypes.map((ftype) => <input type="button" value={ftype} key={`condition-group-child-selector-${props.indent}-${ftype}`} onClick={(event) => { setChildSelectorVisible(false); onChildAdd(event.target.value); }} />)}
@@ -185,7 +187,7 @@ function ConditionView(props) {
                onChange={onParameterEdit}
                key={`${props.key}-${param}`}/>
       )}
-      {props.indent ? <a onClick={() => {props.removeCondition(props.filter)}}>-</a> : null}
+      {props.indent ? <MinusSquare className="removeCondition" onClick={() => {props.removeCondition(props.filter)}} /> : null}
     </div>
   );
 }

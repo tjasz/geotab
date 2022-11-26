@@ -189,6 +189,18 @@ button:active {
   padding: 1em;
 }
 
+.addCondition {
+  stroke: green;
+  display: inline-block;
+   vertical-align: middle;
+}
+
+.removeCondition {
+  stroke: red;
+  display: inline-block;
+   vertical-align: middle;
+}
+
 #symbologyview {
   float: left;
   height: 85.5vh;
