@@ -115,12 +115,13 @@ function ConditionGroupView(props) {
   };
   return (
     <div className="conditionGroupView" style={{paddingLeft: `${props.indent*2}em`}}>
-      <select id={`condition-group-operator-${props.indent}`}
-              name={`condition-group-operator-${props.indent}`}
-              defaultValue={operator}
-              onChange={onOperatorEdit}>
-        {conditionGroupOperators.map((operator) => <option value={operator} key={`condition-group-operator-${props.indent}-${operator}`}>{operator.toUpperCase()}</option>)}
-      </select>
+      <Select
+        id={`condition-group-operator-${props.indent}`}
+        name={`condition-group-operator-${props.indent}`}
+        defaultValue={operator}
+        onChange={onOperatorEdit}
+        options={conditionGroupOperators}
+        />
       {props.indent ? <MinusSquare className="removeCondition" onClick={() => {props.removeCondition(props.filter)}} /> : null}
       {conditions.map((condition, idx) => <FilterView filter={condition} indent={props.indent+1} indexInGroup={idx} onEdit={onChildEdit} removeCondition={onChildRemove} key={`condition-group-${props.indent}-child-${idx}`} />)}
       <PlusSquare className="addCondition" onClick={() => { setChildSelectorVisible(true); }} />
@@ -166,13 +167,14 @@ function ConditionView(props) {
   };
   return (
     <div className="conditionView" style={{paddingLeft: `${props.indent*2}em`}}>
-      <select id={`${props.key}-fieldname`}
-              name={`${props.key}-fieldname`}
-              defaultValue={fieldname}
-              onChange={onFieldnameEdit}>
-        {context.columns.map((field) => <option value={field.name} key={`${props.key}-${field.name}`}>{field.name}</option>)}
-      </select>
-      
+      <Select 
+        id={`${props.key}-fieldname`}
+        name={`${props.key}-fieldname`}
+        defaultValue={fieldname}
+        onChange={onFieldnameEdit}
+        options={context.columns.map((field) => field.name)}
+        />
+
       <Select
         id={`${props.key}-operator`}
         name={`${props.key}-operator`}
