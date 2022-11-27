@@ -1,4 +1,5 @@
 import React, {useContext, useState} from 'react';
+import {Slider} from '@mui/material'
 import {DataContext} from './dataContext.js'
 import {Select} from './common-components.js'
 import {symbologyModes} from './painter.js'
@@ -59,6 +60,7 @@ function SymbologyProperty({name, definition, onEdit}) {
         onChange={onModeEdit}
         options={symbologyModes}
         />
+      <Slider />
     </div>
   );
 }
