@@ -17,19 +17,44 @@ export function getFeatures(data) {
   return [];
 }
 
+function toType(value, type) {
+  switch(type) {
+    case "number":
+      return Number(value);
+    case "date":
+      return new Date(Date.parse(value));
+    default:
+      return value;
+  }
+}
+
+function getColumnMetadata(features, key) {
+  const type = features.every((feature) => feature.properties[key] === undefined || !isNaN(Number(feature.properties[key])))
+               ? "number"
+               : features.every((feature) => feature.properties[key] === undefined || !isNaN(Date.parse(feature.properties[key])))
+               ? "date"
+               : "string";
+  // find min and max
+  let min = toType(features[0].properties[key], type);
+  let max = min;
+  for (let i = 1; i < features.length; i++) {
+    const value = toType(features[i].properties[key], type);
+    if (value < min) min = value;
+    if (value > max) max = value;
+  }
+  return {
+    name: key,
+    visible: true,
+    type,
+    min,
+    max,
+  };
+}
+
 export function getPropertiesUnion(features) {
   const keylist = features.map((feature) => Object.keys(feature["properties"])).flat();
   const keyset = new Set(keylist);
-  const columns = Array.from(keyset).map((key) => { return {
-    name: key,
-    visible: true,
-    // TODO datetime type
-    type: features.every((feature) => feature.properties[key] === undefined || !isNaN(Number(feature.properties[key])))
-          ? "number"
-          : features.every((feature) => feature.properties[key] === undefined || !isNaN(Date.parse(feature.properties[key])))
-          ? "date"
-          : "string"
-  }});
+  const columns = Array.from(keyset).map((key) => getColumnMetadata(features, key));
   return columns;
 }
 

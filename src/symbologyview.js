@@ -19,50 +19,56 @@ function SymbologyView(props) {
 
 function SymbologyDefinition({symbology, onSave}) {
   const [draft, setDraft] = useState(symbology);
-  const saveDraft = () => { console.log(draft); onSave(draft); };
+  const saveDraft = () => { onSave(draft); };
   const updateDraft = (newDraft) => { setDraft(newDraft); };
   return (
     <div id="symbology-definition">
       <SymbologyProperty name="hue" definition={draft?.hue}
         onEdit={(hueDef) => {updateDraft({...draft, hue: hueDef})}}
         minValue={0} maxValue={360}
-        minBreak={0} maxBreak={15000}
         valueLabelFormat={(value) => <ColoredText color={`hsla(${value}, 100%, 80%, 1)`} text={value} />}
         />
       <SymbologyProperty name="saturation" definition={draft?.saturation}
         onEdit={(saturationDef) => {updateDraft({...draft, saturation: saturationDef})}}
         minValue={0} maxValue={100}
-        minBreak={0} maxBreak={15000}
         valueLabelFormat={(value) => <ColoredText color={`hsla(0, ${value}%, 80%, 1)`} text={value} />}
         />
       <SymbologyProperty name="lightness" definition={draft?.lightness}
         onEdit={(lightnessDef) => {updateDraft({...draft, lightness: lightnessDef})}}
         minValue={0} maxValue={100}
-        minBreak={0} maxBreak={15000}
         valueLabelFormat={(value) => <ColoredText color={`hsla(0, 0%, ${value}%, 1)`} text={value} />}
         />
       <SymbologyProperty name="alpha" definition={draft?.alpha}
         onEdit={(alphaDef) => {updateDraft({...draft, alpha: alphaDef})}}
         minValue={0} maxValue={1}
-        minBreak={0} maxBreak={15000}
         valueLabelFormat={(value) => <ColoredText color={`hsla(0, 0%, 0%, ${value})`} text={value} />}
         />
       <SymbologyProperty name="size" definition={draft?.size}
         onEdit={(sizeDef) => {updateDraft({...draft, size: sizeDef})}}
         minValue={1} maxValue={20}
-        minBreak={0} maxBreak={15000}
         />
       <button id="save-symbology-draft" onClick={saveDraft}>Save</button>
     </div>
   );
 }
 
-function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueStep, minBreak, maxBreak, breakStep, valueLabelFormat}) {
+function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueStep, valueLabelFormat}) {
   const context = useContext(DataContext);
   const [fieldname, setFieldname] = useState(definition?.fieldname ?? context.columns[0].name);
   const [mode, setMode] = useState(definition?.mode ?? "discrete");
   const [values, setValues] = useState(definition?.values ?? [minValue]);
   const [breaks, setBreaks] = useState(definition?.breaks ?? []);
+
+  let minBreak = 0;
+  let maxBreak = 100;
+  let breakStep = 10;
+  if (context.columns.find((column) => column.name === fieldname)) {
+    const column = context.columns.find((column) => column.name === fieldname);
+    // get power of 10 that splits the range into roughly 20
+    breakStep = Math.pow(10, Math.round(Math.log10((column.max-column.min)/20)));
+    minBreak = breakStep*Math.floor(column.min/breakStep);
+    maxBreak = breakStep*Math.ceil(column.max/breakStep);
+  }
 
   const onCheckboxChange = (event) => {
     onEdit(event.target.checked ? {mode, values, fieldname, breaks} : undefined);
@@ -173,7 +179,7 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
             <Slider
               min={minBreak}
               max={maxBreak}
-              step={breakStep ?? Math.pow(10, Math.round(Math.log10((maxBreak-minBreak)/20)))}
+              step={breakStep}
               value={breaks}
               onChange={onBreaksEdit}
               valueLabelDisplay="on"
