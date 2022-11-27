@@ -3,6 +3,8 @@ import {Slider} from '@mui/material'
 import {DataContext} from './dataContext.js'
 import {Select, ColoredText} from './common-components.js'
 import {symbologyModes} from './painter.js'
+import {ReactComponent as MinusSquare} from './feather/minus-square.svg'
+import {ReactComponent as PlusSquare} from './feather/plus-square.svg'
 
 function SymbologyView(props) {
   const context = useContext(DataContext);
@@ -43,9 +45,26 @@ function SymbologyProperty({name, definition, onEdit}) {
     setMode(event.target.value);
     onEdit({mode: event.target.value, values, fieldname, breaks});
   };
-  const onValuesEdit = (event, values) => {
-    setValues(Array.isArray(values) ? values : [values]);
-    onEdit({mode, values: Array.isArray(values) ? values : [values], fieldname, breaks});
+  const onValuesEdit = (value, idx) => {
+    const newValues = values.map((v, i) => i === idx ? value : v);
+    setValues(newValues);
+    onEdit({mode, values: newValues, fieldname, breaks});
+  }
+  const onValueAdd = (event) => {
+    setValues(Array.isArray(values) ? [...values, 0] : [values, 0]);
+    setBreaks(Array.isArray(breaks) ? [...breaks, 0] : [breaks, 0]);
+    onEdit({mode, values: Array.isArray(values) ? [...values, 0] : [values, 0], fieldname,
+            breaks: Array.isArray(breaks) ? [...breaks, 0] : [breaks, 0]});
+  };
+  const onValueRemove = (event) => {
+    setValues(Array.isArray(values) ? values.slice(0, values.length-1) : []);
+    setBreaks(Array.isArray(breaks) ? breaks.slice(0, breaks.length-1) : []);
+    onEdit({mode, values: Array.isArray(values) ? values.slice(0, values.length-1) : [], fieldname,
+            breaks: Array.isArray(breaks) ? breaks.slice(0, breaks.length-1) : []});
+  };
+  const onBreaksEdit = (event, breaks) => {
+    setBreaks(Array.isArray(breaks) ? breaks : [breaks]);
+    onEdit({mode, values, fieldname, breaks: Array.isArray(breaks) ? breaks : [breaks]});
   }
 
   return (
@@ -65,13 +84,25 @@ function SymbologyProperty({name, definition, onEdit}) {
         onChange={onModeEdit}
         options={symbologyModes}
         />
+      {values.map((value, idx) =>
+        <Slider
+          key={idx}
+          min={0}
+          max={360}
+          value={value}
+          onChangeCommitted={(event, value) => { onValuesEdit(value, idx) }}
+          valueLabelDisplay="on"
+          valueLabelFormat={(value) => <ColoredText color={`hsla(${value}, 100%, 80%, 1)`} text={value} />}
+          track={false}
+          />)}
+      <MinusSquare className="removeSymbologyValue" onClick={onValueRemove} />
+      <PlusSquare className="addSymbologyValue" onClick={onValueAdd} />
       <Slider
         min={0}
-        max={360}
-        value={values}
-        onChangeCommitted={onValuesEdit}
+        max={15000}
+        value={breaks}
+        onChangeCommitted={onBreaksEdit}
         valueLabelDisplay="on"
-        valueLabelFormat={(value) => <ColoredText color={`hsla(${value}, 100%, 80%, 1)`} text={value} />}
         track={false}
         />
     </div>

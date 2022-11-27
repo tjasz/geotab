@@ -192,13 +192,13 @@ button:active {
 .addCondition {
   stroke: green;
   display: inline-block;
-   vertical-align: middle;
+  vertical-align: middle;
 }
 
 .removeCondition {
   stroke: red;
   display: inline-block;
-   vertical-align: middle;
+  vertical-align: middle;
 }
 
 #symbologyview {
@@ -210,4 +210,16 @@ button:active {
 #symbology-definition {
   text-align: left;
   padding: 0 1em;
+}
+
+.addSymbologyValue {
+  stroke: green;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.removeSymbologyValue {
+  stroke: red;
+  display: inline-block;
+  vertical-align: middle;
 }
