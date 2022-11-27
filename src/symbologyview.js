@@ -1,7 +1,7 @@
 import React, {useContext, useState} from 'react';
 import {Slider} from '@mui/material'
 import {DataContext} from './dataContext.js'
-import {Select} from './common-components.js'
+import {Select, ColoredText} from './common-components.js'
 import {symbologyModes} from './painter.js'
 
 function SymbologyView(props) {
@@ -42,6 +42,10 @@ function SymbologyProperty({name, definition, onEdit}) {
     setMode(event.target.value);
     onEdit({mode: event.target.value, values, fieldname, breaks});
   };
+  const onValuesEdit = (event, values) => {
+    setValues(values);
+    onEdit({mode, values, fieldname, breaks});
+  }
 
   return (
     <div className="symbologyProperty">
@@ -60,7 +64,15 @@ function SymbologyProperty({name, definition, onEdit}) {
         onChange={onModeEdit}
         options={symbologyModes}
         />
-      <Slider />
+      <Slider
+        min={0}
+        max={360}
+        defaultValue={values}
+        onChangeCommitted={onValuesEdit}
+        valueLabelDisplay="on"
+        valueLabelFormat={(value) => <ColoredText color={`hsla(${value}, 100%, 80%, 1)`} text={value} />}
+        track={false}
+        />
     </div>
   );
 }

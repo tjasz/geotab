@@ -5,3 +5,11 @@ export function Select(props) {
     </select>
   );
 }
+
+export function ColoredText({color, text}) {
+  return (
+    <span style={{color: color}}>
+      {text}
+    </span>
+  );
+}
