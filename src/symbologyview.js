@@ -151,30 +151,34 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
           options={context.columns.find((column) => column.name === fieldname)?.type === "string" ? ["discrete"] : symbologyModes}
           />
         <h4>Values</h4>
-        {values.map((value, idx) =>
-          <Slider
-            key={idx}
-            min={minValue}
-            max={maxValue}
-            step={valueStep}
-            value={value}
-            onChangeCommitted={(event, value) => { onValuesEdit(value, idx) }}
-            valueLabelDisplay="on"
-            valueLabelFormat={valueLabelFormat}
-            track={false}
-            />)}
+        <div style={{width: "calc(100% - 2em)"}}>
+          {values.map((value, idx) =>
+            <Slider
+              key={idx}
+              min={minValue}
+              max={maxValue}
+              step={valueStep}
+              value={value}
+              onChangeCommitted={(event, value) => { onValuesEdit(value, idx) }}
+              valueLabelDisplay="on"
+              valueLabelFormat={valueLabelFormat}
+              track={false}
+              />)}
+        </div>
         <MinusSquare className={`removeButton${values.length > 1 ? "" : "Disabled"}`} onClick={onValueRemove} />
         <PlusSquare className="addButton" onClick={onValueAdd} />
         <h4>Breaks</h4>
-        <Slider
-          min={minBreak}
-          max={maxBreak}
-          step={breakStep}
-          value={breaks}
-          onChangeCommitted={onBreaksEdit}
-          valueLabelDisplay="on"
-          track={false}
-          />
+        <div style={{width: "calc(100% - 2em)"}}>
+          <Slider
+            min={minBreak}
+            max={maxBreak}
+            step={breakStep}
+            value={breaks}
+            onChangeCommitted={onBreaksEdit}
+            valueLabelDisplay="on"
+            track={false}
+            />
+        </div>
       </div> : null}
     </div>
   );
