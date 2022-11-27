@@ -17,11 +17,12 @@ function SymbologyView(props) {
 
 function SymbologyDefinition({symbology, onSave}) {
   const [draft, setDraft] = useState(symbology);
-  const saveDraft = () => { onSave(draft); };
+  const saveDraft = () => { console.log(draft); onSave(draft); };
   const updateDraft = (newDraft) => { setDraft(newDraft); };
   return (
     <div id="symbology-definition">
-      <SymbologyProperty name="hue" definition={draft?.hue} onEdit={updateDraft} />
+      <SymbologyProperty name="hue" definition={draft?.hue}
+        onEdit={(hueDef) => {updateDraft({...draft, hue: hueDef})}} />
       <button id="save-symbology-draft" onClick={saveDraft}>Save</button>
     </div>
   );
@@ -30,9 +31,9 @@ function SymbologyDefinition({symbology, onSave}) {
 function SymbologyProperty({name, definition, onEdit}) {
   const context = useContext(DataContext);
   const [fieldname, setFieldname] = useState(definition?.fieldname ?? context.columns[0].name);
-  const [mode, setMode] = useState(definition?.mode);
-  const [values, setValues] = useState(definition?.values);
-  const [breaks, setBreaks] = useState(definition?.breaks);
+  const [mode, setMode] = useState(definition?.mode ?? "discrete");
+  const [values, setValues] = useState(definition?.values ?? [209]);
+  const [breaks, setBreaks] = useState(definition?.breaks ?? []);
 
   const onFieldnameEdit = (event) => {
     setFieldname(event.target.value);
@@ -43,8 +44,8 @@ function SymbologyProperty({name, definition, onEdit}) {
     onEdit({mode: event.target.value, values, fieldname, breaks});
   };
   const onValuesEdit = (event, values) => {
-    setValues(values);
-    onEdit({mode, values, fieldname, breaks});
+    setValues(Array.isArray(values) ? values : [values]);
+    onEdit({mode, values: Array.isArray(values) ? values : [values], fieldname, breaks});
   }
 
   return (
