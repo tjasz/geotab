@@ -1,5 +1,7 @@
 import {PolygonMarker, StarMarker} from './iconlib.js'
 
+export const symbologyModes = ["discrete", "continuous"];
+
 function findIndex(array, value) {
   // set i to the index where value is first greater than array[i]
   let i = 0;

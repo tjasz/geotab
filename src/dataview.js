@@ -5,6 +5,7 @@ import {getFeatures, getPropertiesUnion} from './algorithm.js'
 import {defaultFilter, conditionOperators, conditionGroupOperators, parametersMap, operandTypes, Condition, ConditionGroup, filterEquals, filterTypes, validateFilter} from './filter.js'
 import {ReactComponent as MinusSquare} from './feather/minus-square.svg'
 import {ReactComponent as PlusSquare} from './feather/plus-square.svg'
+import {Select} from './common-components.js'
 
 function DataView(props) {
   const context = useContext(DataContext);
@@ -209,14 +210,6 @@ function FilterView(props) {
         </div>
       );
   }
-}
-
-function Select(props) {
-  return (
-    <select {...props}>
-      {props.options.map((option) => <option value={option} key={option}>{option}</option>)}
-    </select>
-  );
 }
 
 export default DataView;
