@@ -167,7 +167,7 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
               max={maxValue}
               step={valueStep}
               value={value}
-              onChangeCommitted={(event, value) => { onValuesEdit(value, idx) }}
+              onChange={(event, value) => { onValuesEdit(value, idx) }}
               valueLabelDisplay="on"
               valueLabelFormat={valueLabelFormat}
               track={false}
@@ -183,7 +183,7 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
             max={maxBreak}
             step={breakStep}
             value={breaks}
-            onChangeCommitted={onBreaksEdit}
+            onChange={onBreaksEdit}
             valueLabelDisplay="on"
             track={false}
             marks
