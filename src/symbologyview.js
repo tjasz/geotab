@@ -68,7 +68,7 @@ function SymbologyProperty({name, definition, onEdit}) {
       <Slider
         min={0}
         max={360}
-        defaultValue={values}
+        value={values}
         onChangeCommitted={onValuesEdit}
         valueLabelDisplay="on"
         valueLabelFormat={(value) => <ColoredText color={`hsla(${value}, 100%, 80%, 1)`} text={value} />}
