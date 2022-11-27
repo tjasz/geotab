@@ -47,6 +47,9 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, minBre
   const [values, setValues] = useState(definition?.values ?? [minValue]);
   const [breaks, setBreaks] = useState(definition?.breaks ?? []);
 
+  const onCheckboxChange = (event) => {
+    onEdit(event.target.checked ? {mode, values, fieldname, breaks} : undefined);
+  };
   const onFieldnameEdit = (event) => {
     setFieldname(event.target.value);
     onEdit({mode, values, fieldname: event.target.value, breaks});
@@ -104,44 +107,54 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, minBre
 
   return (
     <div className="symbologyProperty">
-      <h3>{name.toUpperCase()}</h3>
-      <Select
-        id={`symbology-${name}-fieldname`}
-        name={`symbology-${name}-fieldname`}
-        defaultValue={fieldname}
-        onChange={onFieldnameEdit}
-        options={context.columns.map((column) => column.name)}
-        />
-      <Select
-        id={`symbology-${name}-mode`}
-        name={`symbology-${name}-mode`}
-        defaultValue={mode}
-        onChange={onModeEdit}
-        options={context.columns.find((column) => column.name === fieldname)?.type === "string" ? ["discrete"] : symbologyModes}
-        />
-      <h4>Values</h4>
-      {values.map((value, idx) =>
+      <h3>
+        <input type="checkbox"
+          name={`symbology-${name}-checxkbox`}
+          id={`symbology-${name}-checxkbox`}
+          checked={definition ? true : false}
+          onChange={onCheckboxChange}
+          />
+        <label htmlFor={`symbology-${name}-checxkbox`}>{name.toUpperCase()}</label>
+      </h3>
+      {definition ? <div style={{paddingLeft: "1em"}}>
+        <Select
+          id={`symbology-${name}-fieldname`}
+          name={`symbology-${name}-fieldname`}
+          defaultValue={fieldname}
+          onChange={onFieldnameEdit}
+          options={context.columns.map((column) => column.name)}
+          />
+        <Select
+          id={`symbology-${name}-mode`}
+          name={`symbology-${name}-mode`}
+          defaultValue={mode}
+          onChange={onModeEdit}
+          options={context.columns.find((column) => column.name === fieldname)?.type === "string" ? ["discrete"] : symbologyModes}
+          />
+        <h4>Values</h4>
+        {values.map((value, idx) =>
+          <Slider
+            key={idx}
+            min={minValue}
+            max={maxValue}
+            value={value}
+            onChangeCommitted={(event, value) => { onValuesEdit(value, idx) }}
+            valueLabelDisplay="on"
+            valueLabelFormat={valueLabelFormat}
+            track={false}
+            />)}
+        <MinusSquare className={`removeButton${values.length > 1 ? "" : "Disabled"}`} onClick={onValueRemove} />
+        <PlusSquare className="addButton" onClick={onValueAdd} />
+        <h4>Breaks</h4>
         <Slider
-          key={idx}
-          min={minValue}
-          max={maxValue}
-          value={value}
-          onChangeCommitted={(event, value) => { onValuesEdit(value, idx) }}
+          min={minBreak}
+          max={maxBreak}
+          value={breaks}
+          onChangeCommitted={onBreaksEdit}
           valueLabelDisplay="on"
-          valueLabelFormat={valueLabelFormat}
           track={false}
-          />)}
-      <MinusSquare className={`removeButton${values.length > 1 ? "" : "Disabled"}`} onClick={onValueRemove} />
-      <PlusSquare className="addButton" onClick={onValueAdd} />
-      <h4>Breaks</h4>
-      <Slider
-        min={minBreak}
-        max={maxBreak}
-        value={breaks}
-        onChangeCommitted={onBreaksEdit}
-        valueLabelDisplay="on"
-        track={false}
-        />
+          />
+      </div> : null}
     </div>
   );
 }
