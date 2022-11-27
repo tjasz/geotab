@@ -35,12 +35,31 @@ function SymbologyDefinition({symbology, onSave}) {
         minBreak={0} maxBreak={15000}
         valueLabelFormat={(value) => <ColoredText color={`hsla(0, ${value}%, 80%, 1)`} text={value} />}
         />
+      <SymbologyProperty name="lightness" definition={draft?.lightness}
+        onEdit={(lightnessDef) => {updateDraft({...draft, lightness: lightnessDef})}}
+        minValue={0} maxValue={100}
+        minBreak={0} maxBreak={15000}
+        valueLabelFormat={(value) => <ColoredText color={`hsla(0, 0%, ${value}%, 1)`} text={value} />}
+        />
+      <SymbologyProperty name="alpha" definition={draft?.alpha}
+        onEdit={(alphaDef) => {updateDraft({...draft, alpha: alphaDef})}}
+        minValue={0} maxValue={1}
+        valueStep={0.05}
+        minBreak={0} maxBreak={15000}
+        valueLabelFormat={(value) => <ColoredText color={`hsla(0, 0%, 0%, ${value})`} text={value} />}
+        />
+      <SymbologyProperty name="size" definition={draft?.size}
+        onEdit={(sizeDef) => {updateDraft({...draft, size: sizeDef})}}
+        minValue={1} maxValue={20}
+        valueStep={1}
+        minBreak={0} maxBreak={15000}
+        />
       <button id="save-symbology-draft" onClick={saveDraft}>Save</button>
     </div>
   );
 }
 
-function SymbologyProperty({name, definition, onEdit, minValue, maxValue, minBreak, maxBreak, valueLabelFormat}) {
+function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueStep, minBreak, maxBreak, breakStep, valueLabelFormat}) {
   const context = useContext(DataContext);
   const [fieldname, setFieldname] = useState(definition?.fieldname ?? context.columns[0].name);
   const [mode, setMode] = useState(definition?.mode ?? "discrete");
@@ -137,6 +156,7 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, minBre
             key={idx}
             min={minValue}
             max={maxValue}
+            step={valueStep}
             value={value}
             onChangeCommitted={(event, value) => { onValuesEdit(value, idx) }}
             valueLabelDisplay="on"
@@ -149,6 +169,7 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, minBre
         <Slider
           min={minBreak}
           max={maxBreak}
+          step={breakStep}
           value={breaks}
           onChangeCommitted={onBreaksEdit}
           valueLabelDisplay="on"
