@@ -67,17 +67,19 @@ export function painter(symbology) {
   // },
   const fn = (feature, latlng) => {
     // get color-related attributes
-    const hue = interpolation(symbology.hue, feature) ?? 209;
-    const sat = interpolation(symbology.saturation, feature) ?? 50;
-    const light = interpolation(symbology.lightness, feature) ?? 40;
-    const alpha = interpolation(symbology.alpha, feature) ?? 1;
+    const hue = interpolation(symbology?.hue, feature) ?? 209;
+    const sat = interpolation(symbology?.saturation, feature) ?? 50;
+    const light = interpolation(symbology?.lightness, feature) ?? 40;
+    const alpha = interpolation(symbology?.alpha, feature) ?? 1;
     const color = `hsla(${hue}, ${sat}%, ${light}%, ${alpha})`;
     // get other attributes
-    const size = interpolation(symbology.size, feature) ?? 5;
+    const size = interpolation(symbology?.size, feature) ?? 5;
+    // TODO shape
 
     if (feature.geometry?.type == "Point") {
       return PolygonMarker(latlng, Infinity, size, color);
     } else {
+      // TODO lineCap, lineJoin, dashArray, dashOffset, fillColor, fillOpacity, fillRule, fill boolean, stroke boolean
       let dashArray = "";
       if (feature.properties["pattern"]) {
         switch(feature.properties["pattern"]) {

@@ -19,7 +19,7 @@ class App extends React.Component {
       setSorting: (newSorting) => {this.setState({sorting: newSorting})},
       filter: null,
       setFilter: (newFilter) => {this.setState({filter: newFilter})},
-      symbology: {},
+      symbology: null,
       setSymbology: (newSymbology) => {this.setState({symbology: newSymbology})},
     };
   }

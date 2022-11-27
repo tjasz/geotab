@@ -206,3 +206,8 @@ button:active {
   height: 85.5vh;
   padding: 0.5em 0;
 }
+
+#symbology-definition {
+  text-align: left;
+  padding: 0 1em;
+}

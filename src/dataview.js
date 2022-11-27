@@ -17,6 +17,7 @@ function DataView(props) {
     context.setActive(null);
     context.setSorting(null);
     context.setFilter(defaultFilter);
+    context.setSymbology(null)
   };
   const process = () => {
     const fileSelector = document.getElementById('file-selector');
