@@ -102,7 +102,6 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, minBre
     onEdit({mode, values, fieldname, breaks: Array.isArray(breaks) ? breaks : [breaks]});
   }
 
-  // TODO disable continuous for string columns
   return (
     <div className="symbologyProperty">
       <h3>{name.toUpperCase()}</h3>
@@ -118,7 +117,7 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, minBre
         name={`symbology-${name}-mode`}
         defaultValue={mode}
         onChange={onModeEdit}
-        options={symbologyModes}
+        options={context.columns.find((column) => column.name === fieldname)?.type === "string" ? ["discrete"] : symbologyModes}
         />
       <h4>Values</h4>
       {values.map((value, idx) =>
