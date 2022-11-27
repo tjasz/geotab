@@ -31,7 +31,7 @@ export function MultiTextField(props) {
 }
 
 // TODO cache counts
-export function Histogram({left, right, binWidth, values, width, height}) {
+export function Histogram({left, right, binWidth, values, viewboxHeight}) {
   const bins = Array(Math.ceil((right - left)/binWidth)).fill(0);
   let maxCount = 0;
   for (const val of values)
@@ -44,10 +44,9 @@ export function Histogram({left, right, binWidth, values, width, height}) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width={width} height={height}
-      viewBox="0 0 100 100"
+      viewBox={`0 0 100 ${viewboxHeight}`}
       >
-      {bins.map((count, i) => <path d={`M${100*(i*binWidth)/(right - left)} 100 V${100 - 100*count/maxCount} H${100*((i+1)*binWidth)/(right - left)} V100 Z`} />)}
+      {bins.map((count, i) => <path key={i} d={`M${100*(i*binWidth)/(right - left)} ${viewboxHeight} V${viewboxHeight - viewboxHeight*count/maxCount} H${100*((i+1)*binWidth)/(right - left)} V${viewboxHeight} Z`} />)}
     </svg>
   );
 }

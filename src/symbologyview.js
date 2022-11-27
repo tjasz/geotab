@@ -186,7 +186,7 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
               track={false}
               marks
               />
-            <Histogram width="100%" height={100}
+            <Histogram viewboxHeight={10}
               left={minBreak} right={maxBreak}
               binWidth={breakStep}
               values={context.data.map((feature) => 
