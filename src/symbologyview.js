@@ -42,8 +42,26 @@ function SymbologyProperty({name, definition, onEdit}) {
     onEdit({mode, values, fieldname: event.target.value, breaks});
   };
   const onModeEdit = (event) => {
-    setMode(event.target.value);
-    onEdit({mode: event.target.value, values, fieldname, breaks});
+    const newMode = event.target.value;
+    let newBreaks = breaks;
+    let newValues = values;
+    if (newMode === "continuous") {
+      // must have at least two values
+      if (values.length < 2) {
+        newValues = [...values, ...Array(2-values.length).fill(0)];
+      }
+      // 'breaks' should have the same number of values as 'values'
+      if (breaks.length < newValues.length) {
+        newBreaks = [...breaks, ...Array(newValues.length-breaks.length).fill(0)];
+      }
+    } else { // discrete
+      // 'breaks' should have one less value than 'values'
+      newBreaks = breaks.slice(0, values.length-1)
+    }
+    setMode(newMode);
+    setValues(newValues);
+    setBreaks(newBreaks);
+    onEdit({mode: newMode, values: newValues, fieldname, breaks: newBreaks});
   };
   const onValuesEdit = (value, idx) => {
     const newValues = values.map((v, i) => i === idx ? value : v);
@@ -84,6 +102,7 @@ function SymbologyProperty({name, definition, onEdit}) {
         onChange={onModeEdit}
         options={symbologyModes}
         />
+      <h4>Values</h4>
       {values.map((value, idx) =>
         <Slider
           key={idx}
@@ -97,6 +116,7 @@ function SymbologyProperty({name, definition, onEdit}) {
           />)}
       <MinusSquare className="removeSymbologyValue" onClick={onValueRemove} />
       <PlusSquare className="addSymbologyValue" onClick={onValueAdd} />
+      <h4>Breaks</h4>
       <Slider
         min={0}
         max={15000}
