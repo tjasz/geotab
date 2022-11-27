@@ -1,7 +1,7 @@
 import React, {useContext, useState} from 'react';
 import {Slider} from '@mui/material'
 import {DataContext} from './dataContext.js'
-import {Select, ColoredText} from './common-components.js'
+import {Select, ColoredText, MultiTextField} from './common-components.js'
 import {symbologyModes} from './painter.js'
 import {ReactComponent as MinusSquare} from './feather/minus-square.svg'
 import {ReactComponent as PlusSquare} from './feather/plus-square.svg'
@@ -103,8 +103,8 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
     onEdit({mode, values: newValues, fieldname, breaks});
   }
   const onValueAdd = (event) => {
-    setValues(Array.isArray(values) ? [...values, 0] : [values, 0]);
-    setBreaks(Array.isArray(breaks) ? [...breaks, 0] : [breaks, 0]);
+    setValues(Array.isArray(values) ? [...values, minValue] : [values, minValue]);
+    setBreaks(Array.isArray(breaks) ? [...breaks, minBreak] : [breaks, minBreak]);
     onEdit({mode, values: Array.isArray(values) ? [...values, minValue] : [values, minValue], fieldname,
             breaks: Array.isArray(breaks) ? [...breaks, minBreak] : [breaks, minBreak]});
   };
@@ -167,18 +167,21 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
         <MinusSquare className={`removeButton${values.length > 1 ? "" : "Disabled"}`} onClick={onValueRemove} />
         <PlusSquare className="addButton" onClick={onValueAdd} />
         <h4>Breaks</h4>
-        <div style={{width: "calc(100% - 2em)"}}>
-          <Slider
-            min={minBreak}
-            max={maxBreak}
-            step={breakStep ?? Math.pow(10, Math.round(Math.log10((maxBreak-minBreak)/20)))}
-            value={breaks}
-            onChange={onBreaksEdit}
-            valueLabelDisplay="on"
-            track={false}
-            marks
-            />
-        </div>
+        {context.columns.find((column) => column.name === fieldname)?.type === "string"
+         ? <MultiTextField values={breaks} onChange={onBreaksEdit} />
+         : <div style={{width: "calc(100% - 2em)"}}>
+            <Slider
+              min={minBreak}
+              max={maxBreak}
+              step={breakStep ?? Math.pow(10, Math.round(Math.log10((maxBreak-minBreak)/20)))}
+              value={breaks}
+              onChange={onBreaksEdit}
+              valueLabelDisplay="on"
+              track={false}
+              marks
+              />
+           </div>
+        }
       </div> : null}
     </div>
   );
