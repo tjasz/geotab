@@ -52,3 +52,33 @@ export function PolygonMarker(latlng, n, r, stroke, fill) {
     svgPolygon(n, r, stroke, fill)
   );
 }
+
+// create the SVG path commands for an n-star of radius r
+function svgStar(n, r, stroke, fill) {
+  let strokeFill = `stroke="${stroke ?? "#336799"}" fill="${fill ?? stroke ?? "#336799"}"`;
+  let str = `<svg width="${2*r}" height="${2*r}" viewBox="-50 -50 100 100" xmlns="http://www.w3.org/2000/svg">`;
+  if (n === Infinity) { // circle
+    str += `<circle cx="0" cy="0" r="50" ${strokeFill} />`;
+  } else {
+    let points = []
+    const da = 360.0/(2*n);
+    for (let a = 0; a < 360.0; a += da) {
+      points.push(ar(a, (n % 2 === points.length % 2) ? 50 : 25)); // hardcode if viewbox is 100x100
+    }
+    let cmds = "M" + points[0][0] + " " + points[0][1];
+    for (let i = 1; i < points.length; i++) {
+      cmds += " L" + points[i][0] + " " + points[i][1];
+    }
+    cmds += "Z";
+    str += `<path d="${cmds}" ${strokeFill} />`;
+  }
+  str += "</svg>";
+  return str;
+}
+
+export function StarMarker(latlng, n, r, stroke, fill) {
+  return new svgMarker(
+    latlng,
+    svgStar(n, r, stroke, fill)
+  );
+}

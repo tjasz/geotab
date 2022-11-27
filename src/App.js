@@ -19,12 +19,7 @@ class App extends React.Component {
       setSorting: (newSorting) => {this.setState({sorting: newSorting})},
       filter: null,
       setFilter: (newFilter) => {this.setState({filter: newFilter})},
-      symbology: {
-        "hue": {mode: "discrete", values: [209], fieldname: null, breaks: []},
-        "saturation": {mode: "discrete", values: [50], fieldname: null, breaks: []},
-        "lightness": {mode: "discrete", values: [40], fieldname: null, breaks: []},
-        "alpha": {mode: "discrete", values: [1], fieldname: null, breaks: []},
-      },
+      symbology: {},
       setSymbology: (newSymbology) => {this.setState({symbology: newSymbology})},
     };
   }

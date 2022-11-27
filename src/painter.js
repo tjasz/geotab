@@ -1,4 +1,4 @@
-import {PolygonMarker} from './iconlib.js'
+import {PolygonMarker, StarMarker} from './iconlib.js'
 
 function findIndex(array, value) {
   // set i to the index where value is first greater than array[i]
@@ -49,35 +49,35 @@ function continuousInterpolation(definition, feature) {
 
 // TODO handle different types
 function interpolation(definition, feature) {
+  if (definition === undefined) {
+    return undefined;
+  }
   if (definition.mode === "discrete") {
     return discreteInterpolation(definition, feature);
-  } else if (definition.mode === "continuous") {
+  }
+  if (definition.mode === "continuous") {
     return continuousInterpolation(definition, feature);
   }
   throw Error(`Symbology.mode: Found ${definition.mode}. Expected 'discrete' or 'continuous'.`)
 }
 
 export function painter(symbology) {
-  // {
-  //   "hue": {mode: "discrete", values: [209], fieldname: null, breaks: []},
-  //   "saturation": {mode: "discrete", values: [50], fieldname: null, breaks: []},
-  //   "lightness": {mode: "discrete", values: [40], fieldname: null, breaks: []},
-  //   "alpha": {mode: "discrete", values: [1], fieldname: null, breaks: []},
+  // example symbology: {
+  //   "hue": {mode: "discrete", values: [150, 250], fieldname: "elevation", breaks: [10000]},
   // },
   const fn = (feature, latlng) => {
-    const hue = interpolation(symbology.hue, feature);
-    const sat = interpolation(symbology.saturation, feature);
-    const light = interpolation(symbology.lightness, feature);
-    const alpha = interpolation(symbology.alpha, feature);
+    // get color-related attributes
+    const hue = interpolation(symbology.hue, feature) ?? 209;
+    const sat = interpolation(symbology.saturation, feature) ?? 50;
+    const light = interpolation(symbology.lightness, feature) ?? 40;
+    const alpha = interpolation(symbology.alpha, feature) ?? 1;
     const color = `hsla(${hue}, ${sat}%, ${light}%, ${alpha})`;
-
-
+    // get other attributes
+    const size = interpolation(symbology.size, feature) ?? 5;
 
     if (feature.geometry?.type == "Point") {
-      return PolygonMarker(latlng, Infinity, 5*(feature.properties["marker-size"] ?? 1), color);
+      return PolygonMarker(latlng, Infinity, size, color);
     } else {
-      const weight = feature.properties["stroke-width"] ?? 2;
-      const opacity = feature.properties["stroke-opacity"] ?? 1;
       let dashArray = "";
       if (feature.properties["pattern"]) {
         switch(feature.properties["pattern"]) {
@@ -85,20 +85,20 @@ export function painter(symbology) {
             dashArray = "";
             break;
           case "M0 -1 L0 1,,8,F": // dot
-            dashArray = `${weight} ${2*weight}`;
+            dashArray = `${size} ${2*size}`;
             break;
           case "M0 -3 L0 3,,12,F": // dash
-            dashArray = `${4*weight} ${2*weight}`;
+            dashArray = `${4*size} ${2*size}`;
             break;
           case "M0 -3 L0 3,0,16,F;M0 -1L0 0,8,16": // dashdot
-            dashArray = `${4*weight} ${2*weight} ${weight} ${2*weight}`;
+            dashArray = `${4*size} ${2*size} ${size} ${2*size}`;
             break;
         }
       }
       const lineCap="butt";
       const fillColor = feature.properties["fill"] ?? "#b3e7ff";
       const fillOpacity = feature.properties["fill-opacity"] ?? 1;
-      return {color, weight, opacity, dashArray, lineCap, fillColor, fillOpacity};
+      return {color, size, dashArray, lineCap, fillColor, fillOpacity};
     }
   };
   return fn;
