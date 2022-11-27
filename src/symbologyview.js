@@ -1,7 +1,7 @@
 import React, {useContext, useState} from 'react';
 import {Slider} from '@mui/material'
 import {DataContext} from './dataContext.js'
-import {Select, ColoredText, MultiTextField} from './common-components.js'
+import {Select, ColoredText, MultiTextField, Histogram} from './common-components.js'
 import {symbologyModes} from './painter.js'
 import {ReactComponent as MinusSquare} from './feather/minus-square.svg'
 import {ReactComponent as PlusSquare} from './feather/plus-square.svg'
@@ -185,6 +185,12 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
               valueLabelDisplay="on"
               track={false}
               marks
+              />
+            <Histogram width="100%" height={100}
+              left={minBreak} right={maxBreak}
+              binWidth={breakStep}
+              values={context.data.map((feature) => 
+                feature.properties[context.columns.find((column) => column.name === fieldname)?.name])}
               />
            </div>
         }

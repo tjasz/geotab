@@ -29,3 +29,25 @@ export function MultiTextField(props) {
     </div>
   );
 }
+
+// TODO cache counts
+export function Histogram({left, right, binWidth, values, width, height}) {
+  const bins = Array(Math.ceil((right - left)/binWidth)).fill(0);
+  let maxCount = 0;
+  for (const val of values)
+  {
+    const bin = Math.floor((val-left)/binWidth);
+    bins[bin]++;
+    if (bins[bin] > maxCount) maxCount = bins[bin];
+  }
+
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={width} height={height}
+      viewBox="0 0 100 100"
+      >
+      {bins.map((count, i) => <path d={`M${100*(i*binWidth)/(right - left)} 100 V${100 - 100*count/maxCount} H${100*((i+1)*binWidth)/(right - left)} V100 Z`} />)}
+    </svg>
+  );
+}
