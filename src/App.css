@@ -189,16 +189,48 @@ button:active {
   padding: 1em;
 }
 
-.addCondition {
-  stroke: green;
+.addButton {
+  stroke: #008000;
   display: inline-block;
   vertical-align: middle;
+  cursor: pointer;
 }
 
-.removeCondition {
-  stroke: red;
+.addButton:hover {
+  stroke: #00a000;
+}
+
+.addButton:active {
+  stroke: #00c000;
+}
+
+.addButtonDisabled {
+  stroke: grey;
   display: inline-block;
   vertical-align: middle;
+  cursor: not-allowed;
+}
+
+.removeButton {
+  stroke: #c00000;
+  display: inline-block;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+.removeButton:hover {
+  stroke: #a00000;
+}
+
+.removeButton:active {
+  stroke: #800000;
+}
+
+.removeButtonDisabled {
+  stroke: grey;
+  display: inline-block;
+  vertical-align: middle;
+  cursor: not-allowed;
 }
 
 #symbologyview {
@@ -210,16 +242,4 @@ button:active {
 #symbology-definition {
   text-align: left;
   padding: 0 1em;
-}
-
-.addSymbologyValue {
-  stroke: green;
-  display: inline-block;
-  vertical-align: middle;
-}
-
-.removeSymbologyValue {
-  stroke: red;
-  display: inline-block;
-  vertical-align: middle;
 }

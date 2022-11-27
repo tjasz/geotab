@@ -124,9 +124,9 @@ function ConditionGroupView(props) {
         onChange={onOperatorEdit}
         options={conditionGroupOperators}
         />
-      {props.indent ? <MinusSquare className="removeCondition" onClick={() => {props.removeCondition(props.filter)}} /> : null}
+      {props.indent ? <MinusSquare className="removeButton" onClick={() => {props.removeCondition(props.filter)}} /> : null}
       {conditions.map((condition, idx) => <FilterView filter={condition} indent={props.indent+1} indexInGroup={idx} onEdit={onChildEdit} removeCondition={onChildRemove} key={`condition-group-${props.indent}-child-${idx}`} />)}
-      <PlusSquare className="addCondition" onClick={() => { setChildSelectorVisible(true); }} />
+      <PlusSquare className="addButton" onClick={() => { setChildSelectorVisible(true); }} />
       {childSelectorVisible
       ? <div id={`condition-group-child-selector-${props.indent}`}>
         {filterTypes.map((ftype) => <button type="button" key={`condition-group-child-selector-${props.indent}-${ftype}`} onClick={(event) => { setChildSelectorVisible(false); onChildAdd(event.target.value); }} value={ftype}>{ftype}</button>)}
@@ -192,7 +192,7 @@ function ConditionView(props) {
                onChange={onParameterEdit}
                key={`${props.key}-${param}`}/>
       )}
-      {props.indent ? <MinusSquare className="removeCondition" onClick={() => {props.removeCondition(props.filter)}} /> : null}
+      {props.indent ? <MinusSquare className="removeButton" onClick={() => {props.removeCondition(props.filter)}} /> : null}
     </div>
   );
 }

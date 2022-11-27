@@ -65,6 +65,10 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, minBre
         newBreaks = [...breaks, ...Array(newValues.length-breaks.length).fill(minBreak)];
       }
     } else { // discrete
+      // must have at least 1 value
+      if (values.length < 1) {
+        newValues = [...values, ...Array(1-values.length).fill(minValue)];
+      }
       // 'breaks' should have one less value than 'values'
       newBreaks = breaks.slice(0, values.length-1)
     }
@@ -85,9 +89,12 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, minBre
             breaks: Array.isArray(breaks) ? [...breaks, minBreak] : [breaks, minBreak]});
   };
   const onValueRemove = (event) => {
-    setValues(Array.isArray(values) ? values.slice(0, values.length-1) : []);
+    if (!Array.isArray(values) || values.length <= 1) {
+      return;
+    }
+    setValues(values.slice(0, values.length-1));
     setBreaks(Array.isArray(breaks) ? breaks.slice(0, breaks.length-1) : []);
-    onEdit({mode, values: Array.isArray(values) ? values.slice(0, values.length-1) : [], fieldname,
+    onEdit({mode, values: values.slice(0, values.length-1), fieldname,
             breaks: Array.isArray(breaks) ? breaks.slice(0, breaks.length-1) : []});
   };
   const onBreaksEdit = (event, breaks) => {
@@ -98,7 +105,7 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, minBre
   // TODO disable continuous for string columns
   return (
     <div className="symbologyProperty">
-      <h3>{name}</h3>
+      <h3>{name.toUpperCase()}</h3>
       <Select
         id={`symbology-${name}-fieldname`}
         name={`symbology-${name}-fieldname`}
@@ -125,8 +132,8 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, minBre
           valueLabelFormat={valueLabelFormat}
           track={false}
           />)}
-      <MinusSquare className="removeSymbologyValue" onClick={onValueRemove} />
-      <PlusSquare className="addSymbologyValue" onClick={onValueAdd} />
+      <MinusSquare className={`removeButton${values.length > 1 ? "" : "Disabled"}`} onClick={onValueRemove} />
+      <PlusSquare className="addButton" onClick={onValueAdd} />
       <h4>Breaks</h4>
       <Slider
         min={minBreak}
