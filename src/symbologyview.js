@@ -26,41 +26,31 @@ function SymbologyDefinition({symbology, onSave}) {
       <SymbologyProperty name="hue" definition={draft?.hue}
         onEdit={(hueDef) => {updateDraft({...draft, hue: hueDef})}}
         minValue={0} maxValue={360}
-        valueStep={15}
         minBreak={0} maxBreak={15000}
-        breakStep={1000}
         valueLabelFormat={(value) => <ColoredText color={`hsla(${value}, 100%, 80%, 1)`} text={value} />}
         />
       <SymbologyProperty name="saturation" definition={draft?.saturation}
         onEdit={(saturationDef) => {updateDraft({...draft, saturation: saturationDef})}}
         minValue={0} maxValue={100}
-        valueStep={5}
         minBreak={0} maxBreak={15000}
-        breakStep={1000}
         valueLabelFormat={(value) => <ColoredText color={`hsla(0, ${value}%, 80%, 1)`} text={value} />}
         />
       <SymbologyProperty name="lightness" definition={draft?.lightness}
         onEdit={(lightnessDef) => {updateDraft({...draft, lightness: lightnessDef})}}
         minValue={0} maxValue={100}
-        valueStep={5}
         minBreak={0} maxBreak={15000}
-        breakStep={1000}
         valueLabelFormat={(value) => <ColoredText color={`hsla(0, 0%, ${value}%, 1)`} text={value} />}
         />
       <SymbologyProperty name="alpha" definition={draft?.alpha}
         onEdit={(alphaDef) => {updateDraft({...draft, alpha: alphaDef})}}
         minValue={0} maxValue={1}
-        valueStep={0.05}
         minBreak={0} maxBreak={15000}
-        breakStep={1000}
         valueLabelFormat={(value) => <ColoredText color={`hsla(0, 0%, 0%, ${value})`} text={value} />}
         />
       <SymbologyProperty name="size" definition={draft?.size}
         onEdit={(sizeDef) => {updateDraft({...draft, size: sizeDef})}}
         minValue={1} maxValue={20}
-        valueStep={1}
         minBreak={0} maxBreak={15000}
-        breakStep={1000}
         />
       <button id="save-symbology-draft" onClick={saveDraft}>Save</button>
     </div>
@@ -165,7 +155,7 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
               key={idx}
               min={minValue}
               max={maxValue}
-              step={valueStep}
+              step={valueStep ?? Math.pow(10, Math.round(Math.log10((maxValue-minValue)/20)))}
               value={value}
               onChange={(event, value) => { onValuesEdit(value, idx) }}
               valueLabelDisplay="on"
@@ -181,7 +171,7 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
           <Slider
             min={minBreak}
             max={maxBreak}
-            step={breakStep}
+            step={breakStep ?? Math.pow(10, Math.round(Math.log10((maxBreak-minBreak)/20)))}
             value={breaks}
             onChange={onBreaksEdit}
             valueLabelDisplay="on"
