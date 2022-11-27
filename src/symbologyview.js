@@ -26,19 +26,25 @@ function SymbologyDefinition({symbology, onSave}) {
       <SymbologyProperty name="hue" definition={draft?.hue}
         onEdit={(hueDef) => {updateDraft({...draft, hue: hueDef})}}
         minValue={0} maxValue={360}
+        valueStep={15}
         minBreak={0} maxBreak={15000}
+        breakStep={1000}
         valueLabelFormat={(value) => <ColoredText color={`hsla(${value}, 100%, 80%, 1)`} text={value} />}
         />
       <SymbologyProperty name="saturation" definition={draft?.saturation}
         onEdit={(saturationDef) => {updateDraft({...draft, saturation: saturationDef})}}
         minValue={0} maxValue={100}
+        valueStep={5}
         minBreak={0} maxBreak={15000}
+        breakStep={1000}
         valueLabelFormat={(value) => <ColoredText color={`hsla(0, ${value}%, 80%, 1)`} text={value} />}
         />
       <SymbologyProperty name="lightness" definition={draft?.lightness}
         onEdit={(lightnessDef) => {updateDraft({...draft, lightness: lightnessDef})}}
         minValue={0} maxValue={100}
+        valueStep={5}
         minBreak={0} maxBreak={15000}
+        breakStep={1000}
         valueLabelFormat={(value) => <ColoredText color={`hsla(0, 0%, ${value}%, 1)`} text={value} />}
         />
       <SymbologyProperty name="alpha" definition={draft?.alpha}
@@ -46,6 +52,7 @@ function SymbologyDefinition({symbology, onSave}) {
         minValue={0} maxValue={1}
         valueStep={0.05}
         minBreak={0} maxBreak={15000}
+        breakStep={1000}
         valueLabelFormat={(value) => <ColoredText color={`hsla(0, 0%, 0%, ${value})`} text={value} />}
         />
       <SymbologyProperty name="size" definition={draft?.size}
@@ -53,6 +60,7 @@ function SymbologyDefinition({symbology, onSave}) {
         minValue={1} maxValue={20}
         valueStep={1}
         minBreak={0} maxBreak={15000}
+        breakStep={1000}
         />
       <button id="save-symbology-draft" onClick={saveDraft}>Save</button>
     </div>
@@ -163,6 +171,7 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
               valueLabelDisplay="on"
               valueLabelFormat={valueLabelFormat}
               track={false}
+              marks
               />)}
         </div>
         <MinusSquare className={`removeButton${values.length > 1 ? "" : "Disabled"}`} onClick={onValueRemove} />
@@ -177,6 +186,7 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
             onChangeCommitted={onBreaksEdit}
             valueLabelDisplay="on"
             track={false}
+            marks
             />
         </div>
       </div> : null}
