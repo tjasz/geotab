@@ -24,17 +24,27 @@ function SymbologyDefinition({symbology, onSave}) {
   return (
     <div id="symbology-definition">
       <SymbologyProperty name="hue" definition={draft?.hue}
-        onEdit={(hueDef) => {updateDraft({...draft, hue: hueDef})}} />
+        onEdit={(hueDef) => {updateDraft({...draft, hue: hueDef})}}
+        minValue={0} maxValue={360}
+        minBreak={0} maxBreak={15000}
+        valueLabelFormat={(value) => <ColoredText color={`hsla(${value}, 100%, 80%, 1)`} text={value} />}
+        />
+      <SymbologyProperty name="saturation" definition={draft?.saturation}
+        onEdit={(saturationDef) => {updateDraft({...draft, saturation: saturationDef})}}
+        minValue={0} maxValue={100}
+        minBreak={0} maxBreak={15000}
+        valueLabelFormat={(value) => <ColoredText color={`hsla(0, ${value}%, 80%, 1)`} text={value} />}
+        />
       <button id="save-symbology-draft" onClick={saveDraft}>Save</button>
     </div>
   );
 }
 
-function SymbologyProperty({name, definition, onEdit}) {
+function SymbologyProperty({name, definition, onEdit, minValue, maxValue, minBreak, maxBreak, valueLabelFormat}) {
   const context = useContext(DataContext);
   const [fieldname, setFieldname] = useState(definition?.fieldname ?? context.columns[0].name);
   const [mode, setMode] = useState(definition?.mode ?? "discrete");
-  const [values, setValues] = useState(definition?.values ?? [209]);
+  const [values, setValues] = useState(definition?.values ?? [minValue]);
   const [breaks, setBreaks] = useState(definition?.breaks ?? []);
 
   const onFieldnameEdit = (event) => {
@@ -48,11 +58,11 @@ function SymbologyProperty({name, definition, onEdit}) {
     if (newMode === "continuous") {
       // must have at least two values
       if (values.length < 2) {
-        newValues = [...values, ...Array(2-values.length).fill(0)];
+        newValues = [...values, ...Array(2-values.length).fill(minValue)];
       }
       // 'breaks' should have the same number of values as 'values'
       if (breaks.length < newValues.length) {
-        newBreaks = [...breaks, ...Array(newValues.length-breaks.length).fill(0)];
+        newBreaks = [...breaks, ...Array(newValues.length-breaks.length).fill(minBreak)];
       }
     } else { // discrete
       // 'breaks' should have one less value than 'values'
@@ -71,8 +81,8 @@ function SymbologyProperty({name, definition, onEdit}) {
   const onValueAdd = (event) => {
     setValues(Array.isArray(values) ? [...values, 0] : [values, 0]);
     setBreaks(Array.isArray(breaks) ? [...breaks, 0] : [breaks, 0]);
-    onEdit({mode, values: Array.isArray(values) ? [...values, 0] : [values, 0], fieldname,
-            breaks: Array.isArray(breaks) ? [...breaks, 0] : [breaks, 0]});
+    onEdit({mode, values: Array.isArray(values) ? [...values, minValue] : [values, minValue], fieldname,
+            breaks: Array.isArray(breaks) ? [...breaks, minBreak] : [breaks, minBreak]});
   };
   const onValueRemove = (event) => {
     setValues(Array.isArray(values) ? values.slice(0, values.length-1) : []);
@@ -85,6 +95,7 @@ function SymbologyProperty({name, definition, onEdit}) {
     onEdit({mode, values, fieldname, breaks: Array.isArray(breaks) ? breaks : [breaks]});
   }
 
+  // TODO disable continuous for string columns
   return (
     <div className="symbologyProperty">
       <h3>{name}</h3>
@@ -106,20 +117,20 @@ function SymbologyProperty({name, definition, onEdit}) {
       {values.map((value, idx) =>
         <Slider
           key={idx}
-          min={0}
-          max={360}
+          min={minValue}
+          max={maxValue}
           value={value}
           onChangeCommitted={(event, value) => { onValuesEdit(value, idx) }}
           valueLabelDisplay="on"
-          valueLabelFormat={(value) => <ColoredText color={`hsla(${value}, 100%, 80%, 1)`} text={value} />}
+          valueLabelFormat={valueLabelFormat}
           track={false}
           />)}
       <MinusSquare className="removeSymbologyValue" onClick={onValueRemove} />
       <PlusSquare className="addSymbologyValue" onClick={onValueAdd} />
       <h4>Breaks</h4>
       <Slider
-        min={0}
-        max={15000}
+        min={minBreak}
+        max={maxBreak}
         value={breaks}
         onChangeCommitted={onBreaksEdit}
         valueLabelDisplay="on"
