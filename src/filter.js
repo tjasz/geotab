@@ -29,8 +29,8 @@ export const conditionOperators = [
 ];
 
 export const operandTypes = {
-  IsEmpty: "auto",
-  IsNotEmpty: "auto",
+  IsEmpty: "string",
+  IsNotEmpty: "string",
   EqualTo: "auto",
   NotEqualTo: "auto",
   GreaterThan: "auto",
