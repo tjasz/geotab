@@ -340,10 +340,10 @@ export function validateFilter(filter, context) {
 function validateConditionGroup(group, context) {
   switch (group.operator) {
     case "and":
-      return group.conditions.map((condition) => validateFilter(condition, context)).join("\n");
+      return group.conditions.map((condition) => validateFilter(condition, context)).filter((error) => error && error !== "").join("\n");
     case "or":
       // child can be a condition or another group
-      return group.conditions.map((condition) => validateFilter(condition, context)).join("\n");
+      return group.conditions.map((condition) => validateFilter(condition, context)).filter((error) => error && error !== "").join("\n");
     default:
       return `ConditionGroup.operator: Found '${group.operator}'. Expected 'and' or 'or'.`;
   }

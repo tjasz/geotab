@@ -55,7 +55,7 @@ function DataView(props) {
   }
   const onFilterSave = (draft) => {
     const errors = validateFilter(draft, context);
-    if (errors) {
+    if (errors && errors !== "") {
       alert(errors);
     } else {
       context.setFilter(draft); 
