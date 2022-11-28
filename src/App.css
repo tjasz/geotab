@@ -182,6 +182,7 @@ button:active {
   float: left;
   height: 85.5vh;
   padding: 0.5em 0;
+  overflow: scroll;
 }
 
 #filter-definition {
@@ -237,6 +238,7 @@ button:active {
   float: left;
   height: 85.5vh;
   padding: 0.5em 0;
+  overflow: scroll;
 }
 
 #symbology-definition {
