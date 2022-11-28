@@ -125,6 +125,76 @@
         "forest": "Colville",
         "peakbagger": "https://peakbagger.com/peak.aspx?pid=3042"
       }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-121.750747, 48.326499]
+      },
+      "properties": {
+        "title": "Round Mountain",
+        "elevation": "5320",
+        "prominence": "4780",
+        "county": "Skagit",
+        "national park": "",
+        "wilderness": "",
+        "forest": "Mount Baker",
+        "peakbagger": "https://peakbagger.com/peak.aspx?pid=908"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-121.240464, 48.969666]
+      },
+      "properties": {
+        "title": "Spickard, Mount",
+        "elevation": "8979",
+        "prominence": "4779",
+        "firstAscent": "1904",
+        "county": "Whatcom",
+        "national park": "North Cascades",
+        "wilderness": "Stephen Mather",
+        "forest": "",
+        "peakbagger": "https://peakbagger.com/peak.aspx?pid=1610"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-118.46571, 48.702516]
+      },
+      "properties": {
+        "title": "Copper Butte",
+        "elevation": "7140",
+        "prominence": "4740",
+        "county": "Ferry",
+        "national park": "",
+        "wilderness": "",
+        "forest": "Colville",
+        "peakbagger": "https://peakbagger.com/peak.aspx?pid=2962"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.195606, 46.191418]
+      },
+      "properties": {
+        "title": "Saint Helens, Mount",
+        "elevation": "8333",
+        "prominence": "4573",
+        "firstAscent": "1853-08-26",
+        "county": "Skamania",
+        "national park": "",
+        "wilderness": "",
+        "forest": "Gifford Pinchot",
+        "peakbagger": "https://peakbagger.com/peak.aspx?pid=2353"
+      }
     }
   ]
 }
