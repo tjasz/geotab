@@ -38,16 +38,6 @@ function ImportExportView(props) {
     context.setFilter(defaultFilter);
     context.setSymbology(null)
   };
-  const process = () => {
-    const fileSelector = document.getElementById('file-selector');
-    const fname = fileSelector.files[0];
-    const reader = new FileReader();
-    reader.addEventListener('load', (event) => {
-      const jso = JSON.parse(event.target.result);
-      setDataFromJson(jso);
-    });
-    reader.readAsText(fname);
-  };
   const processServerFile = (fname) => {
     fetch(fname,{
         headers : {
@@ -74,8 +64,7 @@ function ImportExportView(props) {
   return (
     <div id="importExportView">
       <h3>Import/Export</h3>
-      <input type="file" id="file-selector" />
-      <button type="button" id="next-button" onClick={process}>Process</button>
+      <FileImporter onRead={setDataFromJson} />
       <p>Try pre-loaded data:</p>
       <ul>
         <li>
@@ -89,6 +78,25 @@ function ImportExportView(props) {
           </a>
         </li>
       </ul>
+    </div>
+  );
+}
+
+function FileImporter({onRead}) {
+  const process = () => {
+    const fileSelector = document.getElementById('file-selector');
+    const fname = fileSelector.files[0];
+    const reader = new FileReader();
+    reader.addEventListener('load', (event) => {
+      const jso = JSON.parse(event.target.result);
+      onRead(jso);
+    });
+    reader.readAsText(fname);
+  };
+  return (
+    <div className="fileImporter">
+      <input type="file" id="file-selector" />
+      <button type="button" id="next-button" onClick={process}>Process</button>
     </div>
   );
 }
