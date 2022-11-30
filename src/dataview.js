@@ -76,21 +76,19 @@ function ImportExportView(props) {
       <h3>Import/Export</h3>
       <input type="file" id="file-selector" />
       <button type="button" id="next-button" onClick={process}>Process</button>
-      <p id="getting-started">
-        Try pre-loaded data:
-        <ul>
-          <li>
-            <a href="#" onClick={() => { setUrlParams({src: "backpacking-washington"}); processServerFile("json/backpacking-washington.json"); }}>
-              Backpacking Washington
-            </a>
-          </li>
-          <li>
-            <a href="#" onClick={() => { setUrlParams({src: "wa-ultras"}); processServerFile("json/wa-ultras.json"); }}>
-              Washington Most Prominent Peaks
-            </a>
-          </li>
-        </ul>
-      </p>
+      <p>Try pre-loaded data:</p>
+      <ul>
+        <li>
+          <a href="#" onClick={() => { setUrlParams({src: "backpacking-washington"}); processServerFile("json/backpacking-washington.json"); }}>
+            Backpacking Washington
+          </a>
+        </li>
+        <li>
+          <a href="#" onClick={() => { setUrlParams({src: "wa-ultras"}); processServerFile("json/wa-ultras.json"); }}>
+            Washington Most Prominent Peaks
+          </a>
+        </li>
+      </ul>
     </div>
   );
 }
