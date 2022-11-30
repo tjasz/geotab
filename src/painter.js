@@ -10,7 +10,6 @@ function findIndex(array, value) {
       break;
     }
   }
-  // console.log(`${value} : ${array} : ${i}`)
   return i;
 }
 
@@ -68,7 +67,6 @@ export function painter(symbology) {
   //   "hue": {mode: "discrete", values: [150, 250], fieldname: "elevation", breaks: [10000]},
   // },
   const fn = (feature, latlng) => {
-    console.log(symbology);
     // get color-related attributes
     const hue = interpolation(symbology?.hue, feature) ?? 209;
     const sat = interpolation(symbology?.saturation, feature) ?? 50;
