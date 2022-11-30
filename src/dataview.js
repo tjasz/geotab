@@ -9,6 +9,24 @@ import {Select} from './common-components.js'
 
 function DataView(props) {
   const context = useContext(DataContext);
+  const onFilterSave = (draft) => {
+    const errors = validateFilter(draft, context);
+    if (errors && errors !== "") {
+      alert(errors);
+    } else {
+      context.setFilter(draft); 
+    }};
+  return (
+    <div id="dataview" style={props.style}>
+      <h2>Data</h2>
+      <ImportExportView />
+      {context.filter && <FilterDefinition filter={context.filter} onSave={onFilterSave} />}
+    </div>
+  );
+}
+
+function ImportExportView(props) {
+  const context = useContext(DataContext);
   const [urlParams, setUrlParams] = useSearchParams();
   const urlSrc = urlParams.get("src") ?? "wa-ultras";
   const setDataFromJson = (json) => {
@@ -53,20 +71,13 @@ function DataView(props) {
   if (!context.data || !context.data.length) {
     processServerFile(`json/${urlSrc}.json`);
   }
-  const onFilterSave = (draft) => {
-    const errors = validateFilter(draft, context);
-    if (errors && errors !== "") {
-      alert(errors);
-    } else {
-      context.setFilter(draft); 
-    }};
   return (
-    <div id="dataview" style={props.style}>
+    <div id="importExportView">
+      <h3>Import/Export</h3>
       <input type="file" id="file-selector" />
       <button type="button" id="next-button" onClick={process}>Process</button>
       <p id="getting-started">Need an example file to try to the viewer? Try&nbsp;
       <a href="#" onClick={() => { setUrlParams({src: "backpacking-washington"}); processServerFile("json/backpacking-washington.json"); }}>Backpacking Washington</a>.</p>
-      {context.filter && <FilterDefinition filter={context.filter} onSave={onFilterSave} />}
     </div>
   );
 }

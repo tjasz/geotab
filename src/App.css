@@ -185,6 +185,11 @@ button:active {
   overflow: scroll;
 }
 
+#importExportView {
+  text-align: left;
+  padding: 1em;
+}
+
 #filter-definition {
   text-align: left;
   padding: 1em;
