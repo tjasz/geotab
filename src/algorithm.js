@@ -1,3 +1,5 @@
+import Papa from 'papaparse';
+
 export function hashCode(str) {
   return Array.from(str).reduce((hash, char) => 0 | (31 * hash + char.charCodeAt(0)), 0);
 }
@@ -178,4 +180,28 @@ export function getFeatureListBounds(features) {
     }
   }
   return bounds.flat().some((bound) => bound === null) ? null : bounds;
+}
+
+export function csvToJson(csvString) {
+  const parseResult = Papa.parse(csvString, {delimiter: ",", header: true, dynamicTyping: false, skipEmptyLines: true});
+  const latfield = parseResult.meta.fields.find((f) => f.toLowerCase().includes("lat"));
+  const lonfield = parseResult.meta.fields.find((f) => f.toLowerCase().includes("lon"));
+  // TODO allow manual specification of lat/lon fields
+  // TODO handle non-number lat/lon formats like DMS
+  if (!latfield) throw Error(`Expected latitude field. Found ${parseResult.meta.fields}.`);
+  if (!lonfield) throw Error(`Expected longitude field. Found ${parseResult.meta.fields}.`);
+
+  return {
+    type: "FeatureCollection",
+    features: parseResult.data.map((row) =>
+      { return {
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [row[lonfield], row[latfield]],
+        },
+        properties: row,
+      }}
+    )
+  };
 }
