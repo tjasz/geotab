@@ -75,10 +75,10 @@ export function painter(symbology) {
     const color = `hsla(${hue}, ${sat}%, ${light}%, ${alpha})`;
     // get other attributes
     const size = interpolation(symbology?.size, feature) ?? 5;
-    // TODO shape
+    const shape = Math.round(interpolation(symbology?.shape, feature)) ?? 3;
 
     if (feature.geometry?.type == "Point") {
-      return PolygonMarker(latlng, Infinity, size, color);
+      return StarMarker(latlng, shape, size, color);
     } else {
       // TODO lineCap, lineJoin, dashArray, dashOffset, fillColor, fillOpacity, fillRule, fill boolean, stroke boolean
       let dashArray = "";

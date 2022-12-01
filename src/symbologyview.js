@@ -47,6 +47,10 @@ function SymbologyDefinition({symbology, onSave}) {
         onEdit={(sizeDef) => {updateDraft({...draft, size: sizeDef})}}
         minValue={1} maxValue={20}
         />
+      <SymbologyProperty name="shape" definition={draft?.shape}
+        onEdit={(shapeDef) => {updateDraft({...draft, shape: shapeDef})}}
+        minValue={3} maxValue={20}
+        />
       <button id="save-symbology-draft" onClick={saveDraft}>Save</button>
     </div>
   );
