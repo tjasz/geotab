@@ -190,6 +190,11 @@ button:active {
   padding: 1em;
 }
 
+#exportView {
+  text-align: left;
+  padding: 1em;
+}
+
 #filter-definition {
   text-align: left;
   padding: 1em;

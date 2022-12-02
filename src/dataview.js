@@ -20,6 +20,7 @@ function DataView(props) {
     <div id="dataview" style={props.style}>
       <h2>Data</h2>
       <ImportView />
+      <ExportView />
       {context.filter && <FilterDefinition filter={context.filter} onSave={onFilterSave} />}
     </div>
   );
@@ -63,7 +64,7 @@ function ImportView(props) {
   }
   return (
     <div id="importView">
-      <h3>Import/Export</h3>
+      <h3>Import</h3>
       <FileImporter onRead={setDataFromJson} />
       <p>Try pre-loaded data:</p>
       <ul>
@@ -104,6 +105,28 @@ function FileImporter({onRead}) {
     <div className="fileImporter">
       <input type="file" id="file-selector" />
       <button type="button" id="next-button" onClick={process}>Process</button>
+    </div>
+  );
+}
+
+function ExportView(props) {
+  const context = useContext(DataContext);
+  const exportJson = () => {
+    const downloadLink = document.createElement("a");
+    const textContent = JSON.stringify({
+      type: "FeatureCollection",
+      features: context.data
+    });
+    const file = new Blob([textContent], {type: 'text/plain'});
+    downloadLink.href = URL.createObjectURL(file);
+    downloadLink.download = "geotabExport.json";
+    document.body.appendChild(downloadLink); // Required for this to work in FireFox
+    downloadLink.click();
+  };
+  return (
+    <div id="exportView">
+      <h3>Export</h3>
+      <button onClick={exportJson}>Export .json</button>
     </div>
   );
 }
