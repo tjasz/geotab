@@ -24,7 +24,7 @@ function ar(a, r) {
 }
 
 // create the SVG path commands for an n-gon of radius r
-function svgPolygon(n, r, stroke, fill) {
+function svgPolygon(n, r, stroke, fill, text) {
   let strokeFill = `stroke="${stroke ?? "#336799"}" fill="${fill ?? stroke ?? "#336799"}"`;
   let str = `<svg width="${2*r}" height="${2*r}" viewBox="-50 -50 100 100" xmlns="http://www.w3.org/2000/svg">`;
   if (n === Infinity) { // circle
@@ -42,19 +42,22 @@ function svgPolygon(n, r, stroke, fill) {
     cmds += "Z";
     str += `<path d="${cmds}" ${strokeFill} />`;
   }
+  if (text) {
+    str += `<text x="50" y="50" font-size="100"  dominant-baseline="middle" text-anchor="middle">${text}</text>`;
+  }
   str += "</svg>";
   return str;
 }
 
-export function PolygonMarker(latlng, n, r, stroke, fill) {
+export function PolygonMarker(latlng, n, r, stroke, fill, text) {
   return new svgMarker(
     latlng,
-    svgPolygon(n, r, stroke, fill)
+    svgPolygon(n, r, stroke, fill, text)
   );
 }
 
 // create the SVG path commands for an n-star of radius r
-function svgStar(n, r, stroke, fill) {
+function svgStar(n, r, stroke, fill, text) {
   let strokeFill = `stroke="${stroke ?? "#336799"}" fill="${fill ?? stroke ?? "#336799"}"`;
   let str = `<svg width="${2*r}" height="${2*r}" viewBox="-50 -50 100 100" xmlns="http://www.w3.org/2000/svg">`;
   if (n === Infinity) { // circle
@@ -72,13 +75,16 @@ function svgStar(n, r, stroke, fill) {
     cmds += "Z";
     str += `<path d="${cmds}" ${strokeFill} />`;
   }
+  if (text) {
+    str += `<text x="0" y="0" font-size="50"  dominant-baseline="middle" text-anchor="middle">${text}</text>`;
+  }
   str += "</svg>";
   return str;
 }
 
-export function StarMarker(latlng, n, r, stroke, fill) {
+export function StarMarker(latlng, n, r, stroke, fill, text) {
   return new svgMarker(
     latlng,
-    svgStar(n, r, stroke, fill)
+    svgStar(n, r, stroke, fill, text)
   );
 }
