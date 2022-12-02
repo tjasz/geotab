@@ -78,7 +78,6 @@ export function painter(symbology) {
     const shape = interpolation(symbology?.shape, feature) ?? 3;
 
     if (feature.geometry?.type == "Point") {
-      console.log(shape)
       return StarMarker(latlng, Math.round(shape), size, color);
     } else {
       // TODO lineCap, lineJoin, dashArray, dashOffset, fillColor, fillOpacity, fillRule, fill boolean, stroke boolean

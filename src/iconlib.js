@@ -1,4 +1,5 @@
 import L from 'leaflet'
+import {dsin, dcos} from './algorithm.js'
 
 function svgMarker(latlng, svg) {
   return new L.marker(latlng, {icon: svgIcon(svg)});
@@ -11,14 +12,7 @@ function svgIcon(svg) {
   });
 }
 
-// geometry
-function dsin(a) {
-  return Math.sin(a * Math.PI / 180.0);
-}
-function dcos(a) {
-  return Math.cos(a * Math.PI / 180.0);
-}
-
+// get the resulting point from traveling r distance from (0,0) at angle a in degrees
 function ar(a, r) {
   return [r*dsin(a), r*dcos(a)]
 }

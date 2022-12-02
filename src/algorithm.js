@@ -1,5 +1,14 @@
 import Papa from 'papaparse';
 
+// sin of a in degrees
+export function dsin(a) {
+  return Math.sin(a * Math.PI / 180.0);
+}
+// cos of a in degrees
+export function dcos(a) {
+  return Math.cos(a * Math.PI / 180.0);
+}
+
 export function hashCode(str) {
   return Array.from(str).reduce((hash, char) => 0 | (31 * hash + char.charCodeAt(0)), 0);
 }
@@ -157,6 +166,51 @@ export function getFeatureBounds(feature) {
       ];
     default:
       return null;
+  }
+}
+
+function getLengthFromCoordinateList(coordinates) {
+  if (coordinates.length < 2) {
+    return 0;
+  }
+  const earthRadiusMeters = 6378e3; // meters
+  let dist = 0;
+  let lastLatlon = coordinates[0].slice(0,2).reverse();
+  for (const coord of coordinates) {
+    // translate coordinate from lonlat to latlon
+    const latlon = coord.slice(0,2).reverse();
+    // use haversine formula to calcualte distance between two points
+    const delta_lat = latlon[0] - lastLatlon[0];
+    const delta_lon = latlon[1] - lastLatlon[1];
+    const sin_half_delta_lat = dsin(delta_lat/2);
+    const sin_half_delta_lon = dsin(delta_lon/2);
+    const a = sin_half_delta_lat * sin_half_delta_lat
+            + dcos(lastLatlon[0]) * dcos(latlon[0])
+            * sin_half_delta_lon * sin_half_delta_lon;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const d = c * earthRadiusMeters;
+    dist += d;
+    // update reference to last point
+    lastLatlon = latlon;
+  }
+  return dist;
+}
+
+export function getFeatureLengthMeters(feature) {
+  // TODO: what about going over 0 lon?
+  switch(feature.geometry?.type) {
+    case "Point":
+    case "MultiPoint":
+      return 0;
+    case "LineString":
+      return getLengthFromCoordinateList(feature.geometry.coordinates);
+    case "MultiLineString":
+    case "MultiPolygon":
+    case "Polygon":
+      return feature.geometry.coordinates.reduce(
+        (accumulator, part) => accumulator + getLengthFromCoordinateList(part), 0);
+    default:
+      return NaN;
   }
 }
 
