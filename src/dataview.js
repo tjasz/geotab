@@ -19,13 +19,13 @@ function DataView(props) {
   return (
     <div id="dataview" style={props.style}>
       <h2>Data</h2>
-      <ImportExportView />
+      <ImportView />
       {context.filter && <FilterDefinition filter={context.filter} onSave={onFilterSave} />}
     </div>
   );
 }
 
-function ImportExportView(props) {
+function ImportView(props) {
   const context = useContext(DataContext);
   const [urlParams, setUrlParams] = useSearchParams();
   const urlSrc = urlParams.get("src") ?? "wa-ultras";
@@ -62,7 +62,7 @@ function ImportExportView(props) {
     processServerFile(`json/${urlSrc}.json`);
   }
   return (
-    <div id="importExportView">
+    <div id="importView">
       <h3>Import/Export</h3>
       <FileImporter onRead={setDataFromJson} />
       <p>Try pre-loaded data:</p>

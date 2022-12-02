@@ -185,7 +185,7 @@ button:active {
   overflow: scroll;
 }
 
-#importExportView {
+#importView {
   text-align: left;
   padding: 1em;
 }
