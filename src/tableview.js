@@ -1,6 +1,7 @@
 import React, {useContext} from 'react';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import DeleteIcon from '@mui/icons-material/Delete'
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -71,6 +72,12 @@ function ColumnContextMenu(props) {
   const setInvisible = (fieldname) => {
     context.setColumns(context.columns.map((col, i) => col.name === fieldname ? {...col, visible: false} : col));
   };
+  const deleteColumn = (fieldname) => {
+    // delete from column list
+    context.setColumns(context.columns.filter((col) => col.name !== fieldname));
+    // delete from data as well
+    context.setData(context.data.map((feature) => { let {[fieldname]: _, ...rest} = feature.properties; return {...feature, properties: rest}; }));
+  };
 
   const handleContextMenu = (event) => {
     setContextMenu(
@@ -110,6 +117,13 @@ function ColumnContextMenu(props) {
           </ListItemIcon>
           <ListItemText>Hide</ListItemText>
         </MenuItem>
+        <MenuItem
+          onClick={() => { deleteColumn(props.columnName); handleClose() }}>
+          <ListItemIcon>
+            <DeleteIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Delete</ListItemText>
+        </MenuItem>
       </Menu>
     </span>
   );
@@ -120,7 +134,7 @@ function TableHeader(props) {
     <tr>
       <th></th>
       {Array.from(props.columns).filter((column) => column.visible).map((column) =>
-        <th key={column.name}v>
+        <th key={column.name} >
           <span onClick={() => {
             props.setSorting([column, (props.sorting && props.sorting[0].name === column.name) ? !props.sorting[1] : true]);
           }}>
