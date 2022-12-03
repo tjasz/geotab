@@ -1,4 +1,5 @@
 import React, {useContext} from 'react';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import {DataContext} from './dataContext.js'
 import {evaluateFilter} from './filter.js'
 
@@ -59,16 +60,21 @@ function DataTable() {
 }
 
 function TableHeader(props) {
+  const context = useContext(DataContext);
+  const setInvisible = (fieldname) => {
+    context.setColumns(context.columns.map((col, i) => col.name === fieldname ? {...col, visible: false} : col));
+  };
   return (
     <tr>
       <th></th>
-      {Array.from(props.columns).map((column) =>
+      {Array.from(props.columns).filter((column) => column.visible).map((column) =>
         <th
           key={column.name}
           onClick={() => {
             props.setSorting([column, (props.sorting && props.sorting[0].name === column.name) ? !props.sorting[1] : true]);
           }}>
           {column.name}
+          <VisibilityOffIcon className="inlineIcon" onClick={() => setInvisible(column.name)} />
         </th>)}
     </tr>
   );
@@ -78,7 +84,7 @@ function TableRow(props) {
   return (
     <tr onClick={() => props.setActive(props.feature.hash)} className={props.active ? "active" : ""}>
       <th>{1+props.fidx}</th>
-      {Array.from(props.columns).map((column) =>
+      {Array.from(props.columns).filter((column) => column.visible).map((column) =>
         <TableCell key={`${column.name}`} column={column} value={props.feature.properties[column.name]} />)}
     </tr>
   );

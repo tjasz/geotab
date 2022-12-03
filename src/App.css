@@ -145,6 +145,7 @@ button:active {
   border-bottom: 2px solid black;
   padding: 0.25em;
   cursor: pointer;
+  white-space: nowrap;
 }
 #data-table th a {
   color: #b3e7ff;
@@ -198,6 +199,11 @@ button:active {
 #filter-definition {
   text-align: left;
   padding: 1em;
+}
+
+.inlineIcon {
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .addButton {
