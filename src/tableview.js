@@ -84,7 +84,7 @@ function ColumnContextMenu(props) {
     context.setColumns(context.columns.map((col) => col.name === oldname ? {...col, name: newname} : col));
   };
   const swapColumns = (i1, i2) => {
-    if (i1 < 0 || i2 < 0 || i1 > context.columns.length || i2 > context.columns.length) return;
+    if (i1 < 0 || i2 < 0 || i1 >= context.columns.length || i2 >= context.columns.length) return;
     context.setColumns(context.columns.map((col, i) =>
       i === i1 ? context.columns[i2] : i === i2 ? context.columns[i1] : col));
   };
