@@ -1,5 +1,10 @@
 import React, {useContext} from 'react';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemIcon from '@mui/material/ListItemIcon';
 import {DataContext} from './dataContext.js'
 import {evaluateFilter} from './filter.js'
 
@@ -59,22 +64,71 @@ function DataTable() {
   );
 }
 
-function TableHeader(props) {
+function ColumnContextMenu(props) {
   const context = useContext(DataContext);
+  const [contextMenu, setContextMenu] = React.useState(null);
+  
   const setInvisible = (fieldname) => {
     context.setColumns(context.columns.map((col, i) => col.name === fieldname ? {...col, visible: false} : col));
   };
+
+  const handleContextMenu = (event) => {
+    setContextMenu(
+      contextMenu === null
+        ? {
+            mouseX: event.clientX + 2,
+            mouseY: event.clientY - 6,
+          }
+        : // repeated contextmenu when it is already open closes it with Chrome 84 on Ubuntu
+          // Other native context menus might behave different.
+          // With this behavior we prevent contextmenu from the backdrop to re-locale existing context menus.
+          null,
+    );
+  };
+
+  const handleClose = () => {
+    setContextMenu(null);
+  };
+
+  return (
+    <span onClick={handleContextMenu} style={{ cursor: 'context-menu' }}>
+      {props.children}
+      <Menu
+        open={contextMenu !== null}
+        onClose={handleClose}
+        anchorReference="anchorPosition"
+        anchorPosition={
+          contextMenu !== null
+            ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
+            : undefined
+        }
+      >
+        <MenuItem
+          onClick={() => { setInvisible(props.columnName); handleClose() }}>
+          <ListItemIcon>
+            <VisibilityOffIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Hide</ListItemText>
+        </MenuItem>
+      </Menu>
+    </span>
+  );
+}
+
+function TableHeader(props) {
   return (
     <tr>
       <th></th>
       {Array.from(props.columns).filter((column) => column.visible).map((column) =>
-        <th
-          key={column.name}
-          onClick={() => {
+        <th key={column.name}v>
+          <span onClick={() => {
             props.setSorting([column, (props.sorting && props.sorting[0].name === column.name) ? !props.sorting[1] : true]);
           }}>
-          {column.name}
-          <VisibilityOffIcon className="inlineIcon" onClick={() => setInvisible(column.name)} />
+            {column.name}
+          </span>
+          <ColumnContextMenu columnName={column.name}>
+            <MoreVertIcon className="inlineIcon" />
+          </ColumnContextMenu>
         </th>)}
     </tr>
   );
