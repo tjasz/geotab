@@ -1,7 +1,9 @@
 import React, {useContext} from 'react';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import DeleteIcon from '@mui/icons-material/Delete'
+import DeleteIcon from '@mui/icons-material/Delete';
+import WestIcon from '@mui/icons-material/West';
+import EastIcon from '@mui/icons-material/East';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -70,13 +72,21 @@ function ColumnContextMenu(props) {
   const [contextMenu, setContextMenu] = React.useState(null);
   
   const setInvisible = (fieldname) => {
-    context.setColumns(context.columns.map((col, i) => col.name === fieldname ? {...col, visible: false} : col));
+    context.setColumns(context.columns.map((col) => col.name === fieldname ? {...col, visible: false} : col));
   };
   const deleteColumn = (fieldname) => {
     // delete from column list
     context.setColumns(context.columns.filter((col) => col.name !== fieldname));
     // delete from data as well
     context.setData(context.data.map((feature) => { let {[fieldname]: _, ...rest} = feature.properties; return {...feature, properties: rest}; }));
+  };
+  const renameColumn = (oldname, newname) => {
+    context.setColumns(context.columns.map((col) => col.name === oldname ? {...col, name: newname} : col));
+  };
+  const swapColumns = (i1, i2) => {
+    if (i1 < 0 || i2 < 0 || i1 > context.columns.length || i2 > context.columns.length) return;
+    context.setColumns(context.columns.map((col, i) =>
+      i === i1 ? context.columns[i2] : i === i2 ? context.columns[i1] : col));
   };
 
   const handleContextMenu = (event) => {
@@ -118,6 +128,20 @@ function ColumnContextMenu(props) {
           <ListItemText>Hide</ListItemText>
         </MenuItem>
         <MenuItem
+          onClick={() => { swapColumns(props.columnIndex, props.columnIndex-1); handleClose() }}>
+          <ListItemIcon>
+            <WestIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Shift left</ListItemText>
+        </MenuItem>
+        <MenuItem
+          onClick={() => { swapColumns(props.columnIndex, props.columnIndex+1); handleClose() }}>
+          <ListItemIcon>
+            <EastIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Shift right</ListItemText>
+        </MenuItem>
+        <MenuItem
           onClick={() => { deleteColumn(props.columnName); handleClose() }}>
           <ListItemIcon>
             <DeleteIcon fontSize="small" />
@@ -133,14 +157,14 @@ function TableHeader(props) {
   return (
     <tr>
       <th></th>
-      {Array.from(props.columns).filter((column) => column.visible).map((column) =>
+      {Array.from(props.columns).filter((column) => column.visible).map((column, idx) =>
         <th key={column.name} >
           <span onClick={() => {
             props.setSorting([column, (props.sorting && props.sorting[0].name === column.name) ? !props.sorting[1] : true]);
           }}>
             {column.name}
           </span>
-          <ColumnContextMenu columnName={column.name}>
+          <ColumnContextMenu columnName={column.name} columnIndex={idx}>
             <MoreVertIcon className="inlineIcon" />
           </ColumnContextMenu>
         </th>)}
