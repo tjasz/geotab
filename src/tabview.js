@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import DataView from './dataview.js'
 import MapView from './mapview.js'
 import TableView from './tableview.js'

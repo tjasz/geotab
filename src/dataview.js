@@ -69,14 +69,14 @@ function ImportView(props) {
       <p>Try pre-loaded data:</p>
       <ul>
         <li>
-          <a href="#" onClick={() => { setUrlParams({src: "backpacking-washington"}); processServerFile("json/backpacking-washington.json"); }}>
+          <button onClick={() => { setUrlParams({src: "backpacking-washington"}); processServerFile("json/backpacking-washington.json"); }}>
             Backpacking Washington
-          </a>
+          </button>
         </li>
         <li>
-          <a href="#" onClick={() => { setUrlParams({src: "wa-ultras"}); processServerFile("json/wa-ultras.json"); }}>
+          <button onClick={() => { setUrlParams({src: "wa-ultras"}); processServerFile("json/wa-ultras.json"); }}>
             Washington Most Prominent Peaks
-          </a>
+          </button>
         </li>
       </ul>
     </div>
@@ -205,7 +205,7 @@ function ConditionView(props) {
   const [negate, setNegate] = useState(props.filter.negate);
   const onFieldnameEdit = (event) => {
     const column = context.columns.find((column) => column.name === event.target.value);
-    if (column === undefined) { throw `Cannot find column with name ${event.target.value}.` }
+    if (column === undefined) { throw Error(`Cannot find column with name ${event.target.value}.`) }
     const newOperandType = operandTypes[operator] === "auto" ? column.type : operandTypes[operator];
     setFieldname(event.target.value);
     setOperandType(newOperandType);
@@ -213,7 +213,7 @@ function ConditionView(props) {
   };
   const onOperatorEdit = (event) => {
     const column = context.columns.find((column) => column.name === fieldname);
-    if (column === undefined) { throw `Cannot find column with name ${event.target.value}.` }
+    if (column === undefined) { throw Error(`Cannot find column with name ${event.target.value}.`) }
     const newOperandType = operandTypes[event.target.value] === "auto" ? column.type : operandTypes[event.target.value];
     setOperandType(newOperandType);
     setOperator(event.target.value);

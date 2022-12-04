@@ -176,8 +176,8 @@ function lessThan(rowValue, value) {
 }
 
 function between(rowValue, a, b) {
-  return rowValue >= a && rowValue <= b ||
-         rowValue <= a && rowValue >= b;
+  return (rowValue >= a && rowValue <= b) ||
+         (rowValue <= a && rowValue >= b);
 }
 
 function isIn(rowValue, values) {
@@ -292,31 +292,24 @@ function evaluateCondition(row, condition) {
     case "OnDayOfMonth":
       // TODO
       throw Error("Unimplemented function OnDayOfMonth");
-      break;
     case "OnDayOfYear":
       // TODO
       throw Error("Unimplemented function OnDayOfYear");
-      break;
     case "OnDayMonthOfYear":
       // TODO
       throw Error("Unimplemented function OnDayMonthOfYear");
-      break;
     case "InWeekOfMonth":
       // TODO
       throw Error("Unimplemented function InWeekOfMonth");
-      break;
     case "InWeekOfYear":
       // TODO
       throw Error("Unimplemented function InWeekOfYear");
-      break;
     case "InMonthOfYear":
       // TODO
       throw Error("Unimplemented function InMonthOfYear");
-      break;
     case "InYear":
       // TODO
       throw Error("Unimplemented function InYear");
-      break;
     default:
       throw Error(`Condition.operator: Found ${condition.operator}. Expected one of ${conditionOperators}.`);
   }

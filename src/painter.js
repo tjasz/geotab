@@ -1,4 +1,4 @@
-import {PolygonMarker, StarMarker} from './iconlib.js'
+import {StarMarker} from './iconlib.js'
 
 export const symbologyModes = ["discrete", "continuous"];
 
@@ -77,13 +77,14 @@ export function painter(symbology) {
     const size = interpolation(symbology?.size, feature) ?? 5;
     const shape = interpolation(symbology?.shape, feature) ?? 3;
 
-    if (feature.geometry?.type == "Point") {
+    if (feature.geometry?.type === "Point") {
       return StarMarker(latlng, Math.round(shape), size, color);
     } else {
       // TODO lineCap, lineJoin, dashArray, dashOffset, fillColor, fillOpacity, fillRule, fill boolean, stroke boolean
       let dashArray = "";
       if (feature.properties["pattern"]) {
         switch(feature.properties["pattern"]) {
+          default:
           case "solid":
             dashArray = "";
             break;
