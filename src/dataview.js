@@ -203,6 +203,10 @@ function ConditionView(props) {
   const [operandType, setOperandType] = useState(props.filter.operandType);
   const [parameters, setParameters] = useState(props.filter.parameters);
   const [negate, setNegate] = useState(props.filter.negate);
+  const onNegateEdit = (event) => {
+    setNegate(event.target.checked);
+    props.onEdit({type: "Condition", fieldname, operandType, operator, parameters, negate: event.target.checked}, props.indexInGroup);
+  }
   const onFieldnameEdit = (event) => {
     const column = context.columns.find((column) => column.name === event.target.value);
     if (column === undefined) { throw Error(`Cannot find column with name ${event.target.value}.`) }
@@ -229,6 +233,11 @@ function ConditionView(props) {
   };
   return (
     <div className="conditionView" style={{paddingLeft: '2em'}}>
+      <input
+        type="checkbox"
+        checked={negate}
+        onChange={onNegateEdit}
+        />
       <Select 
         id={`${props.key}-fieldname`}
         name={`${props.key}-fieldname`}
