@@ -1,9 +1,16 @@
-import React, {useContext} from 'react';
+import React, {useContext, useState} from 'react';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import DeleteIcon from '@mui/icons-material/Delete';
 import WestIcon from '@mui/icons-material/West';
 import EastIcon from '@mui/icons-material/East';
+import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -67,9 +74,50 @@ function DataTable() {
   );
 }
 
+function RenameColumnDialog(props) {
+  const { onClose, defaultValue, open } = props;
+  const [ draft, setDraft] = useState(defaultValue);
+
+  const handleCancel = () => {
+    onClose(defaultValue);
+  };
+
+  const handleConfirm = () => {
+    onClose(draft);
+  };
+
+  return (
+    <Dialog onClose={handleCancel} open={open}>
+      <DialogTitle>Rename column '{defaultValue}'</DialogTitle>
+      <DialogContent>
+        <TextField
+          autoFocus
+          margin="dense"
+          id="columnName"
+          label="Name"
+          type="text"
+          fullWidth
+          onChange={(e) => setDraft(e.target.value)}
+          defaultValue={defaultValue}
+          onKeyUp={(e) => {
+            if (e.key === 'Enter') {
+              handleConfirm();
+            }
+          }}
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleCancel}>Cancel</Button>
+        <Button onClick={handleConfirm}>Rename</Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
 function ColumnContextMenu(props) {
   const context = useContext(DataContext);
   const [contextMenu, setContextMenu] = React.useState(null);
+  const [renameDialogOpen, setRenameDialogOpen] = React.useState(false);
   
   const setInvisible = (fieldname) => {
     context.setColumns(context.columns.map((col) => col.name === fieldname ? {...col, visible: false} : col));
@@ -81,7 +129,11 @@ function ColumnContextMenu(props) {
     context.setData(context.data.map((feature) => { let {[fieldname]: _, ...rest} = feature.properties; return {...feature, properties: rest}; }));
   };
   const renameColumn = (oldname, newname) => {
+    if (oldname === newname) return;
+    // rename in the column list
     context.setColumns(context.columns.map((col) => col.name === oldname ? {...col, name: newname} : col));
+    // rename in the data as well
+    context.setData(context.data.map((feature) => { let {[oldname]: _, ...rest} = feature.properties; return {...feature, properties: {...rest, [newname]: feature.properties[oldname]}}; }));
   };
   const swapColumns = (i1, i2) => {
     if (i1 < 0 || i2 < 0 || i1 >= context.columns.length || i2 >= context.columns.length) return;
@@ -108,8 +160,10 @@ function ColumnContextMenu(props) {
   };
 
   return (
-    <span onClick={handleContextMenu} style={{ cursor: 'context-menu' }}>
-      {props.children}
+    <React.Fragment>
+      <span onClick={handleContextMenu} style={{ cursor: 'context-menu' }}>
+        {props.children}
+      </span>
       <Menu
         open={contextMenu !== null}
         onClose={handleClose}
@@ -120,6 +174,13 @@ function ColumnContextMenu(props) {
             : undefined
         }
       >
+        <MenuItem
+          onClick={() => { setRenameDialogOpen(true); handleClose() }}>
+          <ListItemIcon>
+            <DriveFileRenameOutlineIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Rename</ListItemText>
+        </MenuItem>
         <MenuItem
           onClick={() => { setInvisible(props.columnName); handleClose() }}>
           <ListItemIcon>
@@ -149,7 +210,12 @@ function ColumnContextMenu(props) {
           <ListItemText>Delete</ListItemText>
         </MenuItem>
       </Menu>
-    </span>
+      <RenameColumnDialog
+        defaultValue={props.columnName}
+        open={renameDialogOpen}
+        onClose={(newname) => { renameColumn(props.columnName, newname); setRenameDialogOpen(false); }}
+      />
+    </React.Fragment>
   );
 }
 
