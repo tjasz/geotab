@@ -17,6 +17,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import {DataContext} from './dataContext.js'
 import {evaluateFilter} from './filter.js'
+import {sleep} from './algorithm.js'
 
 function TableView(props) {
   return (
@@ -104,6 +105,7 @@ function RenameColumnDialog(props) {
               handleConfirm();
             }
           }}
+          onFocus={(e) => {sleep(25).then(() => { e.target.focus(); e.target.select()})}}
         />
       </DialogContent>
       <DialogActions>

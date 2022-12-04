@@ -1,5 +1,9 @@
 import Papa from 'papaparse';
 
+export function sleep (time) {
+  return new Promise((resolve) => setTimeout(resolve, time));
+}
+
 // sin of a in degrees
 export function dsin(a) {
   return Math.sin(a * Math.PI / 180.0);
