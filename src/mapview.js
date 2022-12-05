@@ -38,9 +38,19 @@ function MapView(props) {
     }
 
 function ActivePopup(props) {
+  console.log(props.feature.properties)
   return (
     props.feature && props.feature.geometry &&
-      <Popup position={getCentralCoord(props.feature)}>{props.feature.properties.title}</Popup>
+      <Popup position={getCentralCoord(props.feature)}>
+        <table>
+          {Object.entries(props.feature.properties).map(([key, value]) =>
+            <tr>
+              <th>{key}</th>
+              <td>{value}</td>
+            </tr>
+          )}
+        </table>
+      </Popup>
   );
 };
 
