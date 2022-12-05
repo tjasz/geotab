@@ -1,10 +1,4 @@
 import React, {useContext, useState} from 'react';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -17,9 +11,9 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import {DataContext} from './dataContext.js'
 import {evaluateFilter} from './filter.js'
-import {sleep} from './algorithm.js'
 import { AbridgedUrlLink } from './common-components.js';
 import { CommitableTextField } from './CommitableTextField.js';
+import { TextFieldDialog } from './TextFieldDialog.js'
 
 function TableView(props) {
   return (
@@ -74,47 +68,6 @@ function DataTable() {
             setActive={context.setActive} />)}
       </tbody>
     </table>
-  );
-}
-
-function RenameColumnDialog(props) {
-  const { onClose, defaultValue, open } = props;
-  const [ draft, setDraft] = useState(defaultValue);
-
-  const handleCancel = () => {
-    onClose(defaultValue);
-  };
-
-  const handleConfirm = () => {
-    onClose(draft);
-  };
-
-  return (
-    <Dialog onClose={handleCancel} open={open}>
-      <DialogTitle>Rename column '{defaultValue}'</DialogTitle>
-      <DialogContent>
-        <TextField
-          autoFocus
-          margin="dense"
-          id="columnName"
-          label="Name"
-          type="text"
-          fullWidth
-          onChange={(e) => setDraft(e.target.value)}
-          defaultValue={defaultValue}
-          onKeyUp={(e) => {
-            if (e.key === 'Enter') {
-              handleConfirm();
-            }
-          }}
-          onFocus={(e) => {sleep(25).then(() => { e.target.focus(); e.target.select()})}}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleCancel}>Cancel</Button>
-        <Button onClick={handleConfirm}>Rename</Button>
-      </DialogActions>
-    </Dialog>
   );
 }
 
@@ -214,7 +167,9 @@ function ColumnContextMenu(props) {
           <ListItemText>Delete</ListItemText>
         </MenuItem>
       </Menu>
-      <RenameColumnDialog
+      <TextFieldDialog
+        title={`Rename column '${props.columnName}'?`}
+        confirmLabel="Rename"
         defaultValue={props.columnName}
         open={renameDialogOpen}
         onClose={(newname) => { renameColumn(props.columnName, newname); setRenameDialogOpen(false); }}
