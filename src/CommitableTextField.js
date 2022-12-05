@@ -28,48 +28,56 @@ export function CommitableTextField(props) {
 
   if (!checkedOut) {
     return (
-      <span>
-        {props.CheckedInView ?? draft}
-        <IconButton
-          aria-label="edit field value"
-          onClick={handleCheckout}
-          edge="end"
-          >
-          <DriveFileRenameOutlineIcon />
-        </IconButton>
-      </span>
+      <React.Fragment>
+        <div className="CommitableTextFieldLeft">
+          {props.CheckedInView ?? draft}
+        </div>
+        <div className="CommitableTextFieldRight">
+          <IconButton
+            aria-label="edit field value"
+            onClick={handleCheckout}
+            edge="end"
+            >
+            <DriveFileRenameOutlineIcon />
+          </IconButton>
+        </div>
+      </React.Fragment>
     );
   }
 
   return (
-    <span>
-      <input
-        type="text"
-        value={draft}
-        autoFocus
-        size={props.value?.length ?? 17 + 3}
-        onChange={handleChange}
-        onKeyUp={(e) => {
-          if (e.key === 'Enter') {
-            handleCommit();
-          }
-        }}
-        onFocus={(e) => e.target.select()}
-        />
-      <IconButton
-        aria-label="cancel field edit"
-        onClick={handleCancel}
-        edge="end"
-        >
-        <CloseIcon />
-      </IconButton>
-      <IconButton
-        aria-label="commit field edit"
-        onClick={handleCommit}
-        edge="end"
-        >
-        <CheckIcon />
-      </IconButton>
-    </span>
+    <React.Fragment>
+      <div className="CommitableTextFieldLeft">
+        <input
+          type="text"
+          value={draft}
+          autoFocus
+          size={props.value?.length ?? 17 + 3}
+          onChange={handleChange}
+          onKeyUp={(e) => {
+            if (e.key === 'Enter') {
+              handleCommit();
+            }
+          }}
+          onFocus={(e) => e.target.select()}
+          />
+      </div>
+      <div className="CommitableTextFieldRight">
+        <IconButton
+          aria-label="cancel field edit"
+          onClick={handleCancel}
+          edge="end"
+          >
+          <CloseIcon />
+        </IconButton>
+        <IconButton
+          aria-label="commit field edit"
+          onClick={handleCommit}
+          edge="end"
+          >
+          <CheckIcon />
+        </IconButton>
+      </div>
+    </React.Fragment>
   );
 }
