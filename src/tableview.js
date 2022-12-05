@@ -15,8 +15,8 @@ import {evaluateFilter} from './filter.js'
 import { AbridgedUrlLink } from './common-components.js';
 import { CommitableTextField } from './CommitableTextField.js';
 import { TextFieldDialog } from './TextFieldDialog.js'
-import {ReactComponent as InsertLeftIcon} from './icon/insert-left.svg'
-import {ReactComponent as InsertRightIcon} from './icon/insert-right.svg'
+import {InsertLeftIcon} from './icon/InsertLeftIcon.js'
+import {InsertRightIcon} from './icon/InsertRightIcon.js'
 import {SortAscendingIcon} from './icon/SortAscendingIcon.js'
 
 function TableView(props) {
