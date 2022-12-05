@@ -18,6 +18,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import {DataContext} from './dataContext.js'
 import {evaluateFilter} from './filter.js'
 import {sleep} from './algorithm.js'
+import { AbridgedUrlLink } from './common-components.js';
 import { CommitableTextField } from './CommitableTextField.js';
 
 function TableView(props) {
@@ -264,31 +265,23 @@ function TableCell(props) {
       <CommitableTextField
         value={props.value}
         onCommit={setValue}
+        CheckedInView={<CellValue value={props.value} column={props.column} />}
         />
-      {
-      props.value !== null && props.value !== undefined &&
-      (typeof props.value === "string" && props.value.startsWith("http")
-        ? <AbridgedUrlLink target="_blank" href={props.value} length={21} />
-        : props.column.type === "number"
-          ? Number(props.value)
-          : props.column.type === "date"
-            ? new Date(Date.parse(props.value)).toISOString()
-            : JSON.stringify(props.value)
-      )
-      }
     </td>
   );
 }
 
-function AbridgedUrlLink(props) {
-  const firstHalfLength = Math.floor((props.length - 3)/2);
-  const secondHalfLength = props.length % 2 ? firstHalfLength : firstHalfLength+1;
-  const withoutProtocol = props.href.split('//')[1];
-  const abridged = `${withoutProtocol.slice(0,firstHalfLength)}...${withoutProtocol.slice(-secondHalfLength)}`
+function CellValue(props) {
   return (
-    <a target={props.target} href={props.href}>
-      {abridged}
-    </a>
+    props.value !== null && props.value !== undefined &&
+    (typeof props.value === "string" && props.value.startsWith("http")
+      ? <AbridgedUrlLink target="_blank" href={props.value} length={21} />
+      : props.column.type === "number"
+        ? Number(props.value)
+        : props.column.type === "date"
+          ? new Date(Date.parse(props.value)).toISOString()
+          : props.value
+    )
   );
 }
 

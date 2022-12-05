@@ -30,6 +30,18 @@ export function MultiTextField(props) {
   );
 }
 
+export function AbridgedUrlLink(props) {
+  const firstHalfLength = Math.floor((props.length - 3)/2);
+  const secondHalfLength = props.length % 2 ? firstHalfLength : firstHalfLength+1;
+  const withoutProtocol = props.href.split('//')[1];
+  const abridged = `${withoutProtocol.slice(0,firstHalfLength)}...${withoutProtocol.slice(-secondHalfLength)}`
+  return (
+    <a target={props.target} href={props.href}>
+      {abridged}
+    </a>
+  );
+}
+
 // TODO cache counts
 export function Histogram({left, right, binWidth, values, viewboxHeight}) {
   const bins = Array(Math.ceil((right - left)/binWidth)).fill(0);

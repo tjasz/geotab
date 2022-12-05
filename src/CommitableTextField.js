@@ -8,14 +8,11 @@ import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutli
 import { sleep } from './algorithm.js'
 
 export function CommitableTextField(props) {
-  const textFieldRef = useRef(null);
   const [checkedOut, setCheckedOut] = useState(false);
   const [draft, setDraft] = useState(props.value);
 
   const handleCheckout = (e) => {
     setCheckedOut(true);
-    const inputRef = textFieldRef.current.querySelectorAll('input[type=text]')[0];
-    sleep(25).then(() => { inputRef.focus(); inputRef.select()});
   };
   const handleCancel = () => {
     setCheckedOut(false);
@@ -29,48 +26,50 @@ export function CommitableTextField(props) {
     setDraft(e.target.value);
   };
 
+  if (!checkedOut) {
+    return (
+      <span>
+        {props.CheckedInView ?? draft}
+        <IconButton
+          aria-label="edit field value"
+          onClick={handleCheckout}
+          edge="end"
+          >
+          <DriveFileRenameOutlineIcon />
+        </IconButton>
+      </span>
+    );
+  }
+
   return (
-    <TextField
-      ref={textFieldRef}
-      size="small"
-      onChange={handleChange}
-      disabled={!checkedOut}
-      value={draft}
-      onKeyUp={(e) => {
-        if (e.key === 'Enter') {
-          handleCommit();
-        }
-      }}
-      InputProps={{
-        endAdornment:
-          <InputAdornment position="end">
-            {checkedOut
-            ? <React.Fragment>
-              <IconButton
-                aria-label="toggle password visibility"
-                onClick={handleCancel}
-                edge="end"
-              >
-                <CloseIcon />
-              </IconButton>
-              <IconButton
-                aria-label="toggle password visibility"
-                onClick={handleCommit}
-                edge="end"
-              >
-                <CheckIcon />
-              </IconButton>
-            </React.Fragment>
-            : <IconButton
-              aria-label="toggle password visibility"
-              onClick={handleCheckout}
-              edge="end"
-              >
-              <DriveFileRenameOutlineIcon />
-            </IconButton>
-            }
-          </InputAdornment>
+    <span>
+      <input
+        type="text"
+        value={draft}
+        autoFocus
+        size={props.value?.length ?? 17 + 3}
+        onChange={handleChange}
+        onKeyUp={(e) => {
+          if (e.key === 'Enter') {
+            handleCommit();
+          }
         }}
-      />
+        onFocus={(e) => e.target.select()}
+        />
+      <IconButton
+        aria-label="cancel field edit"
+        onClick={handleCancel}
+        edge="end"
+        >
+        <CloseIcon />
+      </IconButton>
+      <IconButton
+        aria-label="commit field edit"
+        onClick={handleCommit}
+        edge="end"
+        >
+        <CheckIcon />
+      </IconButton>
+    </span>
   );
 }
