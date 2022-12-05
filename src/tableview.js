@@ -18,6 +18,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import {DataContext} from './dataContext.js'
 import {evaluateFilter} from './filter.js'
 import {sleep} from './algorithm.js'
+import { CommitableTextField } from './CommitableTextField.js';
 
 function TableView(props) {
   return (
@@ -245,14 +246,26 @@ function TableRow(props) {
     <tr onClick={() => props.setActive(props.feature.hash)} className={props.active ? "active" : ""}>
       <th>{1+props.fidx}</th>
       {Array.from(props.columns).filter((column) => column.visible).map((column) =>
-        <TableCell key={`${column.name}`} column={column} value={props.feature.properties[column.name]} />)}
+        <TableCell key={`${column.name}`} column={column} value={props.feature.properties[column.name]} rowIndex={props.fidx} />)}
     </tr>
   );
 }
 
 function TableCell(props) {
+  const context = useContext(DataContext);
+  const setValue = (v) => {
+    context.setData(context.data.map((feature, i) => i === props.rowIndex
+      ? {...feature, properties: {...feature.properties, [props.column.name]: v}}
+      : feature
+      ));
+  };
   return (
-    <td>{
+    <td>
+      <CommitableTextField
+        value={props.value}
+        onCommit={setValue}
+        />
+      {
       props.value !== null && props.value !== undefined &&
       (typeof props.value === "string" && props.value.startsWith("http")
         ? <AbridgedUrlLink target="_blank" href={props.value} length={21} />
@@ -262,7 +275,8 @@ function TableCell(props) {
             ? new Date(Date.parse(props.value)).toISOString()
             : JSON.stringify(props.value)
       )
-    }</td>
+      }
+    </td>
   );
 }
 
