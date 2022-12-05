@@ -57,6 +57,8 @@ export function CommitableTextField(props) {
           onKeyUp={(e) => {
             if (e.key === 'Enter') {
               handleCommit();
+            } else if (e.key === 'Escape') {
+              handleCancel();
             }
           }}
           onFocus={(e) => e.target.select()}
