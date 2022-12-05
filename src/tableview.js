@@ -1,4 +1,5 @@
 import React, {useContext, useState} from 'react';
+import SortIcon from '@mui/icons-material/Sort';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -16,6 +17,7 @@ import { CommitableTextField } from './CommitableTextField.js';
 import { TextFieldDialog } from './TextFieldDialog.js'
 import {ReactComponent as InsertLeftIcon} from './icon/insert-left.svg'
 import {ReactComponent as InsertRightIcon} from './icon/insert-right.svg'
+import {SortAscendingIcon} from './icon/SortAscendingIcon.js'
 
 function TableView(props) {
   return (
@@ -145,6 +147,20 @@ function ColumnContextMenu(props) {
             : undefined
         }
       >
+        <MenuItem
+          onClick={() => { context.setSorting([context.columns.find((c) => c.name === props.columnName), true]); handleClose() }}>
+          <ListItemIcon>
+            <SortAscendingIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Sort Ascending</ListItemText>
+        </MenuItem>
+        <MenuItem
+          onClick={() => { context.setSorting([context.columns.find((c) => c.name === props.columnName), false]); handleClose() }}>
+          <ListItemIcon>
+            <SortIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Sort Descending</ListItemText>
+        </MenuItem>
         <MenuItem
           onClick={() => { setRenameDialogOpen(true); handleClose() }}>
           <ListItemIcon>
