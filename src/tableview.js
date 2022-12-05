@@ -239,7 +239,7 @@ function TableRow(props) {
     <tr onClick={() => props.setActive(props.feature.hash)} className={props.active ? "active" : ""}>
       <th>{1+props.fidx}</th>
       {Array.from(props.columns).filter((column) => column.visible).map((column) =>
-        <TableCell key={`${column.name}`} column={column} value={props.feature.properties[column.name]} rowIndex={props.fidx} />)}
+        <TableCell key={`${column.name}`} column={column} value={props.feature.properties[column.name]} rowHash={props.feature.hash} />)}
     </tr>
   );
 }
@@ -247,7 +247,7 @@ function TableRow(props) {
 function TableCell(props) {
   const context = useContext(DataContext);
   const setValue = (v) => {
-    context.setData(context.data.map((feature, i) => i === props.rowIndex
+    context.setData(context.data.map((feature, i) => feature.hash === props.rowHash
       ? {...feature, properties: {...feature.properties, [props.column.name]: v}}
       : feature
       ));
