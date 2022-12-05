@@ -14,6 +14,8 @@ import {evaluateFilter} from './filter.js'
 import { AbridgedUrlLink } from './common-components.js';
 import { CommitableTextField } from './CommitableTextField.js';
 import { TextFieldDialog } from './TextFieldDialog.js'
+import {ReactComponent as InsertLeftIcon} from './icon/insert-left.svg'
+import {ReactComponent as InsertRightIcon} from './icon/insert-right.svg'
 
 function TableView(props) {
   return (
@@ -174,14 +176,14 @@ function ColumnContextMenu(props) {
         <MenuItem
           onClick={() => { setInsertDialog("left"); handleClose() }}>
           <ListItemIcon>
-            <WestIcon fontSize="small" />
+            <InsertLeftIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>Insert left</ListItemText>
         </MenuItem>
         <MenuItem
           onClick={() => { setInsertDialog("right"); handleClose() }}>
           <ListItemIcon>
-            <EastIcon fontSize="small" />
+            <InsertRightIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>Insert right</ListItemText>
         </MenuItem>
