@@ -75,6 +75,7 @@ function ColumnContextMenu(props) {
   const context = useContext(DataContext);
   const [contextMenu, setContextMenu] = React.useState(null);
   const [renameDialogOpen, setRenameDialogOpen] = React.useState(false);
+  const [insertDialog, setInsertDialog] = React.useState(null);
   
   const setInvisible = (fieldname) => {
     context.setColumns(context.columns.map((col) => col.name === fieldname ? {...col, visible: false} : col));
@@ -96,6 +97,17 @@ function ColumnContextMenu(props) {
     if (i1 < 0 || i2 < 0 || i1 >= context.columns.length || i2 >= context.columns.length) return;
     context.setColumns(context.columns.map((col, i) =>
       i === i1 ? context.columns[i2] : i === i2 ? context.columns[i1] : col));
+  };
+  const insertColumn = (i, name) => {
+    if (i <= 0) {
+      context.setColumns(
+        [{name, visible: true, type: "string"},
+        ...context.columns]);
+    } else {
+      context.setColumns([...context.columns.slice(0,i),
+        {name, visible: true, type: "string"},
+        ...context.columns.slice(i,context.columns.length)]);
+    }
   };
 
   const handleContextMenu = (event) => {
@@ -160,6 +172,20 @@ function ColumnContextMenu(props) {
           <ListItemText>Shift right</ListItemText>
         </MenuItem>
         <MenuItem
+          onClick={() => { setInsertDialog("left"); handleClose() }}>
+          <ListItemIcon>
+            <WestIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Insert left</ListItemText>
+        </MenuItem>
+        <MenuItem
+          onClick={() => { setInsertDialog("right"); handleClose() }}>
+          <ListItemIcon>
+            <EastIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Insert right</ListItemText>
+        </MenuItem>
+        <MenuItem
           onClick={() => { deleteColumn(props.columnName); handleClose() }}>
           <ListItemIcon>
             <DeleteIcon fontSize="small" />
@@ -173,6 +199,15 @@ function ColumnContextMenu(props) {
         defaultValue={props.columnName}
         open={renameDialogOpen}
         onClose={(newname) => { renameColumn(props.columnName, newname); setRenameDialogOpen(false); }}
+      />
+      <TextFieldDialog
+        title={`Insert column ${insertDialog} of '${props.columnName}'?`}
+        confirmLabel="Insert"
+        defaultValue={null}
+        open={insertDialog !== null}
+        onClose={(newname) => {
+          insertColumn(props.columnIndex + (insertDialog === "left" ? 0 : 1), newname);
+          setInsertDialog(null); }}
       />
     </React.Fragment>
   );
