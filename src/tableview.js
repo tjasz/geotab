@@ -5,7 +5,10 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import DeleteIcon from '@mui/icons-material/Delete';
 import WestIcon from '@mui/icons-material/West';
 import EastIcon from '@mui/icons-material/East';
+import LockIcon from '@mui/icons-material/Lock';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
 import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
+import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -14,7 +17,6 @@ import { sortBy } from './algorithm.js'
 import {DataContext} from './dataContext.js'
 import {evaluateFilter} from './filter.js'
 import { AbridgedUrlLink } from './common-components.js';
-import { CommitableTextField } from './CommitableTextField.js';
 import { TextFieldDialog } from './TextFieldDialog.js'
 import {InsertLeftIcon} from './icon/InsertLeftIcon.js'
 import {InsertRightIcon} from './icon/InsertRightIcon.js'
@@ -31,6 +33,7 @@ function TableView(props) {
 function DataTable() {
   const context = useContext(DataContext);
   const [sorting, setSorting] = useState(null);
+  const [disabled, setDisabled] = useState(null);
 
   if (!context.data) return null;
   const features = context.data
@@ -54,7 +57,7 @@ function DataTable() {
   return (
     <table id="data-table" cellSpacing={0}>
       <tbody>
-        <TableHeader columns={context.columns} sorting={sorting} setSorting={handleSortingChange} />
+        <TableHeader columns={context.columns} sorting={sorting} setSorting={handleSortingChange} disabled={disabled} setDisabled={setDisabled} />
         {features.map((feature, fidx) =>
           <TableRow
             key={feature.id}
@@ -64,7 +67,9 @@ function DataTable() {
             rowId={feature.id}
             onChange={handleRowChange}
             active={context.active !== null && feature.id === context.active}
-            setActive={context.setActive} />)}
+            setActive={context.setActive}
+            disabled={disabled}
+            />)}
       </tbody>
     </table>
   );
@@ -229,7 +234,15 @@ function ColumnContextMenu(props) {
 function TableHeader(props) {
   return (
     <tr>
-      <th></th>
+      <th>
+        <IconButton
+          aria-label={`${props.disabled ? "un" : ""}lock table`}
+          onClick={() => props.setDisabled(!props.disabled)}
+          edge="end"
+          >
+          {props.disabled ? <LockIcon fontSize="small" /> : <LockOpenIcon fontSize="small" />}
+        </IconButton>
+      </th>
       {Array.from(props.columns).filter((column) => column.visible).map((column, idx) =>
         <th key={column.name} >
           <span onClick={() => {
@@ -256,7 +269,7 @@ function TableRow(props) {
     <tr onClick={() => props.setActive(props.feature.id)} className={props.active ? "active" : ""}>
       <th>{1+props.fidx}</th>
       {Array.from(props.columns).filter((column) => column.visible).map((column) =>
-        <TableCell key={`${props.rowId}:${column.name}`} column={column} value={featureProperties[column.name]} onChange={handleCellChange} disabled />)}
+        <TableCell key={`${props.rowId}:${column.name}`} column={column} value={featureProperties[column.name]} onChange={handleCellChange} disabled={props.disabled} />)}
     </tr>
   );
 }
