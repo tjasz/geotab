@@ -30,7 +30,15 @@ function TableView(props) {
 
 function DataTable() {
   const context = useContext(DataContext);
+  const [features, setFeatures] = useState(
+    context.data
+      ? context.data.filter((row) => evaluateFilter(row, context.filter))
+      : null
+  );
   const [sorting, setSorting] = useState(null);
+
+  if (!context.data) return null;
+
   const handleSortingChange = (newSorting) => {
     if (context.sorting && newSorting &&
       context.sorting[0] === newSorting[0] &&
@@ -40,9 +48,11 @@ function DataTable() {
     setSorting(newSorting);
     context.setData(sortBy(context.data, newSorting).slice());
   };
-
-  if (!context.data) return null;
-  const features = context.data.filter((row) => evaluateFilter(row, context.filter));
+  const handleRowChange = (newRow, idx) => {
+    const newFeatures = features.map((f,i) => i === idx ? {...f, properties: newRow} : f);
+    setFeatures(newFeatures);
+    context.setData(newFeatures);
+  };
 
   return (
     <table id="data-table" cellSpacing={0}>
@@ -54,6 +64,7 @@ function DataTable() {
             columns={context.columns}
             fidx={fidx}
             feature={feature}
+            onChange={handleRowChange}
             active={context.active !== null && feature.id === context.active}
             setActive={context.setActive} />)}
       </tbody>
@@ -237,29 +248,37 @@ function TableHeader(props) {
 }
 
 function TableRow(props) {
+  const [featureProperties, setFeatureProperties] = useState(props.feature.properties);
+  const handleCellChange = (value, column) => {
+    const newFeatureProperties = {...featureProperties, [column.name]: value};
+    setFeatureProperties(newFeatureProperties);
+    props.onChange(newFeatureProperties, props.fidx);
+  };
   return (
     <tr onClick={() => props.setActive(props.feature.id)} className={props.active ? "active" : ""}>
       <th>{1+props.fidx}</th>
       {Array.from(props.columns).filter((column) => column.visible).map((column) =>
-        <TableCell key={`${column.name}`} column={column} value={props.feature.properties[column.name]} rowId={props.feature.id} />)}
+        <TableCell key={column.name} column={column} value={featureProperties[column.name]} onChange={handleCellChange} />)}
     </tr>
   );
 }
 
 function TableCell(props) {
-  const context = useContext(DataContext);
-  const setValue = (v) => {
-    context.setData(context.data.map((feature, i) => feature.id === props.rowId
-      ? {...feature, properties: {...feature.properties, [props.column.name]: v}}
-      : feature
-      ));
+  const [value, setValue] = useState(props.value ?? "");
+  const handleChange = (e) => {
+    setValue(e.target.value);
+  };
+  const handleBlur = (e) => {
+    props.onChange(e.target.value, props.column);
   };
   return (
     <td>
-      <CommitableTextField
-        value={props.value}
-        onCommit={setValue}
-        CheckedInView={<CellValue value={props.value} column={props.column} />}
+      <input
+        type="text"
+        value={value}
+        size={value.length ?? 17 + 3}
+        onChange={handleChange}
+        onBlur={handleBlur}
         />
     </td>
   );
