@@ -3,6 +3,7 @@ import {Slider} from '@mui/material'
 import {DataContext} from './dataContext.js'
 import {Select, ColoredText, MultiTextField, Histogram} from './common-components.js'
 import {symbologyModes} from './painter.js'
+import {toType} from './algorithm.js'
 import {ReactComponent as MinusSquare} from './feather/minus-square.svg'
 import {ReactComponent as PlusSquare} from './feather/plus-square.svg'
 
@@ -62,6 +63,7 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
   const [mode, setMode] = useState(definition?.mode ?? "discrete");
   const [values, setValues] = useState(definition?.values ?? [minValue]);
   const [breaks, setBreaks] = useState(definition?.breaks ?? []);
+  const [type, setType] = useState(context.columns.find((c) => c.name === fieldname).type);
 
   let minBreak = 0;
   let maxBreak = 100;
@@ -75,11 +77,12 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
   }
 
   const onCheckboxChange = (event) => {
-    onEdit(event.target.checked ? {mode, values, fieldname, breaks} : undefined);
+    onEdit(event.target.checked ? {mode, values, fieldname, type, breaks} : undefined);
   };
   const onFieldnameEdit = (event) => {
     setFieldname(event.target.value);
-    onEdit({mode, values, fieldname: event.target.value, breaks});
+    setType(context.columns.find((c) => c.name === event.target.value).type);
+    onEdit({mode, values, fieldname: event.target.value, type: context.columns.find((c) => c.name === event.target.value).type, breaks});
   };
   const onModeEdit = (event) => {
     const newMode = event.target.value;
@@ -105,17 +108,17 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
     setMode(newMode);
     setValues(newValues);
     setBreaks(newBreaks);
-    onEdit({mode: newMode, values: newValues, fieldname, breaks: newBreaks});
+    onEdit({mode: newMode, values: newValues, fieldname, type, breaks: newBreaks});
   };
   const onValuesEdit = (value, idx) => {
     const newValues = values.map((v, i) => i === idx ? value : v);
     setValues(newValues);
-    onEdit({mode, values: newValues, fieldname, breaks});
+    onEdit({mode, values: newValues, fieldname, type, breaks});
   }
   const onValueAdd = (event) => {
     setValues(Array.isArray(values) ? [...values, minValue] : [values, minValue]);
     setBreaks(Array.isArray(breaks) ? [...breaks, minBreak] : [breaks, minBreak]);
-    onEdit({mode, values: Array.isArray(values) ? [...values, minValue] : [values, minValue], fieldname,
+    onEdit({mode, values: Array.isArray(values) ? [...values, minValue] : [values, minValue], fieldname, type,
             breaks: Array.isArray(breaks) ? [...breaks, minBreak] : [breaks, minBreak]});
   };
   const onValueRemove = (event) => {
@@ -124,12 +127,12 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
     }
     setValues(values.slice(0, values.length-1));
     setBreaks(Array.isArray(breaks) ? breaks.slice(0, breaks.length-1) : []);
-    onEdit({mode, values: values.slice(0, values.length-1), fieldname,
+    onEdit({mode, values: values.slice(0, values.length-1), fieldname, type,
             breaks: Array.isArray(breaks) ? breaks.slice(0, breaks.length-1) : []});
   };
   const onBreaksEdit = (event, breaks) => {
     setBreaks(Array.isArray(breaks) ? breaks : [breaks]);
-    onEdit({mode, values, fieldname, breaks: Array.isArray(breaks) ? breaks : [breaks]});
+    onEdit({mode, values, fieldname, type, breaks: Array.isArray(breaks) ? breaks : [breaks]});
   }
 
   return (
@@ -187,14 +190,18 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
               value={breaks}
               onChange={onBreaksEdit}
               valueLabelDisplay="on"
+              valueLabelFormat={(v) => JSON.stringify(toType(v, type))}
               track={false}
               marks
               />
             <Histogram viewboxHeight={10}
               left={minBreak} right={maxBreak}
               binWidth={breakStep}
-              values={context.data.map((feature) => 
-                feature.properties[context.columns.find((column) => column.name === fieldname)?.name])}
+              values={context.data.map((feature) => {
+                const col = context.columns.find((column) => column.name === fieldname);
+                if (!col) return null;
+                return toType(feature.properties[col.name], col.type);
+              })}
               />
            </div>
         }

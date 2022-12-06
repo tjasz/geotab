@@ -35,12 +35,15 @@ export function getFeatures(data) {
   return [];
 }
 
-function toType(value, type) {
+export function toType(value, type) {
   switch(type) {
     case "number":
       return Number(value);
     case "date":
-      return new Date(Date.parse(value));
+      if (typeof value === "string") {
+        return new Date(Date.parse(value));
+      }
+      return new Date(value);
     default:
       return value;
   }

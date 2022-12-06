@@ -1,4 +1,5 @@
 import {StarMarker} from './iconlib.js'
+import {toType} from './algorithm.js'
 
 export const symbologyModes = ["discrete", "continuous"];
 
@@ -18,8 +19,9 @@ function discreteInterpolation(definition, feature) {
     throw Error(`Discrete Symbology.values should have 1 more value than Symbology.breaks. Values: ${definition.values}; Breaks: ${definition.breaks}.`)
   }
   if (definition.breaks.length === 0) return definition.values[0];
+  const value = toType(feature.properties[definition.fieldname], definition.type);
   // set i to the index where the feature value is first greater than the break value
-  let i = findIndex(definition.breaks, feature.properties[definition.fieldname]);
+  let i = findIndex(definition.breaks, value);
   return definition.values[i];
 }
 
@@ -35,8 +37,9 @@ function continuousInterpolation(definition, feature) {
     throw Error(`Continuous Symbology.values should have the same number of values as Symbology.breaks. Values: ${definition.values}; Breaks: ${definition.breaks}.`)
   }
   if (definition.breaks.length === 0) return definition.values[0];
+  const value = toType(feature.properties[definition.fieldname], definition.type);
   // set i to the index where the feature value is first greater than the break value
-  let i = findIndex(definition.breaks, feature.properties[definition.fieldname]);
+  let i = findIndex(definition.breaks, value);
   if (i < 1) {
     return definition.values[i];
   } else if (i >= definition.breaks.length) {
@@ -45,7 +48,7 @@ function continuousInterpolation(definition, feature) {
   return linearInterpolation(
     definition.breaks[i-1], definition.values[i-1],
     definition.breaks[i], definition.values[i],
-    feature.properties[definition.fieldname]);
+    value);
 }
 
 // TODO handle different types
