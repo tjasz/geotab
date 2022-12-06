@@ -50,7 +50,7 @@ function DataTable() {
     context.setData(sortBy(context.data, newSorting).slice());
   };
   const handleRowChange = (newRow, idx) => {
-    const newFeatures = features.map((f,i) => i === idx ? {...f, properties: newRow} : f);
+    const newFeatures = context.data.map((f) => f.id === features[idx].id ? {...f, properties: newRow} : f);
     context.setData(newFeatures);
   };
 
