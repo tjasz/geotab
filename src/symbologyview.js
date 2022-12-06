@@ -174,7 +174,7 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
               marks
               />)}
         </div>
-        <MinusSquare className={`removeButton${values.length > 1 ? "" : "Disabled"}`} onClick={onValueRemove} />
+        <MinusSquare className={`removeButton${values.length > (mode === "continuous" ? 2 : 1) ? "" : "Disabled"}`} onClick={onValueRemove} />
         <PlusSquare className="addButton" onClick={onValueAdd} />
         <h4>Breaks</h4>
         {context.columns.find((column) => column.name === fieldname)?.type === "string"
