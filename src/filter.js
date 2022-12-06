@@ -203,7 +203,26 @@ function like(rowValue, regex) {
 
 function onDayOfWeek(rowValue, dayOfWeek) {
   // TODO UI should show strings Monday for 1, etc.
-  return new Date(Date.parse(rowValue)).getDay() === (dayOfWeek % 7);
+  return new Date(Date.parse(rowValue)).getUTCDay() === (dayOfWeek % 7);
+}
+
+function onDayOfMonth(rowValue, dayOfMonth) {
+  return new Date(Date.parse(rowValue)).getUTCDate() === dayOfMonth;
+}
+
+function onDayMonthOfYear(rowValue, month, dayOfMonth) {
+  const d = new Date(Date.parse(rowValue));
+  return d.getUTCMonth() === month-1 && d.getUTCDate() === dayOfMonth;
+}
+
+function inMonthOfYear(rowValue, month) {
+  const d = new Date(Date.parse(rowValue));
+  return d.getUTCMonth() === month-1;
+}
+
+function inYear(rowValue, year) {
+  const d = new Date(Date.parse(rowValue));
+  return d.getUTCFullYear() === year;
 }
 
 function evaluateCondition(row, condition) {
@@ -290,14 +309,14 @@ function evaluateCondition(row, condition) {
       result = onDayOfWeek(value, condition.parameters.day);
       break;
     case "OnDayOfMonth":
-      // TODO
-      throw Error("Unimplemented function OnDayOfMonth");
+      result = onDayOfMonth(value, condition.parameters.day);
+      break;
     case "OnDayOfYear":
       // TODO
       throw Error("Unimplemented function OnDayOfYear");
     case "OnDayMonthOfYear":
-      // TODO
-      throw Error("Unimplemented function OnDayMonthOfYear");
+      result = onDayMonthOfYear(value, condition.parameters.month, condition.parameters.day);
+      break;
     case "InWeekOfMonth":
       // TODO
       throw Error("Unimplemented function InWeekOfMonth");
@@ -305,11 +324,11 @@ function evaluateCondition(row, condition) {
       // TODO
       throw Error("Unimplemented function InWeekOfYear");
     case "InMonthOfYear":
-      // TODO
-      throw Error("Unimplemented function InMonthOfYear");
+      result = inMonthOfYear(value, condition.parameters.month);
+      break;
     case "InYear":
-      // TODO
-      throw Error("Unimplemented function InYear");
+      result = inYear(value, condition.parameters.year);
+      break;
     default:
       throw Error(`Condition.operator: Found ${condition.operator}. Expected one of ${conditionOperators}.`);
   }
