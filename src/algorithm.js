@@ -47,9 +47,9 @@ function toType(value, type) {
 }
 
 function getColumnMetadata(features, key) {
-  const type = features.every((feature) => feature.properties[key] === undefined || !isNaN(Number(feature.properties[key])))
+  const type = features.every((feature) => feature.properties[key] === undefined || feature.properties[key] === "" || !isNaN(Number(feature.properties[key])))
                ? "number"
-               : features.every((feature) => feature.properties[key] === undefined || !isNaN(Date.parse(feature.properties[key])))
+               : features.every((feature) => feature.properties[key] === undefined || feature.properties[key] === "" || !isNaN(Date.parse(feature.properties[key])))
                ? "date"
                : "string";
   // find min and max
