@@ -277,7 +277,7 @@ function TableHeader(props) {
       {Array.from(props.columns).filter((column) => column.visible).map((column, idx) =>
         <th key={column.name} >
           <span onClick={() => {
-            props.setSorting({col: column, asc: (props.sorting && props.sorting[0].name === column.name) ? !props.sorting[1] : true});
+            props.setSorting({col: column, asc: (props.sorting && props.sorting.col.name === column.name) ? !props.sorting.asc : true});
           }}>
             {column.name}
           </span>
