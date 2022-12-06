@@ -30,14 +30,12 @@ function TableView(props) {
 
 function DataTable() {
   const context = useContext(DataContext);
-  const [features, setFeatures] = useState(
-    context.data
-      ? context.data.filter((row) => evaluateFilter(row, context.filter))
-      : null
-  );
   const [sorting, setSorting] = useState(null);
 
   if (!context.data) return null;
+  const features = context.data
+      ? context.data.filter((row) => evaluateFilter(row, context.filter))
+      : null;
 
   const handleSortingChange = (newSorting) => {
     if (context.sorting && newSorting &&
@@ -50,7 +48,6 @@ function DataTable() {
   };
   const handleRowChange = (newRow, idx) => {
     const newFeatures = features.map((f,i) => i === idx ? {...f, properties: newRow} : f);
-    setFeatures(newFeatures);
     context.setData(newFeatures);
   };
 
@@ -60,10 +57,11 @@ function DataTable() {
         <TableHeader columns={context.columns} sorting={sorting} setSorting={handleSortingChange} />
         {features.map((feature, fidx) =>
           <TableRow
-            key={fidx}
+            key={feature.id}
             columns={context.columns}
             fidx={fidx}
             feature={feature}
+            rowId={feature.id}
             onChange={handleRowChange}
             active={context.active !== null && feature.id === context.active}
             setActive={context.setActive} />)}
@@ -258,7 +256,7 @@ function TableRow(props) {
     <tr onClick={() => props.setActive(props.feature.id)} className={props.active ? "active" : ""}>
       <th>{1+props.fidx}</th>
       {Array.from(props.columns).filter((column) => column.visible).map((column) =>
-        <TableCell key={column.name} column={column} value={featureProperties[column.name]} onChange={handleCellChange} />)}
+        <TableCell key={`${props.rowId}:${column.name}`} column={column} value={featureProperties[column.name]} onChange={handleCellChange} disabled />)}
     </tr>
   );
 }
@@ -271,6 +269,14 @@ function TableCell(props) {
   const handleBlur = (e) => {
     props.onChange(e.target.value, props.column);
   };
+
+  if (props.disabled) {
+    return (
+      <td>
+        <CellValue value={value} column={props.column} />
+      </td>
+    );
+  }
   return (
     <td>
       <input
@@ -287,7 +293,8 @@ function TableCell(props) {
 function CellValue(props) {
   return (
     props.value !== null && props.value !== undefined &&
-    (typeof props.value === "string" && props.value.startsWith("http")
+    (props.value === "" ? undefined :
+      typeof props.value === "string" && props.value.startsWith("http")
       ? <AbridgedUrlLink target="_blank" href={props.value} length={21} />
       : props.column.type === "number"
         ? Number(props.value)
