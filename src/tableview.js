@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import SortIcon from '@mui/icons-material/Sort';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
@@ -35,11 +35,32 @@ function DataTable() {
   const [sorting, setSorting] = useState(null);
   const [disabled, setDisabled] = useState(null);
 
-  if (!context.data) return null;
   const features = context.data
       ? context.data.filter((row) => evaluateFilter(row, context.filter))
       : null;
+  const refs = useRef({});
+  // useEffect to update the ref on data update
+  useEffect(() => {
+    refs.current = {};
+  }, [context.columns]);
 
+  if (!context.data) return null;
+
+  const handleKeyDown = (e, row, col) => {
+    let focusTarget = null;
+    if (refs.current?.[row]?.[col]) {
+      if (e.key === 'Down' || e.key === 'ArrowDown' || e.key === 'Enter') {
+        focusTarget = refs.current[Math.min(row+1, features.length-1)][col];
+      } else if (e.key === 'Up' || e.key === 'ArrowUp') {
+        focusTarget = refs.current[Math.max(row-1, 0)][col];
+      }
+      if (focusTarget) {
+        e.preventDefault();
+        focusTarget.focus();
+        focusTarget.select();
+      }
+    }
+  }
   const handleSortingChange = (newSorting) => {
     if (context.sorting && newSorting &&
       context.sorting[0] === newSorting[0] &&
@@ -61,6 +82,8 @@ function DataTable() {
         {features.map((feature, fidx) =>
           <TableRow
             key={feature.id}
+            cellRefs={refs}
+            handleKeyDown={handleKeyDown}
             columns={context.columns}
             fidx={fidx}
             feature={feature}
@@ -269,7 +292,16 @@ function TableRow(props) {
     <tr onClick={() => props.setActive(props.feature.id)} className={props.active ? "active" : ""}>
       <th>{1+props.fidx}</th>
       {Array.from(props.columns).filter((column) => column.visible).map((column) =>
-        <TableCell key={`${props.rowId}:${column.name}`} column={column} value={featureProperties[column.name]} onChange={handleCellChange} disabled={props.disabled} />)}
+        <TableCell
+          key={`${props.rowId}:${column.name}`}
+          cellRefs={props.cellRefs}
+          handleKeyDown={props.handleKeyDown}
+          column={column}
+          fidx={props.fidx}
+          value={featureProperties[column.name]}
+          onChange={handleCellChange}
+          disabled={props.disabled}
+          />)}
     </tr>
   );
 }
@@ -293,6 +325,13 @@ function TableCell(props) {
   return (
     <td>
       <input
+        ref={el => {
+          if (!props.cellRefs.current.hasOwnProperty(props.fidx)) {
+            props.cellRefs.current[props.fidx] = {};
+          }
+          props.cellRefs.current[props.fidx][props.column.name] = el
+        }}
+        onKeyDown={(e) => props.handleKeyDown(e, props.fidx, props.column.name)}
         type="text"
         value={value}
         size={value.length ?? 17 + 3}
