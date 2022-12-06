@@ -1,11 +1,8 @@
-import React, {useRef, useState} from 'react';
+import React, {useState} from 'react';
 import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
-import TextField from '@mui/material/TextField';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
-import { sleep } from './algorithm.js'
 
 export function CommitableTextField(props) {
   const [checkedOut, setCheckedOut] = useState(false);
