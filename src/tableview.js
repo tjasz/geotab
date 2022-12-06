@@ -33,7 +33,7 @@ function TableView(props) {
 function DataTable() {
   const context = useContext(DataContext);
   const [sorting, setSorting] = useState(null);
-  const [disabled, setDisabled] = useState(null);
+  const [disabled, setDisabled] = useState(true);
 
   const features = context.data
       ? context.data.filter((row) => evaluateFilter(row, context.filter))
