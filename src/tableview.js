@@ -10,6 +10,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
+import { sortBy } from './algorithm.js'
 import {DataContext} from './dataContext.js'
 import {evaluateFilter} from './filter.js'
 import { AbridgedUrlLink } from './common-components.js';
@@ -26,31 +27,6 @@ function TableView(props) {
     </div>
   );
 }
-
-function sortBy(features, sorting) {
-  const [col, asc] = sorting;
-  const fsort = (a, b) => {
-    let av = a.properties[col.name];
-    let bv = b.properties[col.name];
-    if (col.type === "number") {
-      av = Number(av);
-      bv = Number(bv);
-    }
-    if (col.type === "date") {
-      av = new Date(Date.parse(av));
-      bv = new Date(Date.parse(bv));
-    }
-    if (av === bv) {
-      return 0;
-    } else if (av < bv) {
-      return asc ? -1 : 1;
-    }
-    return asc ? 1 : -1;
-  }
-  features.sort(fsort);
-  return features;
-}
-
 
 function DataTable() {
   const context = useContext(DataContext);
@@ -158,14 +134,14 @@ function ColumnContextMenu(props) {
         }
       >
         <MenuItem
-          onClick={() => { props.setSorting([context.columns.find((c) => c.name === props.columnName), true]); handleClose() }}>
+          onClick={() => { props.setSorting({col: context.columns.find((c) => c.name === props.columnName), asc: true}); handleClose() }}>
           <ListItemIcon>
             <SortAscendingIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>Sort Ascending</ListItemText>
         </MenuItem>
         <MenuItem
-          onClick={() => { props.setSorting([context.columns.find((c) => c.name === props.columnName), false]); handleClose() }}>
+          onClick={() => { props.setSorting({col: context.columns.find((c) => c.name === props.columnName), asc: false}); handleClose() }}>
           <ListItemIcon>
             <SortIcon fontSize="small" />
           </ListItemIcon>
@@ -248,7 +224,7 @@ function TableHeader(props) {
       {Array.from(props.columns).filter((column) => column.visible).map((column, idx) =>
         <th key={column.name} >
           <span onClick={() => {
-            props.setSorting([column, (props.sorting && props.sorting[0].name === column.name) ? !props.sorting[1] : true]);
+            props.setSorting({col: column, asc: (props.sorting && props.sorting[0].name === column.name) ? !props.sorting[1] : true});
           }}>
             {column.name}
           </span>

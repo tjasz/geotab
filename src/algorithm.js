@@ -266,3 +266,19 @@ export function csvToJson(csvString) {
     )
   };
 }
+
+export function sortBy(features, sorting) {
+  const {col, asc} = sorting;
+  const fsort = (a, b) => {
+    const av = toType(a.properties[col.name], col.type);
+    const bv = toType(b.properties[col.name], col.type);
+    if (av === bv) {
+      return 0;
+    } else if (av < bv) {
+      return asc ? -1 : 1;
+    }
+    return asc ? 1 : -1;
+  }
+  features.sort(fsort);
+  return features;
+}
