@@ -48,7 +48,7 @@ export function Histogram({left, right, binWidth, values, viewboxHeight}) {
   let maxCount = 0;
   for (const val of values)
   {
-    const bin = Math.floor((val-left)/binWidth);
+    const bin = val === right ? bins.length-1 : Math.floor((val-left)/binWidth);
     bins[bin]++;
     if (bins[bin] > maxCount) maxCount = bins[bin];
   }
