@@ -15,8 +15,6 @@ class App extends React.Component {
       setColumns: (newColumns) => {this.setState({columns: newColumns})},
       active: null,
       setActive: (newActive) => {this.setState({active: newActive})},
-      sorting: null,
-      setSorting: (newSorting) => {this.setState({sorting: newSorting})},
       filter: null,
       setFilter: (newFilter) => {this.setState({filter: newFilter})},
       symbology: null,

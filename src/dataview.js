@@ -35,7 +35,6 @@ function ImportView(props) {
     context.setData(flattened);
     context.setColumns(getPropertiesUnion(flattened));
     context.setActive(null);
-    context.setSorting(null);
     context.setFilter(defaultFilter);
     context.setSymbology(null)
   };

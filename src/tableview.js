@@ -48,20 +48,30 @@ function sortBy(features, sorting) {
     return asc ? 1 : -1;
   }
   features.sort(fsort);
+  return features;
 }
 
 
 function DataTable() {
   const context = useContext(DataContext);
+  const [sorting, setSorting] = useState(null);
+  const handleSortingChange = (newSorting) => {
+    if (context.sorting && newSorting &&
+      context.sorting[0] === newSorting[0] &&
+      context.sorting[1] === newSorting[1]) {
+      return;
+    }
+    setSorting(newSorting);
+    context.setData(sortBy(context.data, newSorting).slice());
+  };
+
   if (!context.data) return null;
   const features = context.data.filter((row) => evaluateFilter(row, context.filter));
-  if (context.sorting !== null) {
-    sortBy(features, context.sorting);
-  }
+
   return (
     <table id="data-table" cellSpacing={0}>
       <tbody>
-        <TableHeader columns={context.columns} sorting={context.sorting} setSorting={context.setSorting} />
+        <TableHeader columns={context.columns} sorting={sorting} setSorting={handleSortingChange} />
         {features.map((feature, fidx) =>
           <TableRow
             key={fidx}
@@ -148,14 +158,14 @@ function ColumnContextMenu(props) {
         }
       >
         <MenuItem
-          onClick={() => { context.setSorting([context.columns.find((c) => c.name === props.columnName), true]); handleClose() }}>
+          onClick={() => { props.setSorting([context.columns.find((c) => c.name === props.columnName), true]); handleClose() }}>
           <ListItemIcon>
             <SortAscendingIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>Sort Ascending</ListItemText>
         </MenuItem>
         <MenuItem
-          onClick={() => { context.setSorting([context.columns.find((c) => c.name === props.columnName), false]); handleClose() }}>
+          onClick={() => { props.setSorting([context.columns.find((c) => c.name === props.columnName), false]); handleClose() }}>
           <ListItemIcon>
             <SortIcon fontSize="small" />
           </ListItemIcon>
@@ -242,7 +252,7 @@ function TableHeader(props) {
           }}>
             {column.name}
           </span>
-          <ColumnContextMenu columnName={column.name} columnIndex={idx}>
+          <ColumnContextMenu columnName={column.name} columnIndex={idx} setSorting={props.setSorting}>
             <MoreVertIcon className="inlineIcon" />
           </ColumnContextMenu>
         </th>)}
