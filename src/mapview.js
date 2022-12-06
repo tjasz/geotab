@@ -27,10 +27,10 @@ function MapView(props) {
             pointToLayer={painter(context.symbology)}
             onEachFeature={(feature, layer) => {
               layer.on({
-                click: () => { context.setActive(feature.hash) }
+                click: () => { context.setActive(feature.id) }
               })
             }} />
-            {context.active !== null && <ActivePopup feature={features.find((feature) => feature.hash === context.active)} />}
+            {context.active !== null && <ActivePopup feature={features.find((feature) => feature.id === context.active)} />}
             <MyLayersControl position="topright" mapLayers={mapLayers} />
           </MapContainer>
         </div>
@@ -59,7 +59,7 @@ function ChangeView({ center, zoom }) {
   const features = context.data.filter((row) => evaluateFilter(row, context.filter));
   const map = useMap();
   if (context.active !== null) {
-    const feature = features.find((feature) => feature.hash === context.active);
+    const feature = features.find((feature) => feature.id === context.active);
     if (feature !== null && feature !== undefined && feature.geometry !== null && feature.geometry !== undefined) {
       map.setView(getCentralCoord(feature) || [47.5,-122.3], map.getZoom() || 6);
     }

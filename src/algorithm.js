@@ -1,4 +1,5 @@
 import Papa from 'papaparse';
+import { v4 as uuidv4 } from 'uuid';
 
 export function sleep (time) {
   return new Promise((resolve) => setTimeout(resolve, time));
@@ -23,8 +24,10 @@ export function setEquals(a, b) {
 
 export function getFeatures(data) {
   if (data["type"] === "Feature") {
-    data.hash = hashCode(JSON.stringify(data));
-    return data;
+    if (data.id === undefined) {
+      data.id = uuidv4();
+    }
+    return {geometry: data.geometry, id: data.id, type: data.type, properties: data.properties};
   }
   else if (data["type"] === "FeatureCollection") {
     return data["features"].map((feature) => getFeatures(feature)).flat();

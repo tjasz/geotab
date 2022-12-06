@@ -68,7 +68,7 @@ function DataTable() {
             columns={context.columns}
             fidx={fidx}
             feature={feature}
-            active={context.active !== null && feature.hash === context.active}
+            active={context.active !== null && feature.id === context.active}
             setActive={context.setActive} />)}
       </tbody>
     </table>
@@ -252,10 +252,10 @@ function TableHeader(props) {
 
 function TableRow(props) {
   return (
-    <tr onClick={() => props.setActive(props.feature.hash)} className={props.active ? "active" : ""}>
+    <tr onClick={() => props.setActive(props.feature.id)} className={props.active ? "active" : ""}>
       <th>{1+props.fidx}</th>
       {Array.from(props.columns).filter((column) => column.visible).map((column) =>
-        <TableCell key={`${column.name}`} column={column} value={props.feature.properties[column.name]} rowHash={props.feature.hash} />)}
+        <TableCell key={`${column.name}`} column={column} value={props.feature.properties[column.name]} rowId={props.feature.id} />)}
     </tr>
   );
 }
@@ -263,7 +263,7 @@ function TableRow(props) {
 function TableCell(props) {
   const context = useContext(DataContext);
   const setValue = (v) => {
-    context.setData(context.data.map((feature, i) => feature.hash === props.rowHash
+    context.setData(context.data.map((feature, i) => feature.id === props.rowId
       ? {...feature, properties: {...feature.properties, [props.column.name]: v}}
       : feature
       ));
