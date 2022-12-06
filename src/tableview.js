@@ -48,11 +48,17 @@ function DataTable() {
   if (!context.data) return null;
 
   const handleKeyDown = (e, row, col) => {
+    // lock table using Ctrl+S
+    if (e.key === 's' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      setDisabled(true);
+    }
+    // use arrows/enter to navigate cells
     let focusTarget = null;
     if (refs.current?.[row]?.[col]) {
-      if (e.key === 'Down' || e.key === 'ArrowDown' || e.key === 'Enter') {
+      if (e.key === 'Down' || e.key === 'ArrowDown' || (e.key === 'Enter' && !e.shiftKey)) {
         focusTarget = refs.current[Math.min(row+1, features.length-1)][col];
-      } else if (e.key === 'Up' || e.key === 'ArrowUp') {
+      } else if (e.key === 'Up' || e.key === 'ArrowUp' || (e.key === 'Enter' && e.shiftKey)) {
         focusTarget = refs.current[Math.max(row-1, 0)][col];
       }
       if (focusTarget) {
