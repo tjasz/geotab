@@ -101,24 +101,30 @@ function tryToJson(text) {
   const errors = [];
   let jso = null;
   try {
+    // try JSON
     jso = JSON.parse(text);
   }
   catch (e) {
-    // json failed. try GPX
     errors.push(e);
     try {
-      const gpx = new gpxParser();
-      gpx.parse(text);
-      jso = gpx.toGeoJSON();
+      // try CSV
+      jso = csvToJson(text);
     }
     catch (e) {
       errors.push(e);
-      // gpx failed. try CSV
-      jso = csvToJson(text);
+      try {
+        // try GPX
+        const gpx = new gpxParser();
+        gpx.parse(text);
+        jso = gpx.toGeoJSON();
+      }
+      catch (e) {
+        errors.push(e);
+      }
     }
   }
   if (!jso) {
-    throw Error(`File could not be read as geoJSON, GPX, or CSV: ${errors}`);
+    throw Error(`File could not be read as geoJSON, CSV, or GPX: ${errors}`);
   }
   return jso;
 }
