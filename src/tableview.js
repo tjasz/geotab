@@ -53,6 +53,28 @@ function DataTable() {
       e.preventDefault();
       setDisabled(true);
     }
+    // paste using Ctrl+V
+    if (e.key === 'v' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      const target = refs.current?.[row]?.[col];
+      if (target) {
+        navigator.clipboard.readText().then((result) => {
+          const pasteTable = result.replaceAll('\r', '').split('\n').map((r) => r.split('\t'));
+          const targetColIdx = context.columns.findIndex((c) => c.name === col);
+          const newFeatures = context.data.map((feature, fidx) => {
+            if (fidx >= row && fidx < row + pasteTable.length) {
+              const pasteRow = fidx - row;
+              refs.current[fidx][col].value = pasteTable[pasteRow][0]; // TODO other columns
+              const newProperties = {...feature.properties, [col]: pasteTable[pasteRow][0]}; // TODO other columns
+              return {...feature, properties: newProperties};
+            } else {
+              return feature;
+            }
+          });
+          context.setData(newFeatures);
+        })
+      }
+    }
     // use arrows/enter to navigate cells
     let focusTarget = null;
     if (refs.current?.[row]?.[col]) {
@@ -321,10 +343,6 @@ function TableRow(props) {
 }
 
 function TableCell(props) {
-  const [value, setValue] = useState(props.value ?? "");
-  const handleChange = (e) => {
-    setValue(e.target.value);
-  };
   const handleBlur = (e) => {
     props.onChange(e.target.value, props.column);
   };
@@ -332,7 +350,7 @@ function TableCell(props) {
   if (props.disabled) {
     return (
       <td>
-        <CellValue value={value} column={props.column} />
+        <CellValue value={props.value} column={props.column} />
       </td>
     );
   }
@@ -347,9 +365,8 @@ function TableCell(props) {
         }}
         onKeyDown={(e) => props.handleKeyDown(e, props.fidx, props.column.name)}
         type="text"
-        value={value}
-        size={value.length ?? 17 + 3}
-        onChange={handleChange}
+        defaultValue={props.value ?? ""}
+        size={props.value?.length ?? 17 + 3}
         onBlur={handleBlur}
         />
     </td>
