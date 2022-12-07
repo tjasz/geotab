@@ -224,6 +224,45 @@ export function getFeatureLengthMeters(feature) {
   }
 }
 
+function getVertFromCoordinateList(coordinates) {
+  let [pvert, nvert] = [0, 0];
+  if (coordinates.length < 2) {
+    return [pvert, nvert];
+  }
+  let lastElev = coordinates[0][2];
+  for (const coord of coordinates) {
+    const elev = coord[2];
+    // calculate positive and negative vert
+    if (elev > lastElev + 1) {
+      pvert += (elev - lastElev);
+      // update reference to last point
+      lastElev = elev;
+    } else if (elev < lastElev - 1) {
+      nvert += (elev - lastElev);
+      // update reference to last point
+      lastElev = elev;
+    }
+  }
+  return [pvert, nvert];
+}
+
+export function getFeatureVertMeters(feature) {
+  switch(feature.geometry?.type) {
+    case "Point":
+    case "MultiPoint":
+      return 0;
+    case "LineString":
+      return getVertFromCoordinateList(feature.geometry.coordinates);
+    case "MultiLineString":
+    case "MultiPolygon":
+    case "Polygon":
+      return feature.geometry.coordinates.reduce(
+        (accumulator, part) => accumulator + getVertFromCoordinateList(part), 0);
+    default:
+      return NaN;
+  }
+}
+
 export function getFeatureListBounds(features) {
   let bounds = [[null, null], [null, null]];
   for (const feature of features) {
