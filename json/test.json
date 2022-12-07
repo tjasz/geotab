@@ -1,0 +1,18 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-121.7604, 46.8529, 100],
+          [-121.7604, 47.8529, 200]
+        ]
+      },
+      "properties": {
+        "title": "100m 1NMi flight"
+      }
+    }
+  ]
+}
