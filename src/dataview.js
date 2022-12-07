@@ -83,36 +83,62 @@ function ImportView(props) {
   );
 }
 
+function readFileAsync(fname) {
+  return new Promise((resolve, reject) => {
+    let reader = new FileReader();
+
+    reader.onload = () => {
+      resolve(reader.result);
+    };
+
+    reader.onerror = reject;
+
+    reader.readAsText(fname);
+  })
+}
+
+function tryToJson(text) {
+  const errors = [];
+  let jso = null;
+  try {
+    jso = JSON.parse(text);
+  }
+  catch (e) {
+    // json failed. try GPX
+    errors.push(e);
+    try {
+      const gpx = new gpxParser();
+      gpx.parse(text);
+      jso = gpx.toGeoJSON();
+    }
+    catch (e) {
+      errors.push(e);
+      // gpx failed. try CSV
+      jso = csvToJson(text);
+    }
+  }
+  if (!jso) {
+    throw Error(`File could not be read as geoJSON, GPX, or CSV: ${errors}`);
+  }
+  return jso;
+}
+
 function FileImporter({onRead}) {
   const process = () => {
     const fileSelector = document.getElementById('file-selector');
-    const fname = fileSelector.files[0];
-    const reader = new FileReader();
-    reader.addEventListener('load', (event) => {
-      try {
-        const jso = JSON.parse(event.target.result);
-        onRead(jso);
-      }
-      catch (e) {
-        // json failed. try GPX
-        try {
-          const gpx = new gpxParser();
-          gpx.parse(event.target.result);
-          const jso = gpx.toGeoJSON();
-          onRead(jso);
-        }
-        catch (e) {
-          // gpx failed. try CSV
-          const jso = csvToJson(event.target.result);
-          onRead(jso);
-        }
-      }
+    const promises = [];
+    for (let i = 0; i < fileSelector.files.length; i++) {
+      promises.push(readFileAsync(fileSelector.files.item(i)));
+    }
+    Promise.all(promises).then((fileContents) => {
+      const features = fileContents.map((file) => tryToJson(file)).filter((j) => j !== null);
+      const json = { type: "FeatureCollection", features }
+      onRead(json);
     });
-    reader.readAsText(fname);
   };
   return (
     <div className="fileImporter">
-      <input type="file" id="file-selector" />
+      <input type="file" id="file-selector" multiple />
       <button type="button" id="next-button" onClick={process}>Process</button>
     </div>
   );
