@@ -60,12 +60,18 @@ function DataTable() {
       if (target) {
         navigator.clipboard.readText().then((result) => {
           const pasteTable = result.replaceAll('\r', '').split('\n').map((r) => r.split('\t'));
-          const targetColIdx = context.columns.findIndex((c) => c.name === col);
+          const baseColIdx = context.columns.findIndex((c) => c.name === col);
           const newFeatures = context.data.map((feature, fidx) => {
             if (fidx >= row && fidx < row + pasteTable.length) {
               const pasteRow = fidx - row;
-              refs.current[fidx][col].value = pasteTable[pasteRow][0]; // TODO other columns
-              const newProperties = {...feature.properties, [col]: pasteTable[pasteRow][0]}; // TODO other columns
+              const newProperties = pasteTable[pasteRow].reduce((acc, v, i) => {
+                if (baseColIdx + i < context.columns.length) {
+                  const colName = context.columns[baseColIdx+i].name;
+                  refs.current[fidx][colName].value = v;
+                  return {...acc, [colName]: v};
+                }
+                return acc;
+              }, feature.properties);
               return {...feature, properties: newProperties};
             } else {
               return feature;
@@ -318,10 +324,8 @@ function TableHeader(props) {
 }
 
 function TableRow(props) {
-  const [featureProperties, setFeatureProperties] = useState(props.feature.properties);
   const handleCellChange = (value, column) => {
-    const newFeatureProperties = {...featureProperties, [column.name]: value};
-    setFeatureProperties(newFeatureProperties);
+    const newFeatureProperties = {...props.feature.properties, [column.name]: value};
     props.onChange(newFeatureProperties, props.fidx);
   };
   return (
@@ -334,7 +338,7 @@ function TableRow(props) {
           handleKeyDown={props.handleKeyDown}
           column={column}
           fidx={props.fidx}
-          value={featureProperties[column.name]}
+          value={props.feature.properties[column.name]}
           onChange={handleCellChange}
           disabled={props.disabled}
           />)}
