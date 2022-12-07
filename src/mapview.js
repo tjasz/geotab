@@ -1,5 +1,6 @@
 import React, {useRef, useContext} from 'react';
 import { MapContainer, TileLayer, WMSTileLayer, LayersControl, ScaleControl, GeoJSON, Popup, useMap } from 'react-leaflet';
+import { AbridgedUrlLink } from './common-components.js';
 import {DataContext} from './dataContext.js'
 import {getCentralCoord, hashCode, getFeatureListBounds} from './algorithm.js'
 import {evaluateFilter} from './filter.js'
@@ -45,7 +46,15 @@ function ActivePopup(props) {
           {Object.entries(props.feature.properties).map(([key, value]) =>
             <tr key={key}>
               <th>{key}</th>
-              <td>{value}</td>
+              <td>
+                {(value === "" ? undefined :
+                  typeof value === "string" && value.startsWith("http")
+                  ? <AbridgedUrlLink target="_blank" href={value} length={21} />
+                  : typeof value === "string" || typeof value === "number"
+                        ? value
+                        : JSON.stringify(value)
+                )}
+              </td>
             </tr>
           )}
         </tbody></table>
