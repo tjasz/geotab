@@ -1,5 +1,6 @@
 import React, {useContext, useState} from 'react';
 import { useSearchParams } from "react-router-dom";
+import gpxParser from 'gpxparser'
 import {DataContext} from './dataContext.js'
 import {getFeatures, getPropertiesUnion, csvToJson} from './algorithm.js'
 import {defaultFilter, conditionOperators, conditionGroupOperators, parametersMap, operandTypes, Condition, ConditionGroup, filterEquals, filterTypes, validateFilter} from './filter.js'
@@ -93,9 +94,18 @@ function FileImporter({onRead}) {
         onRead(jso);
       }
       catch (e) {
-        // json failed. try CSV
-        const jso = csvToJson(event.target.result);
-        onRead(jso);
+        // json failed. try GPX
+        try {
+          const gpx = new gpxParser();
+          gpx.parse(event.target.result);
+          const jso = gpx.toGeoJSON();
+          onRead(jso);
+        }
+        catch (e) {
+          // gpx failed. try CSV
+          const jso = csvToJson(event.target.result);
+          onRead(jso);
+        }
       }
     });
     reader.readAsText(fname);
