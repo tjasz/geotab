@@ -145,6 +145,10 @@ gpxParser.prototype.parse = function (gpxstring) {
           routepoints.push(pt);
       }
 
+      if (routepoints.length > 0) {
+        route.startTime = routepoints[0].time;
+      }
+
       route.distance  = keepThis.calculDistance(routepoints);
       route.elevation = keepThis.calcElevation(routepoints);
       route.slopes    = keepThis.calculSlope(routepoints, route.distance.cumul);
@@ -192,6 +196,11 @@ gpxParser.prototype.parse = function (gpxstring) {
 
           trackpoints.push(pt);
       }
+
+      if (trackpoints.length > 0) {
+        track.startTime = trackpoints[0].time;
+      }
+
       track.distance  = keepThis.calculDistance(trackpoints);
       track.elevation = keepThis.calcElevation(trackpoints);
       track.slopes    = keepThis.calculSlope(trackpoints, track.distance.cumul);
@@ -404,8 +413,9 @@ gpxParser.prototype.toGeoJSON = function () {
       feature.properties.number = track.number;
       feature.properties.link   = track.link;
       feature.properties.type   = track.type;
+      feature.properties.startTime = track.startTime;
 
-      for(idx in track.points) {
+      for(const idx in track.points) {
           let pt = track.points[idx];
       
           var geoPt = [];
@@ -439,6 +449,7 @@ gpxParser.prototype.toGeoJSON = function () {
       feature.properties.number = track.number;
       feature.properties.link   = track.link;
       feature.properties.type   = track.type;
+      feature.properties.startTime = track.startTime;
 
 
       for(idx in track.points) {
