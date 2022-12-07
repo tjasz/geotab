@@ -46,6 +46,22 @@ gpxParser.prototype.parse = function (gpxstring) {
   let domParser = new window.DOMParser();
   this.xmlSource = domParser.parseFromString(gpxstring, 'text/xml');
 
+  // validate that the document's only child node is a GPX element
+  if (this.xmlSource.childNodes.length !== 1) {
+    throw Error(`Invalid GPX: document should have exactly one child. Found ${this.xmlSource.childNodes.length}.`);
+  }
+  const gpxNode = this.xmlSource.childNodes.item(0);
+  if (gpxNode.nodeName !== "gpx" || gpxNode.nodeType !== 1) {
+    throw Error(`Invalid GPX: outer node should be a <gpx> element. Found ${gpxNode.nodeName} of NodeType ${gpxNode.nodeType}.`)
+  }
+  // validate that the GPX element has Version and Creator attributes
+  if (!gpxNode.getAttribute("version")) {
+    throw Error(`Invalid GPX: <gpx> element missing required attribute 'version'.`);
+  }
+  if (!gpxNode.getAttribute("creator")) {
+    throw Error(`Invalid GPX: <gpx> element missing required attribute 'creator'.`);
+  }
+
   let metadata = this.xmlSource.querySelector('metadata');
   if(metadata != null){
       this.metadata.name  = this.getElementValue(metadata, "name");
