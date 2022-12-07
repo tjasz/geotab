@@ -481,9 +481,4 @@ gpxParser.prototype.toGeoJSON = function () {
   return GeoJSON;
 };
 
-if(typeof module !== 'undefined'){
-  require('jsdom-global')();
-  module.exports = gpxParser;
-}
-
 export default gpxParser;
