@@ -387,7 +387,9 @@ function CellValue(props) {
         ? Number(props.value)
         : props.column.type === "date"
           ? new Date(Date.parse(props.value)).toISOString()
-          : props.value
+          : typeof props.value === "string" || typeof props.value === "number"
+            ? props.value
+            : JSON.stringify(props.value)
     )
   );
 }
