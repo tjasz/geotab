@@ -1,6 +1,6 @@
 import React, {useContext, useState} from 'react';
 import { useSearchParams } from "react-router-dom";
-import gpxParser from 'gpxparser'
+import gpxParser from './gpx-parser.js'
 import {DataContext} from './dataContext.js'
 import {getFeatures, getPropertiesUnion, csvToJson} from './algorithm.js'
 import {defaultFilter, conditionOperators, conditionGroupOperators, parametersMap, operandTypes, Condition, ConditionGroup, filterEquals, filterTypes, validateFilter} from './filter.js'
