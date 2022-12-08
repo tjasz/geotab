@@ -434,7 +434,7 @@ function pointToGeoJSONCoordinate(pt) {
     coord.push(pt.ele);
   }
   if (pt.time !== null && pt.time !== undefined) {
-    coord.push(pt.time);
+    coord.push(pt.time.getTime());
   }
   return coord;
 }
