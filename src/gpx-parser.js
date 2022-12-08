@@ -72,6 +72,7 @@ gpxParser.prototype.parse = function (gpxstring) {
 
   keepThis.tracks = Array.from(this.xmlSource.querySelectorAll('trk'))
                          .map((trk) => getTrackData(trk));
+  return this;
 };
 
 // https://www.topografix.com/GPX/1/1/#type_emailType
@@ -148,11 +149,6 @@ function getTrackData(trk) {
   track.segments = Array.from(trk.querySelectorAll('trkseg'))
                       .map((trkseg) => getTrackSegmentData(trkseg));
 
-  // TODO stats about track/segments
-  // route.distance  = keepThis.calculDistance(routepoints);
-  // route.elevation = keepThis.calcElevation(routepoints);
-  // route.slopes    = keepThis.calculSlope(routepoints, route.distance.cumul);
-
   return track;
 }
 
@@ -175,17 +171,8 @@ function getRouteData(rte) {
 
   // TODO extensions
 
-  let routepoints = Array.from(rte.querySelectorAll('rtept'))
-                         .map((rtept) => getPointData(rtept));
-
-  // TODO stats about rtepts
-  if (routepoints.length > 0) {
-    route.startTime = routepoints[0].time;
-  }
-  // route.distance  = keepThis.calculDistance(routepoints);
-  // route.elevation = keepThis.calcElevation(routepoints);
-  // route.slopes    = keepThis.calculSlope(routepoints, route.distance.cumul);
-  route.points    = routepoints;
+  route.points = Array.from(rte.querySelectorAll('rtept'))
+                      .map((rtept) => getPointData(rtept));
 
   return route;
 }
@@ -343,28 +330,75 @@ function queryDirectSelectorAll(parent, needle) {
   );
 };
 
-/**
-* Calcul the Distance Object from an array of points
-* 
-* @param  {} points - An array of points with lat and lon properties
-* 
-* @return {DistanceObject} An object with total distance and Cumulative distances
-*/
-gpxParser.prototype.calculDistance = function(points) {
-  let distance = {};
-  let totalDistance = 0;
-  let cumulDistance = [];
-  for (var i = 0; i < points.length - 1; i++) {
-      totalDistance += this.calcDistanceBetween(points[i],points[i+1]);
-      cumulDistance[i] = totalDistance;
+gpxParser.prototype.calculate = function() {
+  for (const track of this.tracks) {
+    for (const segment of track.segments) {
+      calculatePointContainer(segment);
+    }
+    attachOptional(track, "startTime", track.segments?.[0]?.startTime);
+    attachOptional(track, "duration", track.segments?.reduce((d,s) => d+s.duration, 0)); // TODO can be undefined if s.duration is
+    attachOptional(track, "distance", track.segments?.reduce((d,s) => d+s.distance, 0));
+    attachOptional(track, "cumulativeDistance", track.segments?.map((s) => s.distance));
+    attachOptional(track, "minElevation", track.segments?.reduce((e,s) => Math.min(s.minElevation, e), track.segments[0].minElevation));
+    attachOptional(track, "maxElevation", track.segments?.reduce((e,s) => Math.max(s.maxElevation, e), track.segments[0].maxElevation));
+    attachOptional(track, "gain", track.segments?.reduce((d,s) => d+s.gain, 0));
+    attachOptional(track, "loss", track.segments?.reduce((d,s) => d+s.loss, 0));
   }
-  cumulDistance[points.length - 1] = totalDistance;
+  for (const route of this.routes) {
+    calculatePointContainer(route);
+  }
+  return this;
+}
 
-  distance.total = totalDistance;
-  distance.cumul = cumulDistance;
-
-  return distance;
-};
+function calculatePointContainer(container) {
+  const points = container.points;
+  if (points.length > 0) {
+    // calculate startTime and duration from .time
+    if (points[0].time) {
+      // set startTime
+      container.startTime = points[0].time;
+      if (points[points.length - 1].time) {
+        // set duration
+        container.duration = points[points.length - 1].time - points[0].time;
+      }
+    }
+    // Calculate distance from position
+    let totalDist = 0;
+    const cumulativeDist = [0];
+    for (let i = 1; i < points.length; i++) {
+      // TODO bearing at each point?
+      totalDist += calcDistanceBetween(points[i-1], points[i]);
+      cumulativeDist.push(totalDist);
+    }
+    // set distance, cumulativeDist
+    container.distance = totalDist;
+    container.cumulativeDist = cumulativeDist;
+    // Calculate gain, loss, min elev, max elev
+    if (points[0]?.ele) {
+      let minElev = points[0].ele;
+      let maxElev = minElev;
+      let gain = 0;
+      let loss = 0;
+      // TODO cumulative gain, loss?
+      for (let i = 1; i < points.length; i++) {
+        const currElev = points[i].ele;
+        if (currElev > maxElev) maxElev = currElev;
+        if (currElev < minElev) minElev = currElev;
+        const diff = currElev - points[i-1].ele;
+        if (diff < 0) {
+          loss -= diff;
+        } else {
+          gain += diff;
+        }
+      }
+      container.minElevation = minElev;
+      container.maxElevation = maxElev;
+      container.gain = gain;
+      container.loss = loss;
+    }
+  }
+  return container;
+}
 
 /**
 * Calcul Distance between two points with lat and lon
@@ -374,7 +408,7 @@ gpxParser.prototype.calculDistance = function(points) {
 * 
 * @returns {float} The distance between the two points
 */
-gpxParser.prototype.calcDistanceBetween = function (wpt1, wpt2) {
+function calcDistanceBetween(wpt1, wpt2) {
   let latlng1 = {};
   latlng1.lat = wpt1.lat;
   latlng1.lon = wpt1.lon;
@@ -388,82 +422,10 @@ gpxParser.prototype.calcDistanceBetween = function (wpt1, wpt2) {
       sinDLon = Math.sin((latlng2.lon - latlng1.lon) * rad / 2),
       a = sinDLat * sinDLat + Math.cos(lat1) * Math.cos(lat2) * sinDLon * sinDLon,
       c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-return 6371000 * c;
+  return 6371000 * c;
 };
 
-/**
-* Generate Elevation Object from an array of points
-* 
-* @param  {} points - An array of points with ele property
-* 
-* @returns {ElevationObject} An object with negative and positive height difference and average, max and min altitude data
-*/
-gpxParser.prototype.calcElevation = function (points) {
-  var dp = 0,
-      dm = 0,
-      ret = {};
-
-  for (var i = 0; i < points.length - 1; i++) {
-      let rawNextElevation = points[i + 1].ele;
-      let rawElevation =  points[i].ele;
-
-      if(rawNextElevation !== null && rawElevation !== null) {
-          let diff = parseFloat(rawNextElevation) - parseFloat(rawElevation);
-
-          if (diff < 0) {
-              dm += diff;
-          } else if (diff > 0) {
-              dp += diff;
-          }
-      }
-  }
-
-  var elevation = [];
-  var sum = 0;
-
-  for (var i = 0, len = points.length; i < len; i++) {
-      let rawElevation = points[i].ele;
-
-      if(rawElevation !== null) {
-          var ele = parseFloat(points[i].ele);
-          elevation.push(ele);
-          sum += ele;
-      }
-  }
-
-  ret.max = Math.max.apply(null, elevation) || null;
-  ret.min = Math.min.apply(null, elevation) || null;
-  ret.pos = Math.abs(dp) || null;
-  ret.neg = Math.abs(dm) || null;
-  ret.avg = sum / elevation.length || null;
-
-  return ret;
-};
-
-/**
-* Generate slopes Object from an array of Points and an array of Cumulative distance 
-* 
-* @param  {} points - An array of points with ele property
-* @param  {} cumul - An array of cumulative distance
-* 
-* @returns {SlopeObject} An array of slopes
-*/
-gpxParser.prototype.calculSlope = function(points, cumul) {
-  let slopes = [];
-
-  for (var i = 0; i < points.length - 1; i++) {
-      let point = points[i];
-      let nextPoint = points[i+1];
-      let elevationDiff = nextPoint.ele - point.ele;
-      let distance = cumul[i+1] - cumul[i];
-
-      let slope = (elevationDiff * 100) / distance;
-      slopes.push(slope);
-  }
-
-  return slopes;
-};
-
+// functions below are for converting from processed GPX to GeoJSON
 function pointToGeoJSONCoordinate(pt) {
   let coord = [];
   coord.push(pt.lon);

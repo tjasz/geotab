@@ -115,7 +115,7 @@ function tryToJson(text) {
       try {
         // try GPX
         const gpx = new gpxParser();
-        gpx.parse(text);
+        gpx.parse(text).calculate();
         jso = gpx.toGeoJSON();
       }
       catch (e) {
