@@ -151,28 +151,28 @@ export function getFeatureBounds(feature) {
       ];
     case "MultiLineString":
     case "MultiPolygon":
-      sw = feature.geometry.coordinates[0][0].slice(0,2).reverse();
-      ne = sw.slice();
+      let m_sw = feature.geometry.coordinates[0][0].slice(0,2).reverse();
+      let m_ne = m_sw.slice();
       for (const part of feature.geometry.coordinates) {
-        for (const coord in part) {
+        for (const coord of part) {
           const latlon = coord.slice(0,2).reverse();
-          if (latlon[0] < sw[0]) {
-            sw[0] = latlon[0];
+          if (latlon[0] < m_sw[0]) {
+            m_sw[0] = latlon[0];
           }
-          if (latlon[1] < sw[1]) {
-            sw[1] = latlon[1];
+          if (latlon[1] < m_sw[1]) {
+            m_sw[1] = latlon[1];
           }
-          if (latlon[0] > ne[0]) {
-            ne[0] = latlon[0];
+          if (latlon[0] > m_ne[0]) {
+            m_ne[0] = latlon[0];
           }
-          if (latlon[1] > ne[1]) {
-            ne[1] = latlon[1];
+          if (latlon[1] > m_ne[1]) {
+            m_ne[1] = latlon[1];
           }
         }
       }
       return [
-        sw,
-        ne
+        m_sw,
+        m_ne
       ];
     default:
       return null;
