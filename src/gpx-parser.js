@@ -1,6 +1,7 @@
 // MIT License
 
 // Copyright (c) 2018 Lucas Trebouet Voisin
+// https://github.com/Luuka/GPXParser.js
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +35,9 @@
 };
 
 /**
-* Parse a gpx formatted string to a GPXParser Object
+* Parse a gpx formatted string to a GPXParser Object.
+*
+* Format: https://www.topografix.com/GPX/1/1
 * 
 * @param {string} gpxstring - A GPX formatted String
 * 
@@ -54,177 +57,188 @@ gpxParser.prototype.parse = function (gpxstring) {
   if (gpxNode.nodeName !== "gpx" || gpxNode.nodeType !== 1) {
     throw Error(`Invalid GPX: outer node should be a <gpx> element. Found ${gpxNode.nodeName} of NodeType ${gpxNode.nodeType}.`)
   }
-  // validate that the GPX element has Version and Creator attributes
-  if (!gpxNode.getAttribute("version")) {
-    throw Error(`Invalid GPX: <gpx> element missing required attribute 'version'.`);
-  }
-  if (!gpxNode.getAttribute("creator")) {
-    throw Error(`Invalid GPX: <gpx> element missing required attribute 'creator'.`);
-  }
 
-  let metadata = this.xmlSource.querySelector('metadata');
-  if(metadata != null){
-      this.metadata.name  = this.getElementValue(metadata, "name");
-      this.metadata.desc  = this.getElementValue(metadata, "desc");
-      this.metadata.time  = this.getElementValue(metadata, "time");
+  // required attributes version and creator
+  attachRequired(this, "version", gpxNode.getAttribute("version"));
+  attachRequired(this, "creator", gpxNode.getAttribute("creator"));
 
-      let author = {};
-      let authorElem = metadata.querySelector('author');
-      if(authorElem != null){
-          author.name = this.getElementValue(authorElem, "name");
-          author.email  = {};
-          let emailElem = authorElem.querySelector('email');
-          if(emailElem != null){
-              author.email.id     = emailElem.getAttribute("id");
-              author.email.domain = emailElem.getAttribute("domain");
-          }
+  attachOptional(this, "metadata", getMetadata(this.xmlSource.querySelector("metadata")));
 
-          let link     = {};
-          let linkElem = authorElem.querySelector('link');
-          if(linkElem != null){
-              link.href = linkElem.getAttribute('href');
-              link.text = this.getElementValue(linkElem, "text");
-              link.type = this.getElementValue(linkElem, "type");
-          }
-          author.link = link;
-      }
-      this.metadata.author = author;
+  keepThis.waypoints = Array.from(this.xmlSource.querySelectorAll('wpt'))
+                            .map((wpt) => getPointData(wpt));
 
-      let link = {};
-      let linkElem = this.queryDirectSelector(metadata, 'link');
-      if(linkElem != null){
-          link.href = linkElem.getAttribute('href');
-          link.text = this.getElementValue(linkElem, "text");
-          link.type = this.getElementValue(linkElem, "type");
-          this.metadata.link = link;
-      }
-  }
+  keepThis.routes = Array.from(this.xmlSource.querySelectorAll('rte'))
+                         .map((rte) => getRouteData(rte));
 
-  var wpts = Array.from(this.xmlSource.querySelectorAll('wpt'));
-  for (let idx in wpts){
-      var wpt = wpts[idx];
-      let pt  = {};
-      pt.name = keepThis.getElementValue(wpt, "name");
-      pt.sym  = keepThis.getElementValue(wpt, "sym");
-      pt.lat  = parseFloat(wpt.getAttribute("lat"));
-      pt.lon  = parseFloat(wpt.getAttribute("lon"));
-
-      let floatValue = parseFloat(keepThis.getElementValue(wpt, "ele")); 
-      pt.ele = isNaN(floatValue) ? null : floatValue;
-
-      pt.cmt  = keepThis.getElementValue(wpt, "cmt");
-      pt.desc = keepThis.getElementValue(wpt, "desc");
-
-      let time = keepThis.getElementValue(wpt, "time");
-      pt.time = time == null ? null : new Date(time);
-
-      keepThis.waypoints.push(pt);
-  }
-
-  var rtes = Array.from(this.xmlSource.querySelectorAll('rte'));
-  for (let idx in rtes){
-      let rte = rtes[idx];
-      let route = {};
-      route.name   = keepThis.getElementValue(rte, "name");
-      route.cmt    = keepThis.getElementValue(rte, "cmt");
-      route.desc   = keepThis.getElementValue(rte, "desc");
-      route.src    = keepThis.getElementValue(rte, "src");
-      route.number = keepThis.getElementValue(rte, "number");
-
-      let type     = keepThis.queryDirectSelector(rte, "type");
-      route.type   = type != null ? type.innerHTML : null;
-
-      let link     = {};
-      let linkElem = rte.querySelector('link');
-      if(linkElem != null){
-          link.href = linkElem.getAttribute('href');
-          link.text = keepThis.getElementValue(linkElem, "text");
-          link.type = keepThis.getElementValue(linkElem, "type");
-      }
-      route.link = link;
-
-      let routepoints = [];
-      var rtepts = Array.from(rte.querySelectorAll('rtept'));
-
-      for (let idxIn in rtepts){
-          let rtept = rtepts[idxIn];
-          let pt    = {};
-          pt.lat    = parseFloat(rtept.getAttribute("lat"));
-          pt.lon    = parseFloat(rtept.getAttribute("lon"));
-
-          let floatValue = parseFloat(keepThis.getElementValue(rtept, "ele")); 
-          pt.ele = isNaN(floatValue) ? null : floatValue;
-
-          let time = keepThis.getElementValue(rtept, "time");
-          pt.time = time == null ? null : new Date(time);
-
-          routepoints.push(pt);
-      }
-
-      if (routepoints.length > 0) {
-        route.startTime = routepoints[0].time;
-      }
-
-      route.distance  = keepThis.calculDistance(routepoints);
-      route.elevation = keepThis.calcElevation(routepoints);
-      route.slopes    = keepThis.calculSlope(routepoints, route.distance.cumul);
-      route.points    = routepoints;
-
-      keepThis.routes.push(route);
-  }
-
-  var trks = Array.from(this.xmlSource.querySelectorAll('trk'));
-  for (let idx in trks){
-      let trk = trks[idx];
-      let track = {};
-
-      track.name   = keepThis.getElementValue(trk, "name");
-      track.cmt    = keepThis.getElementValue(trk, "cmt");
-      track.desc   = keepThis.getElementValue(trk, "desc");
-      track.src    = keepThis.getElementValue(trk, "src");
-      track.number = keepThis.getElementValue(trk, "number");
-
-      let type     = keepThis.queryDirectSelector(trk, "type");
-      track.type   = type != null ? type.innerHTML : null;
-
-      let link     = {};
-      let linkElem = trk.querySelector('link');
-      if(linkElem != null){
-          link.href = linkElem.getAttribute('href');
-          link.text = keepThis.getElementValue(linkElem, "text");
-          link.type = keepThis.getElementValue(linkElem, "type");
-      }
-      track.link = link;
-
-      let trackpoints = [];
-      let trkpts = Array.from(trk.querySelectorAll('trkpt'));
-    for (let idxIn in trkpts){
-          var trkpt = trkpts[idxIn];
-          let pt = {};
-          pt.lat = parseFloat(trkpt.getAttribute("lat"));
-          pt.lon = parseFloat(trkpt.getAttribute("lon"));
-
-          let floatValue = parseFloat(keepThis.getElementValue(trkpt, "ele")); 
-          pt.ele = isNaN(floatValue) ? null : floatValue;
-
-          let time = keepThis.getElementValue(trkpt, "time");
-          pt.time = time == null ? null : new Date(time);
-
-          trackpoints.push(pt);
-      }
-
-      if (trackpoints.length > 0) {
-        track.startTime = trackpoints[0].time;
-      }
-
-      track.distance  = keepThis.calculDistance(trackpoints);
-      track.elevation = keepThis.calcElevation(trackpoints);
-      track.slopes    = keepThis.calculSlope(trackpoints, track.distance.cumul);
-      track.points    = trackpoints;
-
-      keepThis.tracks.push(track);
-  }
+  keepThis.tracks = Array.from(this.xmlSource.querySelectorAll('trk'))
+                         .map((trk) => getTrackData(trk));
 };
+
+// https://www.topografix.com/GPX/1/1/#type_emailType
+function getEmailData(email) {
+  if (email === null || email === undefined) return email;
+  let data = {};
+  attachRequired(data, "id", email.getAttribute("id"));
+  attachRequired(data, "domain", email.getAttribute("domain"));
+  return data;
+}
+
+// https://www.topografix.com/GPX/1/1/#type_personType
+function getPersonData(person) {
+  if (person === null || person === undefined) return person;
+  let data = {};
+  attachOptional(data, "name", getElementValue(person, "name"));
+  attachOptional(data, "email", getEmailData(person.querySelector("email")))
+  attachOptional(
+    data,
+    "links",
+    Array.from(person.querySelectorAll('link')).map((link) => getLinkData(link))
+    );
+  return data;
+}
+
+// https://www.topografix.com/GPX/1/1/#type_metadataType
+function getMetadata(metadata) {
+  if (metadata === null || metadata === undefined) return metadata;
+  let data = {};
+  attachOptional(data, "name", getElementValue(metadata, "name"));
+  attachOptional(data, "desc", getElementValue(metadata, "desc"));
+  attachOptional(data, "author", getPersonData(metadata.querySelector("author")));
+  // TODO copyright
+  attachOptional(
+    data,
+    "links",
+    Array.from(queryDirectSelectorAll(metadata, 'link')).map((link) => getLinkData(link))
+    );
+  attachOptional(data, "time", getDateElementValue(metadata, "time"));
+  attachOptional(data, "keywords", getElementValue(metadata, "keywords"));
+  // TODO bounds
+  // TODO extensions
+
+  return data;
+}
+
+// https://www.topografix.com/GPX/1/1/#type_trksegType
+function getTrackSegmentData(trkseg) {
+  let segment = {};
+  segment.points = Array.from(trkseg.querySelectorAll('trkpt'))
+                        .map((trkpt) => getPointData(trkpt));
+  return segment;
+}
+
+// https://www.topografix.com/GPX/1/1/#type_trkType
+function getTrackData(trk) {
+  let track = {};
+
+  // optional information
+  attachOptional(track, "name", getElementValue(trk, "name"));
+  attachOptional(track, "cmt", getElementValue(trk, "cmt"));
+  attachOptional(track, "desc", getElementValue(trk, "desc"));
+  attachOptional(track, "src", getElementValue(trk, "src"));
+  attachOptional(
+    track,
+    "links",
+    Array.from(trk.querySelectorAll('link')).map((link) => getLinkData(link))
+    );
+  attachOptional(track, "number", getIntElementValue(trk, "number"));
+  attachOptional(track, "type", getElementValue(trk, "type"));
+
+  // TODO extensions
+
+  track.segments = Array.from(trk.querySelectorAll('trkseg'))
+                      .map((trkseg) => getTrackSegmentData(trkseg));
+
+  // TODO stats about track/segments
+  // route.distance  = keepThis.calculDistance(routepoints);
+  // route.elevation = keepThis.calcElevation(routepoints);
+  // route.slopes    = keepThis.calculSlope(routepoints, route.distance.cumul);
+
+  return track;
+}
+
+// https://www.topografix.com/GPX/1/1/#type_rteType
+function getRouteData(rte) {
+  let route = {};
+
+  // optional information
+  attachOptional(route, "name", getElementValue(rte, "name"));
+  attachOptional(route, "cmt", getElementValue(rte, "cmt"));
+  attachOptional(route, "desc", getElementValue(rte, "desc"));
+  attachOptional(route, "src", getElementValue(rte, "src"));
+  attachOptional(
+    route,
+    "links",
+    Array.from(rte.querySelectorAll('link')).map((link) => getLinkData(link))
+    );
+  attachOptional(route, "number", getIntElementValue(rte, "number"));
+  attachOptional(route, "type", getElementValue(rte, "type"));
+
+  // TODO extensions
+
+  let routepoints = Array.from(rte.querySelectorAll('rtept'))
+                         .map((rtept) => getPointData(rtept));
+
+  // TODO stats about rtepts
+  if (routepoints.length > 0) {
+    route.startTime = routepoints[0].time;
+  }
+  // route.distance  = keepThis.calculDistance(routepoints);
+  // route.elevation = keepThis.calcElevation(routepoints);
+  // route.slopes    = keepThis.calculSlope(routepoints, route.distance.cumul);
+  route.points    = routepoints;
+
+  return route;
+}
+
+// https://www.topografix.com/GPX/1/1/#type_linkType
+function getLinkData(linkNode) {
+  let link = {};
+  attachRequired(link, "href", linkNode.getAttribute("href"));
+  attachOptional(link, "text", getElementValue(linkNode, "text"));
+  attachOptional(link, "type", getElementValue(linkNode, "type"));
+  return link;
+}
+
+// https://www.topografix.com/GPX/1/1/#type_wptType
+function getPointData(wpt) {
+  let pt  = {};
+
+  // Required information
+  attachRequired(pt, "lat", getFloatAttribute(wpt, "lat"));
+  attachRequired(pt, "lon", getFloatAttribute(wpt, "lon"));
+
+  // Optional position information
+  attachOptional(pt, "ele", getFloatElementValue(wpt, "ele"));
+  attachOptional(pt, "time", getDateElementValue(wpt, "time"));
+  attachOptional(pt, "magvar", getFloatElementValue(wpt, "magvar"));
+  attachOptional(pt, "geoidheight", getFloatElementValue(wpt, "geoidheight"));
+
+  // Optional description information
+  attachOptional(pt, "name", getElementValue(wpt, "name"));
+  attachOptional(pt, "cmt", getElementValue(wpt, "cmt"));
+  attachOptional(pt, "desc", getElementValue(wpt, "desc"));
+  attachOptional(pt, "src", getElementValue(wpt, "src"));
+  attachOptional(
+    pt,
+    "links",
+    Array.from(wpt.querySelectorAll('link')).map((link) => getLinkData(link))
+    );
+  attachOptional(pt, "sym", getElementValue(wpt, "sym"));
+  attachOptional(pt, "type", getElementValue(wpt, "type"));
+
+  // Optional accuracy information
+  attachOptional(pt, "fix", getElementValue(wpt, "fix"));
+  attachOptional(pt, "sat", getIntElementValue(wpt, "sat"));
+  attachOptional(pt, "hdop", getFloatElementValue(wpt, "hdop"));
+  attachOptional(pt, "vdop", getFloatElementValue(wpt, "vdop"));
+  attachOptional(pt, "pdop", getFloatElementValue(wpt, "pdop"));
+  attachOptional(pt, "ageofdgpsdata", getFloatElementValue(wpt, "ageofdgpsdata"));
+  attachOptional(pt, "dgpsid", getFloatElementValue(wpt, "dgpsid"));
+
+  // TODO extensions
+
+  return pt;
+}
 
 /**
 * Get value from a XML DOM element
@@ -234,13 +248,66 @@ gpxParser.prototype.parse = function (gpxstring) {
 * 
 * @return {} The element value
 */
-gpxParser.prototype.getElementValue = function(parent, needle){
+function getElementValue(parent, needle){
   let elem = parent.querySelector(needle);
   if(elem != null){
-      return elem.innerHTML != undefined ? elem.innerHTML : elem.childNodes[0].data;
+      return elem.innerHTML ?? elem.childNodes[0].data;
   }
   return elem;
 };
+
+function getTransformedElementValue(root, name, transform) {
+  const raw = getElementValue(root, name);
+  if (raw === null || raw === undefined) {
+    return raw;
+  }
+  return transform ? transform(raw) :raw;
+}
+
+function getIntElementValue(root, name) {
+  return getTransformedElementValue(root, name, (v) => parseInt(v));
+}
+
+function getFloatElementValue(root, name) {
+  return getTransformedElementValue(root, name, (v) => parseFloat(v));
+}
+
+function getDateElementValue(root, name) {
+  return getTransformedElementValue(root, name, (v) => new Date(v));
+}
+
+function getTransformedAttribute(root, name, transform) {
+  const raw = root.getAttribute(name);
+  if (raw === null || raw === undefined) {
+    return raw;
+  }
+  return transform ? transform(raw) :raw;
+}
+
+function getIntAttribute(root, name) {
+  return getTransformedAttribute(root, name, (v) => parseInt(v));
+}
+
+function getFloatAttribute(root, name) {
+  return getTransformedAttribute(root, name, (v) => parseFloat(v));
+}
+
+function getDateAttribute(root, name) {
+  return getTransformedAttribute(root, name, (v) => new Date(v));
+}
+
+function attachRequired(obj, name, val) {
+  if (val === null || val === undefined) {
+    throw Error(`Required attribute '${name}' not found.`)
+  }
+  obj[name] = val;
+}
+
+function attachOptional(obj, name, val) {
+  if (val !== null && val !== undefined && val.length !== 0) {
+    obj[name] = val;
+  }
+}
 
 
 /**
@@ -251,7 +318,7 @@ gpxParser.prototype.getElementValue = function(parent, needle){
 * 
 * @return {} The element value
 */
-gpxParser.prototype.queryDirectSelector = function(parent, needle) {
+function queryDirectSelector(parent, needle) {
 
   let elements  = parent.querySelectorAll(needle);
   let finalElem = elements[0];
@@ -268,6 +335,12 @@ gpxParser.prototype.queryDirectSelector = function(parent, needle) {
   }
 
   return finalElem;
+};
+
+function queryDirectSelectorAll(parent, needle) {
+  return Array.from(parent.childNodes).filter((elem) =>
+    elem.tagName === needle
+  );
 };
 
 /**
@@ -391,6 +464,59 @@ gpxParser.prototype.calculSlope = function(points, cumul) {
   return slopes;
 };
 
+function pointToGeoJSONCoordinate(pt) {
+  let coord = [];
+  coord.push(pt.lon);
+  coord.push(pt.lat);
+  if (pt.ele !== null && pt.ele !== undefined) {
+    coord.push(pt.ele);
+  }
+  if (pt.time !== null && pt.time !== undefined) {
+    coord.push(pt.time);
+  }
+  return coord;
+}
+
+function segmentToGeoJSONCoordinates(segment) {
+  return segment.points.map(pointToGeoJSONCoordinate);
+}
+
+function trackToGeoJSONMultiLineString(track) {
+  const { ["segments"]: segments, ...properties } = track;
+  return {
+    "type": "Feature",
+    "geometry": {
+      "type": "MultiLineString",
+      "coordinates": segments.map(segmentToGeoJSONCoordinates)
+    },
+    "properties": properties
+  };
+}
+
+function routeToGeoJSONLineString(route) {
+  const { ["points"]: points, ...properties } = route;
+  return {
+    "type": "Feature",
+    "geometry": {
+      "type": "LineString",
+      "coordinates": points.map(pointToGeoJSONCoordinate)
+    },
+    "properties": properties
+  };
+}
+
+function waypointToGeoJSONPoint(pt) {
+  const { ["lat"]: lat, ["lon"]: lon, ...properties } = pt;
+  return {
+    "type": "Feature",
+    "geometry": {
+      "type": "Point",
+      "coordinates": pointToGeoJSONCoordinate(pt)
+    },
+    "properties": properties
+  };
+}
+
 /**
 * Export the GPX object to a GeoJSON formatted Object
 * 
@@ -400,110 +526,12 @@ gpxParser.prototype.toGeoJSON = function () {
   var GeoJSON = {
       "type": "FeatureCollection",
       "features": [],
-      "properties": {
-          "name": this.metadata.name,
-          "desc": this.metadata.desc,
-          "time": this.metadata.time,
-          "author": this.metadata.author,
-          "link": this.metadata.link,
-      },
+      "properties": this.metadata,
   };
 
-  for(const idx in this.tracks) {
-      let track = this.tracks[idx];
-
-      var feature = {
-          "type": "Feature",
-          "geometry": {
-              "type": "LineString",
-              "coordinates": []
-          },
-          "properties": {
-          }
-      };
-
-      feature.properties.name   = track.name;
-      feature.properties.cmt    = track.cmt;
-      feature.properties.desc   = track.desc;
-      feature.properties.src    = track.src;
-      feature.properties.number = track.number;
-      feature.properties.link   = track.link;
-      feature.properties.type   = track.type;
-      feature.properties.startTime = track.startTime;
-
-      for(const idx in track.points) {
-          let pt = track.points[idx];
-      
-          var geoPt = [];
-          geoPt.push(pt.lon);
-          geoPt.push(pt.lat);
-          geoPt.push(pt.ele);
-
-          feature.geometry.coordinates.push(geoPt);
-      }
-
-      GeoJSON.features.push(feature);
-  }
-
-  for(const idx in this.routes) {
-      let track = this.routes[idx];
-
-      var feature = {
-          "type": "Feature",
-          "geometry": {
-              "type": "LineString",
-              "coordinates": []
-          },
-          "properties": {
-          }
-      };
-
-      feature.properties.name   = track.name;
-      feature.properties.cmt    = track.cmt;
-      feature.properties.desc   = track.desc;
-      feature.properties.src    = track.src;
-      feature.properties.number = track.number;
-      feature.properties.link   = track.link;
-      feature.properties.type   = track.type;
-      feature.properties.startTime = track.startTime;
-
-
-      for(idx in track.points) {
-          let pt = track.points[idx];
-      
-          var geoPt = [];
-          geoPt.push(pt.lon);
-          geoPt.push(pt.lat);
-          geoPt.push(pt.ele);
-
-          feature.geometry.coordinates.push(geoPt);
-      }
-
-      GeoJSON.features.push(feature);
-  }
-
-  for(const idx in this.waypoints) {
-      let pt = this.waypoints[idx];
-  
-      var feature = {
-          "type": "Feature",
-          "geometry": {
-              "type": "Point",
-              "coordinates": []
-          },
-          "properties": {
-          }
-      };
-
-      feature.properties.name = pt.name;
-      feature.properties.sym = pt.sym;
-      feature.properties.cmt  = pt.cmt;
-      feature.properties.desc = pt.desc;
-
-      feature.geometry.coordinates = [pt.lon, pt.lat, pt.ele];
-
-      GeoJSON.features.push(feature);
-  }
+  GeoJSON.features = GeoJSON.features.concat(this.tracks.map(trackToGeoJSONMultiLineString));
+  GeoJSON.features = GeoJSON.features.concat(this.routes.map(routeToGeoJSONLineString));
+  GeoJSON.features = GeoJSON.features.concat(this.waypoints.map(waypointToGeoJSONPoint));
 
   return GeoJSON;
 };
