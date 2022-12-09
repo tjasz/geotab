@@ -3,6 +3,7 @@ import {BrowserRouter} from 'react-router-dom'
 import './App.css';
 import TabView from './tabview.js'
 import {DataContext} from './dataContext.js'
+import { evaluateFilter } from './filter';
 
 class App extends React.Component {
   constructor(props) {
@@ -10,14 +11,32 @@ class App extends React.Component {
 
     this.state = {
       data: [],
-      setData: (newData) => {this.setState({data: newData})},
-      columns: [],
-      setColumns: (newColumns) => {this.setState({columns: newColumns})},
-      active: null,
-      setActive: (newActive) => {this.setState({active: newActive})},
       filter: null,
-      setFilter: (newFilter) => {this.setState({filter: newFilter})},
+      filteredData: [],
+      columns: [],
+      active: null,
       symbology: null,
+      setData: (newData) => {
+        this.setState({
+          data: newData,
+          filteredData: newData.filter((row) => evaluateFilter(row, this.state.filter))
+        });
+      },
+      setFilter: (newFilter) => {
+        this.setState({
+          filter: newFilter,
+          filteredData: this.state.data.filter((row) => evaluateFilter(row, newFilter))
+        });
+      },
+      setDataAndFilter: (newData, newFilter) => {
+        this.setState({
+          data: newData,
+          filter: newFilter,
+          filteredData: newData.filter((row) => evaluateFilter(row, newFilter))
+        });
+      },
+      setColumns: (newColumns) => {this.setState({columns: newColumns})},
+      setActive: (newActive) => {this.setState({active: newActive})},
       setSymbology: (newSymbology) => {this.setState({symbology: newSymbology})},
     };
   }

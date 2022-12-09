@@ -17,8 +17,8 @@ function MapView(props) {
         }
       };
       const mapRef = useRef();
-      if (!context.data) return null;
-      const features = context.data.filter((row) => evaluateFilter(row, context.filter));
+      if (!context.filteredData) return null;
+      const features = context.filteredData;
       return (
         <div id="mapview" style={props.style}>
           <MapContainer scrollWheelZoom={true} ref={mapRef} whenReady={() => resizeMap(mapRef)}>
@@ -64,7 +64,7 @@ function ActivePopup(props) {
 
 function ChangeView({ center, zoom }) {
   const context = useContext(DataContext);
-  const features = context.data.filter((row) => evaluateFilter(row, context.filter));
+  const features = context.filteredData;
   const map = useMap();
   if (context.active !== null) {
     const feature = features.find((feature) => feature.id === context.active);

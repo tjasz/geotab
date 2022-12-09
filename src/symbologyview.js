@@ -197,7 +197,7 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
             <Histogram viewboxHeight={10}
               left={minBreak} right={maxBreak}
               binWidth={breakStep}
-              values={context.data.map((feature) => {
+              values={context.filteredData.map((feature) => {
                 const col = context.columns.find((column) => column.name === fieldname);
                 if (!col) return null;
                 return toType(feature.properties[col.name], col.type);

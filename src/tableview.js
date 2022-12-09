@@ -36,16 +36,14 @@ function DataTable() {
   const [sorting, setSorting] = useState(null);
   const [disabled, setDisabled] = useState(true);
 
-  const features = context.data
-      ? context.data.filter((row) => evaluateFilter(row, context.filter))
-      : null;
+  const features = context.filteredData;
   const refs = useRef({});
   // useEffect to update the ref on data update
   useEffect(() => {
     refs.current = {};
   }, [context.columns]);
 
-  if (!context.data) return null;
+  if (!context.filteredData) return null;
 
   const handleKeyDown = (e, row, col) => {
     // lock table using Ctrl+S
@@ -61,23 +59,25 @@ function DataTable() {
         navigator.clipboard.readText().then((result) => {
           const pasteTable = result.replaceAll('\r', '').split('\n').map((r) => r.split('\t'));
           const baseColIdx = context.columns.findIndex((c) => c.name === col);
-          const newFeatures = context.data.map((feature, fidx) => {
-            if (fidx >= row && fidx < row + pasteTable.length) {
-              const pasteRow = fidx - row;
-              const newProperties = pasteTable[pasteRow].reduce((acc, v, i) => {
-                if (baseColIdx + i < context.columns.length) {
-                  const colName = context.columns[baseColIdx+i].name;
-                  refs.current[fidx][colName].value = v;
-                  return {...acc, [colName]: v};
-                }
-                return acc;
-              }, feature.properties);
-              return {...feature, properties: newProperties};
-            } else {
-              return feature;
-            }
+          const newFeatures = context.filteredData
+            .filter((feature, fidx) => fidx >= row && fidx < row + pasteTable.length)
+            .map((feature, fidx) => {
+            const pasteRow = fidx - row;
+            const newProperties = pasteTable[pasteRow].reduce((acc, v, i) => {
+              if (baseColIdx + i < context.columns.length) {
+                const colName = context.columns[baseColIdx+i].name;
+                refs.current[fidx][colName].value = v;
+                return {...acc, [colName]: v};
+              }
+              return acc;
+            }, feature.properties);
+            return {...feature, properties: newProperties};
           });
-          context.setData(newFeatures);
+          const updatedData = context.data.map((feature) => {
+            const replacement = newFeatures.find((newf) => newf.id === feature.id);
+            return replacement ?? feature;
+          })
+          context.setData(updatedData);
         })
       }
     }

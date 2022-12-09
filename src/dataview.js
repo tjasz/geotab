@@ -33,10 +33,9 @@ function ImportView(props) {
   const urlSrc = urlParams.get("src") ?? "wa-ultras";
   const setDataFromJson = (json) => {
     const flattened = getFeatures(json);
-    context.setData(flattened);
+    context.setDataAndFilter(flattened, defaultFilter);
     context.setColumns(getPropertiesUnion(flattened));
     context.setActive(null);
-    context.setFilter(defaultFilter);
     context.setSymbology(null)
   };
   const processServerFile = (fname) => {
@@ -156,7 +155,8 @@ function ExportView(props) {
     const downloadLink = document.createElement("a");
     const textContent = JSON.stringify({
       type: "FeatureCollection",
-      features: context.data
+      // TODO option to save filtered or unfiltered data
+      features: context.filteredData
     });
     const file = new Blob([textContent], {type: 'text/plain'});
     downloadLink.href = URL.createObjectURL(file);
