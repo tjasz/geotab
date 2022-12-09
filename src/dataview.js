@@ -38,6 +38,22 @@ function ImportView(props) {
     context.setActive(null);
     context.setSymbology(null)
   };
+  const processServerFiles = (fnames) => {
+    const fetchPromises = fnames.map((fname) => 
+      fetch(`json/${fname}.json`,{
+        headers : {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+         }
+      })
+    );
+    Promise.all(fetchPromises).then((fileContents) => {
+      const jsonPromises = fileContents.map((file) => file.json());
+      Promise.all(jsonPromises).then((jsons) => {
+        setDataFromJson({ type: "FeatureCollection", features: jsons });
+      });
+    });
+  }
   const processServerFile = (fname) => {
     fetch(fname,{
         headers : {
@@ -59,7 +75,7 @@ function ImportView(props) {
       )
   };
   if (!context.data || !context.data.length) {
-    processServerFile(`json/${urlSrc}.json`);
+    processServerFiles(urlSrc.split(','));
   }
   return (
     <div id="importView">
