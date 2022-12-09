@@ -121,6 +121,30 @@ export function getCentralCoord(feature) {
   }
 }
 
+function getCoordinateListBounds(coords) {
+  let sw = coords[0].slice(0,2).reverse();
+  let ne = sw.slice();
+  for (const coord of coords) {
+    const latlon = coord.slice(0,2).reverse();
+    if (latlon[0] < sw[0]) {
+      sw[0] = latlon[0];
+    }
+    if (latlon[1] < sw[1]) {
+      sw[1] = latlon[1];
+    }
+    if (latlon[0] > ne[0]) {
+      ne[0] = latlon[0];
+    }
+    if (latlon[1] > ne[1]) {
+      ne[1] = latlon[1];
+    }
+  }
+  return [
+    sw,
+    ne
+  ];
+}
+
 export function getFeatureBounds(feature) {
   // TODO: what about going over 0 lon?
   switch(feature.geometry?.type) {
@@ -132,53 +156,12 @@ export function getFeatureBounds(feature) {
       ];
     case "MultiPoint":
     case "LineString":
-    case "Polygon":
-      let sw = feature.geometry.coordinates[0].slice(0,2).reverse();
-      let ne = sw.slice();
-      for (const coord of feature.geometry.coordinates) {
-        const latlon = coord.slice(0,2).reverse();
-        if (latlon[0] < sw[0]) {
-          sw[0] = latlon[0];
-        }
-        if (latlon[1] < sw[1]) {
-          sw[1] = latlon[1];
-        }
-        if (latlon[0] > ne[0]) {
-          ne[0] = latlon[0];
-        }
-        if (latlon[1] > ne[1]) {
-          ne[1] = latlon[1];
-        }
-      }
-      return [
-        sw,
-        ne
-      ];
+      return getCoordinateListBounds(feature.geometry.coordinates);
     case "MultiLineString":
+    case "Polygon":
+      return getCoordinateListBounds(feature.geometry.coordinates.flat());
     case "MultiPolygon":
-      let m_sw = feature.geometry.coordinates[0][0].slice(0,2).reverse();
-      let m_ne = m_sw.slice();
-      for (const part of feature.geometry.coordinates) {
-        for (const coord of part) {
-          const latlon = coord.slice(0,2).reverse();
-          if (latlon[0] < m_sw[0]) {
-            m_sw[0] = latlon[0];
-          }
-          if (latlon[1] < m_sw[1]) {
-            m_sw[1] = latlon[1];
-          }
-          if (latlon[0] > m_ne[0]) {
-            m_ne[0] = latlon[0];
-          }
-          if (latlon[1] > m_ne[1]) {
-            m_ne[1] = latlon[1];
-          }
-        }
-      }
-      return [
-        m_sw,
-        m_ne
-      ];
+      return getCoordinateListBounds(feature.geometry.coordinates.flat(2));
     default:
       return null;
   }
