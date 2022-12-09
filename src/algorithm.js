@@ -105,12 +105,17 @@ export function getCentralCoord(feature) {
     case "MultiLineString":
       const part = feature.geometry.coordinates[Math.floor(feature.geometry.coordinates.length/2)];
       return part[Math.floor(part.length/2)].slice(0,2).reverse();
-    case "MultiPolygon":
     case "Polygon":
       const polypart = feature.geometry.coordinates[Math.floor(feature.geometry.coordinates.length/2)];
       const lons = polypart.map((coordinate) => coordinate[0]);
       const lats = polypart.map((coordinate) => coordinate[1]);
       return [(Math.max(...lats) + Math.min(...lats))/2, (Math.max(...lons) + Math.min(...lons))/2];
+    case "MultiPolygon":
+      const multipolypart = feature.geometry.coordinates[Math.floor(feature.geometry.coordinates.length/2)];
+      const mpolypart = multipolypart[Math.floor(multipolypart.length/2)];
+      const mlons = mpolypart.map((coordinate) => coordinate[0]);
+      const mlats = mpolypart.map((coordinate) => coordinate[1]);
+      return [(Math.max(...mlats) + Math.min(...mlats))/2, (Math.max(...mlons) + Math.min(...mlons))/2];
     default:
       return null;
   }
