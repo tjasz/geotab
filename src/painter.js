@@ -103,8 +103,8 @@ export function painter(symbology) {
         }
       }
       const lineCap="butt";
-      const fillColor = feature.properties["fill"] ?? "#b3e7ff";
-      const fillOpacity = feature.properties["fill-opacity"] ?? 1;
+      const fillColor = feature.properties["fill"] ?? color;
+      const fillOpacity = feature.properties["fill-opacity"] ?? 0.4;
       return {color, size, dashArray, lineCap, fillColor, fillOpacity};
     }
   };
