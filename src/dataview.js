@@ -33,10 +33,16 @@ function ImportView(props) {
   const urlSrc = urlParams.get("src") ?? "wa-ultras";
   const setDataFromJson = (json) => {
     const flattened = getFeatures(json);
-    context.setDataAndFilter(flattened, defaultFilter);
-    context.setColumns(getPropertiesUnion(flattened));
+    if (json.geotabMetadata) {
+      context.setDataAndFilter(flattened, json.geotabMetadata.filter);
+      context.setColumns(json.geotabMetadata.columns);
+      context.setSymbology(json.geotabMetadata.symbology);
+    } else {
+      context.setDataAndFilter(flattened, defaultFilter);
+      context.setColumns(getPropertiesUnion(flattened));
+      context.setSymbology(null)
+    }
     context.setActive(null);
-    context.setSymbology(null)
   };
   const processServerFiles = (fnames) => {
     const fetchPromises = fnames.map((fname) => 
@@ -50,7 +56,7 @@ function ImportView(props) {
     Promise.all(fetchPromises).then((fileContents) => {
       const jsonPromises = fileContents.map((file) => file.json());
       Promise.all(jsonPromises).then((jsons) => {
-        setDataFromJson({ type: "FeatureCollection", features: jsons });
+        setDataFromJson(jsons.length > 1 ? { type: "FeatureCollection", features: jsons } : jsons[0]);
       });
     });
   }
@@ -153,7 +159,7 @@ function FileImporter({onRead}) {
     }
     Promise.all(promises).then((fileContents) => {
       const features = fileContents.map((file) => tryToJson(file)).filter((j) => j !== null);
-      const json = { type: "FeatureCollection", features }
+      const json = features.length > 1 ? { type: "FeatureCollection", features } : features[0];
       onRead(json);
     });
   };
@@ -172,7 +178,12 @@ function ExportView(props) {
     const textContent = JSON.stringify({
       type: "FeatureCollection",
       // TODO option to save filtered or unfiltered data
-      features: context.filteredData
+      features: context.filteredData,
+      geotabMetadata: {
+        columns: context.columns,
+        filter: context.filter,
+        symbology: context.symbology
+      }
     });
     const file = new Blob([textContent], {type: 'text/plain'});
     downloadLink.href = URL.createObjectURL(file);
