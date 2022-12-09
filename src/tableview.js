@@ -329,7 +329,11 @@ function TableRow(props) {
     props.onChange(newFeatureProperties, props.fidx);
   };
   return (
-    <tr onClick={() => props.setActive(props.feature.id)} className={props.active ? "active" : ""}>
+    <tr
+      onContextMenu={() => console.log(props.feature)}
+      onClick={() => props.setActive(props.feature.id)}
+      className={props.active ? "active" : ""}
+      >
       <th>{1+props.fidx}</th>
       {Array.from(props.columns).filter((column) => column.visible).map((column) =>
         <TableCell
