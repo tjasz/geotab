@@ -39,8 +39,8 @@ function SymbologyDefinition({symbology, onSave}) {
         minValue={0} maxValue={100}
         valueLabelFormat={(value) => <ColoredText color={`hsla(0, 0%, ${value}%, 1)`} text={value} />}
         />
-      <SymbologyProperty name="alpha" definition={draft?.alpha}
-        onEdit={(alphaDef) => {updateDraft({...draft, alpha: alphaDef})}}
+      <SymbologyProperty name="opacity" definition={draft?.opacity}
+        onEdit={(opacityDef) => {updateDraft({...draft, opacity: opacityDef})}}
         minValue={0} maxValue={1}
         valueLabelFormat={(value) => <ColoredText color={`hsla(0, 0%, 0%, ${value})`} text={value} />}
         />

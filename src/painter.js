@@ -74,8 +74,8 @@ export function painter(symbology) {
     const hue = interpolation(symbology?.hue, feature) ?? 209;
     const sat = interpolation(symbology?.saturation, feature) ?? 50;
     const light = interpolation(symbology?.lightness, feature) ?? 40;
-    const alpha = interpolation(symbology?.alpha, feature) ?? 1;
-    const color = `hsla(${hue}, ${sat}%, ${light}%, ${alpha})`;
+    const opacity = interpolation(symbology?.opacity, feature) ?? 1;
+    const color = `hsla(${hue}, ${sat}%, ${light}%, ${opacity})`;
     // get other attributes
     const size = interpolation(symbology?.size, feature) ?? 5;
     const shape = interpolation(symbology?.shape, feature) ?? 3;
