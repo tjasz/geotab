@@ -90,6 +90,11 @@ function ImportView(props) {
       <p>Try pre-loaded data:</p>
       <ul>
         <li>
+          <button onClick={() => { setUrlParams({src: "seattle-hills"}); processServerFile("json/seattle-hills.json"); }}>
+            Seattle Hills
+          </button>
+        </li>
+        <li>
           <button onClick={() => { setUrlParams({src: "backpacking-washington"}); processServerFile("json/backpacking-washington.json"); }}>
             Backpacking Washington
           </button>
