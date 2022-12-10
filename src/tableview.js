@@ -9,6 +9,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
+import DataObjectIcon from '@mui/icons-material/DataObject';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -18,6 +19,7 @@ import { sortBy } from './algorithm.js'
 import {DataContext} from './dataContext.js'
 import {evaluateFilter} from './filter.js'
 import { AbridgedUrlLink } from './common-components.js';
+import { SelectDialog } from './SelectDialog.js'
 import { TextFieldDialog } from './TextFieldDialog.js'
 import {InsertLeftIcon} from './icon/InsertLeftIcon.js'
 import {InsertRightIcon} from './icon/InsertRightIcon.js'
@@ -140,6 +142,7 @@ function ColumnContextMenu(props) {
   const context = useContext(DataContext);
   const [contextMenu, setContextMenu] = React.useState(null);
   const [renameDialogOpen, setRenameDialogOpen] = React.useState(false);
+  const [retypeDialogOpen, setRetypeDialogOpen] = React.useState(false);
   const [insertDialog, setInsertDialog] = React.useState(null);
   
   const setInvisible = (fieldname) => {
@@ -157,6 +160,10 @@ function ColumnContextMenu(props) {
     context.setColumns(context.columns.map((col) => col.name === oldname ? {...col, name: newname} : col));
     // rename in the data as well
     context.setData(context.data.map((feature) => { let {[oldname]: _, ...rest} = feature.properties; return {...feature, properties: {...rest, [newname]: feature.properties[oldname]}}; }));
+  };
+  const retypeColumn = (name, newtype) => {
+    // retype in the column list
+    context.setColumns(context.columns.map((col) => col.name === name ? {...col, type: newtype} : col));
   };
   const swapColumns = (i1, i2) => {
     if (i1 < 0 || i2 < 0 || i1 >= context.columns.length || i2 >= context.columns.length) return;
@@ -230,6 +237,13 @@ function ColumnContextMenu(props) {
           <ListItemText>Rename</ListItemText>
         </MenuItem>
         <MenuItem
+          onClick={() => { setRetypeDialogOpen(true); handleClose() }}>
+          <ListItemIcon>
+            <DataObjectIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Change Type</ListItemText>
+        </MenuItem>
+        <MenuItem
           onClick={() => { setInvisible(props.columnName); handleClose() }}>
           <ListItemIcon>
             <VisibilityOffIcon fontSize="small" />
@@ -279,8 +293,18 @@ function ColumnContextMenu(props) {
           <ListItemText>Metadata</ListItemText>
         </MenuItem>
       </Menu>
+      <SelectDialog
+        title={`Change data type of column '${props.columnName}'?`}
+        label="Type"
+        confirmLabel="Change"
+        defaultValue={context.columns[props.columnIndex].type}
+        options={["date", "number", "string"]}
+        open={retypeDialogOpen}
+        onClose={(newtype) => { retypeColumn(props.columnName, newtype); setRetypeDialogOpen(false); }}
+      />
       <TextFieldDialog
         title={`Rename column '${props.columnName}'?`}
+        label="Name"
         confirmLabel="Rename"
         defaultValue={props.columnName}
         open={renameDialogOpen}

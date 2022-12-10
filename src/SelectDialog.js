@@ -1,13 +1,13 @@
 import {useState} from 'react'
 import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import {sleep} from './algorithm.js'
 
-export function TextFieldDialog(props) {
+export function SelectDialog(props) {
   const [ draft, setDraft] = useState(props.defaultValue);
 
   const handleCancel = () => {
@@ -22,21 +22,20 @@ export function TextFieldDialog(props) {
     <Dialog onClose={handleCancel} open={props.open}>
       <DialogTitle>{props.title}</DialogTitle>
       <DialogContent>
-        <TextField
+        <Select
           autoFocus
-          margin="dense"
+          value={draft ?? props.options[0]}
           label={props.label}
-          type="text"
-          fullWidth
           onChange={(e) => setDraft(e.target.value)}
-          value={draft ?? ""}
           onKeyUp={(e) => {
             if (e.key === 'Enter') {
               handleConfirm();
             }
           }}
-          onFocus={(e) => {sleep(25).then(() => { e.target.focus(); e.target.select()})}}
-        />
+        >
+          {props.options.map((opt) =>
+            <MenuItem key={opt} value={opt}>{opt}</MenuItem>)}
+        </Select>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleCancel}>{props.cancelLabel ?? "Cancel"}</Button>
