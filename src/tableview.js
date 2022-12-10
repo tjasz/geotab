@@ -60,18 +60,21 @@ function DataTable() {
           const pasteTable = result.replaceAll('\r', '').split('\n').map((r) => r.split('\t'));
           const baseColIdx = context.columns.findIndex((c) => c.name === col);
           const newFeatures = context.filteredData
-            .filter((feature, fidx) => fidx >= row && fidx < row + pasteTable.length)
             .map((feature, fidx) => {
-            const pasteRow = fidx - row;
-            const newProperties = pasteTable[pasteRow].reduce((acc, v, i) => {
-              if (baseColIdx + i < context.columns.length) {
-                const colName = context.columns[baseColIdx+i].name;
-                refs.current[fidx][colName].value = v;
-                return {...acc, [colName]: v};
-              }
-              return acc;
-            }, feature.properties);
-            return {...feature, properties: newProperties};
+            if (fidx >= row && fidx < row + pasteTable.length) {
+              const pasteRow = fidx - row;
+              const newProperties = pasteTable[pasteRow].reduce((acc, v, i) => {
+                if (baseColIdx + i < context.columns.length) {
+                  const colName = context.columns[baseColIdx+i].name;
+                  refs.current[fidx][colName].value = v;
+                  return {...acc, [colName]: v};
+                }
+                return acc;
+              }, feature.properties);
+              return {...feature, properties: newProperties};
+            } else {
+              return feature;
+            }
           });
           const updatedData = context.data.map((feature) => {
             const replacement = newFeatures.find((newf) => newf.id === feature.id);
