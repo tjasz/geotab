@@ -234,8 +234,8 @@ function ConditionGroupView(props) {
     }
     props.onEdit({type: "ConditionGroup", operator, conditions: newConditions}, props.indexInGroup);
   };
-  const onChildRemove = (child) => {
-    const newConditions = conditions.filter((condition) => !filterEquals(condition, child));
+  const onChildRemove = (indexInGroup) => {
+    const newConditions = conditions.filter((condition, idx) => idx !== indexInGroup);
     setConditions(newConditions);
     props.onEdit({type: "ConditionGroup", operator, conditions: newConditions}, props.indexInGroup);
   };
@@ -334,7 +334,7 @@ function ConditionView(props) {
                onChange={onParameterEdit}
                key={`${props.key}-${param}`}/>
       )}
-      {props.indent ? <MinusSquare className="removeButton" onClick={() => {props.removeCondition(props.filter)}} /> : null}
+      {props.indent ? <MinusSquare className="removeButton" onClick={() => {props.removeCondition(props.indexInGroup)}} /> : null}
     </div>
   );
 }
