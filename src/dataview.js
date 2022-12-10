@@ -178,7 +178,7 @@ function ExportView(props) {
     const textContent = JSON.stringify({
       type: "FeatureCollection",
       // TODO option to save filtered or unfiltered data
-      features: context.filteredData,
+      features: context.data,
       geotabMetadata: {
         columns: context.columns,
         filter: context.filter,
