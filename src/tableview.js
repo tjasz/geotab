@@ -300,7 +300,8 @@ function ColumnContextMenu(props) {
         defaultValue={context.columns[props.columnIndex].type}
         options={["date", "number", "string"]}
         open={retypeDialogOpen}
-        onClose={(newtype) => { retypeColumn(props.columnName, newtype); setRetypeDialogOpen(false); }}
+        onConfirm={(newtype) => { retypeColumn(props.columnName, newtype); setRetypeDialogOpen(false); }}
+        onCancel={() => setRetypeDialogOpen(false)}
       />
       <TextFieldDialog
         title={`Rename column '${props.columnName}'?`}
@@ -308,16 +309,18 @@ function ColumnContextMenu(props) {
         confirmLabel="Rename"
         defaultValue={props.columnName}
         open={renameDialogOpen}
-        onClose={(newname) => { renameColumn(props.columnName, newname); setRenameDialogOpen(false); }}
+        onConfirm={(newname) => { renameColumn(props.columnName, newname); setRenameDialogOpen(false); }}
+        onCancel={() => { setRenameDialogOpen(false); }}
       />
       <TextFieldDialog
         title={`Insert column ${insertDialog} of '${props.columnName}'?`}
         confirmLabel="Insert"
         defaultValue={null}
         open={insertDialog !== null}
-        onClose={(newname) => {
+        onConfirm={(newname) => {
           insertColumn(props.columnIndex + (insertDialog === "left" ? 0 : 1), newname);
           setInsertDialog(null); }}
+        onCancel={() => setInsertDialog(null)}
       />
     </React.Fragment>
   );

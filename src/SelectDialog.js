@@ -11,11 +11,11 @@ export function SelectDialog(props) {
   const [ draft, setDraft] = useState(props.defaultValue);
 
   const handleCancel = () => {
-    props.onClose(props.defaultValue);
+    props.onCancel();
   };
 
   const handleConfirm = () => {
-    props.onClose(draft);
+    props.onConfirm(draft);
   };
   
   return (
