@@ -1,5 +1,6 @@
 import React, {useContext, useState} from 'react';
 import { useSearchParams } from "react-router-dom";
+import FitParser from 'fit-file-parser'
 import gpxParser from './gpx-parser.js'
 import {DataContext} from './dataContext.js'
 import {getFeatures, getPropertiesUnion, csvToJson} from './algorithm.js'
@@ -116,7 +117,22 @@ function readFileAsync(fname) {
     let reader = new FileReader();
 
     reader.onload = () => {
-      resolve(reader.result);
+      const tryResult = tryToJson(reader.result);
+      if (!tryResult) {
+        let abReader = new FileReader();
+        abReader.onload = () => {
+          const try2Result = tryToJson(abReader.result);
+          if (try2Result) {
+            resolve(try2Result);
+          } else {
+            reject();
+          }
+        };
+        abReader.onerror = reject;
+        abReader.readAsArrayBuffer(fname);
+      } else {
+        resolve(tryResult);
+      }
     };
 
     reader.onerror = reject;
@@ -148,13 +164,48 @@ function tryToJson(text) {
       }
       catch (e) {
         errors.push(e);
+        // try FIT
+        const fit = new FitParser({force: false});
+        fit.parse(text, (error, data) => {
+          if (error) {
+            errors.push(error);
+          } else {
+            jso = fitToGeoJSON(data);
+          }
+        })
       }
     }
   }
   if (!jso) {
-    throw Error(`File could not be read as geoJSON, CSV, or GPX: ${errors}`);
+    //throw Error(`File could not be read as geoJSON, CSV, or GPX: ${errors}`);
   }
   return jso;
+}
+
+function fitToGeoJSON(fit) {
+  let GeoJSON = {
+    type: "FeatureCollection",
+    features: []
+  };
+
+  // parse a singular track from the .FIT file
+  const track = {
+    type: "Feature",
+    geometry: {
+      type: "LineString",
+      coordinates: []
+    },
+    properties: { startTime: fit.activity.timestamp?.getTime() }
+  }
+  for (let i = 0; i < fit.records.length; i++) {
+    const record = fit.records[i];
+    if (record.position_lat !== undefined && record.position_long !== undefined) {
+      track.geometry.coordinates.push([record.position_long, record.position_lat])
+    }
+  }
+  GeoJSON.features.push(track);
+
+  return GeoJSON;
 }
 
 function FileImporter({onRead}) {
@@ -165,7 +216,7 @@ function FileImporter({onRead}) {
       promises.push(readFileAsync(fileSelector.files.item(i)));
     }
     Promise.all(promises).then((fileContents) => {
-      const features = fileContents.map((file) => tryToJson(file)).filter((j) => j !== null);
+      const features = fileContents.filter((j) => j !== null);
       const json = features.length > 1 ? { type: "FeatureCollection", features } : features[0];
       onRead(json);
     });
