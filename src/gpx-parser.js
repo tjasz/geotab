@@ -114,7 +114,7 @@ function getMetadata(metadata) {
   attachOptional(data, "time", getDateElementValue(metadata, "time"));
   attachOptional(data, "keywords", getElementValue(metadata, "keywords"));
   // TODO bounds
-  // TODO extensions
+  attachOptional(data, "extensions", getUnstructuredData(queryDirectSelector(metadata, "extensions")));
 
   return data;
 }
@@ -144,7 +144,7 @@ function getTrackData(trk) {
   attachOptional(track, "number", getIntElementValue(trk, "number"));
   attachOptional(track, "type", getElementValue(trk, "type"));
 
-  // TODO extensions
+  attachOptional(track, "extensions", getUnstructuredData(queryDirectSelector(trk, "extensions")));
 
   track.segments = Array.from(trk.querySelectorAll('trkseg'))
                       .map((trkseg) => getTrackSegmentData(trkseg));
@@ -169,7 +169,7 @@ function getRouteData(rte) {
   attachOptional(route, "number", getIntElementValue(rte, "number"));
   attachOptional(route, "type", getElementValue(rte, "type"));
 
-  // TODO extensions
+  attachOptional(route, "extensions", getUnstructuredData(queryDirectSelector(rte, "extensions")));
 
   route.points = Array.from(rte.querySelectorAll('rtept'))
                       .map((rtept) => getPointData(rtept));
@@ -222,9 +222,35 @@ function getPointData(wpt) {
   attachOptional(pt, "ageofdgpsdata", getFloatElementValue(wpt, "ageofdgpsdata"));
   attachOptional(pt, "dgpsid", getFloatElementValue(wpt, "dgpsid"));
 
-  // TODO extensions
+  attachOptional(pt, "extensions", getUnstructuredData(queryDirectSelector(wpt, "extensions")));
 
   return pt;
+}
+
+function getUnstructuredData(node) {
+  if (node === null || node === undefined) {
+    return null;
+  }
+  switch (node.nodeType) {
+    case 1: // element
+    case 9: // document
+      if (node.childNodes.length === 1 && node.childNodes[0].nodeType === 3) {
+        return node.childNodes[0].nodeValue;
+      }
+      let ob = {};
+      for (let i = 0; i < node.childNodes.length; i++) {
+        attachOptional(ob, node.childNodes[i].nodeName, getUnstructuredData(node.childNodes[i]));
+      }
+      return ob;
+    case 2: // attribute
+      return node.nodeValue;
+    case 3: // text
+      const strval = node.nodeValue.trim();
+      return strval.length > 0 ? strval : null;
+    case 8: // comment
+      return null;
+  }
+  return null;
 }
 
 /**
@@ -308,6 +334,8 @@ function attachOptional(obj, name, val) {
 function queryDirectSelector(parent, needle) {
 
   let elements  = parent.querySelectorAll(needle);
+  if (!elements.length) return null;
+
   let finalElem = elements[0];
 
   if(elements.length > 1) {
