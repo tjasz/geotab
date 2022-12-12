@@ -6,7 +6,7 @@ import {defaultFilter, conditionOperators, conditionGroupOperators, parametersMa
 import {ReactComponent as MinusSquare} from './feather/minus-square.svg'
 import {ReactComponent as PlusSquare} from './feather/plus-square.svg'
 import {Select} from './common-components.js'
-import {parseFile, allProgress} from './readfile.js'
+import {parseFile, attachProgress} from './readfile.js'
 
 function DataView(props) {
   const context = useContext(DataContext);
@@ -125,12 +125,15 @@ function FileImporter({onRead}) {
     for (let i = 0; i < fileSelector.files.length; i++) {
       promises.push(parseFile(fileSelector.files.item(i)));
     }
-    allProgress(promises, (p) => { setProgress(p); })
-    .then((jsons) => {
+    attachProgress(promises, (p) => { setProgress(p); })
+    Promise.allSettled(promises)
+    .then((results) => {
+      const jsons = results.filter((r) => r.status === "fulfilled").map((r) => r.value);
       const features = jsons.filter((j) => j !== null);
       const json = features.length > 1 ? { type: "FeatureCollection", features } : features[0];
       onRead(json);
-      setProgress(100);
+      const errors = results.filter((r) => r.status === "rejected").map((r) => r.reason);
+      alert(errors);
     })
     .catch((e) => {
       alert(e);
