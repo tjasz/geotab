@@ -37,10 +37,12 @@ function ImportView(props) {
       context.setDataAndFilter(flattened, json.geotabMetadata.filter);
       context.setColumns(json.geotabMetadata.columns);
       context.setSymbology(json.geotabMetadata.symbology);
+      setUrlParams({});
     } else {
       context.setDataAndFilter(flattened, defaultFilter);
       context.setColumns(getPropertiesUnion(flattened));
       context.setSymbology(null)
+      setUrlParams({});
     }
     context.setActive(null);
   };
