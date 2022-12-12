@@ -1,13 +1,12 @@
 import React, {useContext, useState} from 'react';
 import { useSearchParams } from "react-router-dom";
-import FitParser from 'fit-file-parser'
-import gpxParser from './gpx-parser.js'
 import {DataContext} from './dataContext.js'
-import {getFeatures, getPropertiesUnion, csvToJson} from './algorithm.js'
+import {getFeatures, getPropertiesUnion} from './algorithm.js'
 import {defaultFilter, conditionOperators, conditionGroupOperators, parametersMap, operandTypes, Condition, ConditionGroup, filterEquals, filterTypes, validateFilter} from './filter.js'
 import {ReactComponent as MinusSquare} from './feather/minus-square.svg'
 import {ReactComponent as PlusSquare} from './feather/plus-square.svg'
 import {Select} from './common-components.js'
+import {parseFile} from './readfile.js'
 
 function DataView(props) {
   const context = useContext(DataContext);
@@ -34,18 +33,20 @@ function ImportView(props) {
   const urlSrc = urlParams.get("src") ?? "wa-ultras";
   const setDataFromJson = (json) => {
     const flattened = getFeatures(json);
-    if (json.geotabMetadata) {
-      context.setDataAndFilter(flattened, json.geotabMetadata.filter);
-      context.setColumns(json.geotabMetadata.columns);
-      context.setSymbology(json.geotabMetadata.symbology);
-      setUrlParams({});
-    } else {
-      context.setDataAndFilter(flattened, defaultFilter);
-      context.setColumns(getPropertiesUnion(flattened));
-      context.setSymbology(null)
-      setUrlParams({});
+    if (flattened.length) {
+      if (json.geotabMetadata) {
+        context.setDataAndFilter(flattened, json.geotabMetadata.filter);
+        context.setColumns(json.geotabMetadata.columns);
+        context.setSymbology(json.geotabMetadata.symbology);
+        setUrlParams({});
+      } else {
+        context.setDataAndFilter(flattened, defaultFilter);
+        context.setColumns(getPropertiesUnion(flattened));
+        context.setSymbology(null)
+        setUrlParams({});
+      }
+      context.setActive(null);
     }
-    context.setActive(null);
   };
   const processServerFiles = (fnames) => {
     const fetchPromises = fnames.map((fname) => 
@@ -112,114 +113,22 @@ function ImportView(props) {
   );
 }
 
-function readFileAsync(fname) {
-  return new Promise((resolve, reject) => {
-    let reader = new FileReader();
-
-    reader.onload = () => {
-      const tryResult = tryToJson(reader.result);
-      if (!tryResult) {
-        let abReader = new FileReader();
-        abReader.onload = () => {
-          const try2Result = tryToJson(abReader.result);
-          if (try2Result) {
-            resolve(try2Result);
-          } else {
-            reject();
-          }
-        };
-        abReader.onerror = reject;
-        abReader.readAsArrayBuffer(fname);
-      } else {
-        resolve(tryResult);
-      }
-    };
-
-    reader.onerror = reject;
-
-    reader.readAsText(fname);
-  })
-}
-
-function tryToJson(text) {
-  const errors = [];
-  let jso = null;
-  try {
-    // try JSON
-    jso = JSON.parse(text);
-  }
-  catch (e) {
-    errors.push(e);
-    try {
-      // try CSV
-      jso = csvToJson(text);
-    }
-    catch (e) {
-      errors.push(e);
-      try {
-        // try GPX
-        const gpx = new gpxParser();
-        gpx.parse(text).calculate();
-        jso = gpx.toGeoJSON();
-      }
-      catch (e) {
-        errors.push(e);
-        // try FIT
-        const fit = new FitParser({force: false});
-        fit.parse(text, (error, data) => {
-          if (error) {
-            errors.push(error);
-          } else {
-            jso = fitToGeoJSON(data);
-          }
-        })
-      }
-    }
-  }
-  if (!jso) {
-    //throw Error(`File could not be read as geoJSON, CSV, or GPX: ${errors}`);
-  }
-  return jso;
-}
-
-function fitToGeoJSON(fit) {
-  let GeoJSON = {
-    type: "FeatureCollection",
-    features: []
-  };
-
-  // parse a singular track from the .FIT file
-  const track = {
-    type: "Feature",
-    geometry: {
-      type: "LineString",
-      coordinates: []
-    },
-    properties: { startTime: fit.activity.timestamp?.getTime() }
-  }
-  for (let i = 0; i < fit.records.length; i++) {
-    const record = fit.records[i];
-    if (record.position_lat !== undefined && record.position_long !== undefined) {
-      track.geometry.coordinates.push([record.position_long, record.position_lat])
-    }
-  }
-  GeoJSON.features.push(track);
-
-  return GeoJSON;
-}
-
 function FileImporter({onRead}) {
   const process = () => {
     const fileSelector = document.getElementById('file-selector');
     const promises = [];
     for (let i = 0; i < fileSelector.files.length; i++) {
-      promises.push(readFileAsync(fileSelector.files.item(i)));
+      promises.push(parseFile(fileSelector.files.item(i)));
     }
-    Promise.all(promises).then((fileContents) => {
-      const features = fileContents.filter((j) => j !== null);
+    Promise.all(promises).then((jsons) => {
+      const features = jsons.filter((j) => j !== null);
       const json = features.length > 1 ? { type: "FeatureCollection", features } : features[0];
       onRead(json);
-    });
+    })
+    .catch((e) => {
+      alert(e);
+    })
+    ;
   };
   return (
     <div className="fileImporter">

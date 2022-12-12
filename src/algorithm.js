@@ -1,4 +1,3 @@
-import Papa from 'papaparse';
 import { v4 as uuidv4 } from 'uuid';
 
 export function sleep (time) {
@@ -23,6 +22,7 @@ export function setEquals(a, b) {
 }
 
 export function getFeatures(data) {
+  if (!data) return [];
   if (data["type"] === "Feature") {
     if (data.id === undefined) {
       data.id = uuidv4();
@@ -271,70 +271,6 @@ export function getFeatureListBounds(features) {
     }
   }
   return bounds.flat().some((bound) => bound === null) ? null : bounds;
-}
-
-function getLatField(fields) {
-  let latfield = fields.find((f) => f.toLowerCase() === "latitude");
-  if (latfield) return latfield;
-
-  latfield = fields.find((f) => f.toLowerCase().startsWith("latitude"));
-  if (latfield) return latfield;
-
-  latfield = fields.find((f) => f.toLowerCase().includes("latitude"));
-  if (latfield) return latfield;
-
-  latfield = fields.find((f) => f.toLowerCase() === "lat");
-  if (latfield) return latfield;
-
-  latfield = fields.find((f) => f.toLowerCase().startsWith("lat"));
-  if (latfield) return latfield;
-
-  latfield = fields.find((f) => f.toLowerCase().includes("lat"));
-  return latfield;
-}
-
-function getLonField(fields) {
-  let lonfield = fields.find((f) => f.toLowerCase() === "longitude");
-  if (lonfield) return lonfield;
-
-  lonfield = fields.find((f) => f.toLowerCase().startsWith("longitude"));
-  if (lonfield) return lonfield;
-
-  lonfield = fields.find((f) => f.toLowerCase().includes("longitude"));
-  if (lonfield) return lonfield;
-
-  lonfield = fields.find((f) => f.toLowerCase() === "lon");
-  if (lonfield) return lonfield;
-
-  lonfield = fields.find((f) => f.toLowerCase().startsWith("lon"));
-  if (lonfield) return lonfield;
-
-  lonfield = fields.find((f) => f.toLowerCase().includes("lon"));
-  return lonfield;
-}
-
-export function csvToJson(csvString) {
-  const parseResult = Papa.parse(csvString, {delimiter: ",", header: true, dynamicTyping: false, skipEmptyLines: true});
-  const latfield = getLatField(parseResult.meta.fields);
-  const lonfield = getLonField(parseResult.meta.fields);
-  // TODO allow manual specification of lat/lon fields
-  // TODO handle non-number lat/lon formats like DMS
-  if (!latfield) throw Error(`Expected latitude field. Found ${parseResult.meta.fields}.`);
-  if (!lonfield) throw Error(`Expected longitude field. Found ${parseResult.meta.fields}.`);
-
-  return {
-    type: "FeatureCollection",
-    features: parseResult.data.map((row) =>
-      { return {
-        type: "Feature",
-        geometry: {
-          type: "Point",
-          coordinates: [row[lonfield], row[latfield]],
-        },
-        properties: row,
-      }}
-    )
-  };
 }
 
 export function sortBy(features, sorting) {
