@@ -43,6 +43,21 @@ const baseLayers = [
     url: "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoidGphc3oiLCJhIjoiY2wxcDQ4eG1pMHZxNDNjcGM3djJ4eGphMCJ9.aH-D5oeZHZVzcWQZeeRviQ",
     attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
   },
+  {
+    type: "WMSTileLayer",
+    name: "USGS Topo",
+    checked: false,
+    layers: 'show%3A0',
+    f: 'image',
+    imageSR: 102100,
+    bboxSR: 102100,
+    format: 'png32',
+    transparent: true,
+    opacity: 1,
+    dpi: 96,
+    url: "https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/export",
+    attribution: 'Map data &copy; <a href="https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer">USGS</a>',
+  },
 ];
 
 const overlays = [
