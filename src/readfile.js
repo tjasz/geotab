@@ -38,14 +38,18 @@ export function parseFile(file) {
         // FIT
         try {
           readFileAsArrayBuffer(file).then((arraybuffer) => {
-            const fit = new FitParser({force: false});
-            fit.parse(arraybuffer, (error, data) => {
-              if (error) {
-                reject(`Could not parse ${file.name} as .FIT: ${error.message}.`);
-              } else {
-                resolve(fitToGeoJSON(data));
-              }
-            });
+            try {
+              const fit = new FitParser({force: false});
+              fit.parse(arraybuffer, (error, data) => {
+                if (error) {
+                  reject(`Could not parse ${file.name} as .FIT: ${error.message}.`);
+                } else {
+                  resolve(fitToGeoJSON(data));
+                }
+              });
+            } catch (error) {
+              reject(`Could not parse ${file.name} as .FIT: ${error.message}.`);
+            }
           })
         } catch (error) {
           reject(`Could not parse ${file.name} as .FIT: ${error.message}.`);
