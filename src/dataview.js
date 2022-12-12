@@ -6,7 +6,7 @@ import {defaultFilter, conditionOperators, conditionGroupOperators, parametersMa
 import {ReactComponent as MinusSquare} from './feather/minus-square.svg'
 import {ReactComponent as PlusSquare} from './feather/plus-square.svg'
 import {Select} from './common-components.js'
-import {parseFile} from './readfile.js'
+import {parseFile, allProgress} from './readfile.js'
 
 function DataView(props) {
   const context = useContext(DataContext);
@@ -114,16 +114,23 @@ function ImportView(props) {
 }
 
 function FileImporter({onRead}) {
+  const setProgress = (p) => {
+    const fileProgress = document.getElementById('file-progress');
+    fileProgress.innerHTML = `${Math.round(p)}%`;
+  }
   const process = () => {
+    setProgress(0);
     const fileSelector = document.getElementById('file-selector');
     const promises = [];
     for (let i = 0; i < fileSelector.files.length; i++) {
       promises.push(parseFile(fileSelector.files.item(i)));
     }
-    Promise.all(promises).then((jsons) => {
+    allProgress(promises, (p) => { setProgress(p); })
+    .then((jsons) => {
       const features = jsons.filter((j) => j !== null);
       const json = features.length > 1 ? { type: "FeatureCollection", features } : features[0];
       onRead(json);
+      setProgress(100);
     })
     .catch((e) => {
       alert(e);
@@ -134,6 +141,7 @@ function FileImporter({onRead}) {
     <div className="fileImporter">
       <input type="file" id="file-selector" multiple />
       <button type="button" id="next-button" onClick={process}>Process</button>
+      <span style={{paddingLeft: 10}} id="file-progress">0%</span>
     </div>
   );
 }

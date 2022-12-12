@@ -2,6 +2,18 @@ import Papa from 'papaparse';
 import FitParser from 'fit-file-parser'
 import gpxParser from './gpx-parser.js'
 
+export function allProgress(proms, progress_cb) {
+  let d = 0;
+  progress_cb(0);
+  for (const p of proms) {
+    p.then(()=> {
+      d ++;
+      progress_cb( (d * 100) / proms.length );
+    });
+  }
+  return Promise.all(proms);
+}
+
 export function parseFile(file) {
   return new Promise((resolve, reject) => {
     readFileAsText(file).then((text) => {
