@@ -420,7 +420,7 @@ function CellValue(props) {
       : props.column.type === "number"
         ? Number(props.value)
         : props.column.type === "date"
-          ? new Date(Date.parse(props.value)).toISOString()
+          ? new Date(typeof props.value === "number" ? props.value : Date.parse(props.value)).toISOString()
           : typeof props.value === "string" || typeof props.value === "number"
             ? props.value
             : JSON.stringify(props.value)
