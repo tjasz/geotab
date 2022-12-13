@@ -14,7 +14,7 @@ export function dcos(a) {
 }
 
 export function hashCode(str) {
-  return Array.from(str).reduce((hash, char) => 0 | (31 * hash + char.charCodeAt(0)), 0);
+  return Array.from(str.substring(0,1024)).reduce((hash, char) => 0 | (31 * hash + char.charCodeAt(0)), 0);
 }
 
 export function setEquals(a, b) {
@@ -96,6 +96,7 @@ export function getStartingCoord(feature) {
 }
 
 export function getCentralCoord(feature) {
+  if (!feature?.geometry?.coordinates?.length) return undefined;
   switch(feature.geometry?.type) {
     case "Point":
       return feature.geometry.coordinates.slice(0,2).reverse();
@@ -122,6 +123,9 @@ export function getCentralCoord(feature) {
 }
 
 function getCoordinateListBounds(coords) {
+  if (!coords || !coords.length) {
+    return [[undefined, undefined], [undefined, undefined]]
+  }
   let sw = coords[0].slice(0,2).reverse();
   let ne = sw.slice();
   for (const coord of coords) {
