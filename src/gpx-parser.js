@@ -359,7 +359,7 @@ gpxParser.prototype.calculate = function() {
     for (const segment of track.segments) {
       calculatePointContainer(segment);
     }
-    attachOptional(track, "startTime", track.segments?.[0]?.startTime);
+    attachOptional(track, "startTime", track.segments?.[0]?.startTime.getTime());
     attachOptional(track, "duration", track.segments?.reduce((d,s) => d+s.duration, 0)); // TODO can be undefined if s.duration is
     attachOptional(track, "distance", track.segments?.reduce((d,s) => d+s.distance, 0));
     attachOptional(track, "cumulativeDistance", track.segments?.map((s) => s.distance));
