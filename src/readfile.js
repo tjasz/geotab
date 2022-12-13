@@ -84,6 +84,7 @@ function readFileAsArrayBuffer(fname) {
 }
 
 function fitToGeoJSON(fit) {
+  console.log(fit)
   let GeoJSON = {
     type: "FeatureCollection",
     features: []

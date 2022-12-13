@@ -133,7 +133,7 @@ function FileImporter({onRead}) {
       const json = features.length > 1 ? { type: "FeatureCollection", features } : features[0];
       onRead(json);
       const errors = results.filter((r) => r.status === "rejected").map((r) => r.reason);
-      alert(errors);
+      errors.length && alert(errors);
     })
     .catch((e) => {
       alert(e);
