@@ -84,7 +84,6 @@ function readFileAsArrayBuffer(fname) {
 }
 
 function fitToGeoJSON(fit) {
-  console.log(fit)
   let GeoJSON = {
     type: "FeatureCollection",
     features: []
@@ -97,10 +96,37 @@ function fitToGeoJSON(fit) {
       type: "LineString",
       coordinates: []
     },
-    properties: { startTime: fit.activity.timestamp?.getTime() }
+    properties: {}
   }
+  // TODO can there be multiple sessions?
+  if (fit.sessions[0] !== undefined) {
+    const session = fit.sessions[0];
+    track.properties.sport = session.sport;
+    track.properties.startTime = session.start_time.getTime();
+    track.properties.duration = session.total_elapsed_time;
+    track.properties.distance = session.total_distance;
+    track.properties.calories = session.total_calories;
+  }
+  let lastElev = null;
   for (let i = 0; i < fit.records.length; i++) {
     const record = fit.records[i];
+    if (record.altitude) {
+      if (track.properties.minElevation === undefined || record.altitude < track.properties.minElevation) {
+        track.properties.minElevation = record.altitude;
+      }
+      if (track.properties.maxElevation === undefined || record.altitude > track.properties.maxElevation) {
+        track.properties.maxElevation = record.altitude;
+      }
+      if (lastElev) {
+        const change = record.altitude - lastElev;
+        if (change > 0) {
+          track.properties.gain = track.properties.gain ? track.properties.gain + change : change;
+        } else {
+          track.properties.loss = track.properties.loss ? track.properties.loss - change : -change;
+        }
+      }
+      lastElev = record.altitude;
+    }
     if (record.position_lat !== undefined && record.position_long !== undefined) {
       track.geometry.coordinates.push([record.position_long, record.position_lat])
     }
