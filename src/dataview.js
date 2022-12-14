@@ -144,7 +144,7 @@ function FileImporter({onRead}) {
     <div className="fileImporter">
       <input type="file" id="file-selector" multiple />
       <button type="button" id="next-button" onClick={process}>Process</button>
-      <span style={{paddingLeft: 10}} id="file-progress">0%</span>
+      <span style={{paddingLeft: 10}} id="file-progress"></span>
     </div>
   );
 }
