@@ -7,6 +7,7 @@ import {ReactComponent as MinusSquare} from './feather/minus-square.svg'
 import {ReactComponent as PlusSquare} from './feather/plus-square.svg'
 import {Select} from './common-components.js'
 import {parseFile, attachProgress} from './readfile.js'
+import { GoogleLogin } from './google-drive.js'
 
 function DataView(props) {
   const context = useContext(DataContext);
@@ -91,6 +92,7 @@ function ImportView(props) {
     <div id="importView">
       <h3>Import</h3>
       <FileImporter onRead={setDataFromJson} />
+      <GoogleLogin onRead={setDataFromJson} />
       <p>Try pre-loaded data:</p>
       <ul>
         <li>

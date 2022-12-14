@@ -1,6 +1,7 @@
 import Papa from 'papaparse';
 import FitParser from 'fit-file-parser'
 import gpxParser from './gpx-parser.js'
+import { gapi } from 'gapi-script';
 
 export function attachProgress(proms, progress_cb) {
   let d = 0;
@@ -62,6 +63,57 @@ export function parseFile(file) {
         }
       }
     })
+  });
+}
+
+function getGoogleFile(file) {
+  switch (file.mimeType) {
+    case 'application/vnd.google-apps.spreadsheet':
+      return gapi.client.drive.files
+      .export({ fileId: file.id, mimeType: 'text/csv'});
+    case 'application/json':
+    case 'text/csv':
+    case 'application/gpx+xml':
+    default:
+      return gapi.client.drive.files
+      .get({ fileId: file.id, alt: 'media'});
+  }
+}
+
+// TODO reduce copypasta
+export function parseGoogleFile(file) {
+  return new Promise((resolve, reject) => {
+    getGoogleFile(file)
+      .then((res) => {
+      const text = res.body;
+      // guess file type based on first character of text
+      if (file.mimeType === 'application/json') {
+        // geoJSON
+        try {
+          resolve(JSON.parse(text));
+        } catch (error) {
+          reject(`Could not parse ${file.name} as GeoJSON: ${error.message}.`);
+        }
+      } else if (file.mimeType === 'application/gpx+xml') {
+        // GPX
+        try {
+          const gpx = new gpxParser();
+          gpx.parse(text).calculate();
+          resolve(gpx.toGeoJSON());
+        } catch (error) {
+          reject(`Could not parse ${file.name} as GPX: ${error.message}.`);
+        }
+      } // TODO .FIT compatability
+      else {
+        // CSV
+        try {
+          resolve(csvToGeoJSON(text));
+        } catch (error) {
+          reject(`Could not parse ${file.name} as CSV: ${error.message}.`);
+        }
+      }
+    })
+    .catch((e) => reject(JSON.stringify(e)))
   });
 }
 
