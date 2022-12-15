@@ -233,7 +233,8 @@ function evaluateCondition(row, condition) {
       value = Number(value);
       break;
     case "date":
-      value = new Date(Date.parse(value));
+      value = typeof value === "number" ? value : Date.parse(value);
+      value = new Date(value);
       break;
     default:
       break;
