@@ -70,10 +70,24 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
   let breakStep = 10;
   if (context.columns.find((column) => column.name === fieldname)) {
     const column = context.columns.find((column) => column.name === fieldname);
-    // get power of 10 that splits the range into roughly 20
-    breakStep = Math.pow(10, Math.round(Math.log10((column.max-column.min)/20)));
-    minBreak = breakStep*Math.floor(column.min/breakStep);
-    maxBreak = breakStep*Math.ceil(column.max/breakStep);
+    if (column.type === "date") {
+      if (typeof column.min === "string") {
+        // get power of 10 that splits the range into roughly 20 - TODO make more date-friendly breaks
+        breakStep = Math.pow(10, Math.round(Math.log10((Date.parse(column.max)-Date.parse(column.min))/20)));
+        minBreak = breakStep*Math.floor(Date.parse(column.min)/breakStep);
+        maxBreak = breakStep*Math.ceil(Date.parse(column.max)/breakStep);
+      } else if (column.min instanceof Date) {
+        // get power of 10 that splits the range into roughly 20 - TODO make more date-friendly breaks
+        breakStep = Math.pow(10, Math.round(Math.log10((column.max.getTime()-column.min.getTime())/20)));
+        minBreak = breakStep*Math.floor(column.min.getTime()/breakStep);
+        maxBreak = breakStep*Math.ceil(column.max.getTime()/breakStep);
+      }
+    } else {
+      // get power of 10 that splits the range into roughly 20
+      breakStep = Math.pow(10, Math.round(Math.log10((column.max-column.min)/20)));
+      minBreak = breakStep*Math.floor(column.min/breakStep);
+      maxBreak = breakStep*Math.ceil(column.max/breakStep);
+    }
   }
 
   const onCheckboxChange = (event) => {
