@@ -2,12 +2,6 @@ import React, { useCallback, useContext, useState } from 'react';
 import { gapi } from 'gapi-script';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
-import {debounce} from 'lodash'
 import { parseGoogleFile } from './readfile';
 import {DataContext} from './dataContext.js'
 
@@ -34,6 +28,8 @@ export function GoogleLogin(props) {
   const [isLoadingGoogleDriveApi, setIsLoadingGoogleDriveApi] = useState(false);
   const [isFetchingGoogleDriveFiles, setIsFetchingGoogleDriveFiles] = useState(false);
   const [signedInUser, setSignedInUser] = useState();
+  const [accessToken, setAccessToken] = useState();
+  const [pickerInitialized, setPickerInitialized] = useState(false);
   const handleChange = (file) => {};
 
   const process = (files) => {
@@ -98,9 +94,8 @@ export function GoogleLogin(props) {
     if (isSignedIn) {
       // Set the signed in user
       setSignedInUser(gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile());
+      setAccessToken(gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse(true).access_token);
       setIsLoadingGoogleDriveApi(false);
-      // list files if user is authenticated
-      listFiles();
     } else {
       // prompt user to sign in
       handleAuthClick();
@@ -142,7 +137,12 @@ export function GoogleLogin(props) {
 
   const handleClientLoad = () => {
     gapi.load('client:auth2', initClient);
+    gapi.load('picker', onPickerApiLoad);
   };
+
+  function onPickerApiLoad() {
+    setPickerInitialized(true);
+  }
 
   const showDocuments = () => {
     setListDocumentsVisibility(true);
@@ -175,6 +175,33 @@ export function GoogleLogin(props) {
     insertFile(file, textContent)
   };
 
+  const onPicker = (data) => {
+    if (data[window.google.picker.Response.ACTION] !== window.google.picker.Action.PICKED) return;
+    if (listDocumentsMode === "read") {
+      process(data[window.google.picker.Response.DOCUMENTS])
+    } else {
+      upload(data[window.google.picker.Response.DOCUMENTS][0]);
+    }
+    setListDocumentsVisibility(false);
+  };
+
+  // Create and render a Google Picker object for selecting from Drive
+  const showPicker = (mode) => {
+    const view = new window.google.picker.DocsView()
+        .setMimeTypes(fileTypes.join());
+    const builder = new window.google.picker.PickerBuilder()
+        .addView(view)
+        .setSelectableMimeTypes(fileTypes.join())
+        .setOAuthToken(accessToken)
+        .setDeveloperKey(API_KEY)
+        .setCallback(onPicker);
+    if (mode === "read") {
+      builder.enableFeature(window.google.picker.Feature.MULTISELECT_ENABLED);
+    }
+    const picker = builder.build();
+    picker.setVisible(true);
+  }
+
   return (
     <div>
       <div>
@@ -184,98 +211,16 @@ export function GoogleLogin(props) {
           : signedInUser
           ? <span>
             <p>Signed in as: {signedInUser.getEmail()}</p>
-            <button onClick={() => {setListDocumentsMode("read"); showDocuments()}}>Select Files</button>
+            <button onClick={() => {setListDocumentsMode("read"); showPicker("read")}}>Select Files</button>
             <button onClick={handleSignOutClick}>Sign Out</button>
-            <button onClick={() => {setListDocumentsMode("write"); showDocuments()}}>Upload</button>
+            <button onClick={() => {setListDocumentsMode("write"); showPicker("write")}}>Upload</button>
           </span>
           : <span>
             <p>Import data from your Google Drive.</p>
-            <button onClick={handleClientLoad}>Select Files</button>
+            <button onClick={handleClientLoad}>Sign In</button>
           </span>}
       </div>
-      <FileListDialog
-        open={listDocumentsVisible}
-        mode={listDocumentsMode}
-        onCancel={onDialogClose}
-        onConfirm={onDialogConfirm}
-        onSearch={listFiles}
-        documents={documents}
-        />
     </div>
-  );
-}
-
-function FileListDialog(props) {
-  const [selection, setSelection] = useState([]);
-  
-  const search = (event) => {
-    let searchTerm = fileTypesFilter;
-    if ((event.target.value && event.target.value !== '') || selection.length > 0) {
-      searchTerm += " and (";
-      if (event.target.value && event.target.value !== '') searchTerm += `name contains '${event.target.value}'`;
-      if (selection.length > 0) searchTerm += ` or ${selection.map((f) => `name = '${f.name}'`).join(" or ")}`
-      searchTerm += ")"
-    }
-    delayedQuery(searchTerm);
-  };
-  const delayedQuery = useCallback(
-    debounce((q) => props.onSearch(q), 500),
-    []
-  );
-
-  const columns = [
-    {
-      title: '',
-      key: 'id',
-      render: (id) => <input type="checkbox" name="id" readOnly checked={selection.some((v) => v.id === id)} />
-    },
-    {
-      title: 'Name',
-      key: 'name',
-    },
-    {
-      title: 'Type',
-      key: 'mimeType',
-    },
-    {
-      title: 'Last Modified Date',
-      key: 'modifiedTime',
-    },
-  ];
-  return (
-    <Dialog
-      open={props.open}
-      onClose={props.onCancel}
-      >
-      <DialogTitle>Open Google Drive files</DialogTitle>
-      <DialogContent>
-        <input type="text" onChange={search} />
-        <table cellSpacing={3}>
-          <tbody>
-            <tr>
-              {columns.map((c) => <th key={c.key}>{c.title}</th>)}
-            </tr>
-            {props.documents.map((d) =>
-              <tr key={d.id} onClick={() =>
-                selection.some((v) => v.id === d.id)
-                ? setSelection(selection.filter((v) => v.id !== d.id))
-                : setSelection([...selection, d])
-              }>
-                {columns.map((c) =>
-                  <td key={c.key}>
-                    {c.render ? c.render(d[c.key]) : d[c.key]}
-                  </td>
-                )}
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={props.onCancel}>Cancel</Button>
-        <Button onClick={() => { props.onConfirm(selection) }}>Open</Button>
-      </DialogActions>
-    </Dialog>
   );
 }
 
