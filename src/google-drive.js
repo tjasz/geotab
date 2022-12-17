@@ -2,6 +2,10 @@ import React, { useCallback, useContext, useState } from 'react';
 import { gapi } from 'gapi-script';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
 import { parseGoogleFile } from './readfile';
 import {DataContext} from './dataContext.js'
 
@@ -22,6 +26,7 @@ const fileTypesFilter = `(${fileTypes.map((t) => `mimeType = '${t}'`).join(" or 
 
 export function GoogleLogin(props) {
   const context = useContext(DataContext);
+  const [showNewFileDialog, setShowNewFileDialog] = useState(false);
   const [listDocumentsVisible, setListDocumentsVisibility] = useState(false);
   const [listDocumentsMode, setListDocumentsMode] = useState("read");
   const [documents, setDocuments] = useState([]);
@@ -161,7 +166,7 @@ export function GoogleLogin(props) {
     setListDocumentsVisibility(false);
   };
 
-  const upload = (file) => {
+  const upload = (file, folderId) => {
     const textContent = JSON.stringify({
       type: "FeatureCollection",
       // TODO option to save filtered or unfiltered data
@@ -172,7 +177,7 @@ export function GoogleLogin(props) {
         symbology: context.symbology
       }
     });
-    insertFile(file, textContent)
+    insertFile(textContent, file, folderId)
   };
 
   const onPicker = (data) => {
@@ -204,27 +209,83 @@ export function GoogleLogin(props) {
 
   return (
     <div>
-      <div>
-        <h4>Google Drive</h4>
-        {isLoadingGoogleDriveApi || isFetchingGoogleDriveFiles
-          ? <CircularProgress />
-          : signedInUser
-          ? <span>
-            <p>Signed in as: {signedInUser.getEmail()}</p>
-            <button onClick={() => {setListDocumentsMode("read"); showPicker("read")}}>Select Files</button>
-            <button onClick={handleSignOutClick}>Sign Out</button>
-            <button onClick={() => {setListDocumentsMode("write"); showPicker("write")}}>Upload</button>
-          </span>
-          : <span>
-            <p>Import data from your Google Drive.</p>
-            <button onClick={handleClientLoad}>Sign In</button>
-          </span>}
-      </div>
+      <h4>Google Drive</h4>
+      {signedInUser
+      ? <div id="signinStatus">
+          Signed in as: {signedInUser.getEmail()}
+          <button onClick={handleSignOutClick}>Sign Out</button>
+        </div>
+      : <button onClick={handleClientLoad}>Sign In</button>
+      }
+      {signedInUser &&
+        <span>
+          <button onClick={() => {setListDocumentsMode("read"); showPicker("read")}}>Select Files</button>
+          <button onClick={() => {setListDocumentsMode("write"); showPicker("write")}}>Upload</button>
+          <button onClick={() => {setShowNewFileDialog(true)}}>Save New</button>
+        </span>
+      }
+      <NewFileDialog
+        open={showNewFileDialog}
+        accessToken={accessToken}
+        onCancel={() => setShowNewFileDialog(false)}
+        onConfirm={(filename, folderId) => { setShowNewFileDialog(false); upload({name: filename}, folderId) }} // TODO folder
+        />
     </div>
   );
 }
 
-function insertFile(file, text, callback) {
+function NewFileDialog({open, accessToken, onCancel, onConfirm}) {
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [folder, setFolder] = useState(null);
+  const [filename, setFilename] = useState();
+
+  const onPicker = (data) => {
+    switch(data[window.google.picker.Response.ACTION]) {
+      case window.google.picker.Action.PICKED:
+        setFolder(data[window.google.picker.Response.DOCUMENTS][0]);
+      case window.google.picker.Action.CANCEL:
+        setPickerOpen(false);
+    }
+  };
+
+  // Create and render a Google Picker object for selecting from Drive
+  const showPicker = () => {
+    setPickerOpen(true);
+    const view = new window.google.picker.DocsView(window.google.picker.ViewId.FOLDERS)
+        .setSelectFolderEnabled(true);
+    const builder = new window.google.picker.PickerBuilder()
+        .addView(view)
+        .setOAuthToken(accessToken)
+        .setDeveloperKey(API_KEY)
+        .setCallback(onPicker);
+    const picker = builder.build();
+    picker.setVisible(true);
+  }
+
+  return (
+    <Dialog
+      open={open && !pickerOpen}
+      >
+      <DialogTitle>Create File</DialogTitle>
+      <DialogContent>
+        <p>
+          Folder:
+          {folder?.name || <em>None</em>}
+          <button onClick={showPicker}>Change</button>
+          <button onClick={() => setFolder(null)}>Clear</button>
+        </p>
+        <label htmlFor="fname">File Name: </label>
+        <input type="text" name="fname" value={filename ?? ""} onChange={(e) => setFilename(e.target.value)} />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onCancel}>Cancel</Button>
+        <Button onClick={() => onConfirm(filename, folder?.id)}>Create</Button>
+      </DialogActions>
+  </Dialog>
+  );
+}
+
+function insertFile(text, file, folderId, callback) {
   const boundary = '-------314159265358979323846';
   const delimiter = "\r\n--" + boundary + "\r\n";
   const close_delim = "\r\n--" + boundary + "--";
@@ -232,8 +293,11 @@ function insertFile(file, text, callback) {
   var contentType = 'application/json';
   var metadata = {
     'name': file?.name ?? "geotabExport.json",
-    'mimeType': contentType
+    'mimeType': contentType,
   };
+  if (folderId) {
+    metadata["parents"] = [folderId];
+  }
 
   var multipartRequestBody =
       delimiter +
