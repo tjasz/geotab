@@ -34,6 +34,7 @@ export function GoogleLogin(props) {
   const [isFetchingGoogleDriveFiles, setIsFetchingGoogleDriveFiles] = useState(false);
   const [signedInUser, setSignedInUser] = useState();
   const [accessToken, setAccessToken] = useState();
+  const [openFile, setOpenFile] = useState(null);
   const [pickerInitialized, setPickerInitialized] = useState(false);
   const handleChange = (file) => {};
 
@@ -180,29 +181,31 @@ export function GoogleLogin(props) {
     insertFile(textContent, file, folderId)
   };
 
+  const saveOpenFile = () => {
+    upload(openFile);
+  }
+
   const onPicker = (data) => {
     if (data[window.google.picker.Response.ACTION] !== window.google.picker.Action.PICKED) return;
-    if (listDocumentsMode === "read") {
-      process(data[window.google.picker.Response.DOCUMENTS])
-    } else {
-      upload(data[window.google.picker.Response.DOCUMENTS][0]);
+    const files = data[window.google.picker.Response.DOCUMENTS];
+    process(files);
+    if (files.length === 1) {
+      setOpenFile(files[0])
     }
     setListDocumentsVisibility(false);
   };
 
   // Create and render a Google Picker object for selecting from Drive
-  const showPicker = (mode) => {
+  const showPicker = () => {
     const view = new window.google.picker.DocsView()
         .setMimeTypes(fileTypes.join());
     const builder = new window.google.picker.PickerBuilder()
         .addView(view)
+        .enableFeature(window.google.picker.Feature.MULTISELECT_ENABLED)
         .setSelectableMimeTypes(fileTypes.join())
         .setOAuthToken(accessToken)
         .setDeveloperKey(API_KEY)
         .setCallback(onPicker);
-    if (mode === "read") {
-      builder.enableFeature(window.google.picker.Feature.MULTISELECT_ENABLED);
-    }
     const picker = builder.build();
     picker.setVisible(true);
   }
@@ -217,10 +220,13 @@ export function GoogleLogin(props) {
         </div>
       : <button onClick={handleClientLoad}>Sign In</button>
       }
+      {openFile &&
+        <p>Open file: {openFile.name}</p>}
       {signedInUser &&
         <span>
-          <button onClick={() => {setListDocumentsMode("read"); showPicker("read")}}>Select Files</button>
-          <button onClick={() => {setListDocumentsMode("write"); showPicker("write")}}>Upload</button>
+          <button onClick={() => {showPicker()}}>Open</button>
+          {openFile &&
+            <button onClick={saveOpenFile}>Save</button>}
           <button onClick={() => {setShowNewFileDialog(true)}}>Save New</button>
         </span>
       }
