@@ -301,6 +301,9 @@ function insertFile(text, file, folderId, callback) {
     'name': file?.name ?? "geotabExport.json",
     'mimeType': contentType,
   };
+  if (!metadata.name.endsWith('json')) {
+    metadata.name += '.json';
+  }
   if (folderId) {
     metadata["parents"] = [folderId];
   }
