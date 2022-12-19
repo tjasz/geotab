@@ -338,14 +338,14 @@ function TableHeader(props) {
           {props.disabled ? <LockIcon fontSize="small" /> : <LockOpenIcon fontSize="small" />}
         </IconButton>
       </th>
-      {Array.from(props.columns).filter((column) => column.visible).map((column, idx) =>
-        <th key={column.name} >
+      {Array.from(props.columns).map((column, idx) => {return {column, idx}}).filter((info) => info.column.visible).map((info) =>
+        <th key={info.column.name} >
           <span onClick={() => {
-            props.setSorting({col: column, asc: (props.sorting && props.sorting.col.name === column.name) ? !props.sorting.asc : true});
+            props.setSorting({col: info.column, asc: (props.sorting && props.sorting.col.name === info.column.name) ? !props.sorting.asc : true});
           }}>
-            {column.name}
+            {info.column.name}
           </span>
-          <ColumnContextMenu columnName={column.name} columnIndex={idx} setSorting={props.setSorting}>
+          <ColumnContextMenu columnName={info.column.name} columnIndex={info.idx} setSorting={props.setSorting}>
             <MoreVertIcon className="inlineIcon" />
           </ColumnContextMenu>
         </th>)}
