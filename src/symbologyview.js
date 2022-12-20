@@ -76,6 +76,11 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
         breakStep = Math.pow(10, Math.round(Math.log10((Date.parse(column.max)-Date.parse(column.min))/20)));
         minBreak = breakStep*Math.floor(Date.parse(column.min)/breakStep);
         maxBreak = breakStep*Math.ceil(Date.parse(column.max)/breakStep);
+      } else if (typeof column.min === "number") {
+        // get power of 10 that splits the range into roughly 20 - TODO make more date-friendly breaks
+        breakStep = Math.pow(10, Math.round(Math.log10((column.max-column.min)/20)));
+        minBreak = breakStep*Math.floor(column.min/breakStep);
+        maxBreak = breakStep*Math.ceil(column.max/breakStep);
       } else if (column.min instanceof Date) {
         // get power of 10 that splits the range into roughly 20 - TODO make more date-friendly breaks
         breakStep = Math.pow(10, Math.round(Math.log10((column.max.getTime()-column.min.getTime())/20)));
