@@ -21,8 +21,10 @@ const DISCOVERY_DOCS = ['https://www.googleapis.com/discovery/v1/apis/drive/v3/r
 const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
 // TODO can support .FIT?
-const fileTypes = ['application/json', 'text/csv', 'application/gpx+xml', 'application/vnd.google-apps.spreadsheet'];
-const fileTypesFilter = `(${fileTypes.map((t) => `mimeType = '${t}'`).join(" or ")})`;
+// Since scope is limited to drive.file, only open the file type that is saved by this app.
+const FILE_TYPE = "application/json+geotab";
+// These would be possible to open if scope was full "drive"
+// const fileTypes = ['application/json', 'text/csv', 'application/gpx+xml', 'application/vnd.google-apps.spreadsheet'];
 
 export function GoogleLogin(props) {
   const context = useContext(DataContext);
@@ -56,33 +58,6 @@ export function GoogleLogin(props) {
       alert(e);
     })
     ;
-  };
-
-  /**
-   * Print files.
-   */
-  const listFiles = (searchTerm = fileTypesFilter) => {
-    setIsFetchingGoogleDriveFiles(true);
-    gapi.client.drive.files
-      .list({
-        pageSize: 10,
-        fields: 'nextPageToken, files(id, name, mimeType, modifiedTime)',
-        q: searchTerm,
-      })
-      .then(function (response) {
-        setIsFetchingGoogleDriveFiles(false);
-        setListDocumentsVisibility(true);
-        const res = JSON.parse(response.body);
-        setDocuments(res.files);
-      });
-  };
-
-  const getFileContents = (id) => {
-    setIsFetchingGoogleDriveFiles(true);
-    gapi.client.drive.files
-      .get({ fileId: id, alt: 'media'})
-      .then((response) => props.onRead(JSON.parse(response.body)))
-      .catch((e) => console.error(e));
   };
   
   /**
@@ -198,11 +173,11 @@ export function GoogleLogin(props) {
   // Create and render a Google Picker object for selecting from Drive
   const showPicker = () => {
     const view = new window.google.picker.DocsView()
-        .setMimeTypes(fileTypes.join());
+        .setMimeTypes(FILE_TYPE);
     const builder = new window.google.picker.PickerBuilder()
         .addView(view)
         .enableFeature(window.google.picker.Feature.MULTISELECT_ENABLED)
-        .setSelectableMimeTypes(fileTypes.join())
+        .setSelectableMimeTypes(FILE_TYPE)
         .setOAuthToken(accessToken)
         .setDeveloperKey(API_KEY)
         .setCallback(onPicker);
@@ -296,10 +271,9 @@ function insertFile(text, file, folderId, callback) {
   const delimiter = "\r\n--" + boundary + "\r\n";
   const close_delim = "\r\n--" + boundary + "--";
 
-  var contentType = 'application/json';
   var metadata = {
     'name': file?.name ?? "geotabExport.json",
-    'mimeType': contentType,
+    'mimeType': FILE_TYPE,
   };
   if (!metadata.name.endsWith('json')) {
     metadata.name += '.json';
@@ -313,7 +287,7 @@ function insertFile(text, file, folderId, callback) {
       'Content-Type: application/json\r\n\r\n' +
       JSON.stringify(metadata) +
       delimiter +
-      'Content-Type: ' + contentType + '\r\n' +
+      'Content-Type: application/json\r\n' +
       '\r\n' +
       text +
       close_delim;
