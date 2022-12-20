@@ -31,19 +31,23 @@ function DataView(props) {
 function ImportView(props) {
   const context = useContext(DataContext);
   const [urlParams, setUrlParams] = useSearchParams();
-  const urlSrc = urlParams.get("src") ?? "wa-ultras";
+  const urlSrc = urlParams.get("src");
   const setDataFromJson = (json) => {
     const flattened = getFeatures(json);
     if (flattened.length) {
-      if (json.geotabMetadata) {
-        context.setDataAndFilter(flattened, json.geotabMetadata.filter);
-        context.setColumns(json.geotabMetadata.columns);
-        context.setSymbology(json.geotabMetadata.symbology);
-        setUrlParams({});
+      if (context.data.length === 0) {
+        if (json.geotabMetadata) {
+          context.setDataAndFilter(flattened, json.geotabMetadata.filter);
+          context.setColumns(json.geotabMetadata.columns);
+          context.setSymbology(json.geotabMetadata.symbology);
+          setUrlParams({});
+        } else {
+          context.setData(context.data.concat(flattened));
+          context.setColumns(getPropertiesUnion(flattened));
+          setUrlParams({});
+        }
       } else {
-        context.setDataAndFilter(flattened, defaultFilter);
-        context.setColumns(getPropertiesUnion(flattened));
-        context.setSymbology(null)
+        context.setData(context.data.concat(flattened));
         setUrlParams({});
       }
       context.setActive(null);
@@ -85,7 +89,7 @@ function ImportView(props) {
         }
       )
   };
-  if (!context.data || !context.data.length) {
+  if (urlSrc && (!context.data || !context.data.length)) {
     processServerFiles(urlSrc.split(','));
   }
   return (
