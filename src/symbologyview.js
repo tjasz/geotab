@@ -70,28 +70,31 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
   let breakStep = 10;
   if (context.columns.find((column) => column.name === fieldname)) {
     const column = context.columns.find((column) => column.name === fieldname);
+    const columnMin = Math.min(...context.filteredData.map((f) => f.properties[column.name]));
+    const columnMax = Math.max(...context.filteredData.map((f) => f.properties[column.name]));
+    console.log(context.filteredData.map((f) => f[column.name]), columnMax)
     if (column.type === "date") {
-      if (typeof column.min === "string") {
+      if (typeof columnMin === "string") {
         // get power of 10 that splits the range into roughly 20 - TODO make more date-friendly breaks
-        breakStep = Math.pow(10, Math.round(Math.log10((Date.parse(column.max)-Date.parse(column.min))/20)));
-        minBreak = breakStep*Math.floor(Date.parse(column.min)/breakStep);
-        maxBreak = breakStep*Math.ceil(Date.parse(column.max)/breakStep);
-      } else if (typeof column.min === "number") {
+        breakStep = Math.pow(10, Math.round(Math.log10((Date.parse(columnMax)-Date.parse(columnMin))/20)));
+        minBreak = breakStep*Math.floor(Date.parse(columnMin)/breakStep);
+        maxBreak = breakStep*Math.ceil(Date.parse(columnMax)/breakStep);
+      } else if (typeof columnMin === "number") {
         // get power of 10 that splits the range into roughly 20 - TODO make more date-friendly breaks
-        breakStep = Math.pow(10, Math.round(Math.log10((column.max-column.min)/20)));
-        minBreak = breakStep*Math.floor(column.min/breakStep);
-        maxBreak = breakStep*Math.ceil(column.max/breakStep);
-      } else if (column.min instanceof Date) {
+        breakStep = Math.pow(10, Math.round(Math.log10((columnMax-columnMin)/20)));
+        minBreak = breakStep*Math.floor(columnMin/breakStep);
+        maxBreak = breakStep*Math.ceil(columnMax/breakStep);
+      } else if (columnMin instanceof Date) {
         // get power of 10 that splits the range into roughly 20 - TODO make more date-friendly breaks
-        breakStep = Math.pow(10, Math.round(Math.log10((column.max.getTime()-column.min.getTime())/20)));
-        minBreak = breakStep*Math.floor(column.min.getTime()/breakStep);
-        maxBreak = breakStep*Math.ceil(column.max.getTime()/breakStep);
+        breakStep = Math.pow(10, Math.round(Math.log10((columnMax.getTime()-columnMin.getTime())/20)));
+        minBreak = breakStep*Math.floor(columnMin.getTime()/breakStep);
+        maxBreak = breakStep*Math.ceil(columnMax.getTime()/breakStep);
       }
     } else {
       // get power of 10 that splits the range into roughly 20
-      breakStep = Math.pow(10, Math.round(Math.log10((column.max-column.min)/20)));
-      minBreak = breakStep*Math.floor(column.min/breakStep);
-      maxBreak = breakStep*Math.ceil(column.max/breakStep);
+      breakStep = Math.pow(10, Math.round(Math.log10((columnMax-columnMin)/20)));
+      minBreak = breakStep*Math.floor(columnMin/breakStep);
+      maxBreak = breakStep*Math.ceil(columnMax/breakStep);
     }
   }
 
