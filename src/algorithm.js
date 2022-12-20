@@ -171,27 +171,32 @@ export function getFeatureBounds(feature) {
   }
 }
 
+export function getDistance(pta, ptb) {
+  if (pta[0] === ptb[0] && pta[1] === ptb[1]) return 0;
+  // use haversine formula to calcualte distance between two points
+  const earthRadiusMeters = 6378e3;
+  const delta_lat = pta[0] - ptb[0];
+  const delta_lon = pta[1] - ptb[1];
+  const sin_half_delta_lat = dsin(delta_lat/2);
+  const sin_half_delta_lon = dsin(delta_lon/2);
+  const a = sin_half_delta_lat * sin_half_delta_lat
+          + dcos(ptb[0]) * dcos(pta[0])
+          * sin_half_delta_lon * sin_half_delta_lon;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const d = c * earthRadiusMeters;
+  return d;
+}
+
 function getLengthFromCoordinateList(coordinates) {
   if (coordinates.length < 2) {
     return 0;
   }
-  const earthRadiusMeters = 6378e3; // meters
   let dist = 0;
   let lastLatlon = coordinates[0].slice(0,2).reverse();
   for (const coord of coordinates) {
     // translate coordinate from lonlat to latlon
     const latlon = coord.slice(0,2).reverse();
-    // use haversine formula to calcualte distance between two points
-    const delta_lat = latlon[0] - lastLatlon[0];
-    const delta_lon = latlon[1] - lastLatlon[1];
-    const sin_half_delta_lat = dsin(delta_lat/2);
-    const sin_half_delta_lon = dsin(delta_lon/2);
-    const a = sin_half_delta_lat * sin_half_delta_lat
-            + dcos(lastLatlon[0]) * dcos(latlon[0])
-            * sin_half_delta_lon * sin_half_delta_lon;
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    const d = c * earthRadiusMeters;
-    dist += d;
+    dist += getDistance(latlon, lastLatlon);
     // update reference to last point
     lastLatlon = latlon;
   }
