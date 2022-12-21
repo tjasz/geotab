@@ -72,6 +72,7 @@ function getGoogleFile(file) {
       return gapi.client.drive.files
       .export({ fileId: file.id, mimeType: 'text/csv'});
     case 'application/json':
+    case 'application/json+geotab':
     case 'text/csv':
     case 'application/gpx+xml':
     default:
@@ -86,8 +87,7 @@ export function parseGoogleFile(file) {
     getGoogleFile(file)
       .then((res) => {
       const text = res.body;
-      // guess file type based on first character of text
-      if (file.mimeType === 'application/json') {
+      if (file.mimeType.startsWith('application/json')) {
         // geoJSON
         try {
           resolve(JSON.parse(text));
