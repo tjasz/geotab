@@ -160,6 +160,14 @@ export function GoogleLogin(props) {
     upload(openFile);
   }
 
+  const closeFile = () => {
+    setOpenFile(null);
+    context.setDataAndFilter([], null);
+    context.setColumns([]);
+    context.setActive(null);
+    context.setSymbology(null);
+  }
+
   const onPicker = (data) => {
     if (data[window.google.picker.Response.ACTION] !== window.google.picker.Action.PICKED) return;
     const files = data[window.google.picker.Response.DOCUMENTS];
@@ -201,7 +209,11 @@ export function GoogleLogin(props) {
         <span>
           <button onClick={() => {showPicker()}}>Open</button>
           {openFile &&
-            <button onClick={saveOpenFile}>Save</button>}
+            <React.Fragment>
+              <button onClick={saveOpenFile}>Save</button>
+              <button onClick={closeFile}>Close</button>
+            </React.Fragment>
+            }
           <button onClick={() => {setShowNewFileDialog(true)}}>Save New</button>
         </span>
       }
@@ -209,7 +221,7 @@ export function GoogleLogin(props) {
         open={showNewFileDialog}
         accessToken={accessToken}
         onCancel={() => setShowNewFileDialog(false)}
-        onConfirm={(filename, folderId) => { setShowNewFileDialog(false); upload({name: filename}, folderId) }} // TODO folder
+        onConfirm={(filename, folderId) => { setShowNewFileDialog(false); upload({name: filename}, folderId) }}
         />
     </div>
   );

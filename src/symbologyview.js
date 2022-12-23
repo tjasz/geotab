@@ -59,11 +59,11 @@ function SymbologyDefinition({symbology, onSave}) {
 
 function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueStep, valueLabelFormat}) {
   const context = useContext(DataContext);
-  const [fieldname, setFieldname] = useState(definition?.fieldname ?? context.columns[0].name);
+  const [fieldname, setFieldname] = useState(definition?.fieldname ?? context.columns[0]?.name);
   const [mode, setMode] = useState(definition?.mode ?? "discrete");
   const [values, setValues] = useState(definition?.values ?? [minValue]);
   const [breaks, setBreaks] = useState(definition?.breaks ?? []);
-  const [type, setType] = useState(context.columns.find((c) => c.name === fieldname).type);
+  const [type, setType] = useState(context.columns.find((c) => c.name === fieldname)?.type);
 
   let minBreak = 0;
   let maxBreak = 100;
@@ -72,7 +72,6 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
     const column = context.columns.find((column) => column.name === fieldname);
     const columnMin = Math.min(...context.filteredData.map((f) => f.properties[column.name]));
     const columnMax = Math.max(...context.filteredData.map((f) => f.properties[column.name]));
-    console.log(context.filteredData.map((f) => f[column.name]), columnMax)
     if (column.type === "date") {
       if (typeof columnMin === "string") {
         // get power of 10 that splits the range into roughly 20 - TODO make more date-friendly breaks
