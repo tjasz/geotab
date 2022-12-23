@@ -125,24 +125,7 @@ export function GoogleLogin(props) {
     setPickerInitialized(true);
   }
 
-  const showDocuments = () => {
-    setListDocumentsVisibility(true);
-  };
-
-  const onDialogClose = () => {
-    setListDocumentsVisibility(false);
-  };
-
-  const onDialogConfirm = (files) => {
-    if (listDocumentsMode === "read") {
-      process(files)
-    } else {
-      upload(files[0]);
-    }
-    setListDocumentsVisibility(false);
-  };
-
-  const upload = (file, folderId) => {
+  const upload = (file, folderId, callback) => {
     const textContent = JSON.stringify({
       type: "FeatureCollection",
       // TODO option to save filtered or unfiltered data
@@ -153,8 +136,13 @@ export function GoogleLogin(props) {
         symbology: context.symbology
       }
     });
-    insertFile(textContent, file, folderId)
+    insertFile(textContent, file, folderId, callback)
   };
+
+  const saveNewFile = (filename, folderId) => {
+    setShowNewFileDialog(false);
+    upload({name: filename}, folderId, (uploadResult) => setOpenFile(uploadResult));
+  }
 
   const saveOpenFile = () => {
     upload(openFile);
@@ -221,7 +209,7 @@ export function GoogleLogin(props) {
         open={showNewFileDialog}
         accessToken={accessToken}
         onCancel={() => setShowNewFileDialog(false)}
-        onConfirm={(filename, folderId) => { setShowNewFileDialog(false); upload({name: filename}, folderId) }}
+        onConfirm={saveNewFile}
         />
     </div>
   );
