@@ -23,7 +23,7 @@ function DataView(props) {
       <h2>Data</h2>
       <ImportView />
       <ExportView />
-      {context.filter && <FilterDefinition filter={context.filter} onSave={onFilterSave} />}
+      {context.data?.length ? <FilterDefinition filter={context.filter} onSave={onFilterSave} /> : null}
     </div>
   );
 }
@@ -192,14 +192,14 @@ function ExportView(props) {
 
 function FilterDefinition(props) {
   const context = useContext(DataContext);
-  const [draft, setDraft] = useState(props.filter);
+  const [draft, setDraft] = useState(props.filter ?? defaultFilter);
   const saveDraft = () => { props.onSave(draft); };
   const updateDraft = (newDraft) => { setDraft(newDraft); };
   return (
     <div id="filter-definition">
       <h3>Filter</h3>
-      <p>{context.filteredData.length} of {context.data.length} rows.</p>
-      <FilterView filter={props.filter} indent={0} indexInGroup={0} onEdit={updateDraft} />
+      {props.filter && <p>{context.filteredData.length} of {context.data.length} rows.</p>}
+      <FilterView filter={props.filter ?? defaultFilter} indent={0} indexInGroup={0} onEdit={updateDraft} />
       <button id="save-filter-draft" onClick={saveDraft}>Save</button>
     </div>
   );
