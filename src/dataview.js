@@ -6,6 +6,7 @@ import {defaultFilter, conditionOperators, conditionGroupOperators, parametersMa
 import {ReactComponent as MinusSquare} from './feather/minus-square.svg'
 import {ReactComponent as PlusSquare} from './feather/plus-square.svg'
 import {Select} from './common-components.js'
+import {LabeledCheckbox} from './LabeledCheckbox.js'
 import {parseFile, attachProgress} from './readfile.js'
 import { GoogleLogin } from './google-drive.js'
 
@@ -294,10 +295,10 @@ function ConditionView(props) {
   };
   return (
     <div className="conditionView" style={{paddingLeft: '2em'}}>
-      <input
-        type="checkbox"
+      <LabeledCheckbox
         checked={negate}
         onChange={onNegateEdit}
+        label="NOT"
         />
       <Select 
         id={`${props.key}-fieldname`}

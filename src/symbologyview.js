@@ -6,6 +6,7 @@ import {symbologyModes} from './painter.js'
 import {toType} from './algorithm.js'
 import {ReactComponent as MinusSquare} from './feather/minus-square.svg'
 import {ReactComponent as PlusSquare} from './feather/plus-square.svg'
+import { LabeledCheckbox } from './LabeledCheckbox.js';
 
 function SymbologyView(props) {
   const context = useContext(DataContext);
@@ -159,13 +160,11 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
   return (
     <div className="symbologyProperty">
       <h3>
-        <input type="checkbox"
-          name={`symbology-${name}-checxkbox`}
-          id={`symbology-${name}-checxkbox`}
+        <LabeledCheckbox
           checked={definition ? true : false}
           onChange={onCheckboxChange}
+          label={name.toUpperCase()}
           />
-        <label htmlFor={`symbology-${name}-checxkbox`}>{name.toUpperCase()}</label>
       </h3>
       {definition ? <div style={{paddingLeft: "1em"}}>
         <Select
