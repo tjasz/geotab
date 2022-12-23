@@ -184,12 +184,14 @@ function ExportView(props) {
 }
 
 function FilterDefinition(props) {
+  const context = useContext(DataContext);
   const [draft, setDraft] = useState(props.filter);
   const saveDraft = () => { props.onSave(draft); };
   const updateDraft = (newDraft) => { setDraft(newDraft); };
   return (
     <div id="filter-definition">
       <h3>Filter</h3>
+      <p>{context.filteredData.length} of {context.data.length} rows.</p>
       <FilterView filter={props.filter} indent={0} indexInGroup={0} onEdit={updateDraft} />
       <button id="save-filter-draft" onClick={saveDraft}>Save</button>
     </div>
