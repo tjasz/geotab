@@ -32,6 +32,12 @@ function ImportView(props) {
   const context = useContext(DataContext);
   const [urlParams, setUrlParams] = useSearchParams();
   const urlSrc = urlParams.get("src");
+  const clearData = () => {
+    context.setDataAndFilter([], null);
+    context.setColumns([]);
+    context.setActive(null);
+    context.setSymbology(null);
+  }
   const setDataFromJson = (json) => {
     const flattened = getFeatures(json);
     if (flattened.length) {
@@ -94,6 +100,7 @@ function ImportView(props) {
   }
   return (
     <div id="importView">
+      <button type="button" id="next-button" onClick={clearData}>Clear Data</button>
       <h3>Import</h3>
       <FileImporter onRead={setDataFromJson} />
       <GoogleLogin onRead={setDataFromJson} />
