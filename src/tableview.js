@@ -23,6 +23,7 @@ import { TextFieldDialog } from './TextFieldDialog.js'
 import {InsertLeftIcon} from './icon/InsertLeftIcon.js'
 import {InsertRightIcon} from './icon/InsertRightIcon.js'
 import {SortAscendingIcon} from './icon/SortAscendingIcon.js'
+import { ColumnMetadataDialog } from './ColumnMetadataDialog.js';
 
 function TableView(props) {
   return (
@@ -143,6 +144,7 @@ function ColumnContextMenu(props) {
   const [renameDialogOpen, setRenameDialogOpen] = React.useState(false);
   const [retypeDialogOpen, setRetypeDialogOpen] = React.useState(false);
   const [insertDialog, setInsertDialog] = React.useState(null);
+  const [columnMetadataOpen, setColumnMetadataOpen] = React.useState(false);
   
   const setInvisible = (fieldname) => {
     context.setColumns(context.columns.map((col) => col.name === fieldname ? {...col, visible: false} : col));
@@ -285,13 +287,19 @@ function ColumnContextMenu(props) {
           <ListItemText>Delete</ListItemText>
         </MenuItem>
         <MenuItem
-          onClick={() => { alert(JSON.stringify(context.columns.find((c) => c.name === props.columnName))); handleClose() }}>
+          onClick={() => { setColumnMetadataOpen(true); handleClose() }}>
           <ListItemIcon>
             <InfoIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>Metadata</ListItemText>
         </MenuItem>
       </Menu>
+      <ColumnMetadataDialog
+        open={columnMetadataOpen}
+        onClose={() => setColumnMetadataOpen(false)}
+        column={context.columns.find((c) => props.columnName === c.name)}
+        data={context.data.map((row) => row.properties[props.columnName])}
+        />
       <SelectDialog
         title={`Change data type of column '${props.columnName}'?`}
         label="Type"
