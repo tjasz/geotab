@@ -17,7 +17,6 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { sortBy } from './algorithm.js'
 import {DataContext} from './dataContext.js'
-import {evaluateFilter} from './filter.js'
 import { AbridgedUrlLink } from './common-components.js';
 import { SelectDialog } from './SelectDialog.js'
 import { TextFieldDialog } from './TextFieldDialog.js'
@@ -244,13 +243,6 @@ function ColumnContextMenu(props) {
           <ListItemText>Change Type</ListItemText>
         </MenuItem>
         <MenuItem
-          onClick={() => { setInvisible(props.columnName); handleClose() }}>
-          <ListItemIcon>
-            <VisibilityOffIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Hide</ListItemText>
-        </MenuItem>
-        <MenuItem
           onClick={() => { swapColumns(props.columnIndex, props.columnIndex-1); handleClose() }}>
           <ListItemIcon>
             <WestIcon fontSize="small" />
@@ -277,6 +269,13 @@ function ColumnContextMenu(props) {
             <InsertRightIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>Insert right</ListItemText>
+        </MenuItem>
+        <MenuItem
+          onClick={() => { setInvisible(props.columnName); handleClose() }}>
+          <ListItemIcon>
+            <VisibilityOffIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Hide</ListItemText>
         </MenuItem>
         <MenuItem
           onClick={() => { deleteColumn(props.columnName); handleClose() }}>
