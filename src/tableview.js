@@ -1,6 +1,7 @@
 import React, {useContext, useEffect, useRef, useState} from 'react';
 import SortIcon from '@mui/icons-material/Sort';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import DeleteIcon from '@mui/icons-material/Delete';
 import WestIcon from '@mui/icons-material/West';
@@ -11,7 +12,6 @@ import LockOpenIcon from '@mui/icons-material/LockOpen';
 import MenuIcon from '@mui/icons-material/Menu';
 import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
 import DataObjectIcon from '@mui/icons-material/DataObject';
-import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -25,6 +25,7 @@ import {InsertLeftIcon} from './icon/InsertLeftIcon.js'
 import {InsertRightIcon} from './icon/InsertRightIcon.js'
 import {SortAscendingIcon} from './icon/SortAscendingIcon.js'
 import { ColumnMetadataDialog } from './ColumnMetadataDialog.js';
+import { CheckListDialog } from './CheckListDialog.js';
 
 function TableView(props) {
   return (
@@ -119,7 +120,13 @@ function DataTable() {
   return (
     <table id="data-table" cellSpacing={0}>
       <thead>
-        <TableHeader columns={context.columns} sorting={sorting} setSorting={handleSortingChange} disabled={disabled} setDisabled={setDisabled} />
+        <TableHeader
+          columns={context.columns}
+          setColumns={context.setColumns}
+          sorting={sorting}
+          setSorting={handleSortingChange}
+          disabled={disabled}
+          setDisabled={setDisabled} />
       </thead>
       <tbody>
         {features.map((feature, fidx) =>
@@ -338,6 +345,7 @@ function ColumnContextMenu(props) {
 
 function TableContextMenu(props) {
   const [contextMenu, setContextMenu] = useState(null);
+  const [visibilityOpen, setVisibilityOpen] = useState(false);
   const handleContextMenu = (event) => {
     setContextMenu(
       contextMenu === null
@@ -351,10 +359,10 @@ function TableContextMenu(props) {
           null,
     );
   };
-
   const handleClose = () => {
     setContextMenu(null);
   };
+
   return (
     <React.Fragment>
       <span onClick={handleContextMenu}>
@@ -377,7 +385,23 @@ function TableContextMenu(props) {
           </ListItemIcon>
           <ListItemText>{props.disabled ? "Unl" : "L"}ock Values</ListItemText>
         </MenuItem>
+        <MenuItem
+          onClick={() => { setVisibilityOpen(true); handleClose() }}>
+          <ListItemIcon>
+            <VisibilityIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Set Visible Columns</ListItemText>
+        </MenuItem>
       </Menu>
+      <CheckListDialog
+        open={visibilityOpen}
+        onCancel={() => setVisibilityOpen(false)}
+        onConfirm={(draft) => { props.setColumns(draft); setVisibilityOpen(false)}}
+        defaultValue={props.columns}
+        title="Select Visible Columns"
+        labelColumn="name"
+        checkedColumn="visible"
+        />
     </React.Fragment>
   );
 }
@@ -389,6 +413,8 @@ function TableHeader(props) {
         <TableContextMenu
           disabled={props.disabled}
           setDisabled={props.setDisabled}
+          columns={props.columns}
+          setColumns={props.setColumns}
           >
             <MenuIcon />
         </TableContextMenu>

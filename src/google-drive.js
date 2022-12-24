@@ -195,7 +195,7 @@ export function GoogleLogin(props) {
         <p>Open file: {openFile.name}</p>}
       {signedInUser &&
         <span>
-          <button onClick={() => {showPicker()}}>Open</button>
+          {context.data.length === 0 && <button onClick={() => {showPicker()}}>Open</button>}
           {openFile &&
             <React.Fragment>
               <button onClick={saveOpenFile}>Save</button>
