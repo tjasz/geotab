@@ -8,6 +8,7 @@ import EastIcon from '@mui/icons-material/East';
 import InfoIcon from '@mui/icons-material/Info';
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
+import MenuIcon from '@mui/icons-material/Menu';
 import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
 import DataObjectIcon from '@mui/icons-material/DataObject';
 import IconButton from '@mui/material/IconButton';
@@ -205,7 +206,7 @@ function ColumnContextMenu(props) {
 
   return (
     <React.Fragment>
-      <span onClick={handleContextMenu} style={{ cursor: 'context-menu' }}>
+      <span onClick={handleContextMenu}>
         {props.children}
       </span>
       <Menu
@@ -335,17 +336,62 @@ function ColumnContextMenu(props) {
   );
 }
 
+function TableContextMenu(props) {
+  const [contextMenu, setContextMenu] = useState(null);
+  const handleContextMenu = (event) => {
+    setContextMenu(
+      contextMenu === null
+        ? {
+            mouseX: event.clientX + 2,
+            mouseY: event.clientY - 6,
+          }
+        : // repeated contextmenu when it is already open closes it with Chrome 84 on Ubuntu
+          // Other native context menus might behave different.
+          // With this behavior we prevent contextmenu from the backdrop to re-locale existing context menus.
+          null,
+    );
+  };
+
+  const handleClose = () => {
+    setContextMenu(null);
+  };
+  return (
+    <React.Fragment>
+      <span onClick={handleContextMenu}>
+        {props.children}
+      </span>
+      <Menu
+        open={contextMenu !== null}
+        onClose={handleClose}
+        anchorReference="anchorPosition"
+        anchorPosition={
+          contextMenu !== null
+            ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
+            : undefined
+        }
+      >
+        <MenuItem
+          onClick={() => { props.setDisabled(!props.disabled); handleClose() }}>
+          <ListItemIcon>
+            {props.disabled ? <LockOpenIcon fontSize="small" /> : <LockIcon fontSize="small" />}
+          </ListItemIcon>
+          <ListItemText>{props.disabled ? "Unl" : "L"}ock Values</ListItemText>
+        </MenuItem>
+      </Menu>
+    </React.Fragment>
+  );
+}
+
 function TableHeader(props) {
   return (
     <tr>
       <th>
-        <IconButton
-          aria-label={`${props.disabled ? "un" : ""}lock table`}
-          onClick={() => props.setDisabled(!props.disabled)}
-          edge="end"
+        <TableContextMenu
+          disabled={props.disabled}
+          setDisabled={props.setDisabled}
           >
-          {props.disabled ? <LockIcon fontSize="small" /> : <LockOpenIcon fontSize="small" />}
-        </IconButton>
+            <MenuIcon />
+        </TableContextMenu>
       </th>
       {Array.from(props.columns).map((column, idx) => {return {column, idx}}).filter((info) => info.column.visible).map((info) =>
         <th key={info.column.name} >
