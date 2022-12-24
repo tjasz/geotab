@@ -117,8 +117,10 @@ function DataTable() {
 
   return (
     <table id="data-table" cellSpacing={0}>
-      <tbody>
+      <thead>
         <TableHeader columns={context.columns} sorting={sorting} setSorting={handleSortingChange} disabled={disabled} setDisabled={setDisabled} />
+      </thead>
+      <tbody>
         {features.map((feature, fidx) =>
           <TableRow
             key={feature.id}

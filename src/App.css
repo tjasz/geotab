@@ -135,8 +135,13 @@ button:active {
 #data-table {
   border-top: 2px solid black;
 }
+#data-table thead th {
+  position: sticky;
+  z-index: 50;
+}
 #data-table th {
   position: sticky;
+  z-index: 20;
   top: 0;
   left: 0;
   background-color: #336799;
