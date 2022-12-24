@@ -298,7 +298,7 @@ function ColumnContextMenu(props) {
         open={columnMetadataOpen}
         onClose={() => setColumnMetadataOpen(false)}
         column={context.columns.find((c) => props.columnName === c.name)}
-        data={context.data.map((row) => row.properties[props.columnName])}
+        data={context.filteredData.map((row) => row.properties[props.columnName])}
         />
       <SelectDialog
         title={`Change data type of column '${props.columnName}'?`}
