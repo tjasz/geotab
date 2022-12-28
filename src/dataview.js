@@ -165,12 +165,12 @@ function FileImporter({onRead}) {
 
 function ExportView(props) {
   const context = useContext(DataContext);
-  const exportJson = () => {
+  const exportJson = (includeHidden) => {
     const downloadLink = document.createElement("a");
     const textContent = JSON.stringify({
       type: "FeatureCollection",
       // TODO option to save filtered or unfiltered data
-      features: context.data,
+      features: includeHidden ? context.data : context.filteredData,
       geotabMetadata: {
         columns: context.columns,
         filter: context.filter,
@@ -186,7 +186,8 @@ function ExportView(props) {
   return (
     <div id="exportView">
       <h3>Export</h3>
-      <button onClick={exportJson}>Export .json</button>
+      <button onClick={() => exportJson(true)}>Export All</button>
+      <button onClick={() => exportJson(false)}>Export Filtered</button>
     </div>
   );
 }
