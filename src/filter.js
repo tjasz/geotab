@@ -206,6 +206,18 @@ function onDayOfWeek(rowValue, dayOfWeek) {
   return new Date(Date.parse(rowValue)).getUTCDay() === (dayOfWeek % 7);
 }
 
+function dayOfYear(dt) {
+  const start = new Date(dt.getFullYear(), 0, 1);
+  const diff = (dt - start) + ((start.getTimezoneOffset() - dt.getTimezoneOffset()) * 60 * 1000);
+  const oneDay = 1000 * 60 * 60 * 24;
+  const day = Math.ceil(diff / oneDay);
+  return day;
+}
+
+function onDayOfYear(rowValue, dayOfMonth) {
+  return dayOfYear(new Date(Date.parse(rowValue))) === dayOfMonth;
+}
+
 function onDayOfMonth(rowValue, dayOfMonth) {
   return new Date(Date.parse(rowValue)).getUTCDate() === dayOfMonth;
 }
@@ -213,6 +225,34 @@ function onDayOfMonth(rowValue, dayOfMonth) {
 function onDayMonthOfYear(rowValue, month, dayOfMonth) {
   const d = new Date(Date.parse(rowValue));
   return d.getUTCMonth() === month-1 && d.getUTCDate() === dayOfMonth;
+}
+
+function weekOfMonth(dt) {
+  // the week of the month is equal to the number of Mondays that have occurred since the month started
+  const monthStart = new Date(dt.getFullYear(), dt.getMonth(), 1);
+  const firstMonday = new Date(dt.getFullYear(), dt.getMonth(), (9 - monthStart.getDay()) % 7);
+  const diff = (dt - firstMonday) + ((firstMonday.getTimezoneOffset() - dt.getTimezoneOffset()) * 60 * 1000);
+  const oneWeek = 1000 * 60 * 60 * 24 * 7;
+  const week = Math.ceil(diff / oneWeek);
+  return week;
+}
+
+function inWeekOfMonth(rowValue, week) {
+  return weekOfMonth(new Date(Date.parse(rowValue))) === week;
+}
+
+function weekOfYear(dt) {
+  // the week of the year is equal to the number of Mondays that have occurred since the year started
+  const yearStart = new Date(dt.getFullYear(), 0, 1);
+  const firstMonday = new Date(dt.getFullYear(), 0, (9 - yearStart.getDay()) % 7);
+  const diff = (dt - firstMonday) + ((firstMonday.getTimezoneOffset() - dt.getTimezoneOffset()) * 60 * 1000);
+  const oneWeek = 1000 * 60 * 60 * 24 * 7;
+  const week = Math.ceil(diff / oneWeek);
+  return week;
+}
+
+function inWeekOfYear(rowValue, week) {
+  return weekOfYear(new Date(Date.parse(rowValue))) === week;
 }
 
 function inMonthOfYear(rowValue, month) {
@@ -313,17 +353,17 @@ function evaluateCondition(row, condition) {
       result = onDayOfMonth(value, condition.parameters.day);
       break;
     case "OnDayOfYear":
-      // TODO
-      throw Error("Unimplemented function OnDayOfYear");
+      result = onDayOfYear(value, condition.parameters.day);
+      break;
     case "OnDayMonthOfYear":
       result = onDayMonthOfYear(value, condition.parameters.month, condition.parameters.day);
       break;
     case "InWeekOfMonth":
-      // TODO
-      throw Error("Unimplemented function InWeekOfMonth");
+      result = inWeekOfMonth(value, condition.parameters.week);
+      break;
     case "InWeekOfYear":
-      // TODO
-      throw Error("Unimplemented function InWeekOfYear");
+      result = inWeekOfYear(value, condition.parameters.week);
+      break;
     case "InMonthOfYear":
       result = inMonthOfYear(value, condition.parameters.month);
       break;
