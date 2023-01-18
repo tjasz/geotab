@@ -409,7 +409,7 @@ function TableContextMenu(props) {
 function TableHeader(props) {
   return (
     <tr>
-      <th>
+      <th className="tableCorner">
         <TableContextMenu
           disabled={props.disabled}
           setDisabled={props.setDisabled}

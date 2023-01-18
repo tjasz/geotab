@@ -135,6 +135,9 @@ button:active {
 #data-table {
   border-top: 2px solid black;
 }
+#data-table thead th.tableCorner {
+  z-index: 100;
+}
 #data-table thead th {
   position: sticky;
   z-index: 50;
