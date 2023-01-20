@@ -112,9 +112,17 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
     onEdit(event.target.checked ? {mode, values, fieldname, type, breaks, default: defaultValue} : undefined);
   };
   const onFieldnameEdit = (event) => {
-    setFieldname(event.target.value);
-    setType(context.columns.find((c) => c.name === event.target.value).type);
-    onEdit({mode, values, fieldname: event.target.value, type: context.columns.find((c) => c.name === event.target.value).type, breaks, default: defaultValue});
+    const newFieldname = event.target.value;
+    const newType = context.columns.find((c) => c.name === newFieldname).type;
+    const modeOptions = modesForType(newType).map(m => m.name);
+    const newMode = modeOptions.includes(mode) ? mode : modeOptions[0];
+    setFieldname(newFieldname);
+    setType(newType);
+    if (newMode !== mode) {
+      onModeEdit({target: {value: newMode}});
+      setMode(newMode);
+    }
+    onEdit({mode: newMode, values, fieldname: newFieldname, type: newType, breaks, default: defaultValue});
   };
   const onModeEdit = (event) => {
     const newMode = event.target.value;
@@ -190,6 +198,7 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
           id={`symbology-${name}-mode`}
           name={`symbology-${name}-mode`}
           defaultValue={mode}
+          value={mode}
           onChange={onModeEdit}
           options={modesForType(context.columns.find((column) => column.name === fieldname)?.type).map(m => m.name)}
           />
