@@ -37,8 +37,9 @@ function ColumnMetadataTable({column, data}) {
           </tr>)}
         </tbody>
       </table>
-      { (column.type === "number" || column.type === "date") &&
-        <Histogram
+      { (column.type === "number" || column.type === "date")
+      && stats.Minimum != stats.Maximum
+      && <Histogram
           left={Math.floor(stats.Minimum)}
           right={Math.ceil(stats.Maximum)}
           binWidth={(stats.Maximum - stats.Minimum)/Math.sqrt(data.length)}
@@ -89,6 +90,9 @@ function getStats(column, data) {
         if (counts[defined[i]] > counts[result.Mode]) {
           result.Mode = defined[i];
         }
+      }
+      if (Object.keys(counts).length < 10) {
+        result.Counts = counts;
       }
       result.Mode = `${result.Mode} (${counts[result.Mode]})`;
       return result;
