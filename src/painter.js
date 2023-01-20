@@ -1,7 +1,10 @@
 import {StarMarker} from './iconlib.js'
 import {toType} from './algorithm.js'
 
-export const symbologyModes = ["discrete", "continuous"];
+export const MODE_BYVALUE = "byvalue";
+export const MODE_DISCRETE = "discrete";
+export const MODE_CONTINUOUS = "continuous";
+export const symbologyModes = ["byvalue", MODE_DISCRETE, "continuous"];
 
 function findIndex(array, value) {
   // set i to the index where value is first greater than array[i]
@@ -12,6 +15,17 @@ function findIndex(array, value) {
     }
   }
   return i;
+}
+
+function byvalueInterpolation(definition, feature) {
+  // return the value from "values" with the same index where the feature value is equal to the "breaks"
+  if (definition.values.length !== definition.breaks.length) {
+    throw Error(`ByValue Symbology.values should have the same number of values as Symbology.breaks. Values: ${definition.values}; Breaks: ${definition.breaks}.`)
+  }
+  const value = toType(feature.properties[definition.fieldname], definition.type);
+  // set i to the index where the feature value is equal to the break value
+  let i = definition.breaks.findIndex(b => b === value);
+  return i === -1 ? definition.default : definition.values[i];
 }
 
 function discreteInterpolation(definition, feature) {
@@ -56,18 +70,24 @@ function interpolation(definition, feature) {
   if (definition === undefined) {
     return undefined;
   }
-  if (definition.mode === "discrete") {
+  if (feature.properties[definition.fieldname] === undefined && definition.default) {
+    return definition.default;
+  }
+  if (definition.mode === MODE_BYVALUE) {
+    return byvalueInterpolation(definition, feature);
+  }
+  if (definition.mode === MODE_DISCRETE) {
     return discreteInterpolation(definition, feature);
   }
-  if (definition.mode === "continuous") {
+  if (definition.mode === MODE_CONTINUOUS) {
     return continuousInterpolation(definition, feature);
   }
-  throw Error(`Symbology.mode: Found ${definition.mode}. Expected 'discrete' or 'continuous'.`)
+  throw Error(`Symbology.mode: Found ${definition.mode}. Expected one of ${symbologyModes}.`)
 }
 
 export function painter(symbology) {
   // example symbology: {
-  //   "hue": {mode: "discrete", values: [150, 250], fieldname: "elevation", breaks: [10000]},
+  //   "hue": {mode: "discrete", values: [150, 250], fieldname: "elevation", breaks: [10000], default: 209},
   // },
   const fn = (feature, latlng) => {
     // get color-related attributes
