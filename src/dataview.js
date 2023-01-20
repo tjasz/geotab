@@ -54,7 +54,9 @@ function ImportView(props) {
           setUrlParams({});
         }
       } else {
-        context.setData(context.data.concat(flattened));
+        const newData = context.data.concat(flattened);
+        context.setData(newData);
+        context.setColumns(getPropertiesUnion(newData));
         setUrlParams({});
       }
       context.setActive(null);
