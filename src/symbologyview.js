@@ -71,8 +71,9 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
   let breakStep = 10;
   if (context.columns.find((column) => column.name === fieldname)) {
     const column = context.columns.find((column) => column.name === fieldname);
-    const columnMin = Math.min(...context.filteredData.map((f) => f.properties[column.name]));
-    const columnMax = Math.max(...context.filteredData.map((f) => f.properties[column.name]));
+    const columnData = context.filteredData.map((f) => f.properties[column.name]).filter(d => d);
+    const columnMin = Math.min(...columnData);
+    const columnMax = Math.max(...columnData);
     if (column.type === "date") {
       if (typeof columnMin === "string") {
         // get power of 10 that splits the range into roughly 20 - TODO make more date-friendly breaks
