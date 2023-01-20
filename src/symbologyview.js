@@ -64,6 +64,7 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
   const [mode, setMode] = useState(definition?.mode ?? "discrete");
   const [values, setValues] = useState(definition?.values ?? [minValue]);
   const [breaks, setBreaks] = useState(definition?.breaks ?? []);
+  const [defaultValue, setDefault] = useState(definition?.default ?? minValue);
   const [type, setType] = useState(context.columns.find((c) => c.name === fieldname)?.type);
 
   let minBreak = 0;
@@ -108,12 +109,12 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
   }
 
   const onCheckboxChange = (event) => {
-    onEdit(event.target.checked ? {mode, values, fieldname, type, breaks} : undefined);
+    onEdit(event.target.checked ? {mode, values, fieldname, type, breaks, default: defaultValue} : undefined);
   };
   const onFieldnameEdit = (event) => {
     setFieldname(event.target.value);
     setType(context.columns.find((c) => c.name === event.target.value).type);
-    onEdit({mode, values, fieldname: event.target.value, type: context.columns.find((c) => c.name === event.target.value).type, breaks});
+    onEdit({mode, values, fieldname: event.target.value, type: context.columns.find((c) => c.name === event.target.value).type, breaks, default: defaultValue});
   };
   const onModeEdit = (event) => {
     const newMode = event.target.value;
@@ -136,18 +137,22 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
     setMode(newMode);
     setValues(newValues);
     setBreaks(newBreaks);
-    onEdit({mode: newMode, values: newValues, fieldname, type, breaks: newBreaks});
+    onEdit({mode: newMode, values: newValues, fieldname, type, breaks: newBreaks, default: defaultValue});
   };
+  const onDefaultEdit = (newDefault) => {
+    setDefault(newDefault);
+    onEdit({mode, values, fieldname, type, breaks, default: defaultValue});
+  }
   const onValuesEdit = (value, idx) => {
     const newValues = values.map((v, i) => i === idx ? value : v);
     setValues(newValues);
-    onEdit({mode, values: newValues, fieldname, type, breaks});
+    onEdit({mode, values: newValues, fieldname, type, breaks, default: defaultValue});
   }
   const onValueAdd = (event) => {
     setValues(Array.isArray(values) ? [...values, minValue] : [values, minValue]);
     setBreaks(Array.isArray(breaks) ? [...breaks, minBreak] : [breaks, minBreak]);
     onEdit({mode, values: Array.isArray(values) ? [...values, minValue] : [values, minValue], fieldname, type,
-            breaks: Array.isArray(breaks) ? [...breaks, minBreak] : [breaks, minBreak]});
+            breaks: Array.isArray(breaks) ? [...breaks, minBreak] : [breaks, minBreak], default: defaultValue});
   };
   const onValueRemove = (event) => {
     if (!Array.isArray(values) || values.length <= symbologyModes[mode].minimumValues) {
@@ -156,11 +161,11 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
     setValues(values.slice(0, values.length-1));
     setBreaks(Array.isArray(breaks) ? breaks.slice(0, breaks.length-1) : []);
     onEdit({mode, values: values.slice(0, values.length-1), fieldname, type,
-            breaks: Array.isArray(breaks) ? breaks.slice(0, breaks.length-1) : []});
+            breaks: Array.isArray(breaks) ? breaks.slice(0, breaks.length-1) : [], default: defaultValue});
   };
   const onBreaksEdit = (event, breaks) => {
     setBreaks(Array.isArray(breaks) ? breaks : [breaks]);
-    onEdit({mode, values, fieldname, type, breaks: Array.isArray(breaks) ? breaks : [breaks]});
+    onEdit({mode, values, fieldname, type, breaks: Array.isArray(breaks) ? breaks : [breaks], default: defaultValue});
   }
 
   return (
@@ -186,6 +191,19 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
           defaultValue={mode}
           onChange={onModeEdit}
           options={modesForType(context.columns.find((column) => column.name === fieldname)?.type).map(m => m.name)}
+          />
+        <h4>Default Value</h4>
+        <p>Used for <em>null</em>, <em>undefined</em> field values.</p>
+        <Slider
+          min={minValue}
+          max={maxValue}
+          step={valueStep ?? Math.pow(10, Math.round(Math.log10((maxValue-minValue)/20)))}
+          value={defaultValue}
+          onChange={(event, defaultValue) => { onDefaultEdit(defaultValue) }}
+          valueLabelDisplay="on"
+          valueLabelFormat={valueLabelFormat}
+          track={false}
+          marks
           />
         <h4>Values</h4>
         <div style={{width: "calc(100% - 2em)"}}>

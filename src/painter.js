@@ -93,7 +93,7 @@ function interpolation(definition, feature) {
   if (definition === undefined) {
     return undefined;
   }
-  if (feature.properties[definition.fieldname] === undefined && definition.default) {
+  if ((feature.properties[definition.fieldname] === undefined || feature.properties[definition.fieldname] == "") && definition.default) {
     return definition.default;
   }
   const mode = symbologyModes[definition.mode];
