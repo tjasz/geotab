@@ -164,8 +164,9 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
             breaks: Array.isArray(breaks) ? breaks.slice(0, breaks.length-1) : [], default: defaultValue});
   };
   const onBreaksEdit = (event, breaks) => {
-    setBreaks(Array.isArray(breaks) ? breaks : [breaks]);
-    onEdit({mode, values, fieldname, type, breaks: Array.isArray(breaks) ? breaks : [breaks], default: defaultValue});
+    const newBreaks = (Array.isArray(breaks) ? breaks : [breaks]).map(b => toType(b, type));
+    setBreaks(newBreaks);
+    onEdit({mode, values, fieldname, type, breaks: newBreaks, default: defaultValue});
   }
 
   return (
@@ -224,7 +225,7 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
         <MinusSquare className={`removeButton${values.length > symbologyModes[mode].minimumValues ? "" : "Disabled"}`} onClick={onValueRemove} />
         <PlusSquare className="addButton" onClick={onValueAdd} />
         <h4>Breaks</h4>
-        {context.columns.find((column) => column.name === fieldname)?.type === "string"
+        {context.columns.find((column) => column.name === fieldname)?.type === "string" || mode === "byvalue"
          ? <MultiTextField values={breaks} onChange={onBreaksEdit} />
          : <div style={{width: "calc(100% - 2em)"}}>
             <Slider
