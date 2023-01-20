@@ -2,7 +2,7 @@ import React, {useContext, useState} from 'react';
 import {Slider} from '@mui/material'
 import {DataContext} from './dataContext.js'
 import {Select, ColoredText, MultiTextField, Histogram} from './common-components.js'
-import {symbologyModes} from './painter.js'
+import {symbologyModes, modesForType} from './painter.js'
 import {toType} from './algorithm.js'
 import {ReactComponent as MinusSquare} from './feather/minus-square.svg'
 import {ReactComponent as PlusSquare} from './feather/plus-square.svg'
@@ -111,23 +111,20 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
     const newMode = event.target.value;
     let newBreaks = breaks;
     let newValues = values;
-    if (newMode === "continuous") {
-      // must have at least two values
-      if (values.length < 2) {
-        newValues = [...values, ...Array(2-values.length).fill(minValue)];
-      }
-      // 'breaks' should have the same number of values as 'values'
-      if (breaks.length < newValues.length) {
-        newBreaks = [...breaks, ...Array(newValues.length-breaks.length).fill(minBreak)];
-      }
-    } else { // discrete
-      // must have at least 1 value
-      if (values.length < 1) {
-        newValues = [...values, ...Array(1-values.length).fill(minValue)];
-      }
-      // 'breaks' should have one less value than 'values'
-      newBreaks = breaks.slice(0, values.length-1)
+
+    // ensure minimum values for the symbology mode is met
+    const modeDefinition = symbologyModes[newMode];
+    if (values.length < modeDefinition.minimumValues) {
+      newValues = [...values, ...Array(modeDefinition.minimumValues - values.length).fill(minValue)];
     }
+    // ensure correct number of breaks for the symbology mode is met
+    const numBreaks = modeDefinition.numBreaks(newValues.length);
+    if (breaks.length < newValues.length) {
+      newBreaks = [...breaks, ...Array(numBreaks - breaks.length).fill(minBreak)];
+    } else {
+      newBreaks = breaks.slice(0, numBreaks);
+    }
+
     setMode(newMode);
     setValues(newValues);
     setBreaks(newBreaks);
@@ -145,7 +142,7 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
             breaks: Array.isArray(breaks) ? [...breaks, minBreak] : [breaks, minBreak]});
   };
   const onValueRemove = (event) => {
-    if (!Array.isArray(values) || values.length <= 1) {
+    if (!Array.isArray(values) || values.length <= symbologyModes[mode].minimumValues) {
       return;
     }
     setValues(values.slice(0, values.length-1));
@@ -180,7 +177,7 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
           name={`symbology-${name}-mode`}
           defaultValue={mode}
           onChange={onModeEdit}
-          options={context.columns.find((column) => column.name === fieldname)?.type === "string" ? ["discrete"] : symbologyModes}
+          options={modesForType(context.columns.find((column) => column.name === fieldname)?.type).map(m => m.name)}
           />
         <h4>Values</h4>
         <div style={{width: "calc(100% - 2em)"}}>
@@ -198,7 +195,7 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
               marks
               />)}
         </div>
-        <MinusSquare className={`removeButton${values.length > (mode === "continuous" ? 2 : 1) ? "" : "Disabled"}`} onClick={onValueRemove} />
+        <MinusSquare className={`removeButton${values.length > symbologyModes[mode].minimumValues ? "" : "Disabled"}`} onClick={onValueRemove} />
         <PlusSquare className="addButton" onClick={onValueAdd} />
         <h4>Breaks</h4>
         {context.columns.find((column) => column.name === fieldname)?.type === "string"

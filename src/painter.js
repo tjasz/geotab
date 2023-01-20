@@ -1,10 +1,33 @@
 import {StarMarker} from './iconlib.js'
 import {toType} from './algorithm.js'
 
-export const MODE_BYVALUE = "byvalue";
-export const MODE_DISCRETE = "discrete";
-export const MODE_CONTINUOUS = "continuous";
-export const symbologyModes = ["byvalue", MODE_DISCRETE, "continuous"];
+export const symbologyModes = {
+  "byvalue": {
+    name: "byvalue",
+    types: new Set(["string", "number", "date"]),
+    interpolation: byvalueInterpolation,
+    minimumValues: 0,
+    numBreaks: numValues => numValues
+  },
+  "discrete": {
+    name: "discrete",
+    types: new Set(["string", "number", "date"]),
+    interpolation: discreteInterpolation,
+    minimumValues: 1,
+    numBreaks: numValues => numValues-1
+  },
+  "continuous": {
+    name: "continuous",
+    types: new Set(["number", "date"]),
+    interpolation: continuousInterpolation,
+    minimumValues: 2,
+    numBreaks: numValues => numValues
+  },
+}
+
+export function modesForType(type) {
+  return Object.values(symbologyModes).filter(m => m.types.has(type));
+}
 
 function findIndex(array, value) {
   // set i to the index where value is first greater than array[i]
@@ -73,16 +96,14 @@ function interpolation(definition, feature) {
   if (feature.properties[definition.fieldname] === undefined && definition.default) {
     return definition.default;
   }
-  if (definition.mode === MODE_BYVALUE) {
-    return byvalueInterpolation(definition, feature);
+  const mode = symbologyModes[definition.mode];
+  if (undefined === mode) {
+    throw Error(`Symbology.mode: Found ${definition.mode}. Expected one of ${Object.keys(symbologyModes)}.`)
   }
-  if (definition.mode === MODE_DISCRETE) {
-    return discreteInterpolation(definition, feature);
+  if ("function" !== typeof mode.interpolation) {
+    throw Error(`Symbology.mode: Interpolation function not defined for mode ${definition.mode}.`)
   }
-  if (definition.mode === MODE_CONTINUOUS) {
-    return continuousInterpolation(definition, feature);
-  }
-  throw Error(`Symbology.mode: Found ${definition.mode}. Expected one of ${symbologyModes}.`)
+  return symbologyModes[definition.mode].interpolation(definition, feature);
 }
 
 export function painter(symbology) {
