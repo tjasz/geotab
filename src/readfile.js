@@ -39,7 +39,7 @@ export function parseFile(file) {
         try {
           readFileAsArrayBuffer(file).then((arraybuffer) => {
             try {
-              const fit = new FitParser({force: false});
+              const fit = new FitParser({force: true});
               fit.parse(arraybuffer, (error, data) => {
                 if (error) {
                   reject(`Could not parse ${file.name} as .FIT: ${error.message}.`);
