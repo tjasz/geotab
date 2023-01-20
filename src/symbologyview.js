@@ -72,8 +72,16 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
   if (context.columns.find((column) => column.name === fieldname)) {
     const column = context.columns.find((column) => column.name === fieldname);
     const columnData = context.filteredData.map((f) => f.properties[column.name]).filter(d => d);
-    const columnMin = Math.min(...columnData);
-    const columnMax = Math.max(...columnData);
+    var columnMin = Math.min(...columnData);
+    var columnMax = Math.max(...columnData);
+    // gracefully handle case where the column has only one non-null value
+    if (columnMin === columnMax) {
+      if (columnMax > 0) {
+        columnMin = 0;
+      } else {
+        columnMax = 0;
+      }
+    }
     if (column.type === "date") {
       if (typeof columnMin === "string") {
         // get power of 10 that splits the range into roughly 20 - TODO make more date-friendly breaks
