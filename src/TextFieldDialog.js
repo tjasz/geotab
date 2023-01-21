@@ -28,6 +28,7 @@ export function TextFieldDialog(props) {
           label={props.label}
           type="text"
           fullWidth
+          multiline={props.multiline ?? false}
           onChange={(e) => setDraft(e.target.value)}
           value={draft ?? ""}
           onKeyUp={(e) => {

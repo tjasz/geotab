@@ -11,6 +11,7 @@ import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import MenuIcon from '@mui/icons-material/Menu';
 import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
+import CalculateIcon from '@mui/icons-material/Calculate';
 import DataObjectIcon from '@mui/icons-material/DataObject';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -153,6 +154,7 @@ function ColumnContextMenu(props) {
   const [contextMenu, setContextMenu] = React.useState(null);
   const [renameDialogOpen, setRenameDialogOpen] = React.useState(false);
   const [retypeDialogOpen, setRetypeDialogOpen] = React.useState(false);
+  const [calculateDialogOpen, setCalculateDialogOpen] = React.useState(false);
   const [insertDialog, setInsertDialog] = React.useState(null);
   const [columnMetadataOpen, setColumnMetadataOpen] = React.useState(false);
   
@@ -175,6 +177,12 @@ function ColumnContextMenu(props) {
   const retypeColumn = (name, newtype) => {
     // retype in the column list
     context.setColumns(context.columns.map((col) => col.name === name ? {...col, type: newtype} : col));
+  };
+  const calculateColumn = (name, formula) => {
+    context.setData(context.data.map((feature) => {
+      let {[name]: _, ...rest} = feature.properties;
+      return {...feature, properties: {...rest, [name]: eval(formula, {feature})}};
+    }));
   };
   const swapColumns = (i1, i2) => {
     if (i1 < 0 || i2 < 0 || i1 >= context.columns.length || i2 >= context.columns.length) return;
@@ -255,6 +263,13 @@ function ColumnContextMenu(props) {
           <ListItemText>Change Type</ListItemText>
         </MenuItem>
         <MenuItem
+          onClick={() => { setCalculateDialogOpen(true); handleClose() }}>
+          <ListItemIcon>
+            <CalculateIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Calculate</ListItemText>
+        </MenuItem>
+        <MenuItem
           onClick={() => { swapColumns(props.columnIndex, props.columnIndex-1); handleClose() }}>
           <ListItemIcon>
             <WestIcon fontSize="small" />
@@ -328,6 +343,16 @@ function ColumnContextMenu(props) {
         open={renameDialogOpen}
         onConfirm={(newname) => { renameColumn(props.columnName, newname); setRenameDialogOpen(false); }}
         onCancel={() => { setRenameDialogOpen(false); }}
+      />
+      <TextFieldDialog
+        title={`Calculate values for column '${props.columnName}'`}
+        label="Formula"
+        confirmLabel="Calculate"
+        defaultValue={`feature.properties["${props.columnName}"]`}
+        open={calculateDialogOpen}
+        onConfirm={(formula) => { calculateColumn(props.columnName, formula); setCalculateDialogOpen(false); }}
+        onCancel={() => { setCalculateDialogOpen(false); }}
+        multiline
       />
       <TextFieldDialog
         title={`Insert column ${insertDialog} of '${props.columnName}'?`}
