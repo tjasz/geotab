@@ -17,7 +17,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { sortBy } from './algorithm.js'
+import { sortBy } from './algorithm'
 import {DataContext} from './dataContext'
 import { AbridgedUrlLink } from './common-components.js';
 import { SelectDialog } from './SelectDialog.js'

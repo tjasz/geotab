@@ -1,5 +1,5 @@
 import {StarMarker} from './iconlib.js'
-import {toType} from './algorithm.js'
+import {toType} from './algorithm'
 
 export const symbologyModes = {
   "byvalue": {

@@ -1,5 +1,5 @@
 import L from 'leaflet'
-import {dsin, dcos} from './algorithm.js'
+import {dsin, dcos} from './algorithm'
 
 function svgMarker(latlng, svg) {
   return new L.marker(latlng, {icon: svgIcon(svg)});

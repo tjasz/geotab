@@ -1,4 +1,4 @@
-import { setEquals } from './algorithm.js'
+import { setEquals } from './algorithm'
 
 export const filterTypes = ["Condition", "ConditionGroup"];
 

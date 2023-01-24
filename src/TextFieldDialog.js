@@ -5,7 +5,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import {sleep} from './algorithm.js'
+import {sleep} from './algorithm'
 
 export function TextFieldDialog(props) {
   const [ draft, setDraft] = useState(props.defaultValue);

@@ -1,23 +1,24 @@
 import { v4 as uuidv4 } from 'uuid';
 
-export function sleep (time) {
+export function sleep (time:number) : Promise<NodeJS.Timeout> {
   return new Promise((resolve) => setTimeout(resolve, time));
 }
 
 // sin of a in degrees
-export function dsin(a) {
+export function dsin(a:number) : number {
   return Math.sin(a * Math.PI / 180.0);
 }
 // cos of a in degrees
-export function dcos(a) {
+export function dcos(a:number) : number {
   return Math.cos(a * Math.PI / 180.0);
 }
 
-export function hashCode(str) {
+export function hashCode(str:string) : number {
   return Array.from(str.substring(0,1024)).reduce((hash, char) => 0 | (31 * hash + char.charCodeAt(0)), 0);
 }
 
-export function setEquals(a, b) {
+// TODO use sets instead of arrays
+export function setEquals<T>(a:T[], b:T[]) : boolean {
   return a.every(item => b.includes(item)) && b.every(item => a.includes(item));
 }
 
