@@ -6,7 +6,7 @@ import {symbologyModes, modesForType} from './painter.js'
 import {toType} from './algorithm'
 import {ReactComponent as MinusSquare} from './feather/minus-square.svg'
 import {ReactComponent as PlusSquare} from './feather/plus-square.svg'
-import { LabeledCheckbox } from './LabeledCheckbox.js';
+import { LabeledCheckbox } from './LabeledCheckbox';
 
 function SymbologyView(props) {
   const context = useContext(DataContext);
