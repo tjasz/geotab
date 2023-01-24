@@ -2,10 +2,15 @@ import React from 'react';
 import {BrowserRouter} from 'react-router-dom'
 import './App.css';
 import TabView from './tabview.js'
-import {DataContext} from './dataContext'
+import {DataContextType, DataContext} from './dataContext'
 import { evaluateFilter } from './filter';
 
-class App extends React.Component {
+interface IAppProps {
+}
+
+type IState = DataContextType;
+
+class App extends React.Component<IAppProps, IState> {
   constructor(props) {
     super(props);
 
@@ -19,13 +24,13 @@ class App extends React.Component {
       setData: (newData) => {
         this.setState({
           data: newData,
-          filteredData: newData.filter((row) => evaluateFilter(row, this.state.filter))
+          filteredData: newData.filter((row) => evaluateFilter(row, this.state?.filter))
         });
       },
       setFilter: (newFilter) => {
         this.setState({
           filter: newFilter,
-          filteredData: this.state.data.filter((row) => evaluateFilter(row, newFilter))
+          filteredData: this.state?.data.filter((row) => evaluateFilter(row, newFilter))
         });
       },
       setDataAndFilter: (newData, newFilter) => {
