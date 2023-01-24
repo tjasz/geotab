@@ -1,6 +1,6 @@
 import React, {useContext, useState} from 'react';
 import { useSearchParams } from "react-router-dom";
-import {DataContext} from './dataContext.js'
+import {DataContext} from './dataContext'
 import {getFeatures, getPropertiesUnion} from './algorithm.js'
 import {defaultFilter, conditionOperators, conditionGroupOperators, parametersMap, operandTypes, Condition, ConditionGroup, filterEquals, filterTypes, validateFilter} from './filter.js'
 import {ReactComponent as MinusSquare} from './feather/minus-square.svg'

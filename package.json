@@ -11,6 +11,10 @@
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "@types/node": "^18.11.18",
+    "@types/react": "^18.0.27",
+    "@types/react-dom": "^18.0.10",
+    "@types/websocket": "^1.0.5",
     "fit-file-parser": "^1.9.3",
     "gapi-script": "^1.2.0",
     "leaflet": "^1.9.2",
@@ -22,6 +26,7 @@
     "react-leaflet": "^4.1.0",
     "react-router-dom": "^6.4.3",
     "react-scripts": "5.0.1",
+    "typescript": "^4.9.4",
     "uuid": "^9.0.0",
     "web-vitals": "^2.1.4"
   },

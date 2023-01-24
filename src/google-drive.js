@@ -7,7 +7,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import { parseGoogleFile } from './readfile';
-import {DataContext} from './dataContext.js'
+import {DataContext} from './dataContext'
 
 // Client ID and API key from the Developer Console
 const CLIENT_ID = "717055595652-4n93oosqls3l4q3oa0jik4s154qbk149.apps.googleusercontent.com";

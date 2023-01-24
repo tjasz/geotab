@@ -2,7 +2,7 @@ import React from 'react';
 import {BrowserRouter} from 'react-router-dom'
 import './App.css';
 import TabView from './tabview.js'
-import {DataContext} from './dataContext.js'
+import {DataContext} from './dataContext'
 import { evaluateFilter } from './filter';
 
 class App extends React.Component {

@@ -1,6 +1,6 @@
 import React, {useContext, useState} from 'react';
 import {Slider} from '@mui/material'
-import {DataContext} from './dataContext.js'
+import {DataContext} from './dataContext'
 import {Select, ColoredText, MultiTextField, Histogram} from './common-components.js'
 import {symbologyModes, modesForType} from './painter.js'
 import {toType} from './algorithm.js'

@@ -1,7 +1,7 @@
 import React, {useRef, useContext} from 'react';
 import { MapContainer, TileLayer, WMSTileLayer, LayersControl, ScaleControl, GeoJSON, Popup, useMap } from 'react-leaflet';
 import { AbridgedUrlLink } from './common-components.js';
-import {DataContext} from './dataContext.js'
+import {DataContext} from './dataContext'
 import {getCentralCoord, hashCode, getFeatureListBounds} from './algorithm.js'
 import {evaluateFilter} from './filter.js'
 import mapLayers from './maplayers.js'
