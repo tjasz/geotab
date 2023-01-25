@@ -1,3 +1,18 @@
+export enum FeatureType {
+  Feature = "Feature",
+  FeatureCollection = "FeatureCollection",
+}
+
+export enum GeometryType {
+  Point = "Point",
+  MultiPoint = "MultiPoint",
+  LineString = "LineString",
+  MultiLineString = "MultiLineString",
+  Polygon = "Polygon",
+  MultiPolygon = "MultiPolygon",
+  GeometryCollection = "GeometryCollection",
+}
+
 export type Coordinate = number[];
 export type PointCoordinates = Coordinate;
 export type MultiPointCoordinates = PointCoordinates[];
@@ -10,32 +25,32 @@ export type MultiPolygonCoordinates = PolygonCoordinates[];
 type Extension = {[index: string]: any}
 
 export type Point = Extension & {
-  type: string;
+  type: GeometryType;
   coordinates: PointCoordinates;
 }
 
 export type MultiPoint = Extension & {
-  type: string;
+  type: GeometryType;
   coordinates: MultiPointCoordinates;
 }
 
 export type LineString = Extension & {
-  type: string;
+  type: GeometryType;
   coordinates: LineStringCoordinates;
 }
 
 export type MultiLineString = Extension & {
-  type: string;
+  type: GeometryType;
   coordinates: MultiLineStringCoordinates;
 }
 
 export type Polygon = Extension & {
-  type: string;
+  type: GeometryType;
   coordinates: PolygonCoordinates;
 }
 
 export type MultiPolygon = Extension & {
-  type: string;
+  type: GeometryType;
   coordinates: MultiPolygonCoordinates;
 }
 
@@ -46,12 +61,12 @@ export type GeometryCollection = Extension & {
 }
 
 export type Feature = Extension & {
-  type: string;
+  type: FeatureType;
   geometry: Geometry | GeometryCollection;
   properties: Extension;
 }
 
 export type FeatureCollection = Extension & {
-  type: string;
+  type: FeatureType;
   features: Feature[];
 }

@@ -1,21 +1,22 @@
 import {getDistance} from './algorithm'
+import * as GeoJson from './geojson-types'
 
-export function sanifyFeatures(features) {
+export function sanifyFeatures(features:GeoJson.Feature[]) : GeoJson.Feature[] {
   console.log(features)
   return features.map(sanifyFeature);
 }
 
-export function sanifyFeature(feature) {
+export function sanifyFeature(feature:GeoJson.Feature) : GeoJson.Feature {
   switch(feature.geometry?.type) {
-    case "Point":
+    case GeoJson.GeometryType.Point:
       return {...feature, geometry: {...feature.geometry, coordinates: feature.geometry.coordinates.slice(0,2).map((v) => roundTo(v, 5))}};
-    case "MultiPoint":
-    case "LineString":
+    case GeoJson.GeometryType.MultiPoint:
+    case GeoJson.GeometryType.LineString:
       return {...feature, geometry: {...feature.geometry, coordinates: sanifyCoordinateList(feature.geometry.coordinates)}};
-    case "MultiLineString":
-    case "Polygon":
+    case GeoJson.GeometryType.MultiLineString:
+    case GeoJson.GeometryType.Polygon:
       return {...feature, geometry: {...feature.geometry, coordinates: feature.geometry.coordinates.map(sanifyCoordinateList)}};
-    case "MultiPolygon":
+    case GeoJson.GeometryType.MultiPolygon:
       return {...feature, geometry: {...feature.geometry, coordinates: feature.geometry.coordinates.map((seg) => seg.map(sanifyCoordinateList))}};
     default:
       console.error(feature)
@@ -23,7 +24,7 @@ export function sanifyFeature(feature) {
   }
 }
 
-function sanifyCoordinateList(coordinates) {
+function sanifyCoordinateList(coordinates:GeoJson.Coordinate[]) : GeoJson.Coordinate[] {
   // round lat, lon data to 1e-5 degrees (1.11 meters)
   const coords = coordinates.map((coord) => coord.map((v) => roundTo(v, 5)));
   const newCoords = coords.length ? [coords[0]] : [];
@@ -53,7 +54,7 @@ function sanifyCoordinateList(coordinates) {
   return newCoords;
 }
 
-function roundTo(val, places) {
+function roundTo(val:number, places:number) : number {
   const pow = Math.pow(10, places);
   return Math.round(val*pow)/pow;
 }

@@ -138,15 +138,15 @@ function readFileAsArrayBuffer(file:Blob) : Promise<ArrayBuffer> {
 
 function fitToGeoJSON(fit) : GeoJson.FeatureCollection {
   let GeoJSON:GeoJson.FeatureCollection = {
-    type: "FeatureCollection",
+    type: GeoJson.FeatureType.FeatureCollection,
     features: []
   };
 
   // parse a singular track from the .FIT file
   const track:GeoJson.Feature = {
-    type: "Feature",
+    type: GeoJson.FeatureType.Feature,
     geometry: {
-      type: "LineString",
+      type: GeoJson.GeometryType.LineString,
       coordinates: []
     },
     properties: {}
@@ -199,7 +199,7 @@ function csvToGeoJSON(csvString:string) : GeoJson.FeatureCollection {
   if (!lonfield) throw Error(`Expected longitude field. Found ${parseResult.meta.fields}.`);
 
   return {
-    type: "FeatureCollection",
+    type: GeoJson.FeatureType.FeatureCollection,
     features: parseResult.data.map((row) =>
       { return {
         type: "Feature",
