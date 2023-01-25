@@ -1,16 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
+import math from './math'
 
 export function sleep (time:number) : Promise<NodeJS.Timeout> {
   return new Promise((resolve) => setTimeout(resolve, time));
-}
-
-// sin of a in degrees
-export function dsin(a:number) : number {
-  return Math.sin(a * Math.PI / 180.0);
-}
-// cos of a in degrees
-export function dcos(a:number) : number {
-  return Math.cos(a * Math.PI / 180.0);
 }
 
 export function hashCode(str:string) : number {
@@ -178,10 +170,10 @@ export function getDistance(pta, ptb) {
   const earthRadiusMeters = 6378e3;
   const delta_lat = pta[0] - ptb[0];
   const delta_lon = pta[1] - ptb[1];
-  const sin_half_delta_lat = dsin(delta_lat/2);
-  const sin_half_delta_lon = dsin(delta_lon/2);
+  const sin_half_delta_lat = math.dsin(delta_lat/2);
+  const sin_half_delta_lon = math.dsin(delta_lon/2);
   const a = sin_half_delta_lat * sin_half_delta_lat
-          + dcos(ptb[0]) * dcos(pta[0])
+          + math.dcos(ptb[0]) * math.dcos(pta[0])
           * sin_half_delta_lon * sin_half_delta_lon;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   const d = c * earthRadiusMeters;

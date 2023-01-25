@@ -1,5 +1,5 @@
 import L from 'leaflet'
-import {dsin, dcos} from './algorithm'
+import math from './math'
 
 function svgMarker(latlng:L.LatLngExpression, svg:HTMLElement|string) : L.Marker<any> {
   return L.marker(latlng, {icon: svgIcon(svg)});
@@ -12,11 +12,6 @@ function svgIcon(svg:HTMLElement|string) : L.DivIcon {
   });
 }
 
-// get the resulting point from traveling r distance from (0,0) at angle a in degrees
-function ar(a:number, r:number) : [number, number] {
-  return [r*dsin(a), r*dcos(a)]
-}
-
 // create the SVG path commands for an n-gon of radius r
 function svgPolygon(n:number, r:number, stroke:string, fill:string|undefined, text:string|undefined) : string {
   let strokeFill = `stroke="${stroke ?? "#336799"}" fill="${fill ?? stroke ?? "#336799"}"`;
@@ -27,7 +22,7 @@ function svgPolygon(n:number, r:number, stroke:string, fill:string|undefined, te
     let points:[number, number][] = []
     const da = 360.0/n;
     for (let a = da/2; a < 360.0; a += da) {
-      points.push(ar(a, 50)); // hardcode 50 if viewbox is 100x100
+      points.push(math.ar(a, 50)); // hardcode 50 if viewbox is 100x100
     }
     let cmds = "M" + points[0][0] + " " + points[0][1];
     for (let i = 1; i < points.length; i++) {
@@ -60,7 +55,7 @@ function svgStar(n:number, r:number, stroke:string, fill:string|undefined, text:
     let points : [number,number][] = []
     const da = 360.0/(2*n);
     for (let a = 0; a < 360.0; a += da) {
-      points.push(ar(a, (n % 2 === points.length % 2) ? 50 : 25)); // hardcode if viewbox is 100x100
+      points.push(math.ar(a, (n % 2 === points.length % 2) ? 50 : 25)); // hardcode if viewbox is 100x100
     }
     let cmds = "M" + points[0][0] + " " + points[0][1];
     for (let i = 1; i < points.length; i++) {
