@@ -1,6 +1,6 @@
 import React, {useRef, useContext} from 'react';
 import { MapContainer, TileLayer, WMSTileLayer, LayersControl, ScaleControl, GeoJSON, Popup, useMap } from 'react-leaflet';
-import { AbridgedUrlLink } from './common-components.js';
+import { AbridgedUrlLink } from './common-components';
 import {DataContext} from './dataContext'
 import {getCentralCoord, hashCode, getFeatureListBounds} from './algorithm'
 import mapLayers from './maplayers'

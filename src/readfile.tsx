@@ -1,6 +1,6 @@
 import Papa from 'papaparse';
 import FitParser from 'fit-file-parser'
-import gpxParser from './gpx-parser.js'
+import gpxParser from './gpx-parser'
 import { gapi } from 'gapi-script';
 import * as GeoJson from './geojson-types'
 

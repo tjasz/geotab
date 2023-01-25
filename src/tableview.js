@@ -19,13 +19,13 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { sortBy } from './algorithm'
 import {DataContext} from './dataContext'
-import { AbridgedUrlLink } from './common-components.js';
+import { AbridgedUrlLink } from './common-components';
 import { SelectDialog } from './SelectDialog'
 import { TextFieldDialog } from './TextFieldDialog'
-import {InsertLeftIcon} from './icon/InsertLeftIcon.js'
-import {InsertRightIcon} from './icon/InsertRightIcon.js'
-import {SortAscendingIcon} from './icon/SortAscendingIcon.js'
-import { ColumnMetadataDialog } from './ColumnMetadataDialog.js';
+import {InsertLeftIcon} from './icon/InsertLeftIcon'
+import {InsertRightIcon} from './icon/InsertRightIcon'
+import {SortAscendingIcon} from './icon/SortAscendingIcon'
+import { ColumnMetadataDialog } from './ColumnMetadataDialog';
 import { CheckListDialog } from './CheckListDialog';
 
 function TableView(props) {

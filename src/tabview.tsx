@@ -1,13 +1,26 @@
 import React from 'react';
-import DataView from './dataview.js'
-import MapView from './mapview.js'
-import TableView from './tableview.js'
-import SymbologyView from './symbologyview.js';
+import DataView from './dataview'
+import MapView from './mapview'
+import TableView from './tableview'
+import SymbologyView from './symbologyview';
 
-class TabView extends React.Component {
-    constructor(props) {
+enum TabName {
+  Data = "Data",
+  Map = "Map",
+  Table = "Table",
+  Symbology = "Symbology",
+}
+
+type TabViewProps = {
+}
+
+type TabViewState = {
+  [tabname in TabName] : boolean;
+}
+
+class TabView extends React.Component<TabViewProps, TabViewState> {
+    constructor(props:TabViewProps) {
       super(props);
-      this.props = props;
       this.state = { Data: true, Map: false, Table: false, Symbology: false};
       this.toggle = this.toggle.bind(this);
     }
@@ -19,7 +32,7 @@ class TabView extends React.Component {
         <div id="tabview">
           <div className="tabs">
             {Object.keys(this.state).map(
-              label => <Tab key={label} label={label} active={this.state[label]} toggle={this.toggle} />
+              label => <Tab key={label} label={label as TabName} active={this.state[label]} toggle={this.toggle} />
             )}
           </div>
           <div className="tabBodies">
@@ -32,15 +45,22 @@ class TabView extends React.Component {
       );
     }
 
-    toggle(label) {
-      this.setState((state, props) => ({
-        [label]: !state[label]
+    toggle(label:TabName) {
+      this.setState((state:Readonly<TabViewState>) => ({
+        ...state,
+        [label]: !state[label],
       }));
     }
   }
 
-class Tab extends React.Component {
-    constructor(props) {
+type TabProps = {
+  toggle: {(tabname:TabName):void};
+  label: TabName;
+  active: boolean;
+}
+
+class Tab extends React.Component<TabProps> {
+    constructor(props:TabProps) {
       super(props);
       this.toggleThis = this.toggleThis.bind(this);
     }

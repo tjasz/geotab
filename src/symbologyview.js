@@ -1,7 +1,7 @@
 import React, {useContext, useState} from 'react';
 import {Slider} from '@mui/material'
 import {DataContext} from './dataContext'
-import {Select, ColoredText, MultiTextField, Histogram} from './common-components.js'
+import {Select, ColoredText, MultiTextField, Histogram} from './common-components'
 import {symbologyModes, modesForType} from './painter'
 import {toType} from './algorithm'
 import {ReactComponent as MinusSquare} from './feather/minus-square.svg'
