@@ -6,17 +6,19 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 
 export function CheckListDialog(props) {
-  const ref = useRef(null);
+  const ref = useRef<HTMLElement>(null);
 
   const handleCancel = () => {
     props.onCancel();
   };
 
   const handleConfirm = () => {
-    const nodes = ref.current.querySelectorAll("input");
-    props.onConfirm(
-      props.defaultValue.map((v,i) => { return {...v, [props.checkedColumn]: nodes.item(i).checked}})
-    );
+    if (ref.current) {
+      const nodes = ref.current.querySelectorAll("input");
+      props.onConfirm(
+        props.defaultValue.map((v,i) => { return {...v, [props.checkedColumn]: nodes.item(i).checked}})
+      );
+    }
   };
   
   return (

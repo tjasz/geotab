@@ -26,7 +26,7 @@ import {InsertLeftIcon} from './icon/InsertLeftIcon.js'
 import {InsertRightIcon} from './icon/InsertRightIcon.js'
 import {SortAscendingIcon} from './icon/SortAscendingIcon.js'
 import { ColumnMetadataDialog } from './ColumnMetadataDialog.js';
-import { CheckListDialog } from './CheckListDialog.js';
+import { CheckListDialog } from './CheckListDialog';
 
 function TableView(props) {
   return (
