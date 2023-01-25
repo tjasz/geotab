@@ -2,8 +2,9 @@ import Papa from 'papaparse';
 import FitParser from 'fit-file-parser'
 import gpxParser from './gpx-parser.js'
 import { gapi } from 'gapi-script';
+import * as GeoJson from './geojson-types'
 
-export function attachProgress(proms, progress_cb) {
+export function attachProgress(proms:Promise<any>[], progress_cb:{(percentDone:number):void}) : void {
   let d = 0;
   progress_cb(0);
   for (const p of proms) {
@@ -14,7 +15,7 @@ export function attachProgress(proms, progress_cb) {
   }
 }
 
-export function parseFile(file) {
+export function parseFile(file:Blob) {
   return new Promise((resolve, reject) => {
     readFileAsText(file).then((text) => {
       // guess file type based on first character of text
@@ -23,7 +24,7 @@ export function parseFile(file) {
         try {
           resolve(JSON.parse(text));
         } catch (error) {
-          reject(`Could not parse ${file.name} as GeoJSON: ${error.message}.`);
+          reject(`Could not parse ${file.name} as GeoJSON: ${error instanceof Error ? error.message : JSON.stringify(error)}.`);
         }
       } else if (text[0] === '<') {
         // GPX
@@ -32,7 +33,7 @@ export function parseFile(file) {
           gpx.parse(text).calculate();
           resolve(gpx.toGeoJSON());
         } catch (error) {
-          reject(`Could not parse ${file.name} as GPX: ${error.message}.`);
+          reject(`Could not parse ${file.name} as GPX: ${error instanceof Error ? error.message : JSON.stringify(error)}.`);
         }
       } else if (text.charCodeAt(0) === 14 || text.charCodeAt(0) === 12) {
         // FIT
@@ -42,24 +43,24 @@ export function parseFile(file) {
               const fit = new FitParser({force: true});
               fit.parse(arraybuffer, (error, data) => {
                 if (error) {
-                  reject(`Could not parse ${file.name} as .FIT: ${error.message}.`);
+                  reject(`Could not parse ${file.name} as .FIT: ${error instanceof Error ? error.message : JSON.stringify(error)}.`);
                 } else {
                   resolve(fitToGeoJSON(data));
                 }
               });
             } catch (error) {
-              reject(`Could not parse ${file.name} as .FIT: ${error.message}.`);
+              reject(`Could not parse ${file.name} as .FIT: ${error instanceof Error ? error.message : JSON.stringify(error)}.`);
             }
           })
         } catch (error) {
-          reject(`Could not parse ${file.name} as .FIT: ${error.message}.`);
+          reject(`Could not parse ${file.name} as .FIT: ${error instanceof Error ? error.message : JSON.stringify(error)}.`);
         }
       } else {
         // CSV
         try {
           resolve(csvToGeoJSON(text));
         } catch (error) {
-          reject(`Could not parse ${file.name} as CSV: ${error.message}.`);
+          reject(`Could not parse ${file.name} as CSV: ${error instanceof Error ? error.message : JSON.stringify(error)}.`);
         }
       }
     })
@@ -92,7 +93,7 @@ export function parseGoogleFile(file) {
         try {
           resolve(JSON.parse(text));
         } catch (error) {
-          reject(`Could not parse ${file.name} as GeoJSON: ${error.message}.`);
+          reject(`Could not parse ${file.name} as GeoJSON: ${error instanceof Error ? error.message : JSON.stringify(error)}.`);
         }
       } else if (file.mimeType === 'application/gpx+xml') {
         // GPX
@@ -101,7 +102,7 @@ export function parseGoogleFile(file) {
           gpx.parse(text).calculate();
           resolve(gpx.toGeoJSON());
         } catch (error) {
-          reject(`Could not parse ${file.name} as GPX: ${error.message}.`);
+          reject(`Could not parse ${file.name} as GPX: ${error instanceof Error ? error.message : JSON.stringify(error)}.`);
         }
       } // TODO .FIT compatability
       else {
@@ -109,7 +110,7 @@ export function parseGoogleFile(file) {
         try {
           resolve(csvToGeoJSON(text));
         } catch (error) {
-          reject(`Could not parse ${file.name} as CSV: ${error.message}.`);
+          reject(`Could not parse ${file.name} as CSV: ${error instanceof Error ? error.message : JSON.stringify(error)}.`);
         }
       }
     })
@@ -117,32 +118,32 @@ export function parseGoogleFile(file) {
   });
 }
 
-function readFileAsText(fname) {
+function readFileAsText(file:Blob) : Promise<string> {
   return new Promise((resolve, reject) => {
     let reader = new FileReader();
-    reader.onload = () => { resolve(reader.result); };
+    reader.onload = () => { resolve(reader.result as string); };
     reader.onerror = reject;
-    reader.readAsText(fname);
+    reader.readAsText(file);
   })
 }
 
-function readFileAsArrayBuffer(fname) {
+function readFileAsArrayBuffer(file:Blob) : Promise<ArrayBuffer> {
   return new Promise((resolve, reject) => {
     let reader = new FileReader();
-    reader.onload = () => { resolve(reader.result); };
+    reader.onload = () => { resolve(reader.result as ArrayBuffer); };
     reader.onerror = reject;
-    reader.readAsArrayBuffer(fname);
+    reader.readAsArrayBuffer(file);
   })
 }
 
-function fitToGeoJSON(fit) {
-  let GeoJSON = {
+function fitToGeoJSON(fit) : GeoJson.FeatureCollection {
+  let GeoJSON:GeoJson.FeatureCollection = {
     type: "FeatureCollection",
     features: []
   };
 
   // parse a singular track from the .FIT file
-  const track = {
+  const track:GeoJson.Feature = {
     type: "Feature",
     geometry: {
       type: "LineString",
@@ -188,7 +189,7 @@ function fitToGeoJSON(fit) {
   return GeoJSON;
 }
 
-function csvToGeoJSON(csvString) {
+function csvToGeoJSON(csvString:string) : GeoJson.FeatureCollection {
   const parseResult = Papa.parse(csvString, {delimiter: ",", header: true, dynamicTyping: false, skipEmptyLines: true});
   const latfield = getLatField(parseResult.meta.fields);
   const lonfield = getLonField(parseResult.meta.fields);
@@ -212,7 +213,7 @@ function csvToGeoJSON(csvString) {
   };
 }
 
-function getLatField(fields) {
+function getLatField(fields:string[]) : string|undefined {
   let latfield = fields.find((f) => f.toLowerCase() === "latitude");
   if (latfield) return latfield;
 
@@ -232,7 +233,7 @@ function getLatField(fields) {
   return latfield;
 }
 
-function getLonField(fields) {
+function getLonField(fields:string[]) : string|undefined {
   let lonfield = fields.find((f) => f.toLowerCase() === "longitude");
   if (lonfield) return lonfield;
 

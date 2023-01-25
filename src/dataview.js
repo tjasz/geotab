@@ -8,7 +8,7 @@ import {ReactComponent as MinusSquare} from './feather/minus-square.svg'
 import {ReactComponent as PlusSquare} from './feather/plus-square.svg'
 import {Select} from './common-components.js'
 import {LabeledCheckbox} from './LabeledCheckbox'
-import {parseFile, attachProgress} from './readfile.js'
+import {parseFile, attachProgress} from './readfile'
 import { GoogleLogin } from './google-drive.js'
 
 function DataView(props) {
