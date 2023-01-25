@@ -1,4 +1,4 @@
-export function Select(props) {
+export function Select(props:{options:string[]}) : JSX.Element {
   return (
     <select {...props}>
       {props.options.map((option) => <option value={option} key={option}>{option}</option>)}
@@ -6,15 +6,16 @@ export function Select(props) {
   );
 }
 
-export function ColoredText({color, text}) {
+export function ColoredText(props : {color:string, text:string}) : JSX.Element {
   return (
-    <span style={{color: color}}>
-      {text}
+    <span style={{color: props.color}}>
+      {props.text}
     </span>
   );
 }
 
-export function MultiTextField(props) {
+type MultiTextFieldProps = {values:string[], onChange: {(event:React.ChangeEvent<HTMLInputElement>,newValues:string[]):void}};
+export function MultiTextField(props : MultiTextFieldProps) : JSX.Element {
   const onChildChange = (event, value, idx) => {
     const newValues = props.values.map((v,i) => i === idx ? value : v);
     props.onChange(event, newValues);
@@ -30,7 +31,8 @@ export function MultiTextField(props) {
   );
 }
 
-export function AbridgedUrlLink(props) {
+type AbridgedUrlProps = {length:number, href:string,target:string};
+export function AbridgedUrlLink(props:AbridgedUrlProps) : JSX.Element {
   const firstHalfLength = Math.floor((props.length - 3)/2);
   const secondHalfLength = props.length % 2 ? firstHalfLength : firstHalfLength+1;
   const withoutProtocol = props.href.split('//')[1];
@@ -43,7 +45,8 @@ export function AbridgedUrlLink(props) {
 }
 
 // TODO cache counts
-export function Histogram({left, right, binWidth, values, viewboxHeight}) {
+type HistogramProps = {left:number, right:number, binWidth:number, values:number[], viewboxHeight:number}
+export function Histogram({left, right, binWidth, values, viewboxHeight} : HistogramProps) : JSX.Element {
   const bins = Array(Math.ceil((right - left)/binWidth)).fill(0);
   let maxCount = 0;
   for (const val of values)
