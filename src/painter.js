@@ -1,4 +1,4 @@
-import {StarMarker} from './iconlib.js'
+import {StarMarker} from './iconlib'
 import {toType} from './algorithm'
 
 export const symbologyModes = {
