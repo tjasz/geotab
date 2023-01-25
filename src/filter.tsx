@@ -1,12 +1,6 @@
 import { setEquals } from './algorithm'
 import { DataContextType } from './dataContext';
-
-export enum FieldType {
-  Number = "number",
-  Date = "date",
-  String = "string",
-  Any = "any",
-}
+import { FieldType } from './fieldtype'
 
 type ParameterSpec = {[index:string] : {type: FieldType}}
 type ParameterDef = {[index:string] : any}

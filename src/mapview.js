@@ -5,7 +5,7 @@ import {DataContext} from './dataContext'
 import {getCentralCoord, hashCode, getFeatureListBounds} from './algorithm'
 import {evaluateFilter} from './filter'
 import mapLayers from './maplayers'
-import {painter} from './painter.js'
+import {painter} from './painter'
 
 function MapView(props) {
     const context = useContext(DataContext);

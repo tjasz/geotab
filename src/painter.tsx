@@ -1,23 +1,52 @@
 import {StarMarker} from './iconlib'
 import {toType} from './algorithm'
+import * as GeoJson from './geojson-types'
+import {FieldType} from './fieldtype'
 
-export const symbologyModes = {
-  "byvalue": {
-    name: "byvalue",
+enum SymbologyMode {
+  ByValue = "byvalue",
+  Discrete = "discrete",
+  Continuous = "continuous",
+}
+
+type ModeDefinition = {
+  name: string;
+  types: Set<string>,
+  interpolation: {(definition:SymbologyProperty, feature:GeoJson.Feature) : number};
+  minimumValues: number;
+  numBreaks: {(numValues:number) : number};
+}
+
+type SymbologyProperty = {
+  mode: SymbologyMode;
+  values: number[];
+  fieldname: string;
+  breaks: any[];
+  default: number;
+  type: FieldType;
+}
+
+type Symbology = {
+  [index: string] : SymbologyProperty
+}
+
+export const symbologyModes : {[index in SymbologyMode]: ModeDefinition} = {
+  [SymbologyMode.ByValue]: {
+    name: SymbologyMode.ByValue,
     types: new Set(["string", "number", "date"]),
     interpolation: byvalueInterpolation,
     minimumValues: 0,
     numBreaks: numValues => numValues
   },
-  "discrete": {
-    name: "discrete",
+  [SymbologyMode.Discrete]: {
+    name: SymbologyMode.Discrete,
     types: new Set(["string", "number", "date"]),
     interpolation: discreteInterpolation,
     minimumValues: 1,
     numBreaks: numValues => numValues-1
   },
-  "continuous": {
-    name: "continuous",
+  [SymbologyMode.Continuous]: {
+    name: SymbologyMode.Continuous,
     types: new Set(["number", "date"]),
     interpolation: continuousInterpolation,
     minimumValues: 2,
@@ -25,11 +54,11 @@ export const symbologyModes = {
   },
 }
 
-export function modesForType(type) {
+export function modesForType(type) : ModeDefinition[] {
   return Object.values(symbologyModes).filter(m => m.types.has(type));
 }
 
-function findIndex(array, value) {
+function findIndex<T>(array:T[], value:T) : number {
   // set i to the index where value is first greater than array[i]
   let i = 0;
   for (; i < array.length; i++) { // TODO binary search?
@@ -40,7 +69,7 @@ function findIndex(array, value) {
   return i;
 }
 
-function byvalueInterpolation(definition, feature) {
+function byvalueInterpolation(definition:SymbologyProperty, feature:GeoJson.Feature) : number {
   // return the value from "values" with the same index where the feature value is equal to the "breaks"
   if (definition.values.length !== definition.breaks.length) {
     throw Error(`ByValue Symbology.values should have the same number of values as Symbology.breaks. Values: ${definition.values}; Breaks: ${definition.breaks}.`)
@@ -51,7 +80,7 @@ function byvalueInterpolation(definition, feature) {
   return i === -1 ? definition.default : definition.values[i];
 }
 
-function discreteInterpolation(definition, feature) {
+function discreteInterpolation(definition:SymbologyProperty, feature:GeoJson.Feature) : number {
   if (definition.values.length !== definition.breaks.length + 1) {
     throw Error(`Discrete Symbology.values should have 1 more value than Symbology.breaks. Values: ${definition.values}; Breaks: ${definition.breaks}.`)
   }
@@ -62,11 +91,11 @@ function discreteInterpolation(definition, feature) {
   return definition.values[i];
 }
 
-function linearInterpolation(x0, y0, x1, y1, x) {
+function linearInterpolation(x0:number, y0:number, x1:number, y1:number, x:number) : number {
   return (y1-y0)*(x-x0)/(x1-x0) + y0;
 }
 
-function continuousInterpolation(definition, feature) {
+function continuousInterpolation(definition:SymbologyProperty, feature:GeoJson.Feature) : number {
   if (definition.values.length < 2) {
     return definition.values[0];
   }
@@ -89,11 +118,11 @@ function continuousInterpolation(definition, feature) {
 }
 
 // TODO handle different types
-function interpolation(definition, feature) {
+function interpolation(definition, feature:GeoJson.Feature) {
   if (definition === undefined) {
     return undefined;
   }
-  if ((feature.properties[definition.fieldname] === undefined || feature.properties[definition.fieldname] == "") && definition.default) {
+  if ((feature.properties[definition.fieldname] === undefined || feature.properties[definition.fieldname] === "") && definition.default) {
     return definition.default;
   }
   const mode = symbologyModes[definition.mode];

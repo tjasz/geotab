@@ -18,7 +18,7 @@ function ar(a:number, r:number) : [number, number] {
 }
 
 // create the SVG path commands for an n-gon of radius r
-function svgPolygon(n:number, r:number, stroke:string, fill:string, text:string) : string {
+function svgPolygon(n:number, r:number, stroke:string, fill:string|undefined, text:string|undefined) : string {
   let strokeFill = `stroke="${stroke ?? "#336799"}" fill="${fill ?? stroke ?? "#336799"}"`;
   let str = `<svg width="${2*r}" height="${2*r}" viewBox="-50 -50 100 100" xmlns="http://www.w3.org/2000/svg">`;
   if (n === Infinity) { // circle
@@ -43,7 +43,7 @@ function svgPolygon(n:number, r:number, stroke:string, fill:string, text:string)
   return str;
 }
 
-export function PolygonMarker(latlng:L.LatLngExpression, n:number, r:number, stroke:string, fill:string, text:string) : L.Marker<any> {
+export function PolygonMarker(latlng:L.LatLngExpression, n:number, r:number, stroke:string, fill?:string, text?:string) : L.Marker<any> {
   return svgMarker(
     latlng,
     svgPolygon(n, r, stroke, fill, text)
@@ -51,7 +51,7 @@ export function PolygonMarker(latlng:L.LatLngExpression, n:number, r:number, str
 }
 
 // create the SVG path commands for an n-star of radius r
-function svgStar(n:number, r:number, stroke:string, fill:string, text:string) : string {
+function svgStar(n:number, r:number, stroke:string, fill:string|undefined, text:string|undefined) : string {
   let strokeFill = `stroke="${stroke ?? "#336799"}" fill="${fill ?? stroke ?? "#336799"}"`;
   let str = `<svg width="${2*r}" height="${2*r}" viewBox="-50 -50 100 100" xmlns="http://www.w3.org/2000/svg">`;
   if (n === Infinity) { // circle
@@ -76,7 +76,7 @@ function svgStar(n:number, r:number, stroke:string, fill:string, text:string) : 
   return str;
 }
 
-export function StarMarker(latlng:L.LatLngExpression, n:number, r:number, stroke:string, fill:string, text:string) : L.Marker<any> {
+export function StarMarker(latlng:L.LatLngExpression, n:number, r:number, stroke:string, fill?:string, text?:string) : L.Marker<any> {
   return svgMarker(
     latlng,
     svgStar(n, r, stroke, fill, text)
