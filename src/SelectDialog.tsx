@@ -7,7 +7,19 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 
-export function SelectDialog(props) {
+type SelectDialogProps = {
+  defaultValue:string;
+  onCancel:{():void};
+  onConfirm:{(draft:string):void};
+  open:boolean;
+  title:string;
+  options:string[];
+  label:string;
+  cancelLabel:string;
+  confirmLabel:string;
+}
+
+export function SelectDialog(props:SelectDialogProps) {
   const [ draft, setDraft] = useState(props.defaultValue);
 
   const handleCancel = () => {

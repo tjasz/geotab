@@ -20,7 +20,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import { sortBy } from './algorithm'
 import {DataContext} from './dataContext'
 import { AbridgedUrlLink } from './common-components.js';
-import { SelectDialog } from './SelectDialog.js'
+import { SelectDialog } from './SelectDialog'
 import { TextFieldDialog } from './TextFieldDialog.js'
 import {InsertLeftIcon} from './icon/InsertLeftIcon.js'
 import {InsertRightIcon} from './icon/InsertRightIcon.js'
