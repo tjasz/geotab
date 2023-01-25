@@ -21,7 +21,7 @@ import { sortBy } from './algorithm'
 import {DataContext} from './dataContext'
 import { AbridgedUrlLink } from './common-components.js';
 import { SelectDialog } from './SelectDialog'
-import { TextFieldDialog } from './TextFieldDialog.js'
+import { TextFieldDialog } from './TextFieldDialog'
 import {InsertLeftIcon} from './icon/InsertLeftIcon.js'
 import {InsertRightIcon} from './icon/InsertRightIcon.js'
 import {SortAscendingIcon} from './icon/SortAscendingIcon.js'

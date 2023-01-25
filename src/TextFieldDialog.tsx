@@ -7,7 +7,19 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import {sleep} from './algorithm'
 
-export function TextFieldDialog(props) {
+type TextFieldDialogProps = {
+  defaultValue:string;
+  onCancel:{():void};
+  onConfirm:{(draft:string):void};
+  open:boolean;
+  title:string;
+  multiline:boolean;
+  label:string;
+  cancelLabel:string;
+  confirmLabel:string;
+}
+
+export function TextFieldDialog(props:TextFieldDialogProps) {
   const [ draft, setDraft] = useState(props.defaultValue);
 
   const handleCancel = () => {
