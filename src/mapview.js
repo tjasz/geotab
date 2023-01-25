@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, WMSTileLayer, LayersControl, ScaleControl, Geo
 import { AbridgedUrlLink } from './common-components.js';
 import {DataContext} from './dataContext'
 import {getCentralCoord, hashCode, getFeatureListBounds} from './algorithm'
-import {evaluateFilter} from './filter.js'
+import {evaluateFilter} from './filter'
 import mapLayers from './maplayers.js'
 import {painter} from './painter.js'
 

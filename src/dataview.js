@@ -2,7 +2,7 @@ import React, {useContext, useState} from 'react';
 import { useSearchParams } from "react-router-dom";
 import {DataContext} from './dataContext'
 import {getFeatures, getPropertiesUnion} from './algorithm'
-import {defaultFilter, conditionOperators, conditionGroupOperators, parametersMap, operandTypes, Condition, ConditionGroup, filterEquals, filterTypes, validateFilter} from './filter.js'
+import {defaultFilter, ConditionOperator, ConditionGroupOperator, parametersMap, operandTypes, Condition, ConditionGroup, filterEquals, FilterType, validateFilter, FieldType} from './filter'
 import {ReactComponent as MinusSquare} from './feather/minus-square.svg'
 import {ReactComponent as PlusSquare} from './feather/plus-square.svg'
 import {Select} from './common-components.js'
@@ -247,14 +247,14 @@ function ConditionGroupView(props) {
         name={`condition-group-operator-${props.indent}`}
         defaultValue={operator}
         onChange={onOperatorEdit}
-        options={conditionGroupOperators}
+        options={Object.values(ConditionGroupOperator)}
         />
       {props.indent ? <MinusSquare className="removeButton" onClick={() => {props.removeCondition(props.filter)}} /> : null}
       {conditions.map((condition, idx) => <FilterView filter={condition} indent={props.indent+1} indexInGroup={idx} onEdit={onChildEdit} removeCondition={onChildRemove} key={`condition-group-${props.indent}-child-${idx}`} />)}
       <PlusSquare className="addButton" onClick={() => { setChildSelectorVisible(true); }} />
       {childSelectorVisible
       ? <div id={`condition-group-child-selector-${props.indent}`}>
-        {filterTypes.map((ftype) => <button type="button" key={`condition-group-child-selector-${props.indent}-${ftype}`} onClick={(event) => { setChildSelectorVisible(false); onChildAdd(event.target.value); }} value={ftype}>{ftype}</button>)}
+        {Object.values(FilterType).map((ftype) => <button type="button" key={`condition-group-child-selector-${props.indent}-${ftype}`} onClick={(event) => { setChildSelectorVisible(false); onChildAdd(event.target.value); }} value={ftype}>{ftype}</button>)}
       </div>
       : null}
     </div>
@@ -275,7 +275,7 @@ function ConditionView(props) {
   const onFieldnameEdit = (event) => {
     const column = context.columns.find((column) => column.name === event.target.value);
     if (column === undefined) { throw Error(`Cannot find column with name ${event.target.value}.`) }
-    const newOperandType = operandTypes[operator] === "auto" ? column.type : operandTypes[operator];
+    const newOperandType = operandTypes[operator] === FieldType.Any ? column.type : operandTypes[operator];
     setFieldname(event.target.value);
     setOperandType(newOperandType);
     props.onEdit({type: "Condition", fieldname: event.target.value, operandType: newOperandType, operator, parameters, negate}, props.indexInGroup);
@@ -283,7 +283,7 @@ function ConditionView(props) {
   const onOperatorEdit = (event) => {
     const column = context.columns.find((column) => column.name === fieldname);
     if (column === undefined) { throw Error(`Cannot find column with name ${event.target.value}.`) }
-    const newOperandType = operandTypes[event.target.value] === "auto" ? column.type : operandTypes[event.target.value];
+    const newOperandType = operandTypes[event.target.value] === FieldType.Any ? column.type : operandTypes[event.target.value];
     setOperandType(newOperandType);
     setOperator(event.target.value);
     setParameters(Object.keys(parametersMap[event.target.value]).reduce((accumulator, value) => {
@@ -316,7 +316,7 @@ function ConditionView(props) {
         name={`${props.key}-operator`}
         defaultValue={operator}
         onChange={onOperatorEdit}
-        options={conditionOperators}
+        options={Object.values(ConditionOperator)}
       />
 
       {Object.keys(parameters).map((param) =>
