@@ -17,7 +17,7 @@ function DataView(props) {
     const errors = validateFilter(draft, context);
     if (errors && errors !== "") {
       alert(errors);
-    } else {
+    } else if (!filterEquals(draft, context.filter)) {
       context.setFilter(draft); 
     }};
   return (

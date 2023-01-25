@@ -513,6 +513,7 @@ function validateCondition(condition:Condition, context:DataContextType) : strin
         condition.parameters[key] = typeof condition.parameters[key] === "string"
           ? typeof condition.parameters[key]
           : JSON.stringify(condition.parameters[key]);
+        break;
       default: // including FieldType.Any
         // match type of operand
         switch (condition.operandType) {
@@ -533,6 +534,7 @@ function validateCondition(condition:Condition, context:DataContextType) : strin
             condition.parameters[key] = typeof condition.parameters[key] === "string"
               ? typeof condition.parameters[key]
               : JSON.stringify(condition.parameters[key]);
+            break;
           default:
             break;
         }

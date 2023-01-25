@@ -38,7 +38,7 @@ function ColumnMetadataTable({column, data}) {
         </tbody>
       </table>
       { (column.type === "number" || column.type === "date")
-      && stats.Minimum != stats.Maximum
+      && stats.Minimum !== stats.Maximum
       && <Histogram
           left={Math.floor(stats.Minimum)}
           right={Math.ceil(stats.Maximum)}
