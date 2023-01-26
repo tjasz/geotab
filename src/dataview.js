@@ -14,10 +14,11 @@ import { GoogleLogin } from './google-drive'
 function DataView(props) {
   const context = useContext(DataContext);
   const onFilterSave = (draft) => {
+    if (filterEquals(draft, context.filter)) return;
     const errors = validateFilter(draft, context);
     if (errors && errors !== "") {
       alert(errors);
-    } else if (!filterEquals(draft, context.filter)) {
+    } else {
       context.setFilter(draft); 
     }};
   return (

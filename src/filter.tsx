@@ -511,7 +511,7 @@ function validateCondition(condition:Condition, context:DataContextType) : strin
         break;
       case FieldType.String:
         condition.parameters[key] = typeof condition.parameters[key] === "string"
-          ? typeof condition.parameters[key]
+          ? condition.parameters[key]
           : JSON.stringify(condition.parameters[key]);
         break;
       default: // including FieldType.Any
@@ -532,7 +532,7 @@ function validateCondition(condition:Condition, context:DataContextType) : strin
             break;
           case FieldType.String:
             condition.parameters[key] = typeof condition.parameters[key] === "string"
-              ? typeof condition.parameters[key]
+              ? condition.parameters[key]
               : JSON.stringify(condition.parameters[key]);
             break;
           default:
