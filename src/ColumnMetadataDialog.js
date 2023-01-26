@@ -6,6 +6,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import {toType} from './algorithm'
 import { Histogram } from './common-components';
+import math from './math';
 
 export function ColumnMetadataDialog({open, onClose, column, data}) {  
   return (
@@ -106,7 +107,7 @@ function getNumericStats(data) {
   result.Minimum = sorted[0];
   result["5th Percentile"] = percentile(sorted, 5);
   result["25th Percentile"] = percentile(sorted, 25);
-  result.Mean = sorted.reduce((s, v) => s + v, 0) / sorted.length;
+  result.Mean = math.sum(sorted) / sorted.length;
   result.Median = percentile(sorted, 50);
   result["75th Percentile"] = percentile(sorted, 75);
   result["95th Percentile"] = percentile(sorted, 95);

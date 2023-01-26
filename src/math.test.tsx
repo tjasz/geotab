@@ -1,4 +1,4 @@
-import {dsin,dcos,ar} from './math'
+import {dsin,dcos,ar,sum} from './math'
 
 describe('dsin', () => {
   it.each([
@@ -58,5 +58,17 @@ describe('ar', () => {
     const res = ar(...args);
     expect(res[0]).toBeCloseTo(expected[0],9);
     expect(res[1]).toBeCloseTo(expected[1],9);
+  });
+});
+
+describe('sum', () => {
+  it.each<[number[],number]>([
+    [[],0],
+    [[1],1],
+    [[1,-1],0],
+    [[1,2,3,4],10],
+  ])('sum(%p) = %p', (args:number[], expected:number) => {
+    const res = sum(args);
+    expect(res).toBe(expected);
   });
 });
