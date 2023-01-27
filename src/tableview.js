@@ -179,10 +179,19 @@ function ColumnContextMenu(props) {
     context.setColumns(context.columns.map((col) => col.name === name ? {...col, type: newtype} : col));
   };
   const calculateColumn = (name, formula) => {
-    context.setData(context.data.map((feature) => {
-      let {[name]: _, ...rest} = feature.properties;
-      return {...feature, properties: {...rest, [name]: eval(formula, {feature})}};
-    }));
+    let userFunction = undefined;
+    try {
+      userFunction = new Function("feature", "index", formula);
+      if (userFunction) {
+        context.setData(context.data.map((feature, index) => {
+          let {[name]: _, ...rest} = feature.properties;
+          return {...feature, properties: {...rest, [name]: userFunction(feature, index)}};
+        }));
+      }
+    }
+    catch (error) {
+      alert(`Error parsing formula "${formula}": ${error.message}`);
+    }
   };
   const swapColumns = (i1, i2) => {
     if (i1 < 0 || i2 < 0 || i1 >= context.columns.length || i2 >= context.columns.length) return;
@@ -348,7 +357,7 @@ function ColumnContextMenu(props) {
         title={`Calculate values for column '${props.columnName}'`}
         label="Formula"
         confirmLabel="Calculate"
-        defaultValue={`feature.properties["${props.columnName}"]`}
+        defaultValue={`return feature.properties["${props.columnName}"];`}
         open={calculateDialogOpen}
         onConfirm={(formula) => { calculateColumn(props.columnName, formula); setCalculateDialogOpen(false); }}
         onCancel={() => { setCalculateDialogOpen(false); }}
