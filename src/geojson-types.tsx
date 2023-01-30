@@ -57,6 +57,7 @@ export type MultiPolygon = Extension & {
 export type Geometry = Point | MultiPoint | LineString | MultiLineString | Polygon | MultiPolygon;
 
 export type GeometryCollection = Extension & {
+  type: GeometryType;
   geometries: Geometry[];
 }
 
