@@ -10,6 +10,7 @@ import {Select} from './common-components'
 import {LabeledCheckbox} from './LabeledCheckbox'
 import {parseFile, attachProgress} from './readfile'
 import { GoogleLogin } from './google-drive'
+import {simplify} from './geojson-calc'
 
 function DataView(props) {
   const context = useContext(DataContext);
@@ -40,6 +41,9 @@ function ImportView(props) {
     context.setColumns([]);
     context.setActive(null);
     context.setSymbology(null);
+  }
+  const simplifyGeometry = () => {
+    context.setData(context.data.map((f) => simplify(f, 10)));
   }
   const setDataFromJson = (json) => {
     const flattened = getFeatures(json);
@@ -106,6 +110,7 @@ function ImportView(props) {
   return (
     <div id="importView">
       <button type="button" id="next-button" onClick={clearData}>Clear Data</button>
+      <button type="button" id="next-button" onClick={simplifyGeometry}>Simplify Geometry</button>
       <h3>Import</h3>
       <FileImporter onRead={setDataFromJson} />
       <GoogleLogin onRead={setDataFromJson} />
@@ -171,10 +176,11 @@ function ExportView(props) {
   const context = useContext(DataContext);
   const exportJson = (includeHidden) => {
     const downloadLink = document.createElement("a");
+    const features = includeHidden ? context.data : context.filteredData;
     const textContent = JSON.stringify({
       type: "FeatureCollection",
       // TODO option to save filtered or unfiltered data
-      features: includeHidden ? context.data : context.filteredData,
+      features,
       geotabMetadata: {
         columns: context.columns,
         filter: context.filter,
