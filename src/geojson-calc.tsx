@@ -126,6 +126,29 @@ function simplifyCoordinate(c:gj.Coordinate, precisionMeters:number) : gj.Coordi
   const roundingFactor = Math.pow(10,dplaces);
   return c.slice(0,2).map((n) => Math.round(roundingFactor * n) / roundingFactor);
 }
+// simplify array of coordinates via Douglas-Peucker algorithm
+export function douglasPeucker(coords:gj.Coordinate[], precisionMeters:number) : gj.Coordinate[] {
+  if (coords.length < 2) return coords.slice();
+  // find the point that is farthest from the line segment defined by the endpoints
+  const lineSeg:[gj.Coordinate,gj.Coordinate] = [coords[0], coords[coords.length-1]];
+  let maxDist = 0;
+  let maxIndex = 0;
+  for (let i:number = 0; i < coords.length; i++) {
+    const dist = distanceToLineSeg(coords[i], lineSeg);
+    if (dist > maxDist) {
+      maxDist = dist;
+      maxIndex = i;
+    }
+  }
+  // if the farthest point is beyond the threshold, add it and recurse
+  if (maxDist > precisionMeters) {
+    return [
+      ...douglasPeucker(coords.slice(0,maxIndex+1), precisionMeters),
+      ...douglasPeucker(coords.slice(maxIndex), precisionMeters).slice(1),
+    ];
+  }
+  return lineSeg;
+}
 function removeDuplicateCoordinates(coords:gj.Coordinate[], precisionMeters:number) : gj.Coordinate[] {
   if (coords.length < 2) return coords;
   const res = [coords[0]];
@@ -146,7 +169,7 @@ function simplifyMultiPoint(p:gj.MultiPoint, precisionMeters:number) : gj.MultiP
   const {coordinates, ...rest} = p;
   return {
     ...rest,
-    coordinates: removeDuplicateCoordinates(coordinates.map((c) => simplifyCoordinate(c, precisionMeters)), precisionMeters)
+    coordinates: douglasPeucker(coordinates.map((c) => simplifyCoordinate(c, precisionMeters)), precisionMeters)
   };
 }
 function simplifyLineString(p:gj.LineString, precisionMeters:number) : gj.LineString {
@@ -154,7 +177,7 @@ function simplifyLineString(p:gj.LineString, precisionMeters:number) : gj.LineSt
   // TODO simplify more by removing points according to Douglas-Peucker algorithm
   return {
     ...rest,
-    coordinates: removeDuplicateCoordinates(coordinates.map((c) => simplifyCoordinate(c, precisionMeters)), precisionMeters)
+    coordinates: douglasPeucker(coordinates.map((c) => simplifyCoordinate(c, precisionMeters)), precisionMeters)
   };
 }
 function simplifyMultiLineString(p:gj.MultiLineString, precisionMeters:number) : gj.MultiLineString {
@@ -162,7 +185,7 @@ function simplifyMultiLineString(p:gj.MultiLineString, precisionMeters:number) :
   // TODO simplify more by removing points according to Douglas-Peucker algorithm
   return {
     ...rest,
-    coordinates: coordinates.map((c) => removeDuplicateCoordinates(c.map(d => simplifyCoordinate(d, precisionMeters)), precisionMeters))
+    coordinates: coordinates.map((c) => douglasPeucker(c.map(d => simplifyCoordinate(d, precisionMeters)), precisionMeters))
   };
 }
 function simplifyPolygon(p:gj.Polygon, precisionMeters:number) : gj.Polygon {
@@ -170,7 +193,7 @@ function simplifyPolygon(p:gj.Polygon, precisionMeters:number) : gj.Polygon {
   // TODO simplify more by removing points according to Douglas-Peucker algorithm
   return {
     ...rest,
-    coordinates: coordinates.map((c) => removeDuplicateCoordinates(c.map(d => simplifyCoordinate(d, precisionMeters)), precisionMeters))
+    coordinates: coordinates.map((c) => douglasPeucker(c.map(d => simplifyCoordinate(d, precisionMeters)), precisionMeters))
   };
 }
 function simplifyMultiPolygon(p:gj.MultiPolygon, precisionMeters:number) : gj.MultiPolygon {
@@ -178,7 +201,7 @@ function simplifyMultiPolygon(p:gj.MultiPolygon, precisionMeters:number) : gj.Mu
   // TODO simplify more by removing points according to Douglas-Peucker algorithm
   return {
     ...rest,
-    coordinates: coordinates.map((b) => b.map((c) => removeDuplicateCoordinates(c.map(d => simplifyCoordinate(d, precisionMeters)), precisionMeters)))
+    coordinates: coordinates.map((b) => b.map((c) => douglasPeucker(c.map(d => simplifyCoordinate(d, precisionMeters)), precisionMeters)))
   };
 }
 // simplify the geometry a Feature

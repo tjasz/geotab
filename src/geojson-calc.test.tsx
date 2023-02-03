@@ -29,6 +29,54 @@ describe('distance', () => {
   });
 });
 
+describe('douglasPeucker', () => {
+  it.each<[[gj.Coordinate[],number],gj.Coordinate[]]>([
+    // one element
+    [
+      [[[0,0]],100],
+      [[0,0]],
+    ],
+    // two elements
+    [
+      [[[0,0],[1,0]],100],
+      [[0,0],[1,0]],
+    ],
+    // three elements with one that should be removed
+    [
+      [[[0,0],[0.5,0],[1,0]],100],
+      [[0,0],[1,0]],
+    ],
+    // three elements with one that should stay
+    [
+      [[[0,0],[0.5,0.001],[1,0]],100],
+      [[0,0],[0.5,0.001],[1,0]],
+    ],
+    // four elements with none that should stay
+    [
+      [[[0,0],[0.25,0],[0.75,0],[1,0]],100],
+      [[0,0],[1,0]],
+    ],
+    // four elements where the second one should stay
+    [
+      [[[0,0],[0.25,0.001],[0.75,0],[1,0]],100],
+      [[0,0],[0.25,0.001],[1,0]],
+    ],
+    // four elements where the third one should stay
+    [
+      [[[0,0],[0.25,0],[0.75,0.001],[1,0]],100],
+      [[0,0],[0.75,0.001],[1,0]],
+    ],
+    // four elements where all should stay
+    [
+      [[[0,0],[0.25,0.001],[0.75,-0.001],[1,0]],100],
+      [[0,0],[0.25,0.001],[0.75,-0.001],[1,0]],
+    ],
+  ])('douglasPeucker(%p) = %p', (args:[gj.Coordinate[],number], expected:gj.Coordinate[]) => {
+    const res = gc.douglasPeucker(...args);
+    expect(res).toStrictEqual(expected);
+  });
+});
+
 describe('simplify', () => {
   it.each<[[gj.Feature,number],gj.Feature]>([
     // test that rounding to nearest tenth-degree works, keeps properties
