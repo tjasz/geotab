@@ -40,7 +40,17 @@ class App extends React.Component<IAppProps, IState> {
           filteredData: newData.filter((row) => evaluateFilter(row, newFilter))
         });
       },
-      setColumns: (newColumns) => {this.setState({columns: newColumns})},
+      setColumns: (newColumns) => {
+        // ensure pseudo-column "geotab:selectionStatus" is always present
+        if (!newColumns.some((c) => c.name === "geotab:selectionStatus")) {
+          newColumns.push({
+            name: "geotab:selectionStatus",
+            visible: false,
+            type: "string",
+          })
+        }
+        this.setState({columns: newColumns})
+      },
       setActive: (newActive) => {this.setState({active: newActive})},
       setSymbology: (newSymbology) => {this.setState({symbology: newSymbology})},
     };
