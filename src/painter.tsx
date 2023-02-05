@@ -175,7 +175,7 @@ export function painter(symbology) {
       const lineCap="butt";
       const fillColor = feature.properties["fill"] ?? color;
       const fillOpacity = feature.properties["fill-opacity"] ?? 0.4;
-      return {color, size, dashArray, lineCap, fillColor, fillOpacity};
+      return {color, weight: size, dashArray, lineCap, fillColor, fillOpacity};
     }
   };
   return fn;
