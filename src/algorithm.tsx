@@ -28,13 +28,18 @@ export function getFeatures(data) {
   return [];
 }
 
+function isEmptyField(v:any) {
+  return v === null || v === undefined || v === "";
+}
+
 export function toType(value, type) {
   switch(type) {
     case "number":
       return Number(value);
     case "date":
       if (typeof value === "string") {
-        return new Date(Date.parse(value));
+        const isnum = value.match(/^[0-9]+$/) != null;
+        return new Date(isnum ? Number(value) : Date.parse(value));
       }
       return new Date(value);
     default:
@@ -278,8 +283,24 @@ export function getFeatureListBounds(features) {
 export function sortBy(features, sorting) {
   const {col, asc} = sorting;
   const fsort = (a, b) => {
-    const av = toType(a.properties[col.name], col.type);
-    const bv = toType(b.properties[col.name], col.type);
+    const ar = a.properties[col.name];
+    const br = b.properties[col.name]
+    // always sort undefined as if they're small
+    // JS method of always returning false results in non-deterministic sorting
+    const aempty = isEmptyField(ar);
+    const bempty = isEmptyField(br);
+    if (aempty && bempty) {
+      return 0;
+    }
+    if (aempty && !bempty) {
+      return asc ? -1 : 1;
+    }
+    if (!aempty && bempty) {
+      return asc ? 1 : -1;
+    }
+    // compare transformed values
+    const av = toType(ar, col.type);
+    const bv = toType(br, col.type);
     if (av === bv) {
       return 0;
     } else if (av < bv) {
