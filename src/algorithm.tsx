@@ -42,6 +42,8 @@ export function toType(value, type) {
         return new Date(isnum ? Number(value) : Date.parse(value));
       }
       return new Date(value);
+    case "string":
+      return typeof value === "string" ? value : JSON.stringify(value);
     default:
       return value;
   }

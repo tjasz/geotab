@@ -1,6 +1,7 @@
 import { setEquals } from './algorithm'
 import { DataContextType } from './dataContext';
 import { FieldType } from './fieldtype'
+import { toType } from './algorithm'
 
 type ParameterSpec = {[index:string] : {type: FieldType}}
 type ParameterDef = {[index:string] : any}
@@ -331,23 +332,16 @@ function inYear(rowValue:Date, year:number) : boolean {
   return rowValue.getUTCFullYear() === year;
 }
 
+function getParameter(condition:Condition, pname:string) {
+  const type = parametersMap[condition.operator][pname].type === FieldType.Any
+    ? condition.operandType
+    : parametersMap[condition.operator][pname].type;
+  return toType(condition.parameters[pname], type);
+}
+
 function evaluateCondition(row, condition:Condition) : boolean {
   let result = true;
-  let value = row.properties[condition.fieldname];
-  switch (condition.operandType) {
-    case "number":
-      value = Number(value);
-      break;
-    case "date":
-      value = typeof value === "number" ? value : Date.parse(value);
-      value = new Date(value);
-      break;
-    case "string":
-      value = typeof value === "string" ? value : JSON.stringify(value);
-      break;
-    default:
-      break;
-  }
+  let value = toType(row.properties[condition.fieldname], condition.operandType);
   switch (condition.operator) {
     case "IsEmpty":
       result = isEmpty(value);
@@ -356,28 +350,28 @@ function evaluateCondition(row, condition:Condition) : boolean {
       result = !isEmpty(value);
       break;
     case "EqualTo":
-      result = equalTo(value, condition.parameters.value);
+      result = equalTo(value, getParameter(condition, "value"));
       break;
     case "NotEqualTo":
-      result = !equalTo(value, condition.parameters.value);
+      result = !equalTo(value, getParameter(condition, "value"));
       break;
     case "GreaterThan":
-      result = greaterThan(value, condition.parameters.value);
+      result = greaterThan(value, getParameter(condition, "value"));
       break;
     case "GreaterThanOrEqualTo":
-      result = !lessThan(value, condition.parameters.value);
+      result = !lessThan(value, getParameter(condition, "value"));
       break;
     case "LessThan":
-      result = lessThan(value, condition.parameters.value);
+      result = lessThan(value, getParameter(condition, "value"));
       break;
     case "LessThanOrEqualTo":
-      result = !greaterThan(value, condition.parameters.value);
+      result = !greaterThan(value, getParameter(condition, "value"));
       break;
     case "Between":
-      result = between(value, condition.parameters.min, condition.parameters.max);
+      result = between(value, getParameter(condition, "min"), getParameter(condition, "max"));
       break;
     case "NotBetween":
-      result = !between(value, condition.parameters.min, condition.parameters.max);
+      result = !between(value, getParameter(condition, "min"), getParameter(condition, "max"));
       break;
     case "In":
       result = isIn(value, condition.parameters.values.split(',').map((s) => s.trim()));
@@ -386,10 +380,10 @@ function evaluateCondition(row, condition:Condition) : boolean {
       result = !isIn(value, condition.parameters.values.split(',').map((s) => s.trim()));
       break;
     case "Contains":
-      result = contains(value, condition.parameters.substring);
+      result = contains(value, getParameter(condition, "substring"));
       break;
     case "DoesNotContain":
-      result = !contains(value, condition.parameters.substring);
+      result = !contains(value, getParameter(condition, "substring"));
       break;
     case "ContainsAny":
       result = condition.parameters.substrings.split(',').map((s) => s.trim()).some((substring) => contains(value, substring));
@@ -398,46 +392,46 @@ function evaluateCondition(row, condition:Condition) : boolean {
       result = condition.parameters.substrings.split(',').map((s) => s.trim()).every((substring) => !contains(value, substring));
       break;
     case "StartsWith":
-      result = startsWith(value, condition.parameters.prefix);
+      result = startsWith(value, getParameter(condition, "prefix"));
       break;
     case "DoesNotStartWith":
-      result = !startsWith(value, condition.parameters.prefix);
+      result = !startsWith(value, getParameter(condition, "prefix"));
       break;
     case "EndsWith":
-      result = endsWith(value, condition.parameters.suffix);
+      result = endsWith(value, getParameter(condition, "suffix"));
       break;
     case "DoesNotEndWith":
-      result = !endsWith(value, condition.parameters.suffix);
+      result = !endsWith(value, getParameter(condition, "suffix"));
       break;
     case "Like":
-      result = like(value, condition.parameters.regex);
+      result = like(value, getParameter(condition, "regex"));
       break;
     case "NotLike":
-      result = !like(value, condition.parameters.regex);
+      result = !like(value, getParameter(condition, "regex"));
       break;
     case "OnDayOfWeek":
-      result = onDayOfWeek(value, condition.parameters.day);
+      result = onDayOfWeek(value, getParameter(condition, "day"));
       break;
     case "OnDayOfMonth":
-      result = onDayOfMonth(value, condition.parameters.day);
+      result = onDayOfMonth(value, getParameter(condition, "day"));
       break;
     case "OnDayOfYear":
-      result = onDayOfYear(value, condition.parameters.day);
+      result = onDayOfYear(value, getParameter(condition, "day"));
       break;
     case "OnDayMonthOfYear":
-      result = onDayMonthOfYear(value, condition.parameters.month, condition.parameters.day);
+      result = onDayMonthOfYear(value, getParameter(condition, "month"), getParameter(condition, "day"));
       break;
     case "InWeekOfMonth":
-      result = inWeekOfMonth(value, condition.parameters.week);
+      result = inWeekOfMonth(value, getParameter(condition, "week"));
       break;
     case "InWeekOfYear":
-      result = inWeekOfYear(value, condition.parameters.week);
+      result = inWeekOfYear(value, getParameter(condition, "week"));
       break;
     case "InMonthOfYear":
-      result = inMonthOfYear(value, condition.parameters.month);
+      result = inMonthOfYear(value, getParameter(condition, "month"));
       break;
     case "InYear":
-      result = inYear(value, condition.parameters.year);
+      result = inYear(value, getParameter(condition, "year"));
       break;
     default:
       throw Error(`Condition.operator: Found ${condition.operator}. Expected one of ${Object.values(ConditionOperator)}.`);
