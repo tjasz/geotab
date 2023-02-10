@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import math from './math'
+import { FieldType } from './fieldtype'
 
 export function sleep (time:number) : Promise<NodeJS.Timeout> {
   return new Promise((resolve) => setTimeout(resolve, time));
@@ -52,7 +53,7 @@ export function toType(value, type) {
 function getColumnMetadata(features, key) {
   const type = features.every((feature) => feature.properties[key] === undefined || feature.properties[key] === "" || !isNaN(Number(feature.properties[key])))
                ? "number"
-               : features.every((feature) => feature.properties[key] === undefined || feature.properties[key] === "" || !isNaN(Date.parse(feature.properties[key])))
+               : features.every((feature) => feature.properties[key] === undefined || feature.properties[key] === "" || (feature.properties[key].match(/^[0-9]{4}/) && !isNaN(Date.parse(feature.properties[key]))))
                ? "date"
                : "string";
   // find min and max
