@@ -498,7 +498,7 @@ function validateCondition(condition:Condition, context:DataContextType) : strin
         condition.parameters[key] = Number(value);
         break;
       case FieldType.Date:
-        if (isNaN(Date.parse(value))) {
+        if (isNaN(Date.parse(value)) && isNaN(Number(value))) {
           return `Condition.parameters.${key}: Found '${value}'. Expected date.`;
         }
         condition.parameters[key] = new Date(Date.parse(value));
@@ -519,7 +519,7 @@ function validateCondition(condition:Condition, context:DataContextType) : strin
             condition.parameters[key] = Number(value);
             break;
           case FieldType.Date:
-            if (isNaN(Date.parse(value))) {
+            if (isNaN(Date.parse(value)) && isNaN(Number(value))) {
               return `Condition.parameters.${key}: Found '${value}'. Expected date.`;
             }
             condition.parameters[key] = new Date(Date.parse(value));
