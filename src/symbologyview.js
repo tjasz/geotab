@@ -13,7 +13,9 @@ function SymbologyView(props) {
   const onSave = (draft) => {context.setSymbology(draft);};
   return (
     <div id="symbologyview" style={props.style}>
-      <h2>Symbology</h2>
+      <h2 onContextMenu={() => console.log(context.symbology)}>
+        Symbology
+      </h2>
       <SymbologyDefinition symbology={context.symbology} onSave={onSave} />
     </div>
   );
@@ -53,7 +55,10 @@ function SymbologyDefinition({symbology, onSave}) {
         onEdit={(shapeDef) => {updateDraft({...draft, shape: shapeDef})}}
         minValue={3} maxValue={20}
         />
-      <button id="save-symbology-draft" onClick={saveDraft}>Save</button>
+      <button id="save-symbology-draft" onClick={saveDraft}
+        onContextMenu={() => console.log(draft)}>
+        Save
+      </button>
     </div>
   );
 }
@@ -149,7 +154,7 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
   };
   const onDefaultEdit = (newDefault) => {
     setDefault(newDefault);
-    onEdit({mode, values, fieldname, type, breaks, default: defaultValue});
+    onEdit({mode, values, fieldname, type, breaks, default: newDefault});
   }
   const onValuesEdit = (value, idx) => {
     const newValues = values.map((v, i) => i === idx ? value : v);
@@ -179,7 +184,8 @@ function SymbologyProperty({name, definition, onEdit, minValue, maxValue, valueS
 
   return (
     <div className="symbologyProperty">
-      <h3>
+      <h3
+        onContextMenu={() => console.log(definition)}>
         <LabeledCheckbox
           checked={definition ? true : false}
           onChange={onCheckboxChange}
