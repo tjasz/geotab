@@ -8,6 +8,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import { parseGoogleFile } from './readfile';
 import {DataContext} from './dataContext'
+import {GoogleDrivePickerDialog} from './GoogleDriverPickerDialog'
 
 // Client ID and API key from the Developer Console
 const CLIENT_ID = "717055595652-4n93oosqls3l4q3oa0jik4s154qbk149.apps.googleusercontent.com";
@@ -156,34 +157,26 @@ export function GoogleLogin(props) {
     context.setSymbology(null);
   }
 
-  const onPicker = (data) => {
-    if (data[window.google.picker.Response.ACTION] !== window.google.picker.Action.PICKED) return;
-    const files = data[window.google.picker.Response.DOCUMENTS];
-    process(files);
-    if (files.length === 1) {
-      setOpenFile(files[0])
-    }
+  const onFileSelected = (file) => {
+    process([file]);
+    setOpenFile(file);
     setListDocumentsVisibility(false);
-  };
+  }
 
-  // Create and render a Google Picker object for selecting from Drive
-  const showPicker = () => {
-    const view = new window.google.picker.DocsView()
-        .setMimeTypes(FILE_TYPE);
-    const builder = new window.google.picker.PickerBuilder()
-        .addView(view)
-        .enableFeature(window.google.picker.Feature.MULTISELECT_ENABLED)
-        .setSelectableMimeTypes(FILE_TYPE)
-        .setOAuthToken(accessToken)
-        .setDeveloperKey(API_KEY)
-        .setCallback(onPicker);
-    const picker = builder.build();
-    picker.setVisible(true);
+  const listFiles = () => {
+    setListDocumentsVisibility(true);
   }
 
   return (
     <div>
       <h4>Google Drive</h4>
+      <GoogleDrivePickerDialog
+        client={gapi.client}
+        onConfirm={onFileSelected}
+        onCancel={() => {setListDocumentsVisibility(false)}}
+        title="Open Google Drive File"
+        open={listDocumentsVisible}
+        />
       {signedInUser
       ? <div id="signinStatus">
           Signed in as: {signedInUser.getEmail()}
@@ -195,7 +188,7 @@ export function GoogleLogin(props) {
         <p>Open file: {openFile.name}</p>}
       {signedInUser &&
         <span>
-          {context.data.length === 0 && <button onClick={() => {showPicker()}}>Open</button>}
+          {context.data.length === 0 && <button onClick={() => { listFiles(); }}>Open</button>}
           {openFile &&
             <React.Fragment>
               <button onClick={saveOpenFile}>Save</button>
