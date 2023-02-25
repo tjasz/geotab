@@ -73,7 +73,7 @@ export function GoogleDrivePickerDialog(props) {
   };
   
   const getFiles = () => {
-    if (!props.open || files.length !== 0 || props.client === undefined) {
+    if (!props.open || props.client === undefined) {
       return;
     }
     props.client.drive.files.list(
