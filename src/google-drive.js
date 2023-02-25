@@ -1,13 +1,9 @@
 import React, { useCallback, useContext, useState } from 'react';
 import { gapi } from 'gapi-script';
-import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import { parseGoogleFile } from './readfile';
 import {DataContext} from './dataContext'
+import {TextFieldDialog} from './TextFieldDialog'
 import {GoogleDrivePickerDialog} from './GoogleDriverPickerDialog'
 
 // Client ID and API key from the Developer Console
@@ -126,7 +122,7 @@ export function GoogleLogin(props) {
     setPickerInitialized(true);
   }
 
-  const upload = (file, folderId, callback) => {
+  const upload = (file, callback) => {
     const textContent = JSON.stringify({
       type: "FeatureCollection",
       // TODO option to save filtered or unfiltered data
@@ -137,12 +133,12 @@ export function GoogleLogin(props) {
         symbology: context.symbology
       }
     });
-    insertFile(textContent, file, folderId, callback)
+    insertFile(textContent, file, callback)
   };
 
-  const saveNewFile = (filename, folderId) => {
+  const saveNewFile = (filename) => {
     setShowNewFileDialog(false);
-    upload({name: filename}, folderId, (uploadResult) => setOpenFile(uploadResult));
+    upload({name: filename}, (uploadResult) => setOpenFile(uploadResult));
   }
 
   const saveOpenFile = () => {
@@ -198,68 +194,19 @@ export function GoogleLogin(props) {
           <button onClick={() => {setShowNewFileDialog(true)}}>Save New</button>
         </span>
       }
-      <NewFileDialog
+      <TextFieldDialog
         open={showNewFileDialog}
-        accessToken={accessToken}
         onCancel={() => setShowNewFileDialog(false)}
         onConfirm={saveNewFile}
+        title="Create File"
+        label="File Name"
+        confirmLabel="Create"
         />
     </div>
   );
 }
 
-function NewFileDialog({open, accessToken, onCancel, onConfirm}) {
-  const [pickerOpen, setPickerOpen] = useState(false);
-  const [folder, setFolder] = useState(null);
-  const [filename, setFilename] = useState();
-
-  const onPicker = (data) => {
-    switch(data[window.google.picker.Response.ACTION]) {
-      case window.google.picker.Action.PICKED:
-        setFolder(data[window.google.picker.Response.DOCUMENTS][0]);
-      case window.google.picker.Action.CANCEL:
-        setPickerOpen(false);
-    }
-  };
-
-  // Create and render a Google Picker object for selecting from Drive
-  const showPicker = () => {
-    setPickerOpen(true);
-    const view = new window.google.picker.DocsView(window.google.picker.ViewId.FOLDERS)
-        .setSelectFolderEnabled(true);
-    const builder = new window.google.picker.PickerBuilder()
-        .addView(view)
-        .setOAuthToken(accessToken)
-        .setDeveloperKey(API_KEY)
-        .setCallback(onPicker);
-    const picker = builder.build();
-    picker.setVisible(true);
-  }
-
-  return (
-    <Dialog
-      open={open && !pickerOpen}
-      >
-      <DialogTitle>Create File</DialogTitle>
-      <DialogContent>
-        <p>
-          Folder:
-          {folder?.name || <em>None</em>}
-          <button onClick={showPicker}>Change</button>
-          <button onClick={() => setFolder(null)}>Clear</button>
-        </p>
-        <label htmlFor="fname">File Name: </label>
-        <input type="text" name="fname" value={filename ?? ""} onChange={(e) => setFilename(e.target.value)} />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onCancel}>Cancel</Button>
-        <Button onClick={() => onConfirm(filename, folder?.id)}>Create</Button>
-      </DialogActions>
-  </Dialog>
-  );
-}
-
-function insertFile(text, file, folderId, callback) {
+function insertFile(text, file, callback) {
   const boundary = '-------314159265358979323846';
   const delimiter = "\r\n--" + boundary + "\r\n";
   const close_delim = "\r\n--" + boundary + "--";
@@ -270,9 +217,6 @@ function insertFile(text, file, folderId, callback) {
   };
   if (!metadata.name.endsWith('json')) {
     metadata.name += '.json';
-  }
-  if (folderId) {
-    metadata["parents"] = [folderId];
   }
 
   var multipartRequestBody =
