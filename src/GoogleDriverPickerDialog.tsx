@@ -79,7 +79,8 @@ export function GoogleDrivePickerDialog(props) {
     props.client.drive.files.list(
       {
         'pageSize': 1000,
-        'fields': `files(${driveFileProperties.map((p) => p.id).join(',')})`
+        'fields': `files(${driveFileProperties.map((p) => p.id).join(',')})`,
+        'q': "trashed=false and mimeType='application/json+geotab'",
       }
     ).then(
       response => setFiles(response.result.files)
