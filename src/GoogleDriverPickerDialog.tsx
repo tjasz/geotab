@@ -92,24 +92,28 @@ export function GoogleDrivePickerDialog(props) {
       <DialogTitle>{props.title}</DialogTitle>
       <DialogContent ref={ref}>
         <table>
-          <tr>
-            <td>#</td>
-            {driveFileProperties
-              .filter((prop) => prop.visible)
-              .map((prop) => 
-                <th>{prop.name}</th>)}
-          </tr>
-          {files.map((f, i) =>
-          <tr
-            onClick={() => handleConfirm(f)}
-            >
-            <td>{i+1}</td>
-            {driveFileProperties
-              .filter((prop) => prop.visible)
-              .map((prop) => 
-                <td>{prop.display(f[prop.id])}</td>)}
-          </tr>
-          )}
+          <thead>
+            <tr>
+              <th>#</th>
+              {driveFileProperties
+                .filter((prop) => prop.visible)
+                .map((prop) =>
+                  <th key={prop.id}>{prop.name}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {files.map((f, i) =>
+            <tr key={f.id}
+              onClick={() => handleConfirm(f)}
+              >
+              <td>{i+1}</td>
+              {driveFileProperties
+                .filter((prop) => prop.visible)
+                .map((prop) =>
+                  <td key={prop.id}>{prop.display(f[prop.id])}</td>)}
+            </tr>
+            )}
+          </tbody>
         </table>
       </DialogContent>
       <DialogActions>
