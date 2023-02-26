@@ -11,7 +11,7 @@ export function GeotabLogo(props) {
     <path id="pin" d="M24 36 A26 26 180 0 1 76 36 Q76 53 50 90 Q24 53 24 36"
       fillOpacity={1}
       style={{stroke:"black", strokeWidth:1, fill:"#336799"}} />
-    <circle id="pincenter" cx="50" cy="36" r="8" stroke="black" stroke-width="1" fill="black" />
+    <circle id="pincenter" cx="50" cy="36" r="8" stroke="black" strokeWidth="1" fill="black" />
     </svg>
   );
 }
