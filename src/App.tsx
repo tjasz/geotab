@@ -1,10 +1,12 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import {BrowserRouter} from 'react-router-dom'
 import './App.css';
 import TabView from './tabview'
 import {DataContextType, DataContext} from './dataContext'
 import { evaluateFilter } from './filter';
 import { GeotabLogo } from './icon/GeotabLogo';
+import { GoogleLogin } from './google-drive'
+import {getFeatures, getPropertiesUnion} from './algorithm'
 
 interface IAppProps {
 }
@@ -54,6 +56,38 @@ class App extends React.Component<IAppProps, IState> {
       },
       setActive: (newActive) => {this.setState({active: newActive})},
       setSymbology: (newSymbology) => {this.setState({symbology: newSymbology})},
+      setFromJson: (json) => {
+        const flattened = getFeatures(json);
+        if (flattened.length) {
+          if (this.state && this.state.data.length === 0) {
+            if (json.geotabMetadata) {
+              this.setState({
+                data: flattened,
+                filter: json.geotabMetadata.filter,
+                filteredData: flattened.filter((row) => evaluateFilter(row, json.geotabMetadata.filter)),
+                columns: json.geotabMetadata.columns,
+                active: null,
+                symbology: json.geotabMetadata.symbology,
+              });
+            } else {
+              this.setState({
+                data: this.state ? this.state.data.concat(flattened) : flattened,
+                filteredData: flattened.filter((row) => evaluateFilter(row, this.state?.filter)),
+                columns: getPropertiesUnion(flattened, this.state?.columns),
+                active: null,
+              });
+            }
+          } else {
+            const newData = this.state ? this.state.data.concat(flattened) : flattened;
+            this.setState({
+              data: newData,
+              filteredData: newData.filter((row) => evaluateFilter(row, this.state?.filter)),
+              columns: getPropertiesUnion(newData, this.state?.columns),
+              active: null,
+            });
+          }
+        }
+      },
     };
   }
 
@@ -73,6 +107,7 @@ class App extends React.Component<IAppProps, IState> {
 }
 
 function AppHeader() {
+  const context = useContext(DataContext);
   return (
     <header id="App-header">
       <div id="logoDiv">
@@ -82,7 +117,9 @@ function AppHeader() {
       </div>
       <div id="appNameDiv">
         <h1>geotab</h1>
-        <p>View, interact with, and edit geographical/tabular data.</p>
+      </div>
+      <div id="googleLoginDiv">
+        <GoogleLogin onRead={context?.setFromJson} />
       </div>
     </header>
   );

@@ -1,6 +1,13 @@
 import React, { useCallback, useContext, useState } from 'react';
 import { gapi } from 'gapi-script';
 import CircularProgress from '@mui/material/CircularProgress';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import ListItemText from '@mui/material/ListItemText';
+import PersonIcon from '@mui/icons-material/Person';
+import PersonOffIcon from '@mui/icons-material/PersonOff';
+import FolderIcon from '@mui/icons-material/Folder';
+import FolderOffIcon from '@mui/icons-material/FolderOff';
 import { parseGoogleFile } from './readfile';
 import {DataContext} from './dataContext'
 import {TextFieldDialog} from './TextFieldDialog'
@@ -86,6 +93,8 @@ export function GoogleLogin(props) {
   const handleSignOutClick = (event) => {
     setListDocumentsVisibility(false);
     gapi.auth2.getAuthInstance().signOut();
+    setSignedInUser(null);
+    setOpenFile(null);
   };
 
   /**
@@ -165,7 +174,6 @@ export function GoogleLogin(props) {
 
   return (
     <div>
-      <h4>Google Drive</h4>
       <GoogleDrivePickerDialog
         client={gapi.client}
         onConfirm={onFileSelected}
@@ -175,24 +183,30 @@ export function GoogleLogin(props) {
         />
       {signedInUser
       ? <div id="signinStatus">
-          Signed in as: {signedInUser.getEmail()}
-          <button onClick={handleSignOutClick}>Sign Out</button>
+          <PersonIcon
+            onClick={handleSignOutClick}
+            onContextMenu={() => console.log(signedInUser)}
+            fontSize="large"
+            />
         </div>
-      : <button onClick={handleClientLoad}>Sign In</button>
+      : <PersonOffIcon
+          onClick={handleClientLoad}
+          fontSize="large"
+          />
       }
-      {openFile &&
-        <p>Open file: {openFile.name}</p>}
       {signedInUser &&
-        <span>
-          {context.data.length === 0 && <button onClick={() => { listFiles(); }}>Open</button>}
-          {openFile &&
-            <React.Fragment>
-              <button onClick={saveOpenFile}>Save</button>
-              <button onClick={closeFile}>Close</button>
-            </React.Fragment>
-            }
-          <button onClick={() => {setShowNewFileDialog(true)}}>Save New</button>
-        </span>
+        <FileContextMenu
+          canOpen={context.data.length === 0 && openFile === null}
+          openFile={openFile}
+          onOpen={listFiles}
+          onClose={closeFile}
+          onSave={saveOpenFile}
+          onSaveNew={() => {setShowNewFileDialog(true)}}
+          >
+          {openFile === null
+            ? <FolderOffIcon fontSize="large" />
+            : <FolderIcon fontSize="large" onContextMenu={() => console.log(openFile)} />}
+        </FileContextMenu>
       }
       <TextFieldDialog
         open={showNewFileDialog}
@@ -203,6 +217,64 @@ export function GoogleLogin(props) {
         confirmLabel="Create"
         />
     </div>
+  );
+}
+
+function FileContextMenu(props) {
+  const [contextMenu, setContextMenu] = useState(null);
+  const handleContextMenu = (event) => {
+    setContextMenu(
+      contextMenu === null
+        ? {
+            mouseX: event.clientX + 2,
+            mouseY: event.clientY - 6,
+          }
+        : // repeated contextmenu when it is already open closes it with Chrome 84 on Ubuntu
+          // Other native context menus might behave different.
+          // With this behavior we prevent contextmenu from the backdrop to re-locale existing context menus.
+          null,
+    );
+  };
+  const handleClose = () => {
+    setContextMenu(null);
+  };
+
+  return (
+    <React.Fragment>
+      <span onClick={handleContextMenu}>
+        {props.children}
+      </span>
+      <Menu
+        open={contextMenu !== null}
+        onClose={handleClose}
+        anchorReference="anchorPosition"
+        anchorPosition={
+          contextMenu !== null
+            ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
+            : undefined
+        }
+      >
+        <MenuItem
+          disabled={!props.canOpen}
+          onClick={() => { props.onOpen(); handleClose() }}>
+          <ListItemText>Open</ListItemText>
+        </MenuItem>
+        <MenuItem
+          disabled={props.openFile === null}
+          onClick={() => { props.onClose(); handleClose() }}>
+          <ListItemText>Close</ListItemText>
+        </MenuItem>
+        <MenuItem
+          disabled={props.openFile === null}
+          onClick={() => { props.onSave(); handleClose() }}>
+          <ListItemText>Save</ListItemText>
+        </MenuItem>
+        <MenuItem
+          onClick={() => { props.onSaveNew(); handleClose() }}>
+          <ListItemText>Save New</ListItemText>
+        </MenuItem>
+      </Menu>
+    </React.Fragment>
   );
 }
 

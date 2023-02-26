@@ -55,14 +55,14 @@ button:active {
 #App-header #logoDiv {
   width: calc(7vh - 2px);
 }
-#App-header #appNameDiv {
-  width: calc(90vw - (7vh - 2px));
+#App-header #googleLoginDiv {
+  float: right;
 }
 #App-header div .verticalCentering {
   height: calc(7vh - 2px);
   position: relative;
 }
-#App-header div .verticalCentering svg {
+#App-header div .verticalCentering>svg {
   height: calc(7vh - 2px);
   width: calc(7vh - 2px);
   margin: 0;

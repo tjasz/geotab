@@ -1,6 +1,11 @@
 import React from 'react';
 import * as GeoJson from './geojson-types'
 
+export type GeotabMetadata = {
+  columns: any[], // TODO define column definition type
+  filter: any, // TODO define filter type
+  symbology: any, // TODO define symbology definition type
+}
 export type DataContextType = {
   data: GeoJson.Feature[],
   filter: any, // TODO define filter type
@@ -14,6 +19,7 @@ export type DataContextType = {
   setColumns: {(newColumns:any[]) : void},
   setActive: {(newActive?:string) : void},
   setSymbology: {(newSymbology:any) : void},
+  setFromJson: {(json:GeoJson.Feature[] & {geotabMetadata:GeotabMetadata}) : void},
 } | null;
 
 export const DataContext = React.createContext<DataContextType>(null);

@@ -1,7 +1,6 @@
 import React, {useContext, useState} from 'react';
 import { useSearchParams } from "react-router-dom";
 import {DataContext} from './dataContext'
-import {getFeatures, getPropertiesUnion} from './algorithm'
 import {defaultFilter, ConditionOperator, ConditionGroupOperator, parametersMap, operandTypes, Condition, ConditionGroup, filterEquals, FilterType, validateFilter} from './filter'
 import {FieldType} from './fieldtype'
 import {ReactComponent as MinusSquare} from './feather/minus-square.svg'
@@ -9,7 +8,6 @@ import {ReactComponent as PlusSquare} from './feather/plus-square.svg'
 import {Select} from './common-components'
 import {LabeledCheckbox} from './LabeledCheckbox'
 import {parseFile, attachProgress} from './readfile'
-import { GoogleLogin } from './google-drive'
 import {simplify} from './geojson-calc'
 
 function DataView(props) {
@@ -46,27 +44,8 @@ function ImportView(props) {
     context.setData(context.data.map((f) => simplify(f, 10)));
   }
   const setDataFromJson = (json) => {
-    const flattened = getFeatures(json);
-    if (flattened.length) {
-      if (context.data.length === 0) {
-        if (json.geotabMetadata) {
-          context.setDataAndFilter(flattened, json.geotabMetadata.filter);
-          context.setColumns(json.geotabMetadata.columns);
-          context.setSymbology(json.geotabMetadata.symbology);
-          setUrlParams({});
-        } else {
-          context.setData(context.data.concat(flattened));
-          context.setColumns(getPropertiesUnion(flattened));
-          setUrlParams({});
-        }
-      } else {
-        const newData = context.data.concat(flattened);
-        context.setData(newData);
-        context.setColumns(getPropertiesUnion(newData, context.columns));
-        setUrlParams({});
-      }
-      context.setActive(null);
-    }
+    setUrlParams({});
+    context.setFromJson(json);
   };
   const processServerFiles = (fnames) => {
     const fetchPromises = fnames.map((fname) => 
@@ -113,21 +92,20 @@ function ImportView(props) {
       <button type="button" id="next-button" onClick={simplifyGeometry}>Simplify Geometry</button>
       <h3>Import</h3>
       <FileImporter onRead={setDataFromJson} />
-      <GoogleLogin onRead={setDataFromJson} />
       <p>Try pre-loaded data:</p>
       <ul>
         <li>
-          <button onClick={() => { setUrlParams({src: "seattle-hills"}); processServerFile("json/seattle-hills.json"); }}>
+          <button onClick={() => { processServerFile("json/seattle-hills.json"); }}>
             Seattle Hills
           </button>
         </li>
         <li>
-          <button onClick={() => { setUrlParams({src: "backpacking-washington"}); processServerFile("json/backpacking-washington.json"); }}>
+          <button onClick={() => { processServerFile("json/backpacking-washington.json"); }}>
             Backpacking Washington
           </button>
         </li>
         <li>
-          <button onClick={() => { setUrlParams({src: "wa-ultras"}); processServerFile("json/wa-ultras.json"); }}>
+          <button onClick={() => { processServerFile("json/wa-ultras.json"); }}>
             Washington Most Prominent Peaks
           </button>
         </li>
