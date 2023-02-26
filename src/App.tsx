@@ -117,6 +117,7 @@ function AppHeader() {
       </div>
       <div id="appNameDiv">
         <h1>geotab</h1>
+        <p>View, interact with, and edit geographical/tabular data.</p>
       </div>
       <div id="googleLoginDiv">
         <GoogleLogin onRead={context?.setFromJson} />

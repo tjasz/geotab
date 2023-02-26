@@ -71,6 +71,11 @@ button:active {
   -ms-transform: translateY(-50%);
   transform: translateY(-50%);
 }
+@media (max-width: 800px) {
+  #App-header p {
+    display: none;
+  }
+}
 
 #App-footer {
   background-color: #336799;
