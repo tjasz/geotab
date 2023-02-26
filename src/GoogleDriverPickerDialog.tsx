@@ -1,3 +1,4 @@
+import CSS from 'csstype'
 import {useRef, useState} from 'react'
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -16,6 +17,7 @@ type PropertyDefinition = {
   id:string,
   name:string,
   visible:boolean,
+  align:CSS.Property.TextAlign,
   display:(v:any) => string
 }
 const FileSizePrefixes = ["B", "KiB", "MiB", "GiB", "TiB", "PiB"];
@@ -24,30 +26,35 @@ const driveFileProperties:PropertyDefinition[] = [
     id:"id",
     name:"ID",
     visible:false,
+    align:"left",
     display:(v:string) => v
   },
   {
     id:"mimeType",
     name:"MIME Type",
     visible:false,
+    align:"left",
     display:(v:string) => v
   },
   {
     id:"name",
     name:"Name",
     visible:true,
+    align:"left",
     display:(v:string) => v
   },
   {
     id:"modifiedByMeTime",
     name:"Modified By Me",
     visible:true,
+    align:"left",
     display:(v:string) => v
   },
   {
     id:"size",
     name:"Size",
     visible:true,
+    align:"right",
     display:(v:string) => {
       let n = Number(v);
       let powerOf1024 = 0;
@@ -92,14 +99,14 @@ export function GoogleDrivePickerDialog(props) {
     <Dialog onClose={handleCancel} open={props.open}>
       <DialogTitle>{props.title}</DialogTitle>
       <DialogContent ref={ref}>
-        <table>
+        <table className="pickerTable">
           <thead>
             <tr>
               <th>#</th>
               {driveFileProperties
                 .filter((prop) => prop.visible)
                 .map((prop) =>
-                  <th key={prop.id}>{prop.name}</th>)}
+                  <th key={prop.id} style={{textAlign: prop.align}}>{prop.name}</th>)}
             </tr>
           </thead>
           <tbody>
@@ -111,7 +118,9 @@ export function GoogleDrivePickerDialog(props) {
               {driveFileProperties
                 .filter((prop) => prop.visible)
                 .map((prop) =>
-                  <td key={prop.id}>{prop.display(f[prop.id])}</td>)}
+                  <td key={prop.id} style={{textAlign: prop.align}}>
+                    {prop.display(f[prop.id])}
+                  </td>)}
             </tr>
             )}
           </tbody>

@@ -284,3 +284,22 @@ button:active {
   margin: 0;
   padding: 0;
 }
+
+.pickerTable {
+  text-align: left;
+  border-spacing: 0;
+}
+.pickerTable tbody tr:nth-child(odd) {
+  background-color: #f3f6fa;
+}
+.pickerTable thead th {
+  position: sticky;
+  z-index: 50;
+  margin: 0;
+  padding: 0.5em;
+}
+.pickerTable tbody td {
+  margin: 0;
+  padding: 0.5em;
+  cursor: pointer;
+}
