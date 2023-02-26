@@ -34,6 +34,7 @@ button:active {
   overflow: hidden;
   background-color: #336799;
   height: calc(7vh - 2px);
+  min-width: 225px;
   text-align: left;
   font-size: 100%;
   color: white;
@@ -71,8 +72,18 @@ button:active {
   -ms-transform: translateY(-50%);
   transform: translateY(-50%);
 }
-@media (max-width: 1200px) {
-  #App-header p {
+@media (max-width: 1000px) {
+  #App-header #appNameDiv p {
+    display: none;
+  }
+}
+@media (max-width: 650px) {
+  #App-header #googleLoginDiv p {
+    display: none;
+  }
+}
+@media (max-width: 350px) {
+  #App-header #appNameDiv h1 {
     display: none;
   }
 }
