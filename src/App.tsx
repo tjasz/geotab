@@ -4,6 +4,7 @@ import './App.css';
 import TabView from './tabview'
 import {DataContextType, DataContext} from './dataContext'
 import { evaluateFilter } from './filter';
+import { GeotabLogo } from './icon/GeotabLogo';
 
 interface IAppProps {
 }
@@ -74,8 +75,15 @@ class App extends React.Component<IAppProps, IState> {
 function AppHeader() {
   return (
     <header id="App-header">
-      <h1>geotab</h1>
-      <p>View, interact with, and edit geographical/tabular data.</p>
+      <div id="logoDiv">
+        <div className="verticalCentering">
+          <GeotabLogo />
+        </div>
+      </div>
+      <div id="appNameDiv">
+        <h1>geotab</h1>
+        <p>View, interact with, and edit geographical/tabular data.</p>
+      </div>
     </header>
   );
 }

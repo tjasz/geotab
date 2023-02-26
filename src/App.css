@@ -42,11 +42,34 @@ button:active {
   margin: 0;
 }
 #App-header h1 {
-  margin: 0;
+  margin: 0 10px;
   padding: 0;
 }
 #App-header p {
+  margin: 0 10px;
+}
+#App-header div {
+  float: left;
+  height: calc(7vh - 2px);
+}
+#App-header #logoDiv {
+  width: calc(7vh - 2px);
+}
+#App-header #appNameDiv {
+  width: calc(90vw - (7vh - 2px));
+}
+#App-header div .verticalCentering {
+  height: calc(7vh - 2px);
+  position: relative;
+}
+#App-header div .verticalCentering svg {
+  height: calc(7vh - 2px);
+  width: calc(7vh - 2px);
   margin: 0;
+  position: absolute;
+  top: 50%;
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
 }
 
 #App-footer {
