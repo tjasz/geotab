@@ -38,6 +38,7 @@ export function GoogleLogin(props) {
   // signin/file status
   const [isLoadingGoogleDriveApi, setIsLoadingGoogleDriveApi] = useState(false);
   const [isFetchingGoogleDriveFile, setIsFetchingGoogleDriveFile] = useState(false);
+  const [isSavingGoogleDriveFile, setIsSavingGoogleDriveFile] = useState(false);
   const [signedInUser, setSignedInUser] = useState();
   const [openFile, setOpenFile] = useState(null);
 
@@ -139,11 +140,13 @@ export function GoogleLogin(props) {
 
   const saveNewFile = (filename) => {
     setNewFileDialogVisible(false);
-    upload({name: filename}, (uploadResult) => setOpenFile(uploadResult));
+    setIsSavingGoogleDriveFile(true);
+    upload({name: filename}, (uploadResult) => {setOpenFile(uploadResult); setIsSavingGoogleDriveFile(false)});
   }
 
   const saveOpenFile = () => {
-    upload(openFile);
+    setIsSavingGoogleDriveFile(true);
+    upload(openFile, () => setIsSavingGoogleDriveFile(false));
   }
 
   const closeFile = () => {
@@ -198,7 +201,7 @@ export function GoogleLogin(props) {
           onSave={saveOpenFile}
           onSaveNew={() => {setNewFileDialogVisible(true)}}
           >
-          {isFetchingGoogleDriveFile
+          {isFetchingGoogleDriveFile || isSavingGoogleDriveFile
           ? <CircularProgress />
           : openFile === null
             ? <FolderOffIcon fontSize="large" />
