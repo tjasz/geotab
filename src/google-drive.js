@@ -177,21 +177,6 @@ export function GoogleLogin(props) {
         title="Open Google Drive File"
         open={filePickerVisible}
         />
-      {isLoadingGoogleDriveApi
-      ? <CircularProgress />
-      : signedInUser
-        ? <div id="signinStatus">
-            <PersonIcon
-              onClick={handleSignOutClick}
-              onContextMenu={() => console.log(signedInUser)}
-              fontSize="large"
-              />
-          </div>
-        : <PersonOffIcon
-            onClick={handleClientLoad}
-            fontSize="large"
-            />
-      }
       {signedInUser &&
         <FileContextMenu
           canOpen={context.data.length === 0 && openFile === null}
@@ -201,13 +186,19 @@ export function GoogleLogin(props) {
           onSave={saveOpenFile}
           onSaveNew={() => {setNewFileDialogVisible(true)}}
           >
-          {isFetchingGoogleDriveFile || isSavingGoogleDriveFile
-          ? <CircularProgress />
-          : openFile === null
-            ? <FolderOffIcon fontSize="large" />
-            : <FolderIcon fontSize="large" onContextMenu={() => console.log(openFile)} />}
+          <FileButton
+            isFetchingGoogleDriveFile={isFetchingGoogleDriveFile}
+            isSavingGoogleDriveFile={isSavingGoogleDriveFile}
+            openFile={openFile}
+            />
         </FileContextMenu>
       }
+      <UserButton
+        isLoading={isLoadingGoogleDriveApi}
+        signedInUser={signedInUser}
+        handleSignOutClick={handleSignOutClick}
+        handleSignInClick={handleClientLoad}
+        />
       <TextFieldDialog
         open={newFileDialogVisible}
         onCancel={() => setNewFileDialogVisible(false)}
@@ -218,6 +209,58 @@ export function GoogleLogin(props) {
         />
     </div>
   );
+}
+
+function FileButton(props) {
+  if (props.isFetchingGoogleDriveFile) {
+    return <button id="fileStatus">
+             <CircularProgress size={36} />
+             <p>Loading...</p>
+           </button>
+  }
+  if (props.isSavingGoogleDriveFile) {
+    return <button id="fileStatus">
+             <CircularProgress size={36} />
+             <p>Saving...</p>
+           </button>
+  }
+  if (props.openFile) {
+    return <button id="fileStatus">
+             <FolderIcon fontSize="large" />
+             <p>{props.openFile.name}</p>
+           </button>
+  }
+  return <button id="fileStatus">
+           <FolderOffIcon fontSize="large" />
+           <p>Open/Create</p>
+         </button>
+}
+
+function UserButton(props) {
+  return props.isLoading
+    ? <button
+        onClick={props.handleSignOutClick}
+        id="signinStatus">
+        <CircularProgress size={36} />
+        <p>Signing in...</p>
+      </button>
+    : props.signedInUser
+      ? <button
+          onClick={props.handleSignOutClick}
+          id="signinStatus">
+          <PersonIcon
+            fontSize="large"
+            />
+          <p>{props.signedInUser.getEmail()}</p>
+        </button>
+      : <button
+          onClick={props.handleSignInClick}
+          id="signinStatus">
+          <PersonOffIcon
+            fontSize="large"
+            />
+          <p>Sign In</p>
+        </button>
 }
 
 function FileContextMenu(props) {
