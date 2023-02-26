@@ -83,8 +83,8 @@ function AppHeader() {
 function AppFooter() {
   return (
     <footer id="App-footer">
-        <p>&copy; 2022 Tyler Jaszkowiak</p>
-      </footer>
+      <p>&copy; 2023 Tyler Jaszkowiak</p>
+    </footer>
   );
 }
 
