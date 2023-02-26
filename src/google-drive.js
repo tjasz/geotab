@@ -32,17 +32,14 @@ const FILE_TYPE = "application/json+geotab";
 
 export function GoogleLogin(props) {
   const context = useContext(DataContext);
-  const [showNewFileDialog, setShowNewFileDialog] = useState(false);
-  const [listDocumentsVisible, setListDocumentsVisibility] = useState(false);
-  const [listDocumentsMode, setListDocumentsMode] = useState("read");
-  const [documents, setDocuments] = useState([]);
+  // dialog/menu visibility booleans
+  const [newFileDialogVisible, setNewFileDialogVisible] = useState(false);
+  const [filePickerVisible, setFilePickerVisible] = useState(false);
+  // signin/file status
   const [isLoadingGoogleDriveApi, setIsLoadingGoogleDriveApi] = useState(false);
-  const [isFetchingGoogleDriveFiles, setIsFetchingGoogleDriveFiles] = useState(false);
+  const [isFetchingGoogleDriveFile, setIsFetchingGoogleDriveFile] = useState(false);
   const [signedInUser, setSignedInUser] = useState();
-  const [accessToken, setAccessToken] = useState();
   const [openFile, setOpenFile] = useState(null);
-  const [pickerInitialized, setPickerInitialized] = useState(false);
-  const handleChange = (file) => {};
 
   const process = (files) => {
     const promises = [];
@@ -57,6 +54,7 @@ export function GoogleLogin(props) {
       props.onRead(json);
       const errors = results.filter((r) => r.status === "rejected").map((r) => r.reason);
       errors.length && alert(errors);
+      setIsFetchingGoogleDriveFile(false);
     })
     .catch((e) => {
       alert(e);
@@ -79,7 +77,6 @@ export function GoogleLogin(props) {
     if (isSignedIn) {
       // Set the signed in user
       setSignedInUser(gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile());
-      setAccessToken(gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse(true).access_token);
       setIsLoadingGoogleDriveApi(false);
     } else {
       // prompt user to sign in
@@ -91,7 +88,7 @@ export function GoogleLogin(props) {
    *  Sign out the user upon button click.
    */
   const handleSignOutClick = (event) => {
-    setListDocumentsVisibility(false);
+    setFilePickerVisible(false);
     gapi.auth2.getAuthInstance().signOut();
     setSignedInUser(null);
     setOpenFile(null);
@@ -124,12 +121,7 @@ export function GoogleLogin(props) {
 
   const handleClientLoad = () => {
     gapi.load('client:auth2', initClient);
-    gapi.load('picker', onPickerApiLoad);
   };
-
-  function onPickerApiLoad() {
-    setPickerInitialized(true);
-  }
 
   const upload = (file, callback) => {
     const textContent = JSON.stringify({
@@ -146,7 +138,7 @@ export function GoogleLogin(props) {
   };
 
   const saveNewFile = (filename) => {
-    setShowNewFileDialog(false);
+    setNewFileDialogVisible(false);
     upload({name: filename}, (uploadResult) => setOpenFile(uploadResult));
   }
 
@@ -163,13 +155,14 @@ export function GoogleLogin(props) {
   }
 
   const onFileSelected = (file) => {
+    setIsFetchingGoogleDriveFile(true);
     process([file]);
     setOpenFile(file);
-    setListDocumentsVisibility(false);
+    setFilePickerVisible(false);
   }
 
   const listFiles = () => {
-    setListDocumentsVisibility(true);
+    setFilePickerVisible(true);
   }
 
   return (
@@ -177,22 +170,24 @@ export function GoogleLogin(props) {
       <GoogleDrivePickerDialog
         client={gapi.client}
         onConfirm={onFileSelected}
-        onCancel={() => {setListDocumentsVisibility(false)}}
+        onCancel={() => {setFilePickerVisible(false)}}
         title="Open Google Drive File"
-        open={listDocumentsVisible}
+        open={filePickerVisible}
         />
-      {signedInUser
-      ? <div id="signinStatus">
-          <PersonIcon
-            onClick={handleSignOutClick}
-            onContextMenu={() => console.log(signedInUser)}
+      {isLoadingGoogleDriveApi
+      ? <CircularProgress />
+      : signedInUser
+        ? <div id="signinStatus">
+            <PersonIcon
+              onClick={handleSignOutClick}
+              onContextMenu={() => console.log(signedInUser)}
+              fontSize="large"
+              />
+          </div>
+        : <PersonOffIcon
+            onClick={handleClientLoad}
             fontSize="large"
             />
-        </div>
-      : <PersonOffIcon
-          onClick={handleClientLoad}
-          fontSize="large"
-          />
       }
       {signedInUser &&
         <FileContextMenu
@@ -201,16 +196,18 @@ export function GoogleLogin(props) {
           onOpen={listFiles}
           onClose={closeFile}
           onSave={saveOpenFile}
-          onSaveNew={() => {setShowNewFileDialog(true)}}
+          onSaveNew={() => {setNewFileDialogVisible(true)}}
           >
-          {openFile === null
+          {isFetchingGoogleDriveFile
+          ? <CircularProgress />
+          : openFile === null
             ? <FolderOffIcon fontSize="large" />
             : <FolderIcon fontSize="large" onContextMenu={() => console.log(openFile)} />}
         </FileContextMenu>
       }
       <TextFieldDialog
-        open={showNewFileDialog}
-        onCancel={() => setShowNewFileDialog(false)}
+        open={newFileDialogVisible}
+        onCancel={() => setNewFileDialogVisible(false)}
         onConfirm={saveNewFile}
         title="Create File"
         label="File Name"
