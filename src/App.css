@@ -76,15 +76,25 @@ button:active {
   #App-header #appNameDiv p {
     display: none;
   }
+  #App-header #googleLoginDiv p {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+  }
 }
 @media (max-width: 650px) {
-  #App-header #googleLoginDiv p {
+  #App-header #appNameDiv h1 {
     display: none;
   }
 }
+@media (max-width: 550px) {
+  #App-header #signinStatus p {
+    max-width: 20px;
+  }
+}
 @media (max-width: 350px) {
-  #App-header #appNameDiv h1 {
-    display: none;
+  #App-header #googleLoginDiv p {
+    max-width: 20px;
   }
 }
 
