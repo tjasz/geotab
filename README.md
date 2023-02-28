@@ -1,3 +1,30 @@
+# Geotab
+
+Geotab is designed for viewing, editing, and interacting with geographical/tabular data.
+It fills two key niches that are unsatisfied by existing solutions.
+
+1. In geotab, users can filter data rows by their properties
+and determine how they are displayed based on those properties.
+This is available in desktop GIS applications, but not in many browser interfaces.
+2. Unlike in desktop GIS applications such as ArcGIS,
+the symbology of a data set can be based on multiple properties.
+For example, with a data set of mountain peaks, the size of the marker can be based on
+the peak's elevation, and its color based on the peak's prominence.
+
+## Inspiration
+
+Although geotab fulfills unique needs that are not met by existing solutions,
+inspiration can be drawn from many.
+- [GeoCSV](https://tjasz.github.io/geocsv), the precursor to geotab
+- [Caltopo](https://caltopo.com/map.html)
+- [geojson.io](https://geojson.io/)
+- [gpx.studio](https://gpx.studio/)
+- [GPX Simplify Optimizer](https://opengeo.tech/maps/gpx-simplify-optimizer/)
+- [GeoJSON Dashboard](https://github.com/fulcrumapp/geojson-dashboard)
+- Microsoft Excel
+- Google Sheets
+- Microsoft Dataverse
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
