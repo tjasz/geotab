@@ -11,12 +11,12 @@ type FileInfoDialogProperties = {
   handleClose:()=>void
 }
 
-export function GoogleDriveFileInfoDialog({open, file, handleClose}) {
+export function GoogleDriveFileInfoDialog(props:FileInfoDialogProperties) {
   return (
-    <Dialog onClose={handleClose} open={open}>
+    <Dialog onClose={props.handleClose} open={props.open}>
       <DialogTitle>File Info</DialogTitle>
       <DialogContent>
-        {file &&
+        {props.file &&
         <table id="fileInfoDialog">
           <tbody>
             {driveFileProperties
@@ -27,14 +27,14 @@ export function GoogleDriveFileInfoDialog({open, file, handleClose}) {
                         {prop.name}
                       </th>
                       <td>
-                        {prop.display(file[prop.id])}
+                        {prop.display(props.file[prop.id])}
                       </td>
                     </tr>)}
           </tbody>
         </table>}
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose}>Close</Button>
+        <Button onClick={props.handleClose}>Close</Button>
       </DialogActions>
     </Dialog>
   );
