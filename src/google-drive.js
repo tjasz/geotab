@@ -1,11 +1,6 @@
 import React, { useCallback, useContext, useState } from 'react';
 import { gapi } from 'gapi-script';
 import CircularProgress from '@mui/material/CircularProgress';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -17,6 +12,7 @@ import { parseGoogleFile } from './readfile';
 import {DataContext} from './dataContext'
 import {TextFieldDialog} from './TextFieldDialog'
 import {GoogleDrivePickerDialog} from './GoogleDriverPickerDialog'
+import {GoogleDriveFileInfoDialog} from './GoogleDriveFileInfoDialog'
 
 // Client ID and API key from the Developer Console
 const CLIENT_ID = "717055595652-4n93oosqls3l4q3oa0jik4s154qbk149.apps.googleusercontent.com";
@@ -328,33 +324,12 @@ function FileContextMenu(props) {
           <ListItemText>Info</ListItemText>
         </MenuItem>
       </Menu>
-      <FileInfoDialog
+      <GoogleDriveFileInfoDialog
         open={fileInfoDialogOpen}
         file={props.openFile}
         handleClose={() => setFileInfoDialogOpen(false)}
         />
     </React.Fragment>
-  );
-}
-
-function FileInfoDialog({open, file, handleClose}) {
-  return (
-    <Dialog onClose={handleClose} open={open}>
-      <DialogTitle>File Info</DialogTitle>
-      <DialogContent>
-        {file &&
-        <table>
-          <tbody>
-            {Object.entries(file).map((kv) =>
-              <tr key={kv[0]}><th>{kv[0]}</th><td>{kv[1]}</td></tr>
-            )}
-          </tbody>
-        </table>}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose}>Close</Button>
-      </DialogActions>
-    </Dialog>
   );
 }
 
