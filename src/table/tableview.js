@@ -1,14 +1,11 @@
 import React, {useContext, useEffect, useRef, useState} from 'react';
 import SortIcon from '@mui/icons-material/Sort';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import DeleteIcon from '@mui/icons-material/Delete';
 import WestIcon from '@mui/icons-material/West';
 import EastIcon from '@mui/icons-material/East';
 import InfoIcon from '@mui/icons-material/Info';
-import LockIcon from '@mui/icons-material/Lock';
-import LockOpenIcon from '@mui/icons-material/LockOpen';
 import MenuIcon from '@mui/icons-material/Menu';
 import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
 import CalculateIcon from '@mui/icons-material/Calculate';
@@ -25,8 +22,8 @@ import {InsertLeftIcon} from './../icon/InsertLeftIcon'
 import {InsertRightIcon} from './../icon/InsertRightIcon'
 import {SortAscendingIcon} from './../icon/SortAscendingIcon'
 import { ColumnMetadataDialog } from './../ColumnMetadataDialog';
-import { CheckListDialog } from './../CheckListDialog';
-import DataTableCell from './DataTableCell'
+import DataTableRow from './DataTableRow'
+import TableContextMenu from './TableContextMenu';
 
 function TableView(props) {
   return (
@@ -131,7 +128,7 @@ function DataTable() {
       </thead>
       <tbody>
         {features.map((feature, fidx) =>
-          <TableRow
+          <DataTableRow
             key={feature.id}
             cellRefs={refs}
             handleKeyDown={handleKeyDown}
@@ -377,69 +374,6 @@ function ColumnContextMenu(props) {
   );
 }
 
-function TableContextMenu(props) {
-  const [contextMenu, setContextMenu] = useState(null);
-  const [visibilityOpen, setVisibilityOpen] = useState(false);
-  const handleContextMenu = (event) => {
-    setContextMenu(
-      contextMenu === null
-        ? {
-            mouseX: event.clientX + 2,
-            mouseY: event.clientY - 6,
-          }
-        : // repeated contextmenu when it is already open closes it with Chrome 84 on Ubuntu
-          // Other native context menus might behave different.
-          // With this behavior we prevent contextmenu from the backdrop to re-locale existing context menus.
-          null,
-    );
-  };
-  const handleClose = () => {
-    setContextMenu(null);
-  };
-
-  return (
-    <React.Fragment>
-      <span onClick={handleContextMenu}>
-        {props.children}
-      </span>
-      <Menu
-        open={contextMenu !== null}
-        onClose={handleClose}
-        anchorReference="anchorPosition"
-        anchorPosition={
-          contextMenu !== null
-            ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
-            : undefined
-        }
-      >
-        <MenuItem
-          onClick={() => { props.setDisabled(!props.disabled); handleClose() }}>
-          <ListItemIcon>
-            {props.disabled ? <LockOpenIcon fontSize="small" /> : <LockIcon fontSize="small" />}
-          </ListItemIcon>
-          <ListItemText>{props.disabled ? "Unl" : "L"}ock Values</ListItemText>
-        </MenuItem>
-        <MenuItem
-          onClick={() => { setVisibilityOpen(true); handleClose() }}>
-          <ListItemIcon>
-            <VisibilityIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Set Visible Columns</ListItemText>
-        </MenuItem>
-      </Menu>
-      <CheckListDialog
-        open={visibilityOpen}
-        onCancel={() => setVisibilityOpen(false)}
-        onConfirm={(draft) => { props.setColumns(draft); setVisibilityOpen(false)}}
-        defaultValue={props.columns}
-        title="Select Visible Columns"
-        labelColumn="name"
-        checkedColumn="visible"
-        />
-    </React.Fragment>
-  );
-}
-
 function TableHeader(props) {
   return (
     <tr>
@@ -464,33 +398,6 @@ function TableHeader(props) {
             <MoreVertIcon className="inlineIcon" />
           </ColumnContextMenu>
         </th>)}
-    </tr>
-  );
-}
-
-function TableRow(props) {
-  const handleCellChange = (value, column) => {
-    const newFeatureProperties = {...props.feature.properties, [column.name]: value};
-    props.onChange(newFeatureProperties, props.fidx);
-  };
-  return (
-    <tr
-      onContextMenu={() => console.log(props.feature)}
-      onClick={() => props.setActive(props.feature.id)}
-      className={props.active ? "active" : ""}
-      >
-      <th>{1+props.fidx}</th>
-      {Array.from(props.columns).filter((column) => column.visible).map((column) =>
-        <DataTableCell
-          key={`${props.rowId}:${column.name}`}
-          cellRefs={props.cellRefs}
-          handleKeyDown={props.handleKeyDown}
-          column={column}
-          fidx={props.fidx}
-          value={props.feature.properties[column.name]}
-          onChange={handleCellChange}
-          disabled={props.disabled}
-          />)}
     </tr>
   );
 }
