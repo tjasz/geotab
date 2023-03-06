@@ -1,7 +1,7 @@
 import React from 'react';
 import DataView from './dataview'
 import MapView from './mapview'
-import TableView from './tableview'
+import TableView from './table/tableview'
 import SymbologyView from './symbologyview';
 
 enum TabName {

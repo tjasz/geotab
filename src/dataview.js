@@ -2,7 +2,7 @@ import React, {useContext, useState} from 'react';
 import { useSearchParams } from "react-router-dom";
 import {DataContext} from './dataContext'
 import {defaultFilter, ConditionOperator, ConditionGroupOperator, parametersMap, operandTypes, Condition, ConditionGroup, filterEquals, FilterType, validateFilter} from './filter'
-import {FieldType} from './fieldtype'
+import {FieldTypeDescription} from './fieldtype'
 import {ReactComponent as MinusSquare} from './feather/minus-square.svg'
 import {ReactComponent as PlusSquare} from './feather/plus-square.svg'
 import {Select} from './common-components'
@@ -261,7 +261,7 @@ function ConditionView(props) {
   const onFieldnameEdit = (event) => {
     const column = context.columns.find((column) => column.name === event.target.value);
     if (column === undefined) { throw Error(`Cannot find column with name ${event.target.value}.`) }
-    const newOperandType = operandTypes[operator] === FieldType.Any ? column.type : operandTypes[operator];
+    const newOperandType = operandTypes[operator] === FieldTypeDescription.Any ? column.type : operandTypes[operator];
     setFieldname(event.target.value);
     setOperandType(newOperandType);
     props.onEdit({type: "Condition", fieldname: event.target.value, operandType: newOperandType, operator, parameters, negate}, props.indexInGroup);
@@ -269,7 +269,7 @@ function ConditionView(props) {
   const onOperatorEdit = (event) => {
     const column = context.columns.find((column) => column.name === fieldname);
     if (column === undefined) { throw Error(`Cannot find column with name ${event.target.value}.`) }
-    const newOperandType = operandTypes[event.target.value] === FieldType.Any ? column.type : operandTypes[event.target.value];
+    const newOperandType = operandTypes[event.target.value] === FieldTypeDescription.Any ? column.type : operandTypes[event.target.value];
     setOperandType(newOperandType);
     setOperator(event.target.value);
     setParameters(Object.keys(parametersMap[event.target.value]).reduce((accumulator, value) => {

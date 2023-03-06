@@ -1,7 +1,7 @@
 import {StarMarker} from './iconlib'
-import {toType} from './algorithm'
+import {toType} from './fieldtype'
 import * as GeoJson from './geojson-types'
-import {FieldType} from './fieldtype'
+import {FieldTypeDescription} from './fieldtype'
 
 enum SymbologyMode {
   ByValue = "byvalue",
@@ -23,7 +23,7 @@ type SymbologyProperty = {
   fieldname: string;
   breaks: any[];
   default: number;
-  type: FieldType;
+  type: FieldTypeDescription;
 }
 
 type Symbology = {
