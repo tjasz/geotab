@@ -1,4 +1,6 @@
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import DataTableCell from './DataTableCell'
+import RowContextMenu from './RowContextMenu';
 
 export default function TableRow(props) {
   const handleCellChange = (value, column) => {
@@ -11,7 +13,12 @@ export default function TableRow(props) {
       onClick={() => props.setActive(props.feature.id)}
       className={props.active ? "active" : ""}
       >
-      <th>{1+props.fidx}</th>
+      <th>
+        {1+props.fidx}
+        <RowContextMenu>
+            <MoreHorizIcon className="inlineIcon" />
+        </RowContextMenu>
+      </th>
       {Array.from(props.columns).filter((column) => column.visible).map((column) =>
         <DataTableCell
           key={`${props.rowId}:${column.name}`}
