@@ -1,7 +1,7 @@
 import { AbridgedUrlLink } from '../common-components';
 import { toDate } from './../fieldtype'
 
-export default function CellValue(props) {
+export default function DataCellValue(props) {
   // transform null, undefined, empty string to undefined
   if (props.value === null || props.value === undefined || props.value === "") {
     return undefined;

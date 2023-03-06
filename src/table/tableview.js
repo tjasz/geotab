@@ -26,7 +26,7 @@ import {InsertRightIcon} from './../icon/InsertRightIcon'
 import {SortAscendingIcon} from './../icon/SortAscendingIcon'
 import { ColumnMetadataDialog } from './../ColumnMetadataDialog';
 import { CheckListDialog } from './../CheckListDialog';
-import DataCellValue from './DataCellValue'
+import DataTableCell from './DataTableCell'
 
 function TableView(props) {
   return (
@@ -481,7 +481,7 @@ function TableRow(props) {
       >
       <th>{1+props.fidx}</th>
       {Array.from(props.columns).filter((column) => column.visible).map((column) =>
-        <TableCell
+        <DataTableCell
           key={`${props.rowId}:${column.name}`}
           cellRefs={props.cellRefs}
           handleKeyDown={props.handleKeyDown}
@@ -492,37 +492,6 @@ function TableRow(props) {
           disabled={props.disabled}
           />)}
     </tr>
-  );
-}
-
-function TableCell(props) {
-  const handleBlur = (e) => {
-    props.onChange(e.target.value, props.column);
-  };
-
-  if (props.disabled) {
-    return (
-      <td>
-        <DataCellValue value={props.value} column={props.column} />
-      </td>
-    );
-  }
-  return (
-    <td>
-      <input
-        ref={el => {
-          if (!props.cellRefs.current.hasOwnProperty(props.fidx)) {
-            props.cellRefs.current[props.fidx] = {};
-          }
-          props.cellRefs.current[props.fidx][props.column.name] = el
-        }}
-        onKeyDown={(e) => props.handleKeyDown(e, props.fidx, props.column.name)}
-        type="text"
-        defaultValue={props.value ?? ""}
-        size={props.value?.length ?? 17 + 3}
-        onBlur={handleBlur}
-        />
-    </td>
   );
 }
 
