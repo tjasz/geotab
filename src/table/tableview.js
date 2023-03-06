@@ -17,16 +17,16 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { sortBy } from './algorithm'
-import {DataContext} from './dataContext'
-import { AbridgedUrlLink } from './common-components';
-import { SelectDialog } from './SelectDialog'
-import { TextFieldDialog } from './TextFieldDialog'
-import {InsertLeftIcon} from './icon/InsertLeftIcon'
-import {InsertRightIcon} from './icon/InsertRightIcon'
-import {SortAscendingIcon} from './icon/SortAscendingIcon'
-import { ColumnMetadataDialog } from './ColumnMetadataDialog';
-import { CheckListDialog } from './CheckListDialog';
+import { sortBy } from './../algorithm'
+import {DataContext} from './../dataContext'
+import { AbridgedUrlLink } from './../common-components';
+import { SelectDialog } from './../SelectDialog'
+import { TextFieldDialog } from './../TextFieldDialog'
+import {InsertLeftIcon} from './../icon/InsertLeftIcon'
+import {InsertRightIcon} from './../icon/InsertRightIcon'
+import {SortAscendingIcon} from './../icon/SortAscendingIcon'
+import { ColumnMetadataDialog } from './../ColumnMetadataDialog';
+import { CheckListDialog } from './../CheckListDialog';
 
 function TableView(props) {
   return (
