@@ -1,7 +1,7 @@
 import { setEquals } from './algorithm'
 import { DataContextType } from './dataContext';
 import { FieldTypeDescription } from './fieldtype'
-import { toType } from './algorithm'
+import { toType } from './fieldtype'
 
 type ParameterSpec = {[index:string] : {type: FieldTypeDescription}}
 type ParameterDef = {[index:string] : any}

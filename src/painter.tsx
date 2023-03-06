@@ -1,5 +1,5 @@
 import {StarMarker} from './iconlib'
-import {toType} from './algorithm'
+import {toType} from './fieldtype'
 import * as GeoJson from './geojson-types'
 import {FieldTypeDescription} from './fieldtype'
 

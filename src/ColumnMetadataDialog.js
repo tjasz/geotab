@@ -4,7 +4,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import {toType} from './algorithm'
+import {toType} from './fieldtype'
 import { Histogram } from './common-components';
 import math from './math';
 

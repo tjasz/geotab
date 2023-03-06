@@ -3,7 +3,7 @@ import {Slider} from '@mui/material'
 import {DataContext} from './dataContext'
 import {Select, ColoredText, MultiTextField, Histogram} from './common-components'
 import {symbologyModes, modesForType} from './painter'
-import {toType} from './algorithm'
+import {toType} from './fieldtype'
 import {ReactComponent as MinusSquare} from './feather/minus-square.svg'
 import {ReactComponent as PlusSquare} from './feather/plus-square.svg'
 import { LabeledCheckbox } from './LabeledCheckbox';

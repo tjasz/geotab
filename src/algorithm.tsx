@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import math from './math'
-import { FieldTypeDescription } from './fieldtype'
+import { toType } from './fieldtype'
 
 export function sleep (time:number) : Promise<NodeJS.Timeout> {
   return new Promise((resolve) => setTimeout(resolve, time));
@@ -31,23 +31,6 @@ export function getFeatures(data) {
 
 function isEmptyField(v:any) {
   return v === null || v === undefined || v === "";
-}
-
-export function toType(value, type) {
-  switch(type) {
-    case "number":
-      return Number(value);
-    case "date":
-      if (typeof value === "string") {
-        const isnum = value.match(/^[0-9]+$/) != null;
-        return new Date(isnum ? Number(value) : Date.parse(value));
-      }
-      return new Date(value);
-    case "string":
-      return typeof value === "string" ? value : JSON.stringify(value);
-    default:
-      return value;
-  }
 }
 
 function getColumnMetadata(features, key, existingProperties) {
