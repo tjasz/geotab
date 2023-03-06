@@ -15,7 +15,9 @@ export default function TableRow(props) {
       >
       <th>
         {1+props.fidx}
-        <RowContextMenu>
+        <RowContextMenu
+          feature={props.feature}
+          >
             <MoreHorizIcon className="inlineIcon" />
         </RowContextMenu>
       </th>

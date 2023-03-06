@@ -10,8 +10,9 @@ export default function RowContextMenu(props) {
   const context = useContext(DataContext);
   const [contextMenu, setContextMenu] = React.useState(null);
   
-  const deleteRow = (fieldname) => {
-    console.log("delete row");
+  const deleteRow = () => {
+    context.setData(context.data.filter(
+      (feature) => feature.id !== props.feature.id));
   };
 
   const handleContextMenu = (event) => {
