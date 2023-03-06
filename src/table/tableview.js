@@ -19,7 +19,6 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { sortBy } from './../algorithm'
 import {DataContext} from './../dataContext'
-import { AbridgedUrlLink } from './../common-components';
 import { SelectDialog } from './../SelectDialog'
 import { TextFieldDialog } from './../TextFieldDialog'
 import {InsertLeftIcon} from './../icon/InsertLeftIcon'
@@ -27,6 +26,7 @@ import {InsertRightIcon} from './../icon/InsertRightIcon'
 import {SortAscendingIcon} from './../icon/SortAscendingIcon'
 import { ColumnMetadataDialog } from './../ColumnMetadataDialog';
 import { CheckListDialog } from './../CheckListDialog';
+import DataCellValue from './DataCellValue'
 
 function TableView(props) {
   return (
@@ -503,7 +503,7 @@ function TableCell(props) {
   if (props.disabled) {
     return (
       <td>
-        <CellValue value={props.value} column={props.column} />
+        <DataCellValue value={props.value} column={props.column} />
       </td>
     );
   }
@@ -524,45 +524,6 @@ function TableCell(props) {
         />
     </td>
   );
-}
-
-function CellValue(props) {
-  // transform null, undefined, empty string to undefined
-  if (props.value === null || props.value === undefined || props.value === "") {
-    return undefined;
-  }
-  // transform URLs to links
-  if (typeof props.value === "string" && props.value.startsWith("http")) {
-    return <AbridgedUrlLink target="_blank" href={props.value} length={21} />;
-  }
-  switch (props.column.type) {
-    case "number":
-      try {
-        return Number(props.value);
-      }
-      catch (e) {
-        alert(`Invalid number -- could not parse "${props.value}" to number:\n ${e.message}`);
-      }
-    case "date":
-      try {
-        let date = null;
-        if (typeof props.value === "number") {
-          date = new Date(props.value);
-        } else if (typeof props.value === "string") {
-          // if it contains only digits, convert to a number; otherweise, parse as date string
-          const isnum = props.value.match(/^[0-9]+$/) != null;
-          date = new Date(isnum ? Number(props.value) : Date.parse(props.value));
-        }
-        return date.toISOString();
-      }
-      catch (e) {
-        alert(`Invalid date -- could not parse "${props.value}" to date:\n ${e.message}`);
-      }
-    default:
-      return typeof props.value === "string" || typeof props.value === "number"
-      ? props.value
-      : JSON.stringify(props.value);
-  }
 }
 
 export default TableView;
