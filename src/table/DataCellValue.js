@@ -1,13 +1,10 @@
 import { AbridgedUrlLink } from '../common-components';
+import { toDate } from './../fieldtype'
 
 export default function CellValue(props) {
   // transform null, undefined, empty string to undefined
   if (props.value === null || props.value === undefined || props.value === "") {
     return undefined;
-  }
-  // transform URLs to links
-  if (typeof props.value === "string" && props.value.startsWith("http")) {
-    return <AbridgedUrlLink target="_blank" href={props.value} length={21} />;
   }
   switch (props.column.type) {
     case "number":
@@ -19,22 +16,22 @@ export default function CellValue(props) {
       }
     case "date":
       try {
-        let date = null;
-        if (typeof props.value === "number") {
-          date = new Date(props.value);
-        } else if (typeof props.value === "string") {
-          // if it contains only digits, convert to a number; otherweise, parse as date string
-          const isnum = props.value.match(/^[0-9]+$/) != null;
-          date = new Date(isnum ? Number(props.value) : Date.parse(props.value));
-        }
+        let date = toDate(props.value);
         return date.toISOString();
       }
       catch (e) {
         alert(`Invalid date -- could not parse "${props.value}" to date:\n ${e.message}`);
       }
     default:
-      return typeof props.value === "string" || typeof props.value === "number"
-      ? props.value
-      : JSON.stringify(props.value);
+      switch (typeof props.value) {
+        case "string":
+          return props.value.startsWith("http")
+            ? <AbridgedUrlLink target="_blank" href={props.value} length={21} />
+            : props.value;
+        case "number":
+          return props.value;
+        default:
+          return JSON.stringify(props.value)
+      }
   }
 }

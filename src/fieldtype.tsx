@@ -5,7 +5,7 @@ export enum FieldTypeDescription {
   Any = "any",
 }
 
-function toNumber(v:any) : number {
+export function toNumber(v:any) : number {
   if (typeof v === "number") {
     return v;
   }
@@ -15,7 +15,7 @@ function toNumber(v:any) : number {
   return Number(v);
 }
 
-function toDate(v:any) : Date {
+export function toDate(v:any) : Date {
   if (v instanceof Date) {
     return v;
   }
@@ -29,7 +29,7 @@ function toDate(v:any) : Date {
   return new Date(v);
 }
 
-function toString(v:any) : string {
+export function toString(v:any) : string {
   return typeof v === "string" ? v : JSON.stringify(v);
 }
 
