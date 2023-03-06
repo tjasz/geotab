@@ -1,4 +1,4 @@
-export enum FieldType {
+export enum FieldTypeDescription {
   Number = "number",
   Date = "date",
   String = "string",

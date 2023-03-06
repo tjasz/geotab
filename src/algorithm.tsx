@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import math from './math'
-import { FieldType } from './fieldtype'
+import { FieldTypeDescription } from './fieldtype'
 
 export function sleep (time:number) : Promise<NodeJS.Timeout> {
   return new Promise((resolve) => setTimeout(resolve, time));

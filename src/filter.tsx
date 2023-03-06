@@ -1,9 +1,9 @@
 import { setEquals } from './algorithm'
 import { DataContextType } from './dataContext';
-import { FieldType } from './fieldtype'
+import { FieldTypeDescription } from './fieldtype'
 import { toType } from './algorithm'
 
-type ParameterSpec = {[index:string] : {type: FieldType}}
+type ParameterSpec = {[index:string] : {type: FieldTypeDescription}}
 type ParameterDef = {[index:string] : any}
 
 export enum FilterType {
@@ -54,12 +54,12 @@ export enum ConditionOperator {
 export class Condition {
   type: FilterType;
   operator: ConditionOperator;
-  operandType: FieldType;
+  operandType: FieldTypeDescription;
   fieldname: string;
   parameters: ParameterDef;
   negate: boolean;
 
-  constructor(operator:ConditionOperator, operandType:FieldType, fieldname:string, parameters:ParameterDef, negate:boolean=false) {
+  constructor(operator:ConditionOperator, operandType:FieldTypeDescription, fieldname:string, parameters:ParameterDef, negate:boolean=false) {
     this.type = FilterType.Condition;
     this.operator = operator;
     this.operandType = operandType
@@ -96,70 +96,70 @@ export class ConditionGroup {
   }
 }
 
-export const operandTypes : {[key in ConditionOperator]: FieldType} = {
-  [ConditionOperator.IsEmpty]: FieldType.String,
-  [ConditionOperator.IsNotEmpty]: FieldType.String,
-  [ConditionOperator.EqualTo]: FieldType.Any,
-  [ConditionOperator.NotEqualTo]: FieldType.Any,
-  [ConditionOperator.GreaterThan]: FieldType.Any,
-  [ConditionOperator.GreaterThanOrEqualTo]: FieldType.Any,
-  [ConditionOperator.LessThan]: FieldType.Any,
-  [ConditionOperator.LessThanOrEqualTo]: FieldType.Any,
-  [ConditionOperator.Between]: FieldType.Any,
-  [ConditionOperator.NotBetween]: FieldType.Any,
-  [ConditionOperator.In]: FieldType.Any,
-  [ConditionOperator.NotIn]: FieldType.Any,
-  [ConditionOperator.Contains]: FieldType.String,
-  [ConditionOperator.DoesNotContain]: FieldType.String,
-  [ConditionOperator.ContainsAny]: FieldType.String,
-  [ConditionOperator.ContainsNone]: FieldType.String,
-  [ConditionOperator.StartsWith]: FieldType.String,
-  [ConditionOperator.DoesNotStartWith]: FieldType.String,
-  [ConditionOperator.EndsWith]: FieldType.String,
-  [ConditionOperator.DoesNotEndWith]: FieldType.String,
-  [ConditionOperator.Like]: FieldType.String,
-  [ConditionOperator.NotLike]: FieldType.String,
-  [ConditionOperator.OnDayOfWeek]: FieldType.Date,
-  [ConditionOperator.OnDayOfMonth]: FieldType.Date,
-  [ConditionOperator.OnDayOfYear]: FieldType.Date,
-  [ConditionOperator.OnDayMonthOfYear]: FieldType.Date,
-  [ConditionOperator.InWeekOfMonth]: FieldType.Date,
-  [ConditionOperator.InWeekOfYear]: FieldType.Date,
-  [ConditionOperator.InMonthOfYear]: FieldType.Date,
-  [ConditionOperator.InYear]: FieldType.Date,
+export const operandTypes : {[key in ConditionOperator]: FieldTypeDescription} = {
+  [ConditionOperator.IsEmpty]: FieldTypeDescription.String,
+  [ConditionOperator.IsNotEmpty]: FieldTypeDescription.String,
+  [ConditionOperator.EqualTo]: FieldTypeDescription.Any,
+  [ConditionOperator.NotEqualTo]: FieldTypeDescription.Any,
+  [ConditionOperator.GreaterThan]: FieldTypeDescription.Any,
+  [ConditionOperator.GreaterThanOrEqualTo]: FieldTypeDescription.Any,
+  [ConditionOperator.LessThan]: FieldTypeDescription.Any,
+  [ConditionOperator.LessThanOrEqualTo]: FieldTypeDescription.Any,
+  [ConditionOperator.Between]: FieldTypeDescription.Any,
+  [ConditionOperator.NotBetween]: FieldTypeDescription.Any,
+  [ConditionOperator.In]: FieldTypeDescription.Any,
+  [ConditionOperator.NotIn]: FieldTypeDescription.Any,
+  [ConditionOperator.Contains]: FieldTypeDescription.String,
+  [ConditionOperator.DoesNotContain]: FieldTypeDescription.String,
+  [ConditionOperator.ContainsAny]: FieldTypeDescription.String,
+  [ConditionOperator.ContainsNone]: FieldTypeDescription.String,
+  [ConditionOperator.StartsWith]: FieldTypeDescription.String,
+  [ConditionOperator.DoesNotStartWith]: FieldTypeDescription.String,
+  [ConditionOperator.EndsWith]: FieldTypeDescription.String,
+  [ConditionOperator.DoesNotEndWith]: FieldTypeDescription.String,
+  [ConditionOperator.Like]: FieldTypeDescription.String,
+  [ConditionOperator.NotLike]: FieldTypeDescription.String,
+  [ConditionOperator.OnDayOfWeek]: FieldTypeDescription.Date,
+  [ConditionOperator.OnDayOfMonth]: FieldTypeDescription.Date,
+  [ConditionOperator.OnDayOfYear]: FieldTypeDescription.Date,
+  [ConditionOperator.OnDayMonthOfYear]: FieldTypeDescription.Date,
+  [ConditionOperator.InWeekOfMonth]: FieldTypeDescription.Date,
+  [ConditionOperator.InWeekOfYear]: FieldTypeDescription.Date,
+  [ConditionOperator.InMonthOfYear]: FieldTypeDescription.Date,
+  [ConditionOperator.InYear]: FieldTypeDescription.Date,
 };
 
 export const parametersMap : {[key in ConditionOperator]: ParameterSpec} = {
   [ConditionOperator.IsEmpty]: {},
   [ConditionOperator.IsNotEmpty]: {},
-  [ConditionOperator.EqualTo]: {value: {type: FieldType.Any}},
-  [ConditionOperator.NotEqualTo]: {value: {type: FieldType.Any}},
-  [ConditionOperator.GreaterThan]: {value: {type: FieldType.Any}},
-  [ConditionOperator.GreaterThanOrEqualTo]: {value: {type: FieldType.Any}},
-  [ConditionOperator.LessThan]: {value: {type: FieldType.Any}},
-  [ConditionOperator.LessThanOrEqualTo]: {value: {type: FieldType.Any}},
-  [ConditionOperator.Between]: {min: {type: FieldType.Any}, max: {type: FieldType.Any}},
-  [ConditionOperator.NotBetween]: {min: {type: FieldType.Any}, max: {type: FieldType.Any}},
-  [ConditionOperator.In]: {values: {type: FieldType.Any}}, // TODO set(auto)
-  [ConditionOperator.NotIn]: {values: {type: FieldType.Any}}, // TODO set(auto)
-  [ConditionOperator.Contains]: {substring: {type: FieldType.String}},
-  [ConditionOperator.DoesNotContain]: {substring: {type: FieldType.String}},
-  [ConditionOperator.ContainsAny]: {substrings: {type: FieldType.String}}, // TODO set(string)
-  [ConditionOperator.ContainsNone]: {substrings: {type: FieldType.String}}, // TODO set(string)
-  [ConditionOperator.StartsWith]: {prefix: {type: FieldType.String}},
-  [ConditionOperator.DoesNotStartWith]: {prefix: {type: FieldType.String}},
-  [ConditionOperator.EndsWith]: {suffix: {type: FieldType.String}},
-  [ConditionOperator.DoesNotEndWith]: {suffix: {type: FieldType.String}},
-  [ConditionOperator.Like]: {regex: {type: FieldType.String}},
-  [ConditionOperator.NotLike]: {regex: {type: FieldType.String}},
-  [ConditionOperator.OnDayOfWeek]: {day: {type: FieldType.Number}},
-  [ConditionOperator.OnDayOfMonth]: {day: {type: FieldType.Number}},
-  [ConditionOperator.OnDayOfYear]: {day: {type: FieldType.Number}},
-  [ConditionOperator.OnDayMonthOfYear]: {day: {type: FieldType.Number}, month: {type: FieldType.Number}},
-  [ConditionOperator.InWeekOfMonth]: {week: {type: FieldType.Number}},
-  [ConditionOperator.InWeekOfYear]: {week: {type: FieldType.Number}},
-  [ConditionOperator.InMonthOfYear]: {month: {type: FieldType.Number}},
-  [ConditionOperator.InYear]: {year: {type: FieldType.Number}},
+  [ConditionOperator.EqualTo]: {value: {type: FieldTypeDescription.Any}},
+  [ConditionOperator.NotEqualTo]: {value: {type: FieldTypeDescription.Any}},
+  [ConditionOperator.GreaterThan]: {value: {type: FieldTypeDescription.Any}},
+  [ConditionOperator.GreaterThanOrEqualTo]: {value: {type: FieldTypeDescription.Any}},
+  [ConditionOperator.LessThan]: {value: {type: FieldTypeDescription.Any}},
+  [ConditionOperator.LessThanOrEqualTo]: {value: {type: FieldTypeDescription.Any}},
+  [ConditionOperator.Between]: {min: {type: FieldTypeDescription.Any}, max: {type: FieldTypeDescription.Any}},
+  [ConditionOperator.NotBetween]: {min: {type: FieldTypeDescription.Any}, max: {type: FieldTypeDescription.Any}},
+  [ConditionOperator.In]: {values: {type: FieldTypeDescription.Any}}, // TODO set(auto)
+  [ConditionOperator.NotIn]: {values: {type: FieldTypeDescription.Any}}, // TODO set(auto)
+  [ConditionOperator.Contains]: {substring: {type: FieldTypeDescription.String}},
+  [ConditionOperator.DoesNotContain]: {substring: {type: FieldTypeDescription.String}},
+  [ConditionOperator.ContainsAny]: {substrings: {type: FieldTypeDescription.String}}, // TODO set(string)
+  [ConditionOperator.ContainsNone]: {substrings: {type: FieldTypeDescription.String}}, // TODO set(string)
+  [ConditionOperator.StartsWith]: {prefix: {type: FieldTypeDescription.String}},
+  [ConditionOperator.DoesNotStartWith]: {prefix: {type: FieldTypeDescription.String}},
+  [ConditionOperator.EndsWith]: {suffix: {type: FieldTypeDescription.String}},
+  [ConditionOperator.DoesNotEndWith]: {suffix: {type: FieldTypeDescription.String}},
+  [ConditionOperator.Like]: {regex: {type: FieldTypeDescription.String}},
+  [ConditionOperator.NotLike]: {regex: {type: FieldTypeDescription.String}},
+  [ConditionOperator.OnDayOfWeek]: {day: {type: FieldTypeDescription.Number}},
+  [ConditionOperator.OnDayOfMonth]: {day: {type: FieldTypeDescription.Number}},
+  [ConditionOperator.OnDayOfYear]: {day: {type: FieldTypeDescription.Number}},
+  [ConditionOperator.OnDayMonthOfYear]: {day: {type: FieldTypeDescription.Number}, month: {type: FieldTypeDescription.Number}},
+  [ConditionOperator.InWeekOfMonth]: {week: {type: FieldTypeDescription.Number}},
+  [ConditionOperator.InWeekOfYear]: {week: {type: FieldTypeDescription.Number}},
+  [ConditionOperator.InMonthOfYear]: {month: {type: FieldTypeDescription.Number}},
+  [ConditionOperator.InYear]: {year: {type: FieldTypeDescription.Number}},
 };
 
 function conditionGroupEquals(a:ConditionGroup, b:ConditionGroup) : boolean {
@@ -333,7 +333,7 @@ function inYear(rowValue:Date, year:number) : boolean {
 }
 
 function getParameter(condition:Condition, pname:string) {
-  const type = parametersMap[condition.operator][pname].type === FieldType.Any
+  const type = parametersMap[condition.operator][pname].type === FieldTypeDescription.Any
     ? condition.operandType
     : parametersMap[condition.operator][pname].type;
   return toType(condition.parameters[pname], type);
@@ -475,7 +475,7 @@ function validateCondition(condition:Condition, context:DataContextType) : strin
     return `Condition.operator: Found ${condition.operator}. Expected one of ${Object.values(ConditionOperator)}.`;
   }
   // validate operandType
-  if (operandTypes[condition.operator] !== FieldType.Any && operandTypes[condition.operator] !== condition.operandType) {
+  if (operandTypes[condition.operator] !== FieldTypeDescription.Any && operandTypes[condition.operator] !== condition.operandType) {
     return `Condition.operandType: Found ${condition.operandType}. Expected ${operandTypes[condition.operator]}`;
   }
   // validate parameters
@@ -491,40 +491,40 @@ function validateCondition(condition:Condition, context:DataContextType) : strin
     }
     // validate parameter value types
     switch (parametersMap[condition.operator][key].type) {
-      case FieldType.Number:
+      case FieldTypeDescription.Number:
         if (isNaN(Number(value))) {
           return `Condition.parameters.${key}: Found '${value}'. Expected number.`;
         }
         condition.parameters[key] = Number(value);
         break;
-      case FieldType.Date:
+      case FieldTypeDescription.Date:
         if (isNaN(Date.parse(value)) && isNaN(Number(value))) {
           return `Condition.parameters.${key}: Found '${value}'. Expected date.`;
         }
         condition.parameters[key] = new Date(Date.parse(value));
         break;
-      case FieldType.String:
+      case FieldTypeDescription.String:
         condition.parameters[key] = typeof condition.parameters[key] === "string"
           ? condition.parameters[key]
           : JSON.stringify(condition.parameters[key]);
         break;
-      default: // including FieldType.Any
+      default: // including FieldTypeDescription.Any
         // match type of operand
         switch (condition.operandType) {
           // TODO remove copypasta
-          case FieldType.Number:
+          case FieldTypeDescription.Number:
             if (isNaN(Number(value))) {
               return `Condition.parameters.${key}: Found '${value}'. Expected number.`;
             }
             condition.parameters[key] = Number(value);
             break;
-          case FieldType.Date:
+          case FieldTypeDescription.Date:
             if (isNaN(Date.parse(value)) && isNaN(Number(value))) {
               return `Condition.parameters.${key}: Found '${value}'. Expected date.`;
             }
             condition.parameters[key] = new Date(Date.parse(value));
             break;
-          case FieldType.String:
+          case FieldTypeDescription.String:
             condition.parameters[key] = typeof condition.parameters[key] === "string"
               ? condition.parameters[key]
               : JSON.stringify(condition.parameters[key]);
@@ -543,8 +543,8 @@ function validateCondition(condition:Condition, context:DataContextType) : strin
   if (!column) {
     return `Condition.fieldname: Found '${condition.fieldname}'. Expected one of ${context.columns.map((column) => column.name).join(", ")}.`;
   }
-  if (operandTypes[condition.operator] !== FieldType.Any
-    && operandTypes[condition.operator] !== FieldType.String
+  if (operandTypes[condition.operator] !== FieldTypeDescription.Any
+    && operandTypes[condition.operator] !== FieldTypeDescription.String
     && operandTypes[condition.operator] !== column.type) {
       return `Condition.fieldname: Found column of type ${column.type}. Expected ${operandTypes[condition.operator]}.`;
   }
