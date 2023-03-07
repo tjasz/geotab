@@ -1,9 +1,25 @@
+import {KeyboardEvent, RefObject} from 'react'
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import DataTableCell from './DataTableCell'
 import RowContextMenu from './RowContextMenu';
+import {Column} from './../column'
+import {Feature, FeatureProperties} from './../geojson-types'
 
-export default function TableRow(props) {
-  const handleCellChange = (value, column) => {
+type TableRowProps = {
+  fidx: number,
+  rowId: string,
+  columns: Column[],
+  disabled: boolean,
+  cellRefs: RefObject<HTMLInputElement>,
+  feature: Feature,
+  active: string,
+  setActive: (fidx:number) => void,
+  onChange: (properties:FeatureProperties, fidx:number) => void,
+  handleKeyDown: (e:KeyboardEvent, row:number, col:number) => void,
+}
+
+export default function TableRow(props:TableRowProps) {
+  const handleCellChange = (value:any, column:Column) => {
     const newFeatureProperties = {...props.feature.properties, [column.name]: value};
     props.onChange(newFeatureProperties, props.fidx);
   };

@@ -61,10 +61,12 @@ export type GeometryCollection = Extension & {
   geometries: Geometry[];
 }
 
+export type FeatureProperties = {[index: string]: any};
+
 export type Feature = Extension & {
   type: FeatureType;
   geometry: Geometry | GeometryCollection;
-  properties: Extension;
+  properties: FeatureProperties;
 }
 
 export type FeatureCollection = Extension & {
