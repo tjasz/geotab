@@ -10,12 +10,12 @@ type TableRowProps = {
   rowId: string,
   columns: Column[],
   disabled: boolean,
-  cellRefs: RefObject<HTMLInputElement>,
+  cellRefs: RefObject<{[colName:string]: HTMLInputElement|null}[]>,
   feature: Feature,
-  active: string,
-  setActive: (fidx:number) => void,
+  active: boolean,
+  setActive: (fid:string) => void,
   onChange: (properties:FeatureProperties, fidx:number) => void,
-  handleKeyDown: (e:KeyboardEvent, row:number, col:number) => void,
+  handleKeyDown: (e:KeyboardEvent, row:number, col:string) => void,
 }
 
 export default function TableRow(props:TableRowProps) {

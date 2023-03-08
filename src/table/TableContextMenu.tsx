@@ -1,4 +1,4 @@
-import React, {useState, MouseEvent} from 'react';
+import React, {useState, MouseEvent, PropsWithChildren} from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -11,14 +11,13 @@ import {MousePosition} from '../MousePosition'
 import {Column} from '../column'
 
 type TableContextMenuProps = {
-  children: JSX.Element[],
   disabled: boolean,
   setDisabled: (disabled:boolean) => void,
   columns: Column[],
   setColumns: (columns:Column[]) => void,
 };
 
-export default function TableContextMenu(props:TableContextMenuProps) {
+export default function TableContextMenu(props:PropsWithChildren<TableContextMenuProps>) {
   const [contextMenu, setContextMenu] = useState<MousePosition|null>(null);
   const [visibilityOpen, setVisibilityOpen] = useState(false);
   const handleContextMenu = (event:MouseEvent) => {

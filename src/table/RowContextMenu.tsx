@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, PropsWithChildren} from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -10,10 +10,9 @@ import {MousePosition} from '../MousePosition'
 
 type RowContextMenuProps = {
   feature: Feature,
-  children: JSX.Element[],
 }
 
-export default function RowContextMenu(props:RowContextMenuProps) {
+export default function RowContextMenu(props:PropsWithChildren<RowContextMenuProps>) {
   const context = useContext(DataContext);
   const [contextMenu, setContextMenu] = React.useState<MousePosition|null>(null);
   

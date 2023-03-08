@@ -10,7 +10,7 @@ type DataTableHeaderProps = {
   setDisabled: (v:boolean) => void
   columns: Column[],
   setColumns: (cols:Column[]) => void,
-  sorting: Sorting,
+  sorting?: Sorting,
   setSorting: (sorting:Sorting) => void,
 }
 
