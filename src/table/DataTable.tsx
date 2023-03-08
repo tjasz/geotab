@@ -80,8 +80,8 @@ export default function DataTable() {
   const handleSortingChange = (newSorting:Sorting|undefined) => {
     if (!newSorting) return;
     if (sorting && newSorting &&
-      sorting[0] === newSorting[0] &&
-      sorting[1] === newSorting[1]) {
+      sorting.asc === newSorting.asc &&
+      sorting.col.name === newSorting.col.name) {
       return;
     }
     setSorting(newSorting);
