@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, MouseEvent} from 'react';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import DataObjectIcon from '@mui/icons-material/DataObject';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -19,41 +19,51 @@ import { TextFieldDialog } from './../TextFieldDialog'
 import {SortAscendingIcon} from './../icon/SortAscendingIcon'
 import {InsertLeftIcon} from './../icon/InsertLeftIcon'
 import {InsertRightIcon} from './../icon/InsertRightIcon'
+import { FieldTypeDescription } from '../fieldtype';
+import { Feature } from '../geojson-types';
+import { MousePosition } from '../MousePosition';
+
+type InsertDialog = "left"|"right"|null;
 
 export default function ColumnContextMenu(props) {
   const context = useContext(DataContext);
-  const [contextMenu, setContextMenu] = React.useState(null);
+  const [contextMenu, setContextMenu] = React.useState<MousePosition|null>(null);
   const [renameDialogOpen, setRenameDialogOpen] = React.useState(false);
   const [retypeDialogOpen, setRetypeDialogOpen] = React.useState(false);
   const [calculateDialogOpen, setCalculateDialogOpen] = React.useState(false);
-  const [insertDialog, setInsertDialog] = React.useState(null);
+  const [insertDialog, setInsertDialog] = React.useState<InsertDialog>(null);
   const [columnMetadataOpen, setColumnMetadataOpen] = React.useState(false);
   
-  const setInvisible = (fieldname) => {
+  const setInvisible = (fieldname:string) => {
+    if (context === null) return;
     context.setColumns(context.columns.map((col) => col.name === fieldname ? {...col, visible: false} : col));
   };
-  const deleteColumn = (fieldname) => {
+  const deleteColumn = (fieldname:string) => {
+    if (context === null) return;
     // delete from column list
     context.setColumns(context.columns.filter((col) => col.name !== fieldname));
     // delete from data as well
     context.setData(context.data.map((feature) => { let {[fieldname]: _, ...rest} = feature.properties; return {...feature, properties: rest}; }));
   };
-  const renameColumn = (oldname, newname) => {
+  const renameColumn = (oldname:string, newname:string) => {
+    if (context === null) return;
     if (oldname === newname) return;
     // rename in the column list
     context.setColumns(context.columns.map((col) => col.name === oldname ? {...col, name: newname} : col));
     // rename in the data as well
     context.setData(context.data.map((feature) => { let {[oldname]: _, ...rest} = feature.properties; return {...feature, properties: {...rest, [newname]: feature.properties[oldname]}}; }));
   };
-  const retypeColumn = (name, newtype) => {
+  const retypeColumn = (name:string, newtype:FieldTypeDescription) => {
+    if (context === null) return;
     // retype in the column list
     context.setColumns(context.columns.map((col) => col.name === name ? {...col, type: newtype} : col));
   };
-  const calculateColumn = (name, formula) => {
-    let userFunction = undefined;
+  const calculateColumn = (name:string, formula:string) => {
+    if (context === null) return;
+    let userFunction:Function = (feature:Feature) => feature.properties[name];
     try {
       userFunction = new Function("feature", "index", formula);
-      if (userFunction) {
+      if (userFunction !== undefined) {
         context.setData(context.data.map((feature, index) => {
           let {[name]: _, ...rest} = feature.properties;
           return {...feature, properties: {...rest, [name]: userFunction(feature, index)}};
@@ -61,15 +71,22 @@ export default function ColumnContextMenu(props) {
       }
     }
     catch (error) {
-      alert(`Error parsing formula "${formula}": ${error.message}`);
+      if (error instanceof SyntaxError) {
+        alert(`Error parsing formula "${formula}": ${error.message}`);
+      }
+      else {
+        throw error;
+      }
     }
   };
-  const swapColumns = (i1, i2) => {
+  const swapColumns = (i1:number, i2:number) => {
+    if (context === null) return;
     if (i1 < 0 || i2 < 0 || i1 >= context.columns.length || i2 >= context.columns.length) return;
     context.setColumns(context.columns.map((col, i) =>
       i === i1 ? context.columns[i2] : i === i2 ? context.columns[i1] : col));
   };
-  const insertColumn = (i, name) => {
+  const insertColumn = (i:number, name:string) => {
+    if (context === null) return;
     if (i <= 0) {
       context.setColumns(
         [{name, visible: true, type: "string"},
@@ -81,7 +98,7 @@ export default function ColumnContextMenu(props) {
     }
   };
 
-  const handleContextMenu = (event) => {
+  const handleContextMenu = (event:MouseEvent) => {
     setContextMenu(
       contextMenu === null
         ? {
@@ -115,14 +132,14 @@ export default function ColumnContextMenu(props) {
         }
       >
         <MenuItem
-          onClick={() => { props.setSorting({col: context.columns.find((c) => c.name === props.columnName), asc: true}); handleClose() }}>
+          onClick={() => { props.setSorting(context ? {col: context.columns.find((c) => c.name === props.columnName), asc: true} : undefined); handleClose() }}>
           <ListItemIcon>
             <SortAscendingIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>Sort Ascending</ListItemText>
         </MenuItem>
         <MenuItem
-          onClick={() => { props.setSorting({col: context.columns.find((c) => c.name === props.columnName), asc: false}); handleClose() }}>
+          onClick={() => { props.setSorting(context ? {col: context.columns.find((c) => c.name === props.columnName), asc: false} : undefined); handleClose() }}>
           <ListItemIcon>
             <SortIcon fontSize="small" />
           </ListItemIcon>
@@ -199,20 +216,22 @@ export default function ColumnContextMenu(props) {
           <ListItemText>Metadata</ListItemText>
         </MenuItem>
       </Menu>
-      <ColumnMetadataDialog
-        open={columnMetadataOpen}
-        onClose={() => setColumnMetadataOpen(false)}
-        column={context.columns.find((c) => props.columnName === c.name)}
-        data={context.filteredData.map((row) => row.properties[props.columnName])}
-        />
+      {context !== null &&
+        <ColumnMetadataDialog
+          open={columnMetadataOpen}
+          onClose={() => setColumnMetadataOpen(false)}
+          column={context.columns.find((c) => props.columnName === c.name)}
+          data={context.filteredData.map((row) => row.properties[props.columnName])}
+          />
+      }
       <SelectDialog
         title={`Change data type of column '${props.columnName}'?`}
         label="Type"
         confirmLabel="Change"
-        defaultValue={context.columns[props.columnIndex].type}
+        defaultValue={context?.columns[props.columnIndex].type}
         options={["date", "number", "string"]}
         open={retypeDialogOpen}
-        onConfirm={(newtype) => { retypeColumn(props.columnName, newtype); setRetypeDialogOpen(false); }}
+        onConfirm={(newtype) => { retypeColumn(props.columnName, newtype as FieldTypeDescription); setRetypeDialogOpen(false); }}
         onCancel={() => setRetypeDialogOpen(false)}
       />
       <TextFieldDialog
@@ -236,8 +255,8 @@ export default function ColumnContextMenu(props) {
       />
       <TextFieldDialog
         title={`Insert column ${insertDialog} of '${props.columnName}'?`}
+        label="New Column Name"
         confirmLabel="Insert"
-        defaultValue={null}
         open={insertDialog !== null}
         onConfirm={(newname) => {
           insertColumn(props.columnIndex + (insertDialog === "left" ? 0 : 1), newname);

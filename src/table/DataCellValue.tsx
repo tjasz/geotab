@@ -18,6 +18,9 @@ export default function DataCellValue(props) {
         if (e instanceof RangeError) {
           alert(`Invalid date -- could not parse "${props.value}" to date:\n ${e.message}`);
         }
+        else {
+          throw e;
+        }
         return typeof props.value === "string" ? props.value : JSON.stringify(props.value);
       }
     default:

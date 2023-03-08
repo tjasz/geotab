@@ -73,6 +73,7 @@ export default function DataTable() {
     }
   }
   const handleSortingChange = (newSorting) => {
+    if (!newSorting) return;
     if (context.sorting && newSorting &&
       context.sorting[0] === newSorting[0] &&
       context.sorting[1] === newSorting[1]) {
