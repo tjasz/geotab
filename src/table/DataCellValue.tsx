@@ -8,19 +8,17 @@ export default function DataCellValue(props) {
   }
   switch (props.column.type) {
     case "number":
-      try {
-        return Number(props.value);
-      }
-      catch (e) {
-        alert(`Invalid number -- could not parse "${props.value}" to number:\n ${e.message}`);
-      }
+      return Number(props.value);
     case "date":
       try {
         let date = toDate(props.value);
         return date.toISOString();
       }
       catch (e) {
-        alert(`Invalid date -- could not parse "${props.value}" to date:\n ${e.message}`);
+        if (e instanceof RangeError) {
+          alert(`Invalid date -- could not parse "${props.value}" to date:\n ${e.message}`);
+        }
+        return typeof props.value === "string" ? props.value : JSON.stringify(props.value);
       }
     default:
       switch (typeof props.value) {
