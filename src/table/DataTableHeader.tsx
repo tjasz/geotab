@@ -11,7 +11,7 @@ type DataTableHeaderProps = {
   columns: Column[],
   setColumns: (cols:Column[]) => void,
   sorting?: Sorting,
-  setSorting: (sorting:Sorting) => void,
+  setSorting: (sorting:Sorting|undefined) => void,
 }
 
 export default function DataTableHeader(props:DataTableHeaderProps) {

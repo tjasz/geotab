@@ -1,4 +1,4 @@
-import React, {useContext, MouseEvent} from 'react';
+import React, {useContext, MouseEvent, PropsWithChildren} from 'react';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import DataObjectIcon from '@mui/icons-material/DataObject';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -22,10 +22,17 @@ import {InsertRightIcon} from './../icon/InsertRightIcon'
 import { FieldTypeDescription } from '../fieldtype';
 import { Feature } from '../geojson-types';
 import { MousePosition } from '../MousePosition';
+import {Sorting} from './sorting'
 
 type InsertDialog = "left"|"right"|null;
 
-export default function ColumnContextMenu(props) {
+type ColumnContextMenuProps = {
+  columnName: string,
+  columnIndex: number,
+  setSorting: (sorting:Sorting|undefined) => void,
+}
+
+export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextMenuProps>) {
   const context = useContext(DataContext);
   const [contextMenu, setContextMenu] = React.useState<MousePosition|null>(null);
   const [renameDialogOpen, setRenameDialogOpen] = React.useState(false);
@@ -132,14 +139,22 @@ export default function ColumnContextMenu(props) {
         }
       >
         <MenuItem
-          onClick={() => { props.setSorting(context ? {col: context.columns.find((c) => c.name === props.columnName), asc: true} : undefined); handleClose() }}>
+          onClick={() => {
+            const column = context?.columns.find((c) => props.columnName === c.name);
+            props.setSorting(context && column ? {col: column, asc: true} : undefined);
+            handleClose()
+            }}>
           <ListItemIcon>
             <SortAscendingIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>Sort Ascending</ListItemText>
         </MenuItem>
         <MenuItem
-          onClick={() => { props.setSorting(context ? {col: context.columns.find((c) => c.name === props.columnName), asc: false} : undefined); handleClose() }}>
+          onClick={() => {
+            const column = context?.columns.find((c) => props.columnName === c.name);
+            props.setSorting(context && column ? {col: column, asc: false} : undefined);
+            handleClose()
+            }}>
           <ListItemIcon>
             <SortIcon fontSize="small" />
           </ListItemIcon>
@@ -216,7 +231,7 @@ export default function ColumnContextMenu(props) {
           <ListItemText>Metadata</ListItemText>
         </MenuItem>
       </Menu>
-      {context !== null &&
+      {context &&
         <ColumnMetadataDialog
           open={columnMetadataOpen}
           onClose={() => setColumnMetadataOpen(false)}

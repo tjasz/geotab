@@ -13,13 +13,14 @@ import { FieldTypeDescription } from "../fieldtype";
 type ColumnMetadataDialogProps = {
   open: boolean,
   onClose: () => void,
-  column: Column,
+  column?: Column,
   data: any[],
 }
 
 export function ColumnMetadataDialog(props:ColumnMetadataDialogProps) {
-  return (
-    <Dialog onClose={props.onClose} open={props.open}>
+  return (props.column === undefined
+    ? null
+    : <Dialog onClose={props.onClose} open={props.open}>
       <DialogTitle>Column Metadata: '{props.column.name}'</DialogTitle>
       <DialogContent>
         <ColumnMetadataTable column={props.column} data={props.data} />
