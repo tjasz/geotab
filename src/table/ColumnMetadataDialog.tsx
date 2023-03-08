@@ -42,25 +42,45 @@ function ColumnMetadataTable(props:ColumnMetadataTableProps) {
     <React.Fragment>
       <table>
         <tbody>
-          {Object.keys(stats).map((stat) => <tr key={stat}>
+          {Object.keys(stats).filter(stat => stat !== "counts").map((stat) => <tr key={stat}>
             <th>{prettyKey(stat)}</th>
             <td>{prettyValue(stats[stat])}</td>
           </tr>)}
         </tbody>
       </table>
+      {(stats as StringStats).counts !== undefined
+        && <React.Fragment>
+        <h3>Counts</h3>
+        <table>
+          <tbody>
+            {
+              (stats as StringStats).counts
+                .map(([value,count]) => <tr key={value}>
+                    <th>{value}</th>
+                    <td>{count}</td>
+                </tr>)
+            }
+          </tbody>
+        </table>
+      </React.Fragment>}
       { (props.column.type === "number" || props.column.type === "date")
-      && stats.minimum !== undefined
-      && stats.minimum !== stats.maximum
-      && <Histogram
-          left={Math.floor(stats.minimum as number)}
-          right={Math.ceil(stats.maximum as number)}
-          binWidth={((stats.maximum as number) - (stats.minimum as number))/Math.sqrt(props.data.length)}
-          values={props.data}
-          viewboxHeight={50}
-          />
+        && histogramFromStats(stats as NumericStats & GenericStats, props.data)
       }
     </React.Fragment>
   );
+}
+
+function histogramFromStats(stats:GenericStats & NumericStats, data:number[]) : JSX.Element | false {
+  return stats.defined !== undefined
+  && stats.minimum !== undefined
+  && stats.minimum !== stats.maximum
+  && <Histogram
+      left={Math.floor(stats.minimum)}
+      right={Math.ceil(stats.maximum)}
+      binWidth={((stats.maximum) - (stats.minimum))/Math.sqrt(stats.defined)}
+      values={data}
+      viewboxHeight={50}
+      />
 }
 
 function prettyKey(key:string) : string {
@@ -88,24 +108,11 @@ function prettyValue(value:any) : JSX.Element | string {
   switch(typeof value) {
     case "string":
       return value;
-    // handle the counts dictionary
-    case "object":
-      if (value != null && !Array.isArray(value)) {
-        const topRows = Object.entries(value).sort((a,b) => (b[1] as number) - (a[1] as number)).slice(0,5);
-        return <table>
-          <tbody>
-            {topRows.map((kv) => <tr key={kv[0]}>
-              <th>{kv[0]}</th>
-              <td>{kv[1] as number}</td>
-            </tr>)}
-          </tbody>
-        </table>
-      }
   }
   return JSON.stringify(value);
 }
 
-type Stats = GenericStats & Partial<StringStats | NumericStats>;
+type Stats = GenericStats | (GenericStats & StringStats) | (GenericStats & NumericStats);
 
 type GenericStats = {
   type: FieldTypeDescription,
@@ -139,7 +146,7 @@ function getStats(column:Column, data:any[]) : Stats {
   }
 }
 
-type StringCounts = {[value:string]: number};
+type StringCounts = [string,number][];
 
 type StringStats = {
   minimum: string,
@@ -164,10 +171,15 @@ function getStringStats(data:string[]) : StringStats {
       counts[data[i]] = 1;
     }
   }
+  const maxCounts = 5;
+  const sortedCounts = Object.entries(counts).sort(([astr,acount],[bstr,bcount]) => bcount-acount);
+  if (sortedCounts.length > maxCounts) {
+    sortedCounts[maxCounts-1] = ["OTHER", sortedCounts.slice(maxCounts-1).reduce((s,[str,count]) => s+count, 0)];
+  }
   return {
     minimum,
     maximum,
-    counts,
+    counts: sortedCounts.slice(0,maxCounts)
   };
 }
 
