@@ -6,11 +6,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import {DataContext} from './../dataContext';
 import {Feature} from '../geojson-types'
-
-type ContextMenuPos = {
-  mouseX: number,
-  mouseY: number,
-} | null;
+import {MousePosition} from '../MousePosition'
 
 type RowContextMenuProps = {
   feature: Feature,
@@ -19,7 +15,7 @@ type RowContextMenuProps = {
 
 export default function RowContextMenu(props:RowContextMenuProps) {
   const context = useContext(DataContext);
-  const [contextMenu, setContextMenu] = React.useState<ContextMenuPos>(null);
+  const [contextMenu, setContextMenu] = React.useState<MousePosition|null>(null);
   
   const deleteRow = () => {
     if (context === null) return;
