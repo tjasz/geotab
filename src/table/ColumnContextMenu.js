@@ -12,7 +12,7 @@ import ListItemText from '@mui/material/ListItemText';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import { ColumnMetadataDialog } from './../ColumnMetadataDialog';
+import { ColumnMetadataDialog } from './ColumnMetadataDialog';
 import {DataContext} from './../dataContext'
 import { SelectDialog } from './../SelectDialog'
 import { TextFieldDialog } from './../TextFieldDialog'
