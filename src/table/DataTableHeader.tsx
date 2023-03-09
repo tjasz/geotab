@@ -2,8 +2,19 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import MenuIcon from '@mui/icons-material/Menu';
 import TableContextMenu from './TableContextMenu';
 import ColumnContextMenu from './ColumnContextMenu'
+import {Sorting} from './sorting'
+import {Column} from '../column'
 
-export default function DataTableHeader(props) {
+type DataTableHeaderProps = {
+  disabled: boolean,
+  setDisabled: (v:boolean) => void
+  columns: Column[],
+  setColumns: (cols:Column[]) => void,
+  sorting?: Sorting,
+  setSorting: (sorting:Sorting|undefined) => void,
+}
+
+export default function DataTableHeader(props:DataTableHeaderProps) {
   return (
     <tr>
       <th className="tableCorner">

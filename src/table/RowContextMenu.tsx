@@ -1,16 +1,23 @@
-import React, {useContext} from 'react';
+import React, {useContext, PropsWithChildren} from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import {DataContext} from './../dataContext'
+import {DataContext} from './../dataContext';
+import {Feature} from '../geojson-types'
+import {MousePosition} from '../MousePosition'
 
-export default function RowContextMenu(props) {
+type RowContextMenuProps = {
+  feature: Feature,
+}
+
+export default function RowContextMenu(props:PropsWithChildren<RowContextMenuProps>) {
   const context = useContext(DataContext);
-  const [contextMenu, setContextMenu] = React.useState(null);
+  const [contextMenu, setContextMenu] = React.useState<MousePosition|null>(null);
   
   const deleteRow = () => {
+    if (context === null) return;
     context.setData(context.data.filter(
       (feature) => feature.id !== props.feature.id));
   };

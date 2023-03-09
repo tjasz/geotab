@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, MouseEvent, PropsWithChildren} from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -7,11 +7,20 @@ import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { CheckListDialog } from './../CheckListDialog';
+import {MousePosition} from '../MousePosition'
+import {Column} from '../column'
 
-export default function TableContextMenu(props) {
-  const [contextMenu, setContextMenu] = useState(null);
+type TableContextMenuProps = {
+  disabled: boolean,
+  setDisabled: (disabled:boolean) => void,
+  columns: Column[],
+  setColumns: (columns:Column[]) => void,
+};
+
+export default function TableContextMenu(props:PropsWithChildren<TableContextMenuProps>) {
+  const [contextMenu, setContextMenu] = useState<MousePosition|null>(null);
   const [visibilityOpen, setVisibilityOpen] = useState(false);
-  const handleContextMenu = (event) => {
+  const handleContextMenu = (event:MouseEvent) => {
     setContextMenu(
       contextMenu === null
         ? {
@@ -61,7 +70,7 @@ export default function TableContextMenu(props) {
       <CheckListDialog
         open={visibilityOpen}
         onCancel={() => setVisibilityOpen(false)}
-        onConfirm={(draft) => { props.setColumns(draft); setVisibilityOpen(false)}}
+        onConfirm={(draft:Column[]) => { props.setColumns(draft); setVisibilityOpen(false)}}
         defaultValue={props.columns}
         title="Select Visible Columns"
         labelColumn="name"

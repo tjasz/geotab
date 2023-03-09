@@ -1,24 +1,26 @@
-import React, {useContext, useEffect, useRef, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState, KeyboardEvent} from 'react';
 import { sortBy } from './../algorithm'
 import {DataContext} from './../dataContext'
 import DataTableRow from './DataTableRow'
 import DataTableHeader from './DataTableHeader'
+import {Sorting} from './sorting'
+import {Feature, FeatureProperties} from '../geojson-types'
 
 export default function DataTable() {
   const context = useContext(DataContext);
-  const [sorting, setSorting] = useState(null);
+  const [sorting, setSorting] = useState<Sorting|undefined>(undefined);
   const [disabled, setDisabled] = useState(true);
 
-  const features = context.filteredData;
-  const refs = useRef({});
+  const features:Feature[] = context?.filteredData ?? [];
+  const refs = useRef<{[colName:string]: HTMLInputElement|null}[]>([]);
   // useEffect to update the ref on data update
   useEffect(() => {
-    refs.current = {};
-  }, [context.columns]);
+    refs.current = [];
+  }, [context?.columns]);
 
-  if (!context.filteredData) return null;
+  if (!context?.filteredData) return null;
 
-  const handleKeyDown = (e, row, col) => {
+  const handleKeyDown = (e:KeyboardEvent, row:number, col:string) => {
     // lock table using Ctrl+S
     if (e.key === 's' && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
@@ -39,7 +41,10 @@ export default function DataTable() {
               const newProperties = pasteTable[pasteRow].reduce((acc, v, i) => {
                 if (baseColIdx + i < context.columns.length) {
                   const colName = context.columns[baseColIdx+i].name;
-                  refs.current[fidx][colName].value = v;
+                  const fieldToUpdate = refs.current[fidx][colName];
+                  if (fieldToUpdate !== null) {
+                    fieldToUpdate.value = v;
+                  }
                   return {...acc, [colName]: v};
                 }
                 return acc;
@@ -50,7 +55,7 @@ export default function DataTable() {
             }
           });
           const updatedData = context.data.map((feature) => {
-            const replacement = newFeatures.find((newf) => newf.id === feature.id);
+            const replacement = newFeatures.find((newf:Feature) => newf.id === feature.id);
             return replacement ?? feature;
           })
           context.setData(updatedData);
@@ -58,7 +63,7 @@ export default function DataTable() {
       }
     }
     // use arrows/enter to navigate cells
-    let focusTarget = null;
+    let focusTarget:HTMLInputElement|null = null;
     if (refs.current?.[row]?.[col]) {
       if (e.key === 'Down' || e.key === 'ArrowDown' || (e.key === 'Enter' && !e.shiftKey)) {
         focusTarget = refs.current[Math.min(row+1, features.length-1)][col];
@@ -72,16 +77,17 @@ export default function DataTable() {
       }
     }
   }
-  const handleSortingChange = (newSorting) => {
-    if (context.sorting && newSorting &&
-      context.sorting[0] === newSorting[0] &&
-      context.sorting[1] === newSorting[1]) {
+  const handleSortingChange = (newSorting:Sorting|undefined) => {
+    if (!newSorting) return;
+    if (sorting && newSorting &&
+      sorting.asc === newSorting.asc &&
+      sorting.col.name === newSorting.col.name) {
       return;
     }
     setSorting(newSorting);
     context.setData(sortBy(context.data, newSorting).slice());
   };
-  const handleRowChange = (newRow, idx) => {
+  const handleRowChange = (newRow:FeatureProperties, idx:number) => {
     const newFeatures = context.data.map((f) => f.id === features[idx].id ? {...f, properties: newRow} : f);
     context.setData(newFeatures);
   };

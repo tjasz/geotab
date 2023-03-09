@@ -8,15 +8,15 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 
 type SelectDialogProps = {
-  defaultValue:string;
+  defaultValue?:string;
   onCancel:{():void};
   onConfirm:{(draft:string):void};
   open:boolean;
   title:string;
   options:string[];
   label:string;
-  cancelLabel:string;
-  confirmLabel:string;
+  cancelLabel?:string;
+  confirmLabel?:string;
 }
 
 export function SelectDialog(props:SelectDialogProps) {
@@ -27,7 +27,7 @@ export function SelectDialog(props:SelectDialogProps) {
   };
 
   const handleConfirm = () => {
-    props.onConfirm(draft);
+    props.onConfirm(draft ?? props.options.length > 0 ? props.options[0] : "");
   };
   
   return (

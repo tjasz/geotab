@@ -8,15 +8,15 @@ import DialogContent from '@mui/material/DialogContent';
 import {sleep} from './algorithm'
 
 type TextFieldDialogProps = {
-  defaultValue:string;
+  defaultValue?:string;
   onCancel:{():void};
   onConfirm:{(draft:string):void};
   open:boolean;
   title:string;
-  multiline:boolean;
+  multiline?:boolean;
   label:string;
-  cancelLabel:string;
-  confirmLabel:string;
+  cancelLabel?:string;
+  confirmLabel?:string;
 }
 
 export function TextFieldDialog(props:TextFieldDialogProps) {
@@ -27,7 +27,7 @@ export function TextFieldDialog(props:TextFieldDialogProps) {
   };
 
   const handleConfirm = () => {
-    props.onConfirm(draft);
+    props.onConfirm(draft ?? "");
   };
   
   return (
