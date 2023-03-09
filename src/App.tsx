@@ -7,6 +7,8 @@ import { evaluateFilter } from './filter';
 import { GeotabLogo } from './icon/GeotabLogo';
 import { GoogleLogin } from './google-drive'
 import {getFeatures, getPropertiesUnion} from './algorithm'
+import { FieldTypeDescription } from './fieldtype';
+import { Column } from './column'
 
 interface IAppProps {
 }
@@ -44,15 +46,7 @@ class App extends React.Component<IAppProps, IState> {
         });
       },
       setColumns: (newColumns) => {
-        // ensure pseudo-column "geotab:selectionStatus" is always present
-        if (!newColumns.some((c) => c.name === "geotab:selectionStatus")) {
-          newColumns.push({
-            name: "geotab:selectionStatus",
-            visible: false,
-            type: "string",
-          })
-        }
-        this.setState({columns: newColumns})
+        this.setState({columns: withSelectionStatus(newColumns)})
       },
       setActive: (newActive) => {this.setState({active: newActive})},
       setSymbology: (newSymbology) => {this.setState({symbology: newSymbology})},
@@ -65,7 +59,7 @@ class App extends React.Component<IAppProps, IState> {
                 data: flattened,
                 filter: json.geotabMetadata.filter,
                 filteredData: flattened.filter((row) => evaluateFilter(row, json.geotabMetadata.filter)),
-                columns: json.geotabMetadata.columns,
+                columns: withSelectionStatus(json.geotabMetadata.columns),
                 active: null,
                 symbology: json.geotabMetadata.symbology,
               });
@@ -73,7 +67,7 @@ class App extends React.Component<IAppProps, IState> {
               this.setState({
                 data: this.state ? this.state.data.concat(flattened) : flattened,
                 filteredData: flattened.filter((row) => evaluateFilter(row, this.state?.filter)),
-                columns: getPropertiesUnion(flattened, this.state?.columns),
+                columns: withSelectionStatus(getPropertiesUnion(flattened, this.state?.columns)),
                 active: null,
               });
             }
@@ -82,7 +76,7 @@ class App extends React.Component<IAppProps, IState> {
             this.setState({
               data: newData,
               filteredData: newData.filter((row) => evaluateFilter(row, this.state?.filter)),
-              columns: getPropertiesUnion(newData, this.state?.columns),
+              columns: withSelectionStatus(getPropertiesUnion(newData, this.state?.columns)),
               active: null,
             });
           }
@@ -140,6 +134,19 @@ function AppBody() {
       <TabView />
     </div>
   );
+}
+
+function withSelectionStatus(columns:Column[]) {
+  const newColumns = columns.slice();
+  // ensure pseudo-column "geotab:selectionStatus" is always present
+  if (!newColumns.some((c) => c.name === "geotab:selectionStatus")) {
+    newColumns.push({
+      name: "geotab:selectionStatus",
+      visible: false,
+      type: FieldTypeDescription.String,
+    })
+  }
+  return newColumns;
 }
 
 export default App;
