@@ -7,6 +7,7 @@ import {DataContext} from './dataContext'
 import {getCentralCoord, hashCode, getFeatureListBounds} from './algorithm'
 import mapLayers from './maplayers'
 import {painter} from './painter'
+import {onMouseOver, onMouseOut, onMouseClick} from './selection'
 
 function MapView(props) {
     const context = useContext(DataContext);
@@ -40,36 +41,24 @@ function MapView(props) {
                 mouseover: (e) => {
                   feature.properties["geotab:selectionStatus"] = feature.properties["geotab:selectionStatus"] === "active" ? "hoveractive" : "hoverinactive";
                   restyleLayer(feature, e.target);
-                  context.setData(data => data.map(f => f.id !== feature.id
-                    ? f
-                    : {...f, properties: {...f.properties, ["geotab:selectionStatus"]: f.properties["geotab:selectionStatus"] === "active" ? "hoveractive" : "hoverinactive"}}
-                    ));
+                  context.setData(onMouseOver.bind(null,feature.id));
                 },
               })
               layer.on({
                 click: (e) => {
                   feature.properties["geotab:selectionStatus"] = feature.properties["geotab:selectionStatus"] === "hoveractive" ? "hoverinactive" : "hoveractive";
                   restyleLayer(feature, e.target);
-                  context.setData(data => data.map(f => f.id !== feature.id
-                    ? f
-                    : {...f, properties: {...f.properties, ["geotab:selectionStatus"]: f.properties["geotab:selectionStatus"] === "hoveractive" ? "hoverinactive" : "hoveractive"}}
-                    ));
+                  context.setData(onMouseClick.bind(null,feature.id));
                 },
                 mouseout: (e) => {
                   feature.properties["geotab:selectionStatus"] = feature.properties["geotab:selectionStatus"].substring(5);
                   restyleLayer(feature, e.target);
-                  context.setData(data => data.map(f => f.id !== feature.id
-                    ? f
-                    : {...f, properties: {...f.properties, ["geotab:selectionStatus"]: f.properties["geotab:selectionStatus"].substring(5)}}
-                    ));
+                  context.setData(onMouseOut.bind(null,feature.id));
                   e.target.once({
                     mouseover: (e) => {
                       feature.properties["geotab:selectionStatus"] = feature.properties["geotab:selectionStatus"] === "active" ? "hoveractive" : "hoverinactive";
                       restyleLayer(feature, e.target);
-                      context.setData(data => data.map(f => f.id !== feature.id
-                        ? f
-                        : {...f, properties: {...f.properties, ["geotab:selectionStatus"]: f.properties["geotab:selectionStatus"] === "active" ? "hoveractive" : "hoverinactive"}}
-                        ));
+                      context.setData(onMouseOver.bind(null,feature.id));
                     },
                   })
                 },
