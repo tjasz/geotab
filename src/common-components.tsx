@@ -61,7 +61,7 @@ export function Histogram({left, right, binWidth, values, viewboxHeight} : Histo
       xmlns="http://www.w3.org/2000/svg"
       viewBox={`0 0 100 ${viewboxHeight}`}
       >
-      {bins.map((count, i) => <path key={i} d={`M${100*(i*binWidth)/(right - left)} ${viewboxHeight} V${viewboxHeight - viewboxHeight*count/maxCount} H${100*((i+1)*binWidth)/(right - left)} V${viewboxHeight} Z`} />)}
+      {bins.map((count, i) => <path key={i} d={`M${100*(i*binWidth)/(right - left)} ${viewboxHeight} V${viewboxHeight - viewboxHeight*(maxCount === 0 ? 0 : count/maxCount)} H${100*((i+1)*binWidth)/(right - left)} V${viewboxHeight} Z`} />)}
     </svg>
   );
 }
