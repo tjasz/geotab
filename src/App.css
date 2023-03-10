@@ -222,11 +222,23 @@ button:active {
 #data-table tr.active {
   background-color: #ffff00;
 }
+#data-table tr.hoveractive {
+  background-color: #ffff9f;
+}
+#data-table tr.hoverinactive {
+  background-color: #ffffcf;
+}
 #data-table tr:nth-child(odd) {
   background-color: #f3f6fa;
 }
 #data-table tr.active:nth-child(odd) {
   background-color: #f3f600;
+}
+#data-table tr.hoveractive:nth-child(odd) {
+  background-color: #f3f69a;
+}
+#data-table tr.hoverinactive:nth-child(odd) {
+  background-color: #f3f6ca;
 }
 #data-table tr td {
   text-align: left;

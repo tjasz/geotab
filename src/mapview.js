@@ -40,20 +40,36 @@ function MapView(props) {
                 mouseover: (e) => {
                   feature.properties["geotab:selectionStatus"] = feature.properties["geotab:selectionStatus"] === "active" ? "hoveractive" : "hoverinactive";
                   restyleLayer(feature, e.target);
+                  context.setData(data => data.map(f => f.id !== feature.id
+                    ? f
+                    : {...f, properties: {...f.properties, ["geotab:selectionStatus"]: f.properties["geotab:selectionStatus"] === "active" ? "hoveractive" : "hoverinactive"}}
+                    ));
                 },
               })
               layer.on({
                 click: (e) => {
                   feature.properties["geotab:selectionStatus"] = feature.properties["geotab:selectionStatus"] === "hoveractive" ? "hoverinactive" : "hoveractive";
                   restyleLayer(feature, e.target);
+                  context.setData(data => data.map(f => f.id !== feature.id
+                    ? f
+                    : {...f, properties: {...f.properties, ["geotab:selectionStatus"]: f.properties["geotab:selectionStatus"] === "hoveractive" ? "hoverinactive" : "hoveractive"}}
+                    ));
                 },
                 mouseout: (e) => {
                   feature.properties["geotab:selectionStatus"] = feature.properties["geotab:selectionStatus"].substring(5);
                   restyleLayer(feature, e.target);
+                  context.setData(data => data.map(f => f.id !== feature.id
+                    ? f
+                    : {...f, properties: {...f.properties, ["geotab:selectionStatus"]: f.properties["geotab:selectionStatus"].substring(5)}}
+                    ));
                   e.target.once({
                     mouseover: (e) => {
                       feature.properties["geotab:selectionStatus"] = feature.properties["geotab:selectionStatus"] === "active" ? "hoveractive" : "hoverinactive";
                       restyleLayer(feature, e.target);
+                      context.setData(data => data.map(f => f.id !== feature.id
+                        ? f
+                        : {...f, properties: {...f.properties, ["geotab:selectionStatus"]: f.properties["geotab:selectionStatus"] === "active" ? "hoveractive" : "hoverinactive"}}
+                        ));
                     },
                   })
                 },
@@ -64,7 +80,6 @@ function MapView(props) {
                 )
               )
             }} />
-            {context.active !== null && <ActivePopup feature={features.find((feature) => feature.id === context.active)} />}
             <MyLayersControl position="topright" mapLayers={mapLayers} />
           </MapContainer>
         </div>

@@ -27,7 +27,7 @@ export default function TableRow(props:TableRowProps) {
     <tr
       onContextMenu={() => console.log(props.feature)}
       onClick={() => props.setActive(props.feature.id)}
-      className={props.active ? "active" : ""}
+      className={props.feature.properties["geotab:selectionStatus"]}
       >
       <th>
         {1+props.fidx}
