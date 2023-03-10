@@ -29,13 +29,11 @@ export type DataContextType = {
   filter: any, // TODO define filter type
   filteredData: GeoJson.Feature[],
   columns: Column[],
-  active: string | null,
   symbology: Symbology | null,
   setData: {(updaterOrValue:UpdaterOrValue<GeoJson.Feature[]>) : void},
   setFilter: {(newFilter:UpdaterOrValue<ConditionGroup|undefined>) : void},
   setDataAndFilter: {(newData:UpdaterOrValue<GeoJson.Feature[]>, newFilter:UpdaterOrValue<ConditionGroup|undefined>) : void},
   setColumns: {(newColumns:UpdaterOrValue<Column[]>) : void},
-  setActive: {(newActive:UpdaterOrValue<string|null>) : void},
   setSymbology: {(newSymbology:UpdaterOrValue<Symbology|null>) : void},
   setFromJson: {(json:GeoJson.FeatureCollection & {geotabMetadata:GeotabMetadata}) : void},
 } | null;

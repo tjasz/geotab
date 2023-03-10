@@ -26,13 +26,11 @@ class App extends React.Component<IAppProps, IState> {
       filter: null,
       filteredData: [],
       columns: [],
-      active: null,
       symbology: null,
       setData: this.setData.bind(this),
       setFilter: this.setFilter.bind(this),
       setDataAndFilter: this.setDataAndFilter.bind(this),
       setColumns: this.setColumns.bind(this),
-      setActive: this.setActive.bind(this),
       setSymbology: this.setSymbology.bind(this),
       setFromJson: this.setFromJson.bind(this),
     };
@@ -64,10 +62,6 @@ class App extends React.Component<IAppProps, IState> {
   setColumns(newColumnsOrUpdater:UpdaterOrValue<Column[]>) {
     const newColumns = getValueFromUpdaterOrValue(newColumnsOrUpdater, this.state?.columns);
     this.setState({columns: withSelectionStatus(newColumns ?? [])});
-  }
-  setActive(newActiveOrUpdater:UpdaterOrValue<string|null>) {
-    const newActive = getValueFromUpdaterOrValue(newActiveOrUpdater, this.state?.active);
-    this.setState({active: newActive});
   }
   setSymbology(newSymbologyOrUpdater:UpdaterOrValue<Symbology|null>) {
     const newSymbology = getValueFromUpdaterOrValue(newSymbologyOrUpdater, this.state?.symbology);

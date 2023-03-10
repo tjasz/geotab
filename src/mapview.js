@@ -1,7 +1,7 @@
-import React, {useRef, useContext} from 'react';
+import React, {useRef, useContext, useState} from 'react';
 import ReactDOMServer from "react-dom/server";
 import L from 'leaflet'
-import { MapContainer, TileLayer, WMSTileLayer, LayersControl, ScaleControl, GeoJSON, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, WMSTileLayer, LayersControl, ScaleControl, GeoJSON, Popup, useMap, useMapEvents } from 'react-leaflet';
 import { AbridgedUrlLink } from './common-components';
 import {DataContext} from './dataContext'
 import {getCentralCoord, hashCode, getFeatureListBounds} from './algorithm'
@@ -105,20 +105,28 @@ function PopupBody({feature}) {
   );
 }
 
-function ChangeView({ center, zoom }) {
+function ChangeView() {
   const context = useContext(DataContext);
-  const features = context.filteredData;
+  const [center, setCenter] = useState(null);
+  const [zoom, setZoom] = useState(null);
   const map = useMap();
-  if (context.active !== null) {
-    const feature = features.find((feature) => feature.id === context.active);
-    if (feature !== null && feature !== undefined && feature.geometry !== null && feature.geometry !== undefined) {
-      map.setView(getCentralCoord(feature) || [47.5,-122.3], map.getZoom() || 6);
+  const mapEvents = useMapEvents({
+      zoomend: () => {
+          setZoom(mapEvents.getZoom());
+      },
+      moveend: () => {
+          setCenter(mapEvents.getCenter());
+      },
+  });
+  if (!center && !zoom) {
+    const features = context.filteredData;
+    if (features && features.length) {
+      const featureListBounds = getFeatureListBounds(features);
+      featureListBounds && map.fitBounds(featureListBounds);
+    } else {
+      map.setView([47.5,-122.3], 6);
     }
-  } else if (features) {
-    const featureListBounds = getFeatureListBounds(features);
-    featureListBounds && map.fitBounds(featureListBounds);
   }
-  return null;
 }
 
 function MyLayersControl({position, mapLayers}) {

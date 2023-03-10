@@ -14,8 +14,6 @@ type TableRowProps = {
   disabled: boolean,
   cellRefs: RefObject<{[colName:string]: HTMLInputElement|null}[]>,
   feature: Feature,
-  active: boolean,
-  setActive: (fid:string) => void,
   onChange: (properties:FeatureProperties, fidx:number) => void,
   handleKeyDown: (e:KeyboardEvent, row:number, col:string) => void,
 }
