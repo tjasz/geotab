@@ -1,9 +1,11 @@
-import {KeyboardEvent, RefObject} from 'react'
+import {KeyboardEvent, RefObject, useContext} from 'react'
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import DataTableCell from './DataTableCell'
 import RowContextMenu from './RowContextMenu';
 import {Column} from './../column'
 import {Feature, FeatureProperties} from './../geojson-types'
+import {onMouseOver, onMouseOut, onMouseClick} from '../selection'
+import {DataContext} from '../dataContext'
 
 type TableRowProps = {
   fidx: number,
@@ -19,6 +21,7 @@ type TableRowProps = {
 }
 
 export default function TableRow(props:TableRowProps) {
+  const context = useContext(DataContext);
   const handleCellChange = (value:any, column:Column) => {
     const newFeatureProperties = {...props.feature.properties, [column.name]: value};
     props.onChange(newFeatureProperties, props.fidx);
@@ -26,7 +29,15 @@ export default function TableRow(props:TableRowProps) {
   return (
     <tr
       onContextMenu={() => console.log(props.feature)}
-      onClick={() => props.setActive(props.feature.id)}
+      onClick={(e) => {
+        context?.setData(onMouseClick.bind(null, props.feature.id))}
+      }
+      onMouseOver={(e) => {
+        context?.setData(onMouseOver.bind(null, props.feature.id))}
+      }
+      onMouseOut={(e) => {
+        context?.setData(onMouseOut.bind(null, props.feature.id))}
+      }
       className={props.feature.properties["geotab:selectionStatus"]}
       >
       <th>
