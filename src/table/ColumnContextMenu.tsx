@@ -96,11 +96,11 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
     if (context === null) return;
     if (i <= 0) {
       context.setColumns(
-        [{name, visible: true, type: "string"},
+        [{name, visible: true, type: FieldTypeDescription.String},
         ...context.columns]);
     } else {
       context.setColumns([...context.columns.slice(0,i),
-        {name, visible: true, type: "string"},
+        {name, visible: true, type: FieldTypeDescription.String},
         ...context.columns.slice(i,context.columns.length)]);
     }
   };
