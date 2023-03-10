@@ -24,8 +24,8 @@ function DataView(props) {
     <div id="dataview" style={props.style}>
       <h2>Data</h2>
       <ImportView />
-      <ExportView />
-      {context.data?.length ? <FilterDefinition filter={context.filter} onSave={onFilterSave} /> : null}
+      {context.data?.length > 0 && <ExportView />}
+      {context.data?.length > 0 && <FilterDefinition filter={context.filter} onSave={onFilterSave} />}
     </div>
   );
 }

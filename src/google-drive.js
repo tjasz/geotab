@@ -181,6 +181,7 @@ export function GoogleLogin(props) {
       {signedInUser &&
         <FileContextMenu
           canOpen={context.data.length === 0 && openFile === null}
+          canSaveNew={context.data.length > 0}
           openFile={openFile}
           onOpen={listFiles}
           onClose={closeFile}
@@ -190,6 +191,7 @@ export function GoogleLogin(props) {
           <FileButton
             isFetchingGoogleDriveFile={isFetchingGoogleDriveFile}
             isSavingGoogleDriveFile={isSavingGoogleDriveFile}
+            canSaveNew={context.data.length > 0}
             openFile={openFile}
             />
         </FileContextMenu>
@@ -233,7 +235,7 @@ function FileButton(props) {
   }
   return <button id="fileStatus">
            <FolderOffIcon fontSize="large" />
-           <p>Open/Create</p>
+           <p>{props.canSaveNew ? "Create" : "Open"}</p>
          </button>
 }
 
@@ -268,17 +270,23 @@ function FileContextMenu(props) {
   const [contextMenu, setContextMenu] = useState(null);
   const [fileInfoDialogOpen, setFileInfoDialogOpen] = useState(false);
   const handleContextMenu = (event) => {
-    setContextMenu(
-      contextMenu === null
-        ? {
-            mouseX: event.clientX + 2,
-            mouseY: event.clientY - 6,
-          }
-        : // repeated contextmenu when it is already open closes it with Chrome 84 on Ubuntu
-          // Other native context menus might behave different.
-          // With this behavior we prevent contextmenu from the backdrop to re-locale existing context menus.
-          null,
-    );
+    if (props.canOpen) {
+      props.onOpen();
+    } else if (props.canSaveNew && props.openFile === null) {
+      props.onSaveNew();
+    } else {
+      setContextMenu(
+        contextMenu === null
+          ? {
+              mouseX: event.clientX + 2,
+              mouseY: event.clientY - 6,
+            }
+          : // repeated contextmenu when it is already open closes it with Chrome 84 on Ubuntu
+            // Other native context menus might behave different.
+            // With this behavior we prevent contextmenu from the backdrop to re-locale existing context menus.
+            null,
+      );
+    }
   };
   const handleClose = () => {
     setContextMenu(null);
@@ -315,6 +323,7 @@ function FileContextMenu(props) {
           <ListItemText>Save</ListItemText>
         </MenuItem>
         <MenuItem
+          disabled={!props.canSaveNew}
           onClick={() => { props.onSaveNew(); handleClose() }}>
           <ListItemText>Save New</ListItemText>
         </MenuItem>
