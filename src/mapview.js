@@ -7,7 +7,7 @@ import {DataContext} from './dataContext'
 import {getCentralCoord, hashCode, getFeatureListBounds} from './algorithm'
 import mapLayers from './maplayers'
 import {painter} from './painter'
-import {onMouseOver, onMouseOut, onMouseClick} from './selection'
+import {onMouseOver, onMouseOut, onMouseClick, addHover, removeHover, toggleActive} from './selection'
 
 function MapView(props) {
     const context = useContext(DataContext);
@@ -39,28 +39,28 @@ function MapView(props) {
             onEachFeature={(feature, layer) => {
               layer.once({
                 mouseover: (e) => {
-                  feature.properties["geotab:selectionStatus"] = feature.properties["geotab:selectionStatus"] === "active" ? "hoveractive" : "hoverinactive";
+                  feature.properties["geotab:selectionStatus"] = addHover(feature.properties["geotab:selectionStatus"]);
                   restyleLayer(feature, e.target);
                   context.setData(onMouseOver.bind(null,feature.id));
                 },
               })
               layer.on({
                 click: (e) => {
-                  feature.properties["geotab:selectionStatus"] = feature.properties["geotab:selectionStatus"] === "hoveractive" ? "hoverinactive" : "hoveractive";
+                  feature.properties["geotab:selectionStatus"] = toggleActive(feature.properties["geotab:selectionStatus"]);
                   restyleLayer(feature, e.target);
                   context.setData(onMouseClick.bind(null,feature.id));
                 },
                 mouseout: (e) => {
-                  feature.properties["geotab:selectionStatus"] = feature.properties["geotab:selectionStatus"].substring(5);
+                  feature.properties["geotab:selectionStatus"] = removeHover(feature.properties["geotab:selectionStatus"]);
                   restyleLayer(feature, e.target);
-                  context.setData(onMouseOut.bind(null,feature.id));
                   e.target.once({
                     mouseover: (e) => {
-                      feature.properties["geotab:selectionStatus"] = feature.properties["geotab:selectionStatus"] === "active" ? "hoveractive" : "hoverinactive";
+                      feature.properties["geotab:selectionStatus"] = addHover(feature.properties["geotab:selectionStatus"]);
                       restyleLayer(feature, e.target);
                       context.setData(onMouseOver.bind(null,feature.id));
                     },
-                  })
+                  });
+                  context.setData(onMouseOut.bind(null,feature.id));
                 },
               })
               layer.bindPopup(
