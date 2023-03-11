@@ -27,15 +27,9 @@ export default function TableRow(props:TableRowProps) {
   return (
     <tr
       onContextMenu={() => console.log(props.feature)}
-      onClick={(e) => {
-        context?.setData(onMouseClick.bind(null, props.feature.id))}
-      }
-      onMouseOver={(e) => {
-        context?.setData(onMouseOver.bind(null, props.feature.id))}
-      }
-      onMouseOut={(e) => {
-        context?.setData(onMouseOut.bind(null, props.feature.id))}
-      }
+      onClick={(e) => { context?.setData(onMouseClick.bind(null, props.feature.id)) }}
+      onMouseOver={(e) => { context?.setData(onMouseOver.bind(null, props.feature.id)) }}
+      onMouseOut={(e) => { context?.setData(onMouseOut.bind(null, props.feature.id)) }}
       className={props.feature.properties["geotab:selectionStatus"]}
       >
       <th>
