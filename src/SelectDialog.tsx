@@ -27,7 +27,7 @@ export function SelectDialog(props:SelectDialogProps) {
   };
 
   const handleConfirm = () => {
-    props.onConfirm(draft ?? props.options.length > 0 ? props.options[0] : "");
+    props.onConfirm(draft ?? (props.options.length > 0 ? props.options[0] : ""));
   };
   
   return (

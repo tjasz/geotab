@@ -190,7 +190,7 @@ function conditionEquals(a:Condition, b:Condition) : boolean {
 }
 
 export function filterEquals(a:Condition|ConditionGroup, b:Condition|ConditionGroup) : boolean {
-  if (a.type !== b.type) return false;
+  if (a?.type !== b?.type) return false;
   if (a.operator !== b.operator) return false;
   if (a.type === "ConditionGroup") {
     return conditionGroupEquals(a as ConditionGroup, b as ConditionGroup);

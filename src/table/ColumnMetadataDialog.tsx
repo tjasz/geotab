@@ -73,8 +73,9 @@ function ColumnMetadataTable(props:ColumnMetadataTableProps) {
 
 function histogramFromStats(stats:GenericStats & NumericStats, data:number[]) : JSX.Element | false {
   return stats.defined !== undefined
+  && stats.defined > 0
   && stats.minimum !== undefined
-  && stats.minimum !== stats.maximum
+  && Math.floor(stats.minimum) !== Math.ceil(stats.maximum)
   && <Histogram
       left={Math.floor(stats.minimum)}
       right={Math.ceil(stats.maximum)}
