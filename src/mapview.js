@@ -1,12 +1,13 @@
-import React, {useRef, useContext} from 'react';
+import React, {useRef, useContext, useState} from 'react';
 import ReactDOMServer from "react-dom/server";
 import L from 'leaflet'
-import { MapContainer, TileLayer, WMSTileLayer, LayersControl, ScaleControl, GeoJSON, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, WMSTileLayer, LayersControl, ScaleControl, GeoJSON, Popup, useMap, useMapEvents } from 'react-leaflet';
 import { AbridgedUrlLink } from './common-components';
 import {DataContext} from './dataContext'
 import {getCentralCoord, hashCode, getFeatureListBounds} from './algorithm'
 import mapLayers from './maplayers'
 import {painter} from './painter'
+import {onMouseOver, onMouseOut, onMouseClick, addHover, removeHover, toggleActive} from './selection'
 
 function MapView(props) {
     const context = useContext(DataContext);
@@ -38,24 +39,28 @@ function MapView(props) {
             onEachFeature={(feature, layer) => {
               layer.once({
                 mouseover: (e) => {
-                  feature.properties["geotab:selectionStatus"] = feature.properties["geotab:selectionStatus"] === "active" ? "hoveractive" : "hoverinactive";
+                  feature.properties["geotab:selectionStatus"] = addHover(feature.properties["geotab:selectionStatus"]);
                   restyleLayer(feature, e.target);
+                  context.setData(onMouseOver.bind(null,feature.id));
                 },
               })
               layer.on({
                 click: (e) => {
-                  feature.properties["geotab:selectionStatus"] = feature.properties["geotab:selectionStatus"] === "hoveractive" ? "hoverinactive" : "hoveractive";
+                  feature.properties["geotab:selectionStatus"] = toggleActive(feature.properties["geotab:selectionStatus"]);
                   restyleLayer(feature, e.target);
+                  context.setData(onMouseClick.bind(null,feature.id));
                 },
                 mouseout: (e) => {
-                  feature.properties["geotab:selectionStatus"] = feature.properties["geotab:selectionStatus"].substring(5);
+                  feature.properties["geotab:selectionStatus"] = removeHover(feature.properties["geotab:selectionStatus"]);
                   restyleLayer(feature, e.target);
                   e.target.once({
                     mouseover: (e) => {
-                      feature.properties["geotab:selectionStatus"] = feature.properties["geotab:selectionStatus"] === "active" ? "hoveractive" : "hoverinactive";
+                      feature.properties["geotab:selectionStatus"] = addHover(feature.properties["geotab:selectionStatus"]);
                       restyleLayer(feature, e.target);
+                      context.setData(onMouseOver.bind(null,feature.id));
                     },
-                  })
+                  });
+                  context.setData(onMouseOut.bind(null,feature.id));
                 },
               })
               layer.bindPopup(
@@ -64,7 +69,6 @@ function MapView(props) {
                 )
               )
             }} />
-            {context.active !== null && <ActivePopup feature={features.find((feature) => feature.id === context.active)} />}
             <MyLayersControl position="topright" mapLayers={mapLayers} />
           </MapContainer>
         </div>
@@ -101,20 +105,28 @@ function PopupBody({feature}) {
   );
 }
 
-function ChangeView({ center, zoom }) {
+function ChangeView() {
   const context = useContext(DataContext);
-  const features = context.filteredData;
+  const [center, setCenter] = useState(null);
+  const [zoom, setZoom] = useState(null);
   const map = useMap();
-  if (context.active !== null) {
-    const feature = features.find((feature) => feature.id === context.active);
-    if (feature !== null && feature !== undefined && feature.geometry !== null && feature.geometry !== undefined) {
-      map.setView(getCentralCoord(feature) || [47.5,-122.3], map.getZoom() || 6);
+  const mapEvents = useMapEvents({
+      zoomend: () => {
+          setZoom(mapEvents.getZoom());
+      },
+      moveend: () => {
+          setCenter(mapEvents.getCenter());
+      },
+  });
+  if (!center && !zoom) {
+    const features = context.filteredData;
+    if (features && features.length) {
+      const featureListBounds = getFeatureListBounds(features);
+      featureListBounds && map.fitBounds(featureListBounds);
+    } else {
+      map.setView([47.5,-122.3], 6);
     }
-  } else if (features) {
-    const featureListBounds = getFeatureListBounds(features);
-    featureListBounds && map.fitBounds(featureListBounds);
   }
-  return null;
 }
 
 function MyLayersControl({position, mapLayers}) {

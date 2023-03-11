@@ -114,8 +114,6 @@ export default function DataTable() {
             feature={feature}
             rowId={feature.id}
             onChange={handleRowChange}
-            active={context.active !== null && feature.id === context.active}
-            setActive={context.setActive}
             disabled={disabled}
             />)}
       </tbody>

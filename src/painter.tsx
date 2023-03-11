@@ -26,7 +26,7 @@ type SymbologyProperty = {
   type: FieldTypeDescription;
 }
 
-type Symbology = {
+export type Symbology = {
   [index: string] : SymbologyProperty
 }
 
