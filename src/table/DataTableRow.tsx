@@ -1,10 +1,10 @@
-import {KeyboardEvent, RefObject, useContext} from 'react'
+import {KeyboardEvent, RefObject, useContext, useState} from 'react'
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import DataTableCell from './DataTableCell'
 import RowContextMenu from './RowContextMenu';
 import {Column} from './../column'
 import {Feature, FeatureProperties} from './../geojson-types'
-import {onMouseOver, onMouseOut, onMouseClick} from '../selection'
+import {onMouseOver, onMouseOut, onMouseClick, toggleActive, addHover, removeHover} from '../selection'
 import {DataContext} from '../dataContext'
 
 type TableRowProps = {
@@ -20,6 +20,10 @@ type TableRowProps = {
 
 export default function TableRow(props:TableRowProps) {
   const context = useContext(DataContext);
+  const [className, setClassName] = useState("inactive");
+  if (context !== null) {
+    context.setListener(props.feature.id, "table", (f) => setClassName(f.properties["geotab:selectionStatus"]))
+  }
   const handleCellChange = (value:any, column:Column) => {
     const newFeatureProperties = {...props.feature.properties, [column.name]: value};
     props.onChange(newFeatureProperties, props.fidx);
@@ -27,10 +31,34 @@ export default function TableRow(props:TableRowProps) {
   return (
     <tr
       onContextMenu={() => console.log(props.feature)}
-      onClick={(e) => { context?.setData(onMouseClick.bind(null, props.feature.id)) }}
-      onMouseOver={(e) => { context?.setData(onMouseOver.bind(null, props.feature.id)) }}
-      onMouseOut={(e) => { context?.setData(onMouseOut.bind(null, props.feature.id)) }}
-      className={props.feature.properties["geotab:selectionStatus"]}
+      onClick={(e) => {
+        //context?.setData(onMouseClick.bind(null, props.feature.id))
+        props.feature.properties["geotab:selectionStatus"] = toggleActive(props.feature.properties["geotab:selectionStatus"]);
+        setClassName(props.feature.properties["geotab:selectionStatus"]);
+        const mapListener = context?.listeners[props.feature.id]?.["map"];
+        if (mapListener !== undefined) {
+          mapListener(props.feature);
+        }
+      }}
+      onMouseOver={(e) => {
+        //context?.setData(onMouseOver.bind(null, props.feature.id))
+        props.feature.properties["geotab:selectionStatus"] = addHover(props.feature.properties["geotab:selectionStatus"]);
+        setClassName(props.feature.properties["geotab:selectionStatus"]);
+        const mapListener = context?.listeners[props.feature.id]?.["map"];
+        if (mapListener !== undefined) {
+          mapListener(props.feature);
+        }
+      }}
+      onMouseOut={(e) => {
+        // context?.setData(onMouseOut.bind(null, props.feature.id))
+        props.feature.properties["geotab:selectionStatus"] = removeHover(props.feature.properties["geotab:selectionStatus"]);
+        setClassName(props.feature.properties["geotab:selectionStatus"]);
+        const mapListener = context?.listeners[props.feature.id]?.["map"];
+        if (mapListener !== undefined) {
+          mapListener(props.feature);
+        }
+      }}
+      className={className}
       >
       <th>
         {1+props.fidx}
