@@ -37,7 +37,6 @@ function ImportView(props) {
   const clearData = () => {
     context.setDataAndFilter([], null);
     context.setColumns([]);
-    context.setActive(null);
     context.setSymbology(null);
   }
   const simplifyGeometry = () => {

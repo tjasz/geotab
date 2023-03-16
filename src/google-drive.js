@@ -154,7 +154,6 @@ export function GoogleLogin(props) {
     setOpenFile(null);
     context.setDataAndFilter([], null);
     context.setColumns([]);
-    context.setActive(null);
     context.setSymbology(null);
   }
 

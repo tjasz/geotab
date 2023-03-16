@@ -24,17 +24,24 @@ export function getValueFromUpdaterOrValue<T>(updaterOrValue:UpdaterOrValue<T>, 
   }
 }
 
+export type FeatureListener = (feature:GeoJson.Feature) => void;
+export type FeatureListenerTable = {
+  [id:string]: {table: FeatureListener|undefined, map: FeatureListener|undefined}
+}
+
 export type DataContextType = {
   data: GeoJson.Feature[],
   filter: any, // TODO define filter type
   filteredData: GeoJson.Feature[],
   columns: Column[],
   symbology: Symbology | null,
+  featureListeners: FeatureListenerTable,
   setData: {(updaterOrValue:UpdaterOrValue<GeoJson.Feature[]>) : void},
   setFilter: {(newFilter:UpdaterOrValue<ConditionGroup|undefined>) : void},
   setDataAndFilter: {(newData:UpdaterOrValue<GeoJson.Feature[]>, newFilter:UpdaterOrValue<ConditionGroup|undefined>) : void},
   setColumns: {(newColumns:UpdaterOrValue<Column[]>) : void},
   setSymbology: {(newSymbology:UpdaterOrValue<Symbology|null>) : void},
+  setFeatureListener: {(id:string, view:"table"|"map", f:FeatureListener)}
   setFromJson: {(json:GeoJson.FeatureCollection & {geotabMetadata:GeotabMetadata}) : void},
 } | null;
 

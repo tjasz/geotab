@@ -3,7 +3,7 @@ import {BrowserRouter} from 'react-router-dom'
 import * as GeoJson from './geojson-types'
 import './App.css';
 import TabView from './tabview'
-import {DataContextType, DataContext, UpdaterOrValue, getValueFromUpdaterOrValue, GeotabMetadata} from './dataContext'
+import {DataContextType, DataContext, UpdaterOrValue, getValueFromUpdaterOrValue, GeotabMetadata, FeatureListener} from './dataContext'
 import { ConditionGroup, evaluateFilter } from './filter';
 import { GeotabLogo } from './icon/GeotabLogo';
 import { GoogleLogin } from './google-drive'
@@ -27,11 +27,13 @@ class App extends React.Component<IAppProps, IState> {
       filteredData: [],
       columns: [],
       symbology: null,
+      featureListeners: {},
       setData: this.setData.bind(this),
       setFilter: this.setFilter.bind(this),
       setDataAndFilter: this.setDataAndFilter.bind(this),
       setColumns: this.setColumns.bind(this),
       setSymbology: this.setSymbology.bind(this),
+      setFeatureListener: this.setListener.bind(this),
       setFromJson: this.setFromJson.bind(this),
     };
   }
@@ -66,6 +68,13 @@ class App extends React.Component<IAppProps, IState> {
   setSymbology(newSymbologyOrUpdater:UpdaterOrValue<Symbology|null>) {
     const newSymbology = getValueFromUpdaterOrValue(newSymbologyOrUpdater, this.state?.symbology);
     this.setState({symbology: newSymbology});
+  }
+  setListener(id:string, view:"table"|"map", f:FeatureListener) {
+    if (this.state === null) return;
+    if (this.state.featureListeners[id] === undefined) {
+      this.state.featureListeners[id] = {map: undefined, table: undefined};
+    }
+    this.state.featureListeners[id][view] = f;
   }
   setFromJson(json:GeoJson.FeatureCollection & {geotabMetadata:GeotabMetadata}) {
     const flattened = getFeatures(json);

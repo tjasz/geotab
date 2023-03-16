@@ -7,7 +7,7 @@ import {DataContext} from './dataContext'
 import {getCentralCoord, hashCode, getFeatureListBounds} from './algorithm'
 import mapLayers from './maplayers'
 import {painter} from './painter'
-import {onMouseOver, onMouseOut, onMouseClick, addHover, removeHover, toggleActive} from './selection'
+import {addHover, removeHover, toggleActive} from './selection'
 
 function MapView(props) {
     const context = useContext(DataContext);
@@ -18,7 +18,7 @@ function MapView(props) {
           resizeObserver.observe(container)
         }
       };
-      const restyleLayer = (feature, layer) => {
+      const restyleLayer = (layer, feature) => {
         const style = painter(context.symbology)(feature);
         if (layer.setStyle instanceof Function) {
           layer.setStyle(style);
@@ -37,30 +37,43 @@ function MapView(props) {
             <GeoJSON data={features} key={hashCode(JSON.stringify(features))} style={painter(context.symbology)}
             pointToLayer={painter(context.symbology)}
             onEachFeature={(feature, layer) => {
+              context.setFeatureListener(feature.id, "map", restyleLayer.bind(null, layer))
               layer.once({
                 mouseover: (e) => {
                   feature.properties["geotab:selectionStatus"] = addHover(feature.properties["geotab:selectionStatus"]);
-                  restyleLayer(feature, e.target);
-                  context.setData(onMouseOver.bind(null,feature.id));
+                  restyleLayer(e.target, feature);
+                  const tableListener = context?.featureListeners[feature.id]?.["table"];
+                  if (tableListener !== undefined) {
+                    tableListener(feature);
+                  }
                 },
               })
               layer.on({
                 click: (e) => {
                   feature.properties["geotab:selectionStatus"] = toggleActive(feature.properties["geotab:selectionStatus"]);
-                  restyleLayer(feature, e.target);
-                  context.setData(onMouseClick.bind(null,feature.id));
+                  restyleLayer(e.target, feature);
+                  const tableListener = context?.featureListeners[feature.id]?.["table"];
+                  if (tableListener !== undefined) {
+                    tableListener(feature);
+                  }
                 },
                 mouseout: (e) => {
                   feature.properties["geotab:selectionStatus"] = removeHover(feature.properties["geotab:selectionStatus"]);
-                  restyleLayer(feature, e.target);
+                  restyleLayer(e.target, feature);
                   e.target.once({
                     mouseover: (e) => {
                       feature.properties["geotab:selectionStatus"] = addHover(feature.properties["geotab:selectionStatus"]);
-                      restyleLayer(feature, e.target);
-                      context.setData(onMouseOver.bind(null,feature.id));
+                      restyleLayer(e.target, feature);
+                      const tableListener = context?.featureListeners[feature.id]?.["table"];
+                      if (tableListener !== undefined) {
+                        tableListener(feature);
+                      }
                     },
                   });
-                  context.setData(onMouseOut.bind(null,feature.id));
+                  const tableListener = context?.featureListeners[feature.id]?.["table"];
+                  if (tableListener !== undefined) {
+                    tableListener(feature);
+                  }
                 },
               })
               layer.bindPopup(
