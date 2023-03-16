@@ -20,7 +20,7 @@ type TableRowProps = {
 
 export default function TableRow(props:TableRowProps) {
   const context = useContext(DataContext);
-  const [className, setClassName] = useState("inactive");
+  const [className, setClassName] = useState(props.feature.properties["geotab:selectionStatus"] ?? "inactive");
   if (context !== null) {
     context.setListener(props.feature.id, "table", (f) => setClassName(f.properties["geotab:selectionStatus"]))
   }
