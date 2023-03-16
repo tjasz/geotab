@@ -35,13 +35,13 @@ export type DataContextType = {
   filteredData: GeoJson.Feature[],
   columns: Column[],
   symbology: Symbology | null,
-  listeners: FeatureListenerTable,
+  featureListeners: FeatureListenerTable,
   setData: {(updaterOrValue:UpdaterOrValue<GeoJson.Feature[]>) : void},
   setFilter: {(newFilter:UpdaterOrValue<ConditionGroup|undefined>) : void},
   setDataAndFilter: {(newData:UpdaterOrValue<GeoJson.Feature[]>, newFilter:UpdaterOrValue<ConditionGroup|undefined>) : void},
   setColumns: {(newColumns:UpdaterOrValue<Column[]>) : void},
   setSymbology: {(newSymbology:UpdaterOrValue<Symbology|null>) : void},
-  setListener: {(id:string, view:"table"|"map", f:FeatureListener)}
+  setFeatureListener: {(id:string, view:"table"|"map", f:FeatureListener)}
   setFromJson: {(json:GeoJson.FeatureCollection & {geotabMetadata:GeotabMetadata}) : void},
 } | null;
 

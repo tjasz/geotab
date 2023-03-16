@@ -27,13 +27,13 @@ class App extends React.Component<IAppProps, IState> {
       filteredData: [],
       columns: [],
       symbology: null,
-      listeners: {},
+      featureListeners: {},
       setData: this.setData.bind(this),
       setFilter: this.setFilter.bind(this),
       setDataAndFilter: this.setDataAndFilter.bind(this),
       setColumns: this.setColumns.bind(this),
       setSymbology: this.setSymbology.bind(this),
-      setListener: this.setListener.bind(this),
+      setFeatureListener: this.setListener.bind(this),
       setFromJson: this.setFromJson.bind(this),
     };
   }
@@ -71,11 +71,10 @@ class App extends React.Component<IAppProps, IState> {
   }
   setListener(id:string, view:"table"|"map", f:FeatureListener) {
     if (this.state === null) return;
-    if (this.state.listeners[id] === undefined) {
-      this.state.listeners[id] = {map: undefined, table: undefined};
+    if (this.state.featureListeners[id] === undefined) {
+      this.state.featureListeners[id] = {map: undefined, table: undefined};
     }
-    this.state.listeners[id][view] = f;
-    //this.setState({listeners: {...this.state.listeners, [id]: {...this.state.listeners[id], [view]: f}}});
+    this.state.featureListeners[id][view] = f;
   }
   setFromJson(json:GeoJson.FeatureCollection & {geotabMetadata:GeotabMetadata}) {
     const flattened = getFeatures(json);

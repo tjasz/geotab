@@ -4,7 +4,7 @@ import DataTableCell from './DataTableCell'
 import RowContextMenu from './RowContextMenu';
 import {Column} from './../column'
 import {Feature, FeatureProperties} from './../geojson-types'
-import {onMouseOver, onMouseOut, onMouseClick, toggleActive, addHover, removeHover} from '../selection'
+import {toggleActive, addHover, removeHover} from '../selection'
 import {DataContext} from '../dataContext'
 
 type TableRowProps = {
@@ -22,7 +22,7 @@ export default function TableRow(props:TableRowProps) {
   const context = useContext(DataContext);
   const [className, setClassName] = useState(props.feature.properties["geotab:selectionStatus"] ?? "inactive");
   if (context !== null) {
-    context.setListener(props.feature.id, "table", (f) => setClassName(f.properties["geotab:selectionStatus"]))
+    context.setFeatureListener(props.feature.id, "table", (f) => setClassName(f.properties["geotab:selectionStatus"]))
   }
   const handleCellChange = (value:any, column:Column) => {
     const newFeatureProperties = {...props.feature.properties, [column.name]: value};
@@ -32,28 +32,25 @@ export default function TableRow(props:TableRowProps) {
     <tr
       onContextMenu={() => console.log(props.feature)}
       onClick={(e) => {
-        //context?.setData(onMouseClick.bind(null, props.feature.id))
         props.feature.properties["geotab:selectionStatus"] = toggleActive(props.feature.properties["geotab:selectionStatus"]);
         setClassName(props.feature.properties["geotab:selectionStatus"]);
-        const mapListener = context?.listeners[props.feature.id]?.["map"];
+        const mapListener = context?.featureListeners[props.feature.id]?.["map"];
         if (mapListener !== undefined) {
           mapListener(props.feature);
         }
       }}
       onMouseOver={(e) => {
-        //context?.setData(onMouseOver.bind(null, props.feature.id))
         props.feature.properties["geotab:selectionStatus"] = addHover(props.feature.properties["geotab:selectionStatus"]);
         setClassName(props.feature.properties["geotab:selectionStatus"]);
-        const mapListener = context?.listeners[props.feature.id]?.["map"];
+        const mapListener = context?.featureListeners[props.feature.id]?.["map"];
         if (mapListener !== undefined) {
           mapListener(props.feature);
         }
       }}
       onMouseOut={(e) => {
-        // context?.setData(onMouseOut.bind(null, props.feature.id))
         props.feature.properties["geotab:selectionStatus"] = removeHover(props.feature.properties["geotab:selectionStatus"]);
         setClassName(props.feature.properties["geotab:selectionStatus"]);
-        const mapListener = context?.listeners[props.feature.id]?.["map"];
+        const mapListener = context?.featureListeners[props.feature.id]?.["map"];
         if (mapListener !== undefined) {
           mapListener(props.feature);
         }

@@ -7,7 +7,7 @@ import {DataContext} from './dataContext'
 import {getCentralCoord, hashCode, getFeatureListBounds} from './algorithm'
 import mapLayers from './maplayers'
 import {painter} from './painter'
-import {onMouseOver, onMouseOut, onMouseClick, addHover, removeHover, toggleActive} from './selection'
+import {addHover, removeHover, toggleActive} from './selection'
 
 function MapView(props) {
     const context = useContext(DataContext);
@@ -37,27 +37,25 @@ function MapView(props) {
             <GeoJSON data={features} key={hashCode(JSON.stringify(features))} style={painter(context.symbology)}
             pointToLayer={painter(context.symbology)}
             onEachFeature={(feature, layer) => {
-              context.setListener(feature.id, "map", restyleLayer.bind(null, layer))
+              context.setFeatureListener(feature.id, "map", restyleLayer.bind(null, layer))
               layer.once({
                 mouseover: (e) => {
                   feature.properties["geotab:selectionStatus"] = addHover(feature.properties["geotab:selectionStatus"]);
                   restyleLayer(e.target, feature);
-                  const tableListener = context?.listeners[feature.id]?.["table"];
+                  const tableListener = context?.featureListeners[feature.id]?.["table"];
                   if (tableListener !== undefined) {
                     tableListener(feature);
                   }
-                  //context.setData(onMouseOver.bind(null,feature.id));
                 },
               })
               layer.on({
                 click: (e) => {
                   feature.properties["geotab:selectionStatus"] = toggleActive(feature.properties["geotab:selectionStatus"]);
                   restyleLayer(e.target, feature);
-                  const tableListener = context?.listeners[feature.id]?.["table"];
+                  const tableListener = context?.featureListeners[feature.id]?.["table"];
                   if (tableListener !== undefined) {
                     tableListener(feature);
                   }
-                  //context.setData(onMouseClick.bind(null,feature.id));
                 },
                 mouseout: (e) => {
                   feature.properties["geotab:selectionStatus"] = removeHover(feature.properties["geotab:selectionStatus"]);
@@ -66,18 +64,16 @@ function MapView(props) {
                     mouseover: (e) => {
                       feature.properties["geotab:selectionStatus"] = addHover(feature.properties["geotab:selectionStatus"]);
                       restyleLayer(e.target, feature);
-                      const tableListener = context?.listeners[feature.id]?.["table"];
+                      const tableListener = context?.featureListeners[feature.id]?.["table"];
                       if (tableListener !== undefined) {
                         tableListener(feature);
                       }
-                      //context.setData(onMouseOver.bind(null,feature.id));
                     },
                   });
-                  const tableListener = context?.listeners[feature.id]?.["table"];
+                  const tableListener = context?.featureListeners[feature.id]?.["table"];
                   if (tableListener !== undefined) {
                     tableListener(feature);
                   }
-                  //context.setData(onMouseOut.bind(null,feature.id));
                 },
               })
               layer.bindPopup(
