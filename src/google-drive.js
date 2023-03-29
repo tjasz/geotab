@@ -1,5 +1,6 @@
 import React, { useCallback, useContext, useState } from 'react';
 import { gapi } from 'gapi-script';
+import { useGoogleLogin } from '@react-oauth/google';
 import CircularProgress from '@mui/material/CircularProgress';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -31,7 +32,7 @@ const FILE_TYPE = "application/json+geotab";
 // These would be possible to open if scope was full "drive"
 // const fileTypes = ['application/json', 'text/csv', 'application/gpx+xml', 'application/vnd.google-apps.spreadsheet'];
 
-export function GoogleLogin(props) {
+export function GoogleSession(props) {
   const context = useContext(DataContext);
   // dialog/menu visibility booleans
   const [newFileDialogVisible, setNewFileDialogVisible] = useState(false);
@@ -42,6 +43,16 @@ export function GoogleLogin(props) {
   const [isSavingGoogleDriveFile, setIsSavingGoogleDriveFile] = useState(false);
   const [signedInUser, setSignedInUser] = useState();
   const [openFile, setOpenFile] = useState(null);
+
+  const login = useGoogleLogin({
+    onSuccess: tokenResponse => {
+      console.log(tokenResponse);
+      gapi.load('client', () => { initClient(); gapi.client.setToken(tokenResponse) });
+      setSignedInUser('TODO');
+      setIsLoadingGoogleDriveApi(false);
+    },
+    onError: () => console.log('Login failed.'),
+  });
 
   const process = (files) => {
     const promises = [];
@@ -111,11 +122,12 @@ export function GoogleLogin(props) {
       })
       .then(
         function () {
+          console.log("Client initialized.")
           // Listen for sign-in state changes.
-          gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
+          //gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
 
           // Handle the initial sign-in state.
-          updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+          //updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
         },
         function (error) {}
       );
@@ -199,7 +211,7 @@ export function GoogleLogin(props) {
         isLoading={isLoadingGoogleDriveApi}
         signedInUser={signedInUser}
         handleSignOutClick={handleSignOutClick}
-        handleSignInClick={handleClientLoad}
+        handleSignInClick={login}
         />
       <TextFieldDialog
         open={newFileDialogVisible}
@@ -253,7 +265,7 @@ function UserButton(props) {
           <PersonIcon
             fontSize="large"
             />
-          <p>{props.signedInUser.getEmail()}</p>
+          <p>{props.signedInUser}</p>
         </button>
       : <button
           onClick={props.handleSignInClick}

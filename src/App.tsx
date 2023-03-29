@@ -1,12 +1,13 @@
 import React, {useContext} from 'react';
 import {BrowserRouter} from 'react-router-dom'
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import * as GeoJson from './geojson-types'
 import './App.css';
 import TabView from './tabview'
 import {DataContextType, DataContext, UpdaterOrValue, getValueFromUpdaterOrValue, GeotabMetadata, FeatureListener} from './dataContext'
 import { ConditionGroup, evaluateFilter } from './filter';
 import { GeotabLogo } from './icon/GeotabLogo';
-import { GoogleLogin } from './google-drive'
+import { GoogleSession } from './google-drive'
 import {getFeatures, getPropertiesUnion} from './algorithm'
 import { FieldTypeDescription } from './fieldtype';
 import { Column } from './column'
@@ -111,6 +112,8 @@ class App extends React.Component<IAppProps, IState> {
 
   render() {
     return (
+      <GoogleOAuthProvider
+        clientId='717055595652-4n93oosqls3l4q3oa0jik4s154qbk149.apps.googleusercontent.com'>
       <div id="App">
         <DataContext.Provider value={this.state}>
           <AppHeader />
@@ -120,6 +123,7 @@ class App extends React.Component<IAppProps, IState> {
           <AppFooter />
         </DataContext.Provider>
       </div>
+      </GoogleOAuthProvider>
     );
   }
 }
@@ -137,8 +141,8 @@ function AppHeader() {
         <h1>geotab</h1>
         <p>View, interact with, and edit geographical/tabular data.</p>
       </div>
-      <div id="googleLoginDiv">
-        <GoogleLogin onRead={context?.setFromJson} />
+      <div id="googleSessionDiv">
+        <GoogleSession onRead={context?.setFromJson} />
       </div>
     </header>
   );

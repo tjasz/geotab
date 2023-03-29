@@ -56,7 +56,7 @@ button:active {
 #App-header #logoDiv {
   width: calc(7vh - 2px);
 }
-#App-header #googleLoginDiv {
+#App-header #googleSessionDiv {
   float: right;
 }
 #App-header div .verticalCentering {
@@ -76,7 +76,7 @@ button:active {
   #App-header #appNameDiv p {
     display: none;
   }
-  #App-header #googleLoginDiv p {
+  #App-header #googleSessionDiv p {
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 150px;
@@ -93,7 +93,7 @@ button:active {
   }
 }
 @media (max-width: 350px) {
-  #App-header #googleLoginDiv p {
+  #App-header #googleSessionDiv p {
     max-width: 20px;
   }
 }
