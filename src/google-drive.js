@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useState } from 'react';
 import { gapi } from 'gapi-script';
-import { useGoogleLogin } from '@react-oauth/google';
+import { googleLogout, useGoogleLogin } from '@react-oauth/google';
 import CircularProgress from '@mui/material/CircularProgress';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -44,16 +44,6 @@ export function GoogleSession(props) {
   const [signedInUser, setSignedInUser] = useState();
   const [openFile, setOpenFile] = useState(null);
 
-  const login = useGoogleLogin({
-    onSuccess: tokenResponse => {
-      console.log(tokenResponse);
-      gapi.load('client', () => { initClient(); gapi.client.setToken(tokenResponse) });
-      setSignedInUser('TODO');
-      setIsLoadingGoogleDriveApi(false);
-    },
-    onError: () => console.log('Login failed.'),
-  });
-
   const process = (files) => {
     const promises = [];
     for (let i = 0; i < files.length; i++) {
@@ -74,13 +64,18 @@ export function GoogleSession(props) {
     })
     ;
   };
-  
-  /**
-   *  Sign in the user upon button click.
-   */
-  const handleAuthClick = (event) => {
-    gapi.auth2.getAuthInstance().signIn();
-  };
+
+  const login = useGoogleLogin({
+    onSuccess: tokenResponse => {
+      console.log(tokenResponse);
+      gapi.load('client', () => {
+        initClient();
+        gapi.client.setToken(tokenResponse);
+        updateSigninStatus(true);
+      });
+    },
+    onError: error => console.log('Login failed: ', error),
+  });
 
   /**
    *  Called when the signed in status changes, to update the UI
@@ -89,11 +84,12 @@ export function GoogleSession(props) {
    const updateSigninStatus = (isSignedIn) => {
     if (isSignedIn) {
       // Set the signed in user
-      setSignedInUser(gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile());
+      setSignedInUser('TODO');
       setIsLoadingGoogleDriveApi(false);
     } else {
-      // prompt user to sign in
-      handleAuthClick();
+      setFilePickerVisible(false);
+      setSignedInUser(null);
+      setOpenFile(null);
     }
   };
 
@@ -102,7 +98,7 @@ export function GoogleSession(props) {
    */
   const handleSignOutClick = (event) => {
     setFilePickerVisible(false);
-    gapi.auth2.getAuthInstance().signOut();
+    googleLogout();
     setSignedInUser(null);
     setOpenFile(null);
   };
@@ -131,10 +127,6 @@ export function GoogleSession(props) {
         },
         function (error) {}
       );
-  };
-
-  const handleClientLoad = () => {
-    gapi.load('client:auth2', initClient);
   };
 
   const upload = (file, callback) => {
