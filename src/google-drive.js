@@ -70,7 +70,11 @@ export function GoogleSession(props) {
       gapi.load('client', () => {
         initClient(() => {
           gapi.client.setToken(tokenResponse);
-          updateSigninStatus(true);
+          gapi.client.request({
+            'path': 'https://people.googleapis.com/v1/people/me?requestMask.includeField=person.names',
+          }).then(
+            response => updateSigninStatus(response.result.names[0].displayName)
+          )
         });
       });
     },
@@ -83,10 +87,10 @@ export function GoogleSession(props) {
    *  Called when the signed in status changes, to update the UI
    *  appropriately. After a sign-in, the API is called.
    */
-   const updateSigninStatus = (isSignedIn) => {
-    if (isSignedIn) {
+   const updateSigninStatus = (signedInUser) => {
+    if (signedInUser !== null) {
       // Set the signed in user
-      setSignedInUser('TODO');
+      setSignedInUser(signedInUser);
       setIsLoadingGoogleDriveApi(false);
     } else {
       setFilePickerVisible(false);
