@@ -65,13 +65,13 @@ export function GoogleSession(props) {
     ;
   };
 
-  const login = useGoogleLogin({
+  const handleSignInClick = useGoogleLogin({
     onSuccess: tokenResponse => {
-      console.log(tokenResponse);
       gapi.load('client', () => {
-        initClient();
-        gapi.client.setToken(tokenResponse);
-        updateSigninStatus(true);
+        initClient(() => {
+          gapi.client.setToken(tokenResponse);
+          updateSigninStatus(true);
+        });
       });
     },
     onError: error => console.log('Login failed: ', error),
@@ -97,17 +97,15 @@ export function GoogleSession(props) {
    *  Sign out the user upon button click.
    */
   const handleSignOutClick = (event) => {
-    setFilePickerVisible(false);
     googleLogout();
-    setSignedInUser(null);
-    setOpenFile(null);
+    updateSigninStatus(false);
   };
 
   /**
    *  Initializes the API client library and sets up sign-in state
    *  listeners.
    */
-  const initClient = () => {
+  const initClient = (onSuccess, onError = ()=>{}) => {
     setIsLoadingGoogleDriveApi(true);
     gapi.client
       .init({
@@ -117,15 +115,8 @@ export function GoogleSession(props) {
         scope: SCOPES,
       })
       .then(
-        function () {
-          console.log("Client initialized.")
-          // Listen for sign-in state changes.
-          //gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
-
-          // Handle the initial sign-in state.
-          //updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
-        },
-        function (error) {}
+        onSuccess,
+        onError
       );
   };
 
@@ -203,7 +194,7 @@ export function GoogleSession(props) {
         isLoading={isLoadingGoogleDriveApi}
         signedInUser={signedInUser}
         handleSignOutClick={handleSignOutClick}
-        handleSignInClick={login}
+        handleSignInClick={handleSignInClick}
         />
       <TextFieldDialog
         open={newFileDialogVisible}
