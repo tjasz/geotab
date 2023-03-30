@@ -71,9 +71,9 @@ export function GoogleSession(props) {
         initClient(() => {
           gapi.client.setToken(tokenResponse);
           gapi.client.request({
-            'path': 'https://people.googleapis.com/v1/people/me?requestMask.includeField=person.names',
+            'path': 'https://people.googleapis.com/v1/people/me?personFields=emailAddresses',
           }).then(
-            response => updateSigninStatus(response.result.names[0].displayName)
+            response => updateSigninStatus(response.result.emailAddresses[0].value)
           )
         });
       });
