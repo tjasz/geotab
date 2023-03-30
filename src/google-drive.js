@@ -1,5 +1,6 @@
 import React, { useCallback, useContext, useState } from 'react';
 import { gapi } from 'gapi-script';
+import { GoogleOAuthProvider, googleLogout, useGoogleLogin } from '@react-oauth/google';
 import CircularProgress from '@mui/material/CircularProgress';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -31,7 +32,18 @@ const FILE_TYPE = "application/json+geotab";
 // These would be possible to open if scope was full "drive"
 // const fileTypes = ['application/json', 'text/csv', 'application/gpx+xml', 'application/vnd.google-apps.spreadsheet'];
 
-export function GoogleLogin(props) {
+export function GoogleSessionContainer(props) {
+  return (
+    <div id="googleSessionDiv">
+      <GoogleOAuthProvider
+        clientId={CLIENT_ID}>
+        <GoogleSession onRead={props.onRead} />
+      </GoogleOAuthProvider>
+    </div>
+  );
+}
+
+function GoogleSession(props) {
   const context = useContext(DataContext);
   // dialog/menu visibility booleans
   const [newFileDialogVisible, setNewFileDialogVisible] = useState(false);
@@ -63,26 +75,38 @@ export function GoogleLogin(props) {
     })
     ;
   };
-  
-  /**
-   *  Sign in the user upon button click.
-   */
-  const handleAuthClick = (event) => {
-    gapi.auth2.getAuthInstance().signIn();
-  };
+
+  const handleSignInClick = useGoogleLogin({
+    onSuccess: tokenResponse => {
+      gapi.load('client', () => {
+        initClient(() => {
+          gapi.client.setToken(tokenResponse);
+          gapi.client.request({
+            'path': 'https://people.googleapis.com/v1/people/me?personFields=emailAddresses',
+          }).then(
+            response => updateSigninStatus(response.result.emailAddresses[0].value)
+          )
+        });
+      });
+    },
+    onError: error => console.log('Login failed: ', error),
+    flow: 'implicit',
+    scope: SCOPES,
+  });
 
   /**
    *  Called when the signed in status changes, to update the UI
    *  appropriately. After a sign-in, the API is called.
    */
-   const updateSigninStatus = (isSignedIn) => {
-    if (isSignedIn) {
+   const updateSigninStatus = (signedInUser) => {
+    if (signedInUser !== null) {
       // Set the signed in user
-      setSignedInUser(gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile());
+      setSignedInUser(signedInUser);
       setIsLoadingGoogleDriveApi(false);
     } else {
-      // prompt user to sign in
-      handleAuthClick();
+      setFilePickerVisible(false);
+      setSignedInUser(null);
+      setOpenFile(null);
     }
   };
 
@@ -90,17 +114,15 @@ export function GoogleLogin(props) {
    *  Sign out the user upon button click.
    */
   const handleSignOutClick = (event) => {
-    setFilePickerVisible(false);
-    gapi.auth2.getAuthInstance().signOut();
-    setSignedInUser(null);
-    setOpenFile(null);
+    googleLogout();
+    updateSigninStatus(false);
   };
 
   /**
    *  Initializes the API client library and sets up sign-in state
    *  listeners.
    */
-  const initClient = () => {
+  const initClient = (onSuccess, onError = ()=>{}) => {
     setIsLoadingGoogleDriveApi(true);
     gapi.client
       .init({
@@ -110,19 +132,9 @@ export function GoogleLogin(props) {
         scope: SCOPES,
       })
       .then(
-        function () {
-          // Listen for sign-in state changes.
-          gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
-
-          // Handle the initial sign-in state.
-          updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
-        },
-        function (error) {}
+        onSuccess,
+        onError
       );
-  };
-
-  const handleClientLoad = () => {
-    gapi.load('client:auth2', initClient);
   };
 
   const upload = (file, callback) => {
@@ -199,7 +211,7 @@ export function GoogleLogin(props) {
         isLoading={isLoadingGoogleDriveApi}
         signedInUser={signedInUser}
         handleSignOutClick={handleSignOutClick}
-        handleSignInClick={handleClientLoad}
+        handleSignInClick={handleSignInClick}
         />
       <TextFieldDialog
         open={newFileDialogVisible}
@@ -253,7 +265,7 @@ function UserButton(props) {
           <PersonIcon
             fontSize="large"
             />
-          <p>{props.signedInUser.getEmail()}</p>
+          <p>{props.signedInUser}</p>
         </button>
       : <button
           onClick={props.handleSignInClick}

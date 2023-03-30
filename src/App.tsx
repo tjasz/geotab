@@ -6,7 +6,7 @@ import TabView from './tabview'
 import {DataContextType, DataContext, UpdaterOrValue, getValueFromUpdaterOrValue, GeotabMetadata, FeatureListener} from './dataContext'
 import { ConditionGroup, evaluateFilter } from './filter';
 import { GeotabLogo } from './icon/GeotabLogo';
-import { GoogleLogin } from './google-drive'
+import { GoogleSessionContainer } from './google-drive'
 import {getFeatures, getPropertiesUnion} from './algorithm'
 import { FieldTypeDescription } from './fieldtype';
 import { Column } from './column'
@@ -137,9 +137,7 @@ function AppHeader() {
         <h1>geotab</h1>
         <p>View, interact with, and edit geographical/tabular data.</p>
       </div>
-      <div id="googleLoginDiv">
-        <GoogleLogin onRead={context?.setFromJson} />
-      </div>
+      <GoogleSessionContainer onRead={context?.setFromJson} />
     </header>
   );
 }
