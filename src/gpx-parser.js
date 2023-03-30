@@ -55,8 +55,9 @@ gpxParser.prototype.parse = function (gpxstring) {
   }
 
   // required attributes version and creator
-  attachRequired(this, "version", gpxNode.getAttribute("version"));
-  attachRequired(this, "creator", gpxNode.getAttribute("creator"));
+  // technically required by the spec, but as spec is still in version 1.x, many files leave it out
+  attachOptional(this, "version", gpxNode.getAttribute("version"));
+  attachOptional(this, "creator", gpxNode.getAttribute("creator"));
 
   attachOptional(this, "metadata", getMetadata(this.xmlSource.querySelector("metadata")));
 
