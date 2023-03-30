@@ -112,8 +112,6 @@ class App extends React.Component<IAppProps, IState> {
 
   render() {
     return (
-      <GoogleOAuthProvider
-        clientId='717055595652-4n93oosqls3l4q3oa0jik4s154qbk149.apps.googleusercontent.com'>
       <div id="App">
         <DataContext.Provider value={this.state}>
           <AppHeader />
@@ -123,7 +121,6 @@ class App extends React.Component<IAppProps, IState> {
           <AppFooter />
         </DataContext.Provider>
       </div>
-      </GoogleOAuthProvider>
     );
   }
 }
@@ -142,7 +139,10 @@ function AppHeader() {
         <p>View, interact with, and edit geographical/tabular data.</p>
       </div>
       <div id="googleSessionDiv">
-        <GoogleSession onRead={context?.setFromJson} />
+        <GoogleOAuthProvider
+          clientId='717055595652-4n93oosqls3l4q3oa0jik4s154qbk149.apps.googleusercontent.com'>
+          <GoogleSession onRead={context?.setFromJson} />
+        </GoogleOAuthProvider>
       </div>
     </header>
   );
