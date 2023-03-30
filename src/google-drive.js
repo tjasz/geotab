@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useState } from 'react';
 import { gapi } from 'gapi-script';
-import { googleLogout, useGoogleLogin } from '@react-oauth/google';
+import { GoogleOAuthProvider, googleLogout, useGoogleLogin } from '@react-oauth/google';
 import CircularProgress from '@mui/material/CircularProgress';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -32,7 +32,18 @@ const FILE_TYPE = "application/json+geotab";
 // These would be possible to open if scope was full "drive"
 // const fileTypes = ['application/json', 'text/csv', 'application/gpx+xml', 'application/vnd.google-apps.spreadsheet'];
 
-export function GoogleSession(props) {
+export function GoogleSessionContainer(props) {
+  return (
+    <div id="googleSessionDiv">
+      <GoogleOAuthProvider
+        clientId={CLIENT_ID}>
+        <GoogleSession onRead={props.onRead} />
+      </GoogleOAuthProvider>
+    </div>
+  );
+}
+
+function GoogleSession(props) {
   const context = useContext(DataContext);
   // dialog/menu visibility booleans
   const [newFileDialogVisible, setNewFileDialogVisible] = useState(false);
