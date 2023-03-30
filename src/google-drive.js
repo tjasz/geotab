@@ -75,6 +75,8 @@ export function GoogleSession(props) {
       });
     },
     onError: error => console.log('Login failed: ', error),
+    flow: 'implicit',
+    scope: SCOPES,
   });
 
   /**
