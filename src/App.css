@@ -46,6 +46,10 @@ button:active {
   margin: 0 10px;
   padding: 0;
 }
+#App-header h1 a {
+  color: white;
+  text-decoration: none;
+}
 #App-header p {
   margin: 0 10px;
 }
@@ -63,7 +67,7 @@ button:active {
   height: calc(7vh - 2px);
   position: relative;
 }
-#App-header div .verticalCentering>svg {
+#App-header div .verticalCentering svg {
   height: calc(7vh - 2px);
   width: calc(7vh - 2px);
   margin: 0;
