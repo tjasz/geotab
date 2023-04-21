@@ -2,7 +2,7 @@ import React, {useRef, useContext, useState} from 'react';
 import ReactDOMServer from "react-dom/server";
 import L from 'leaflet'
 import { MapContainer, TileLayer, WMSTileLayer, LayersControl, ScaleControl, GeoJSON, Popup, useMap, useMapEvents } from 'react-leaflet';
-import { AbridgedUrlLink } from './common-components';
+import AbridgedUrlLink from './common/AbridgedUrlLink';
 import {DataContext} from './dataContext'
 import {getCentralCoord, hashCode, getFeatureListBounds} from './algorithm'
 import mapLayers from './maplayers'

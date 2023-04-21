@@ -6,44 +6,6 @@ export function Select(props:{options:string[]}) : JSX.Element {
   );
 }
 
-export function ColoredText(props : {color:string, text:string}) : JSX.Element {
-  return (
-    <span style={{color: props.color}}>
-      {props.text}
-    </span>
-  );
-}
-
-type MultiTextFieldProps = {values:string[], onChange: {(event:React.ChangeEvent<HTMLInputElement>,newValues:string[]):void}};
-export function MultiTextField(props : MultiTextFieldProps) : JSX.Element {
-  const onChildChange = (event, value, idx) => {
-    const newValues = props.values.map((v,i) => i === idx ? value : v);
-    props.onChange(event, newValues);
-  };
-  return (
-    <div>
-      {props.values.map((value, idx) => 
-        <input
-          value={value}
-          onChange={(event) => onChildChange(event, event.target.value, idx)}
-          key={`${idx}`}/>)}
-    </div>
-  );
-}
-
-type AbridgedUrlProps = {length:number, href:string,target:string};
-export function AbridgedUrlLink(props:AbridgedUrlProps) : JSX.Element {
-  const firstHalfLength = Math.floor((props.length - 3)/2);
-  const secondHalfLength = props.length % 2 ? firstHalfLength : firstHalfLength+1;
-  const withoutProtocol = props.href.split('//')[1];
-  const abridged = `${withoutProtocol.slice(0,firstHalfLength)}...${withoutProtocol.slice(-secondHalfLength)}`
-  return (
-    <a target={props.target} href={props.href}>
-      {abridged}
-    </a>
-  );
-}
-
 // TODO cache counts
 type HistogramProps = {left:number, right:number, binWidth:number, values:number[], viewboxHeight:number}
 export function Histogram({left, right, binWidth, values, viewboxHeight} : HistogramProps) : JSX.Element {
