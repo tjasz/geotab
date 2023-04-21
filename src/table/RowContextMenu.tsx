@@ -1,5 +1,6 @@
 import React, {useContext, PropsWithChildren} from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
+import StraightenIcon from '@mui/icons-material/Straighten';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Menu from '@mui/material/Menu';
@@ -7,6 +8,7 @@ import MenuItem from '@mui/material/MenuItem';
 import {DataContext} from './../dataContext';
 import {Feature} from '../geojson-types'
 import {MousePosition} from '../MousePosition'
+import { simplify } from '../geojson-calc';
 
 type RowContextMenuProps = {
   feature: Feature,
@@ -21,6 +23,11 @@ export default function RowContextMenu(props:PropsWithChildren<RowContextMenuPro
     context.setData(context.data.filter(
       (feature) => feature.id !== props.feature.id));
   };
+
+  const simplifyGeometry = () => {
+    if (context === null) return;
+    context.setData(context.data.map((feature) => feature.id !== props.feature.id ? feature : simplify(feature, 10)));
+  }
 
   const handleContextMenu = (event) => {
     setContextMenu(
@@ -61,6 +68,13 @@ export default function RowContextMenu(props:PropsWithChildren<RowContextMenuPro
             <DeleteIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>Delete</ListItemText>
+        </MenuItem>
+        <MenuItem
+          onClick={() => { simplifyGeometry(); handleClose() }}>
+          <ListItemIcon>
+            <StraightenIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Simplify Geometry</ListItemText>
         </MenuItem>
       </Menu>
     </React.Fragment>
