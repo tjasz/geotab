@@ -6,23 +6,6 @@ export function Select(props:{options:string[]}) : JSX.Element {
   );
 }
 
-type MultiTextFieldProps = {values:string[], onChange: {(event:React.ChangeEvent<HTMLInputElement>,newValues:string[]):void}};
-export function MultiTextField(props : MultiTextFieldProps) : JSX.Element {
-  const onChildChange = (event, value, idx) => {
-    const newValues = props.values.map((v,i) => i === idx ? value : v);
-    props.onChange(event, newValues);
-  };
-  return (
-    <div>
-      {props.values.map((value, idx) => 
-        <input
-          value={value}
-          onChange={(event) => onChildChange(event, event.target.value, idx)}
-          key={`${idx}`}/>)}
-    </div>
-  );
-}
-
 type AbridgedUrlProps = {length:number, href:string,target:string};
 export function AbridgedUrlLink(props:AbridgedUrlProps) : JSX.Element {
   const firstHalfLength = Math.floor((props.length - 3)/2);
