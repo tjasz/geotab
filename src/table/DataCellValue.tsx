@@ -1,4 +1,4 @@
-import { AbridgedUrlLink } from '../common-components';
+import AbridgedUrlLink from '../common/AbridgedUrlLink';
 import { toDate } from './../fieldtype'
 
 export default function DataCellValue(props) {

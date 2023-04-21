@@ -6,19 +6,6 @@ export function Select(props:{options:string[]}) : JSX.Element {
   );
 }
 
-type AbridgedUrlProps = {length:number, href:string,target:string};
-export function AbridgedUrlLink(props:AbridgedUrlProps) : JSX.Element {
-  const firstHalfLength = Math.floor((props.length - 3)/2);
-  const secondHalfLength = props.length % 2 ? firstHalfLength : firstHalfLength+1;
-  const withoutProtocol = props.href.split('//')[1];
-  const abridged = `${withoutProtocol.slice(0,firstHalfLength)}...${withoutProtocol.slice(-secondHalfLength)}`
-  return (
-    <a target={props.target} href={props.href}>
-      {abridged}
-    </a>
-  );
-}
-
 // TODO cache counts
 type HistogramProps = {left:number, right:number, binWidth:number, values:number[], viewboxHeight:number}
 export function Histogram({left, right, binWidth, values, viewboxHeight} : HistogramProps) : JSX.Element {
