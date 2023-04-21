@@ -1,7 +1,8 @@
 import React, {useContext, useState} from 'react';
 import {Slider} from '@mui/material'
 import {DataContext} from './dataContext'
-import {Select, ColoredText, MultiTextField, Histogram} from './common-components'
+import {Select, MultiTextField, Histogram} from './common-components'
+import ColoredText from './symbology/ColoredText'
 import {symbologyModes, modesForType} from './painter'
 import {toType} from './fieldtype'
 import {ReactComponent as MinusSquare} from './feather/minus-square.svg'
@@ -30,22 +31,22 @@ function SymbologyDefinition({symbology, onSave}) {
       <SymbologyProperty name="hue" definition={draft?.hue}
         onEdit={(hueDef) => {updateDraft({...draft, hue: hueDef})}}
         minValue={0} maxValue={360}
-        valueLabelFormat={(value) => <ColoredText color={`hsla(${value}, 100%, 80%, 1)`} text={value} />}
+        valueLabelFormat={(value) => <ColoredText color={`hsla(${value}, 100%, 80%, 1)`}>{value}</ColoredText>}
         />
       <SymbologyProperty name="saturation" definition={draft?.saturation}
         onEdit={(saturationDef) => {updateDraft({...draft, saturation: saturationDef})}}
         minValue={0} maxValue={100}
-        valueLabelFormat={(value) => <ColoredText color={`hsla(0, ${value}%, 80%, 1)`} text={value} />}
+        valueLabelFormat={(value) => <ColoredText color={`hsla(0, ${value}%, 80%, 1)`}>{value}</ColoredText>}
         />
       <SymbologyProperty name="lightness" definition={draft?.lightness}
         onEdit={(lightnessDef) => {updateDraft({...draft, lightness: lightnessDef})}}
         minValue={0} maxValue={100}
-        valueLabelFormat={(value) => <ColoredText color={`hsla(0, 0%, ${value}%, 1)`} text={value} />}
+        valueLabelFormat={(value) => <ColoredText color={`hsla(0, 0%, ${value}%, 1)`}>{value}</ColoredText>}
         />
       <SymbologyProperty name="opacity" definition={draft?.opacity}
         onEdit={(opacityDef) => {updateDraft({...draft, opacity: opacityDef})}}
         minValue={0} maxValue={1}
-        valueLabelFormat={(value) => <ColoredText color={`hsla(0, 0%, 0%, ${value})`} text={value} />}
+        valueLabelFormat={(value) => <ColoredText color={`hsla(0, 0%, 0%, ${value})`}>{value}</ColoredText>}
         />
       <SymbologyProperty name="size" definition={draft?.size}
         onEdit={(sizeDef) => {updateDraft({...draft, size: sizeDef})}}

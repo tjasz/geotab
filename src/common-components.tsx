@@ -6,14 +6,6 @@ export function Select(props:{options:string[]}) : JSX.Element {
   );
 }
 
-export function ColoredText(props : {color:string, text:string}) : JSX.Element {
-  return (
-    <span style={{color: props.color}}>
-      {props.text}
-    </span>
-  );
-}
-
 type MultiTextFieldProps = {values:string[], onChange: {(event:React.ChangeEvent<HTMLInputElement>,newValues:string[]):void}};
 export function MultiTextField(props : MultiTextFieldProps) : JSX.Element {
   const onChildChange = (event, value, idx) => {
