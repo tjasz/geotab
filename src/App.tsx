@@ -130,11 +130,11 @@ function AppHeader() {
     <header id="App-header">
       <div id="logoDiv">
         <div className="verticalCentering">
-          <GeotabLogo />
+        <a href="."><GeotabLogo /></a>
         </div>
       </div>
       <div id="appNameDiv">
-        <h1>geotab</h1>
+        <h1><a href=".">geotab</a></h1>
         <p>View, interact with, and edit geographical/tabular data.</p>
       </div>
       <GoogleSessionContainer onRead={context?.setFromJson} />
