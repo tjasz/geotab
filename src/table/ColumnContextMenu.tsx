@@ -23,12 +23,14 @@ import { FieldTypeDescription } from '../fieldtype';
 import { Feature } from '../geojson-types';
 import { MousePosition } from '../MousePosition';
 import {Sorting} from './sorting'
+import {apply} from 'json-logic-js'
 
 type InsertDialog = "left"|"right"|null;
 
 type ColumnContextMenuProps = {
   columnName: string,
   columnIndex: number,
+  columnFormula?: string,
   setSorting: (sorting:Sorting|undefined) => void,
 }
 
@@ -69,11 +71,16 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
     if (context === null) return;
     let userFunction:Function = (feature:Feature) => feature.properties[name];
     try {
-      userFunction = new Function("feature", "index", formula);
+      userFunction = JSON.parse(formula);
       if (userFunction !== undefined) {
+        context.setColumns(context.columns.map((column) => {
+          return column.name == name
+            ? {...column, formula}
+            : column;
+        }));
         context.setData(context.data.map((feature, index) => {
           let {[name]: _, ...rest} = feature.properties;
-          return {...feature, properties: {...rest, [name]: userFunction(feature, index)}};
+          return {...feature, properties: {...rest, [name]: apply(userFunction, {feature, index})}};
         }));
       }
     }
@@ -262,7 +269,9 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
         title={`Calculate values for column '${props.columnName}'`}
         label="Formula"
         confirmLabel="Calculate"
-        defaultValue={`return feature.properties["${props.columnName}"];`}
+        defaultValue={props.columnFormula
+          ? props.columnFormula
+          : `{ "var" : ["feature.properties.${props.columnName}"] }`}
         open={calculateDialogOpen}
         onConfirm={(formula) => { calculateColumn(props.columnName, formula); setCalculateDialogOpen(false); }}
         onCancel={() => { setCalculateDialogOpen(false); }}
