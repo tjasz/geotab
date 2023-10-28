@@ -34,7 +34,7 @@ export default function DataTableHeader(props:DataTableHeaderProps) {
           }}>
             {info.column.name}
           </span>
-          <ColumnContextMenu columnName={info.column.name} columnIndex={info.idx} setSorting={props.setSorting}>
+          <ColumnContextMenu columnName={info.column.name} columnIndex={info.idx} columnFormula={info.column.formula} setSorting={props.setSorting}>
             <MoreVertIcon className="inlineIcon" />
           </ColumnContextMenu>
         </th>)}

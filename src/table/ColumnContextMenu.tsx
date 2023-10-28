@@ -30,6 +30,7 @@ type InsertDialog = "left"|"right"|null;
 type ColumnContextMenuProps = {
   columnName: string,
   columnIndex: number,
+  columnFormula?: string,
   setSorting: (sorting:Sorting|undefined) => void,
 }
 
@@ -72,6 +73,11 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
     try {
       userFunction = JSON.parse(formula);
       if (userFunction !== undefined) {
+        context.setColumns(context.columns.map((column) => {
+          return column.name == name
+            ? {...column, formula}
+            : column;
+        }));
         context.setData(context.data.map((feature, index) => {
           let {[name]: _, ...rest} = feature.properties;
           return {...feature, properties: {...rest, [name]: apply(userFunction, {feature, index})}};
@@ -263,7 +269,9 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
         title={`Calculate values for column '${props.columnName}'`}
         label="Formula"
         confirmLabel="Calculate"
-        defaultValue={`{ "var" : ["feature.properties.${props.columnName}"] }`}
+        defaultValue={props.columnFormula
+          ? props.columnFormula
+          : `{ "var" : ["feature.properties.${props.columnName}"] }`}
         open={calculateDialogOpen}
         onConfirm={(formula) => { calculateColumn(props.columnName, formula); setCalculateDialogOpen(false); }}
         onCancel={() => { setCalculateDialogOpen(false); }}
