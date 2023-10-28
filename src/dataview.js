@@ -151,12 +151,15 @@ function FileImporter({onRead}) {
 
 function ExportView(props) {
   const context = useContext(DataContext);
-  const exportJson = (includeHidden) => {
+  const isActive = (feature) => {
+    const status = feature.properties["geotab:selectionStatus"];
+    return status !== undefined && !status.includes("inactive");
+  };
+  const exportJson = (includeHidden, filterFunc = f => true) => {
     const downloadLink = document.createElement("a");
-    const features = includeHidden ? context.data : context.filteredData;
+    const features = (includeHidden ? context.data : context.filteredData).filter(filterFunc);
     const textContent = JSON.stringify({
       type: "FeatureCollection",
-      // TODO option to save filtered or unfiltered data
       features,
       geotabMetadata: {
         columns: context.columns,
@@ -175,6 +178,7 @@ function ExportView(props) {
       <h3>Export</h3>
       <button onClick={() => exportJson(true)}>Export All</button>
       <button onClick={() => exportJson(false)}>Export Filtered</button>
+      <button onClick={() => exportJson(false, isActive)}>Export Selected</button>
     </div>
   );
 }
