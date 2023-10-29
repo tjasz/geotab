@@ -25,6 +25,20 @@ const supportedOperations : string[] = [
   "in",
   "cat",
   "substr",
+  "Math.abs",
+  "Math.ceil",
+  "Math.exp",
+  "Math.floor",
+  "Math.hypot",
+  "Math.log",
+  "Math.log10",
+  "Math.log2",
+  "Math.pow",
+  "Math.random",
+  "Math.round",
+  "Math.sign",
+  "Math.sqrt",
+  "Math.trunc",
 ];
 
 type Operation = {
