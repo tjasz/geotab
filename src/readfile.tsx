@@ -15,7 +15,7 @@ export function attachProgress(proms:Promise<any>[], progress_cb:{(percentDone:n
   }
 }
 
-export function parseFile(file:Blob) {
+export function parseFile(file:File) {
   return new Promise((resolve, reject) => {
     readFileAsText(file).then((text) => {
       // guess file type based on first character of text

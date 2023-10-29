@@ -23,7 +23,8 @@ import { FieldTypeDescription } from '../fieldtype';
 import { Feature } from '../geojson-types';
 import { MousePosition } from '../MousePosition';
 import {Sorting} from './sorting'
-import {apply} from 'json-logic-js'
+import {apply, RulesLogic} from 'json-logic-js'
+import {ComputeFieldDialog} from './ComputeFieldDialog'
 
 type InsertDialog = "left"|"right"|null;
 
@@ -67,20 +68,18 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
     // retype in the column list
     context.setColumns(context.columns.map((col) => col.name === name ? {...col, type: newtype} : col));
   };
-  const calculateColumn = (name:string, formula:string) => {
+  const calculateColumn = (name:string, formula:RulesLogic) => {
     if (context === null) return;
-    let userFunction:Function = (feature:Feature) => feature.properties[name];
     try {
-      userFunction = JSON.parse(formula);
-      if (userFunction !== undefined) {
+      if (formula !== undefined) {
         context.setColumns(context.columns.map((column) => {
           return column.name == name
-            ? {...column, formula}
+            ? {...column, formula: JSON.stringify(formula)}
             : column;
         }));
         context.setData(context.data.map((feature, index) => {
           let {[name]: _, ...rest} = feature.properties;
-          return {...feature, properties: {...rest, [name]: apply(userFunction, {feature, index})}};
+          return {...feature, properties: {...rest, [name]: apply(formula, {feature, index})}};
         }));
       }
     }
@@ -265,9 +264,8 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
         onConfirm={(newname) => { renameColumn(props.columnName, newname); setRenameDialogOpen(false); }}
         onCancel={() => { setRenameDialogOpen(false); }}
       />
-      <TextFieldDialog
+      <ComputeFieldDialog
         title={`Calculate values for column '${props.columnName}'`}
-        label="Formula"
         confirmLabel="Calculate"
         defaultValue={props.columnFormula
           ? props.columnFormula
@@ -275,7 +273,6 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
         open={calculateDialogOpen}
         onConfirm={(formula) => { calculateColumn(props.columnName, formula); setCalculateDialogOpen(false); }}
         onCancel={() => { setCalculateDialogOpen(false); }}
-        multiline
       />
       <TextFieldDialog
         title={`Insert column ${insertDialog} of '${props.columnName}'?`}
