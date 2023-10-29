@@ -25,7 +25,7 @@ import { MousePosition } from '../MousePosition';
 import {Sorting} from './sorting'
 import {apply, RulesLogic} from 'json-logic-js'
 import {ComputeFieldDialog} from './ComputeFieldDialog'
-import { getSchema } from '../rjsf';
+import { getSchema, toJsonLogic } from '../rjsf';
 
 type InsertDialog = "left"|"right"|null;
 
@@ -80,7 +80,7 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
         }));
         context.setData(context.data.map((feature, index) => {
           let {[name]: _, ...rest} = feature.properties;
-          return {...feature, properties: {...rest, [name]: apply(formula, {feature, index})}};
+          return {...feature, properties: {...rest, [name]: apply(toJsonLogic(formula), {feature, index})}};
         }));
       }
     }

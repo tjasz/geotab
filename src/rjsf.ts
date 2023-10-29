@@ -1,27 +1,30 @@
 import { RJSFSchema } from "@rjsf/utils";
 import { Column } from "./column";
 
-type OperationDefinition = {
-  operator: string,
-  arguments: number,
-};
-const supportedOperations : OperationDefinition[] = [
-  {
-    operator: "==",
-    arguments: 2,
-  },
-  {
-    operator: "===",
-    arguments: 2,
-  },
-  {
-    operator: "!=",
-    arguments: 2,
-  },
-  {
-    operator: "!==",
-    arguments: 2,
-  },
+const supportedOperations : string[] = [
+  "if",
+  "==",
+  "===",
+  "!=",
+  "!==",
+  "!",
+  "!!",
+  "or",
+  "and",
+  ">",
+  ">=",
+  "<",
+  "<=",
+  "max",
+  "min",
+  "+",
+  "-",
+  "*",
+  "/",
+  "%",
+  "in",
+  "cat",
+  "substr",
 ];
 
 type Operation = {
@@ -69,7 +72,7 @@ export const getSchema = (columns: Column[]) => {
         type: "object",
         title: "Operation",
         properties: {
-          operator: {type: "string", enum: supportedOperations.map(op => op.operator),},
+          operator: {type: "string", enum: supportedOperations,},
           arguments: {
             type: "array",
             items: { "$ref": "#/$defs/expression" },

@@ -8,7 +8,6 @@ import { RulesLogic } from 'json-logic-js';
 import { Form } from '@rjsf/mui';
 import validator from '@rjsf/validator-ajv8';
 import { RJSFSchema } from '@rjsf/utils';
-import { toJsonLogic } from '../rjsf';
 
 type ComputeFieldDialogProps = {
   defaultValue:RulesLogic;
@@ -29,8 +28,7 @@ export function ComputeFieldDialog(props:ComputeFieldDialogProps) {
   };
 
   const handleConfirm = () => {
-    const asJsonLogic = toJsonLogic(draft);
-    props.onConfirm(asJsonLogic);
+    props.onConfirm(draft);
   };
   
   return (
