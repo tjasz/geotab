@@ -1,28 +1,40 @@
 import { RJSFSchema } from "@rjsf/utils";
 import { Column } from "./column";
 
-type Operation = {
-  name: string,
+type OperationDefinition = {
+  operator: string,
   arguments: number,
 };
-const supportedOperations : Operation[] = [
+const supportedOperations : OperationDefinition[] = [
   {
-    name: "==",
+    operator: "==",
     arguments: 2,
   },
   {
-    name: "===",
+    operator: "===",
     arguments: 2,
   },
   {
-    name: "!=",
+    operator: "!=",
     arguments: 2,
   },
   {
-    name: "!==",
+    operator: "!==",
     arguments: 2,
   },
 ];
+
+type Operation = {
+  operator: string,
+  arguments: object[]
+};
+
+export const toJsonLogic = (op: any) => {
+  if (op.operator) {
+    return { [op.operator]: op.arguments.map(arg => toJsonLogic(arg)) };
+  }
+  return op;
+}
 
 export const getSchema = (columns: Column[]) => {
   const schema : RJSFSchema = {
@@ -56,17 +68,13 @@ export const getSchema = (columns: Column[]) => {
       operation: {
         type: "object",
         title: "Operation",
-        anyOf: supportedOperations.map(op => { return {
-          type: "object",
-          title: op.name,
-          properties: {
-            [op.name]: {
-              type: "array",
-              items: Array(op.arguments).fill({ "$ref": "#/$defs/expression" }),
-            },
+        properties: {
+          operator: {type: "string", enum: supportedOperations.map(op => op.operator),},
+          arguments: {
+            type: "array",
+            items: { "$ref": "#/$defs/expression" },
           },
-          additionalProperties: false,
-        }}),
+        },
       },
     }
   };
