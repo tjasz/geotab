@@ -39,7 +39,7 @@ export function ComputeFieldDialog(props:ComputeFieldDialogProps) {
           formData={draft}
           schema={props.schema}
           validator={validator}
-          onChange={(e) => console.log(e.formData) }
+          onChange={(e) => setDraft(e.formData) }
           />
       </DialogContent>
       <DialogActions>

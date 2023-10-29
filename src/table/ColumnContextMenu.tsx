@@ -270,7 +270,7 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
         confirmLabel="Calculate"
         defaultValue={props.columnFormula
           ? props.columnFormula
-          : { var : [`feature.properties.${props.columnName}`] }}
+          : { var : `feature.properties.${props.columnName}` }}
         schema={getSchema(context?.columns ?? [])}
         open={calculateDialogOpen}
         onConfirm={(formula) => { calculateColumn(props.columnName, formula); setCalculateDialogOpen(false); }}
