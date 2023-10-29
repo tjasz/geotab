@@ -10,6 +10,7 @@ export const getSchema = (columns: Column[]) => {
       { $ref: "#/$defs/booleanLiteral" },
       { $ref: "#/$defs/dateTimeLiteral" },
       { $ref: "#/$defs/property" },
+      { $ref: "#/$defs/expression" },
     ],
     $defs: {
       stringLiteral: {type: "string", title: "String Literal"},
@@ -24,7 +25,66 @@ export const getSchema = (columns: Column[]) => {
           ...columns.map(col => `feature.properties.${col.name}`)
         ],
         default: "feature"
-      }
+      },
+      operatorNames: {
+        enum: [
+          "missing",
+          "missing_some",
+          "if",
+          "==",
+          "===",
+          "!=",
+          "!==",
+          "!",
+          "!!",
+          "or",
+          "and",
+          ">",
+          ">=",
+          "<",
+          "<=",
+          "max",
+          "min",
+          "+",
+          "-",
+          "*",
+          "/",
+          "%",
+          "map",
+          "filter",
+          "reduce",
+          "all",
+          "none",
+          "some",
+          "merge",
+          "in",
+          "cat",
+          "substr",
+          "log",
+        ],
+      },
+      expression: {
+        type: "object",
+        title: "Expression",
+        properties: {
+          operator: { $ref: "#/$defs/operatorNames" },
+          arguments: {
+            type: "array",
+            title: "Arguments",
+            items: {
+              type: "object",
+              anyOf: [
+                { $ref: "#/$defs/stringLiteral" },
+                { $ref: "#/$defs/numberLiteral" },
+                { $ref: "#/$defs/booleanLiteral" },
+                { $ref: "#/$defs/dateTimeLiteral" },
+                { $ref: "#/$defs/property" },
+                { $ref: "#/$defs/expression" },
+              ]
+            },
+          },
+        },
+      },
     }
   };
   return schema;
