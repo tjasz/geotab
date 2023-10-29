@@ -11,6 +11,7 @@ import { RJSFSchema } from '@rjsf/utils';
 
 type ComputeFieldDialogProps = {
   defaultValue:RulesLogic;
+  schema:RJSFSchema;
   onCancel:{():void};
   onConfirm:{(draft:RulesLogic):void};
   open:boolean;
@@ -29,17 +30,6 @@ export function ComputeFieldDialog(props:ComputeFieldDialogProps) {
   const handleConfirm = () => {
     props.onConfirm(draft);
   };
-
-  const schema : RJSFSchema =
-{
-  type: "object",
-  anyOf: [
-    { $ref: "#/$defs/stringLiteral" }
-  ],
-  $defs: {
-    stringLiteral: {"type": "string"}
-  }
-};
   
   return (
     <Dialog onClose={handleCancel} open={props.open}>
@@ -47,7 +37,7 @@ export function ComputeFieldDialog(props:ComputeFieldDialogProps) {
       <DialogContent>
         <Form
           formData={draft}
-          schema={schema}
+          schema={props.schema}
           validator={validator}
           onChange={(e) => console.log(e) }
           />

@@ -25,6 +25,7 @@ import { MousePosition } from '../MousePosition';
 import {Sorting} from './sorting'
 import {apply, RulesLogic} from 'json-logic-js'
 import {ComputeFieldDialog} from './ComputeFieldDialog'
+import { getSchema } from '../rjsf';
 
 type InsertDialog = "left"|"right"|null;
 
@@ -270,6 +271,7 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
         defaultValue={props.columnFormula
           ? props.columnFormula
           : `{ "var" : ["feature.properties.${props.columnName}"] }`}
+        schema={getSchema(context?.columns ?? [])}
         open={calculateDialogOpen}
         onConfirm={(formula) => { calculateColumn(props.columnName, formula); setCalculateDialogOpen(false); }}
         onCancel={() => { setCalculateDialogOpen(false); }}
