@@ -4,16 +4,16 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import { RulesLogic } from 'json-logic-js';
 import { Form } from '@rjsf/mui';
 import validator from '@rjsf/validator-ajv8';
 import { RJSFSchema } from '@rjsf/utils';
+import { Expression } from '../json-logic/root';
 
 type ComputeFieldDialogProps = {
-  defaultValue:RulesLogic;
+  defaultValue:Expression;
   schema:RJSFSchema;
   onCancel:{():void};
-  onConfirm:{(draft:RulesLogic):void};
+  onConfirm:{(draft:Expression):void};
   open:boolean;
   title:string;
   cancelLabel?:string;

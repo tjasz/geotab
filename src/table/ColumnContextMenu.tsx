@@ -23,16 +23,16 @@ import { FieldTypeDescription } from '../fieldtype';
 import { Feature } from '../geojson-types';
 import { MousePosition } from '../MousePosition';
 import {Sorting} from './sorting'
-import {apply, RulesLogic} from 'json-logic-js'
+import {apply, Expression} from '../json-logic/root'
 import {ComputeFieldDialog} from './ComputeFieldDialog'
-import { getSchema, toJsonLogic } from '../rjsf';
+import { getSchema } from '../rjsf';
 
 type InsertDialog = "left"|"right"|null;
 
 type ColumnContextMenuProps = {
   columnName: string,
   columnIndex: number,
-  columnFormula?: RulesLogic,
+  columnFormula?: Expression,
   setSorting: (sorting:Sorting|undefined) => void,
 }
 
@@ -69,7 +69,7 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
     // retype in the column list
     context.setColumns(context.columns.map((col) => col.name === name ? {...col, type: newtype} : col));
   };
-  const calculateColumn = (name:string, formula:RulesLogic) => {
+  const calculateColumn = (name:string, formula:Expression) => {
     if (context === null) return;
     try {
       if (formula !== undefined) {
@@ -80,7 +80,7 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
         }));
         context.setData(context.data.map((feature, index) => {
           let {[name]: _, ...rest} = feature.properties;
-          return {...feature, properties: {...rest, [name]: apply(toJsonLogic(formula), {feature, index})}};
+          return {...feature, properties: {...rest, [name]: apply(formula, {feature, index})}};
         }));
       }
     }

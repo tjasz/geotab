@@ -7,11 +7,11 @@ import {DataContextType, DataContext, UpdaterOrValue, getValueFromUpdaterOrValue
 import { ConditionGroup, evaluateFilter } from './filter';
 import { GeotabLogo } from './icon/GeotabLogo';
 import { GoogleSessionContainer } from './google-drive'
-import {getFeatureLengthMeters, getFeatures, getPropertiesUnion} from './algorithm'
+import { getFeatures, getPropertiesUnion } from './algorithm'
 import { FieldTypeDescription } from './fieldtype';
 import { Column } from './column'
 import { Symbology } from './painter'
-import { add_operation } from 'json-logic-js';
+import { add_operations } from './json-logic/root';
 
 interface IAppProps {
 }
@@ -38,9 +38,7 @@ class App extends React.Component<IAppProps, IState> {
       setFromJson: this.setFromJson.bind(this),
     };
 
-    // @ts-ignore
-    add_operation("Math", Math);
-    add_operation("length", (feature) => getFeatureLengthMeters(feature));
+    add_operations();
   }
 
   setData(newDataOrUpdator:UpdaterOrValue<GeoJson.Feature[]>) {
