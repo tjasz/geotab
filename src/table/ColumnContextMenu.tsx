@@ -25,7 +25,7 @@ import { MousePosition } from '../MousePosition';
 import {Sorting} from './sorting'
 import {apply, Expression} from '../json-logic/root'
 import {ComputeFieldDialog} from './ComputeFieldDialog'
-import { getSchema } from '../rjsf';
+import { getSchema } from '../json-logic/rjsf';
 
 type InsertDialog = "left"|"right"|null;
 

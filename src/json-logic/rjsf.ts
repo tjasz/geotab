@@ -1,5 +1,5 @@
 import { RJSFSchema } from "@rjsf/utils";
-import { Column } from "./column";
+import { Column } from "../column";
 
 const supportedOperations : string[] = [
   "if",
@@ -45,13 +45,6 @@ type Operation = {
   operator: string,
   arguments: object[]
 };
-
-export const toJsonLogic = (op: any) => {
-  if (op.operator) {
-    return { [op.operator]: op.arguments.map(arg => toJsonLogic(arg)) };
-  }
-  return op;
-}
 
 export const getSchema = (columns: Column[]) => {
   const schema : RJSFSchema = {
