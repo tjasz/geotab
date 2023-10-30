@@ -7,6 +7,7 @@
 // and that we can convert to JSON logic at application time.
 
 import { AdditionalOperation, JsonLogicVar, RulesLogic, apply as applyLogic, add_operation } from "json-logic-js";
+import { Geo } from "./geo";
 
 export type Operation = {
   operator: string,
@@ -37,4 +38,6 @@ export const apply = (exp: Expression, data?: unknown) => {
 export const add_operations = (): void => {
     // @ts-ignore
     add_operation("Math", Math);
+    // @ts-ignore
+    add_operation("Geo", Geo);
 }

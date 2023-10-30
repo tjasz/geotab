@@ -39,6 +39,7 @@ const supportedOperations : string[] = [
   "Math.sign",
   "Math.sqrt",
   "Math.trunc",
+  "Geo.length",
 ];
 
 type Operation = {
