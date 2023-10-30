@@ -1,4 +1,4 @@
-import { getFeatureLengthMeters } from "../algorithm";
+import { getFeatureLengthMeters } from "../../algorithm";
 
 type OperatorBody = (...args: any[]) => any;
 

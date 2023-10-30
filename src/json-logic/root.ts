@@ -7,7 +7,7 @@
 // and that we can convert to JSON logic at application time.
 
 import { AdditionalOperation, JsonLogicVar, RulesLogic, apply as applyLogic, add_operation } from "json-logic-js";
-import { Geo } from "./geo";
+import { Geo } from "./operations/geo";
 
 export type Operation = {
   operator: string,
