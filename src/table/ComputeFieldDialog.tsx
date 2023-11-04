@@ -7,13 +7,14 @@ import DialogContent from '@mui/material/DialogContent';
 import { Form } from '@rjsf/mui';
 import validator from '@rjsf/validator-ajv8';
 import { RJSFSchema } from '@rjsf/utils';
-import { Expression } from '../json-logic/root';
+import { Expression, fromJsonLogic, toJsonLogic } from '../json-logic/root';
+import { AdditionalOperation, RulesLogic } from 'json-logic-js';
 
 type ComputeFieldDialogProps = {
-  defaultValue:Expression;
+  defaultValue:RulesLogic<AdditionalOperation>;
   schema:RJSFSchema;
   onCancel:{():void};
-  onConfirm:{(draft:Expression):void};
+  onConfirm:{(draft:RulesLogic<AdditionalOperation>):void};
   open:boolean;
   title:string;
   cancelLabel?:string;
@@ -21,14 +22,14 @@ type ComputeFieldDialogProps = {
 }
 
 export function ComputeFieldDialog(props:ComputeFieldDialogProps) {
-  const [ draft, setDraft] = useState(props.defaultValue);
+  const [ draft, setDraft] = useState(fromJsonLogic(props.defaultValue));
 
   const handleCancel = () => {
     props.onCancel();
   };
 
   const handleConfirm = () => {
-    props.onConfirm(draft);
+    props.onConfirm(toJsonLogic(draft));
   };
   
   return (

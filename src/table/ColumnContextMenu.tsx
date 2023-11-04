@@ -23,16 +23,16 @@ import { FieldTypeDescription } from '../fieldtype';
 import { Feature } from '../geojson-types';
 import { MousePosition } from '../MousePosition';
 import {Sorting} from './sorting'
-import {apply, Expression} from '../json-logic/root'
 import {ComputeFieldDialog} from './ComputeFieldDialog'
 import { getSchema } from '../json-logic/rjsf';
+import { AdditionalOperation, apply, RulesLogic } from 'json-logic-js';
 
 type InsertDialog = "left"|"right"|null;
 
 type ColumnContextMenuProps = {
   columnName: string,
   columnIndex: number,
-  columnFormula?: Expression,
+  columnFormula?: RulesLogic<AdditionalOperation>,
   setSorting: (sorting:Sorting|undefined) => void,
 }
 
@@ -69,7 +69,7 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
     // retype in the column list
     context.setColumns(context.columns.map((col) => col.name === name ? {...col, type: newtype} : col));
   };
-  const calculateColumn = (name:string, formula:Expression) => {
+  const calculateColumn = (name:string, formula:RulesLogic<AdditionalOperation>) => {
     if (context === null) return;
     try {
       if (formula !== undefined) {

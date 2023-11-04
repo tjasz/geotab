@@ -21,13 +21,27 @@ export type Expression<AddOps extends AdditionalOperation = never> =
     | JsonLogicVar<AddOps>
     | Operation;
 
-const toJsonLogic = (exp: Expression) : RulesLogic<AdditionalOperation>=> {
+export const toJsonLogic = (exp: Expression) : RulesLogic<AdditionalOperation>=> {
   const op = exp as Operation;
   if (op.operator) {
     const jsonOp : RulesLogic<AdditionalOperation> = { [op.operator]: op.arguments.map(arg => toJsonLogic(arg)) };
     return jsonOp;
   }
   return exp as RulesLogic;
+}
+
+export const fromJsonLogic = (logic : RulesLogic<AdditionalOperation>) : Expression => {
+  if (typeof logic === "object")
+  {
+    const key = Object.keys(logic)[0];
+    if (key !== "var") {
+      const exp : Expression = {
+        operator: Object.keys(logic)[0],
+        arguments: Array.isArray(logic[key]) ? logic[key].map(fromJsonLogic) : [fromJsonLogic(logic[key])]};
+      return exp;
+    }
+  }
+  return logic as Expression;
 }
 
 export const apply = (exp: Expression, data?: unknown) => {
