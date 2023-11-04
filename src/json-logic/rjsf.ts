@@ -42,11 +42,6 @@ const supportedOperations : string[] = [
   "Geo.length",
 ];
 
-type Operation = {
-  operator: string,
-  arguments: object[]
-};
-
 export const getSchema = (columns: Column[]) => {
   const schema : RJSFSchema = {
     $ref: "#/$defs/expression",
