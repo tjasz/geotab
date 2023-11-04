@@ -42,7 +42,6 @@ export function ComputeFieldDialog(props:ComputeFieldDialogProps) {
           validator={validator}
           onChange={(e) => {
             setDraft(e.formData);
-            console.log(draft);
           } }
           />
       </DialogContent>
