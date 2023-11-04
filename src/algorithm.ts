@@ -190,10 +190,13 @@ export function getFeatureLengthMeters(feature) {
     case "LineString":
       return getLengthFromCoordinateList(feature.geometry.coordinates);
     case "MultiLineString":
-    case "MultiPolygon":
     case "Polygon":
       return feature.geometry.coordinates.reduce(
         (accumulator, part) => accumulator + getLengthFromCoordinateList(part), 0);
+    case "MultiPolygon":
+      return feature.geometry.coordinates.reduce(
+        (accumulator, polygon) => accumulator + polygon.reduce(
+          (accumulator, part) => accumulator + getLengthFromCoordinateList(part), 0), 0);
     default:
       return NaN;
   }

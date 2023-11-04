@@ -29,9 +29,14 @@ export default function DataTableHeader(props:DataTableHeaderProps) {
       </th>
       {Array.from(props.columns).map((column, idx) => {return {column, idx}}).filter((info) => info.column.visible).map((info) =>
         <th key={info.column.name} >
-          <span onClick={() => {
-            props.setSorting({col: info.column, asc: (props.sorting && props.sorting.col.name === info.column.name) ? !props.sorting.asc : true});
-          }}>
+          <span
+            onClick={() => {
+              props.setSorting({col: info.column, asc: (props.sorting && props.sorting.col.name === info.column.name) ? !props.sorting.asc : true});
+            }}
+            onContextMenu={() => {
+              console.log(info.column)
+            }}
+          >
             {info.column.name}
           </span>
           <ColumnContextMenu columnName={info.column.name} columnIndex={info.idx} columnFormula={info.column.formula} setSorting={props.setSorting}>
