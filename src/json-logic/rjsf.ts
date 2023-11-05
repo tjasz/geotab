@@ -40,6 +40,10 @@ const supportedOperations : string[] = [
   "Math.sqrt",
   "Math.trunc",
   "Geo.length",
+  "Geo.distancePointToPoint",
+  "Geo.beginning",
+  "Geo.ending",
+  "Geo.novelty",
 ];
 
 export const getSchema = (columns: Column[]) => {
@@ -53,6 +57,7 @@ export const getSchema = (columns: Column[]) => {
           { $ref: "#/$defs/numberLiteral" },
           { $ref: "#/$defs/booleanLiteral" },
           { $ref: "#/$defs/dateTimeLiteral" },
+          { $ref: "#/$defs/pointLiteral" },
           { $ref: "#/$defs/property" },
           { $ref: "#/$defs/operation" },
         ],
@@ -62,6 +67,12 @@ export const getSchema = (columns: Column[]) => {
       numberLiteral: {type: "number", title: "Number Literal"},
       booleanLiteral: {type: "boolean", title: "Boolean Literal"},
       dateTimeLiteral: {type: "string", format: "date-time", title: "DateTime Literal"},
+      pointLiteral: {
+        type: "array",
+        items: {type: "number", default: 0},
+        title: "Point Literal",
+        default: [-122.33419, 47.60005],
+      },
       property: {type: "object", title: "Property", properties: {var: { $ref: "#/$defs/propertyNames" }}},
       propertyNames: {
         enum: [

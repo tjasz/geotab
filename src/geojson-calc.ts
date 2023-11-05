@@ -224,3 +224,39 @@ export function simplify(f:gj.Feature, precisionMeters:number) : gj.Feature {
   }
   return f;
 }
+
+// Get the novelty score of the geometry of a Feature.
+// Novelty is a measure of how repetitive a path is.
+// A straight line has novelty 1, as it never goes near any of its previous points.
+// An out and back has novelty 0, as every single point is repeated later.
+// A perfect circle has novelty 0.2895. Other loops, lollipops will have less.
+// TODO need to split long segments into short ones before calculating?
+export function pathNovelty(f:gj.Feature) : number {
+  if (f.geometry.type == gj.GeometryType.LineString) {
+      const points = f.geometry.coordinates as gj.LineStringCoordinates;
+
+      const cumulativeDistance = points.reduce(
+        (acc, curr, idx, arr) => idx === 0
+          ? [...acc, 0]
+          : [...acc, acc[acc.length - 1] + distance(curr, arr[idx-1])],
+        []
+      );
+
+      const distanceGrid = points.map(
+        (pt1, i) => points.map(
+          (pt2, j) => i === j ? 0 : distance(pt1, pt2) // TODO this is calculating twice as much as needed
+        )
+      );
+
+      const noveltyPerPoint = points.map(
+        (pt1, i) => points.reduce(
+          (acc, pt2, j) => Math.min(acc, i === j ? Infinity : distanceGrid[i][j] / Math.abs(cumulativeDistance[i] - cumulativeDistance[j])),
+          Infinity
+        )
+      );
+
+      const avgNovelty = noveltyPerPoint.reduce((acc, curr) => acc + curr, 0) / noveltyPerPoint.length;
+      return avgNovelty;
+  }
+  return 0;
+}

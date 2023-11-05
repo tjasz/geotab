@@ -66,8 +66,29 @@ export function getStartingCoord(feature) {
       return feature.geometry.coordinates[0];
     case "Polygon":
     case "MultiLineString":
-    case "MultiPolygon":
       return feature.geometry.coordinates[0][0];
+    case "MultiPolygon":
+      return feature.geometry.coordinates[0][0][0];
+    default:
+      return null;
+  }
+}
+
+export function getEndingCoord(feature) {
+  switch(feature.geometry.type) {
+    case "Point":
+      return feature.geometry.coordinates;
+    case "MultiPoint":
+    case "LineString":
+      return feature.geometry.coordinates[feature.geometry.coordinates.length-1];
+    case "Polygon":
+    case "MultiLineString":
+      const lastPart = feature.geometry.coordinates[feature.geometry.coordinates.length-1];
+      return lastPart[lastPart.length-1];
+    case "MultiPolygon":
+      const lastPolygon = feature.geometry.coordinates[feature.geometry.coordinates.length-1];
+      const lastPolyPart = lastPolygon[lastPolygon.length-1];
+      return lastPolyPart[lastPart.length-1];
     default:
       return null;
   }
