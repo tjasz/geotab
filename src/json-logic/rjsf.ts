@@ -40,6 +40,7 @@ const supportedOperations : string[] = [
   "Math.sqrt",
   "Math.trunc",
   "Geo.length",
+  "Geo.novelty",
 ];
 
 export const getSchema = (columns: Column[]) => {
