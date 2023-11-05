@@ -40,6 +40,9 @@ const supportedOperations : string[] = [
   "Math.sqrt",
   "Math.trunc",
   "Geo.length",
+  "Geo.distancePointToPoint",
+  "Geo.beginning",
+  "Geo.ending",
   "Geo.novelty",
 ];
 
