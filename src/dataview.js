@@ -180,17 +180,12 @@ function ExportView(props) {
     const bufferDistances = [0.1, 0.2, 0.4, 0.8, 1.6];
     const bufferFeatures = bufferDistances.map(dist =>
       features.slice(1).reduce(
-        (cumulativeBuffer, feature) => union(cumulativeBuffer, buffer(feature, dist, {units: "kilometers"}), {properties: { bufferDistance: `${dist} kilometers`}}),
+        (cumulativeBuffer, feature) => union(cumulativeBuffer, buffer(feature, dist, {units: "kilometers"}), {properties: { bufferDistance: dist}}),
         buffer(features[0], dist, {units: "kilometers"})
         ));
     const featureCollection = {
       type: "FeatureCollection",
       features: bufferFeatures,
-      geotabMetadata: {
-        columns: context.columns,
-        filter: context.filter,
-        symbology: context.symbology
-      }
     };
     const textContent = JSON.stringify(featureCollection);
     const file = new Blob([textContent], {type: 'text/plain'});
