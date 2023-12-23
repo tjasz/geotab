@@ -1,5 +1,6 @@
 import React, {useContext, useState} from 'react';
 import { useSearchParams } from "react-router-dom";
+import {buffer, combine} from "@turf/turf"
 import {DataContext} from './dataContext'
 import {defaultFilter, ConditionOperator, ConditionGroupOperator, parametersMap, operandTypes, Condition, ConditionGroup, filterEquals, FilterType, validateFilter} from './filter'
 import {FieldTypeDescription} from './fieldtype'
@@ -173,11 +174,31 @@ function ExportView(props) {
     document.body.appendChild(downloadLink); // Required for this to work in FireFox
     downloadLink.click();
   };
+  const exportBuffer = (includeHidden, filterFunc = f => true) => {
+    const downloadLink = document.createElement("a");
+    const features = (includeHidden ? context.data : context.filteredData).filter(filterFunc);
+    const featureCollection = {
+      type: "FeatureCollection",
+      features,
+      geotabMetadata: {
+        columns: context.columns,
+        filter: context.filter,
+        symbology: context.symbology
+      }
+    };
+    const textContent = JSON.stringify(buffer(combine(featureCollection), 0.5, { units: "miles"}));
+    const file = new Blob([textContent], {type: 'text/plain'});
+    downloadLink.href = URL.createObjectURL(file);
+    downloadLink.download = "geotabExport.json";
+    document.body.appendChild(downloadLink); // Required for this to work in FireFox
+    downloadLink.click();
+  };
   return (
     <div id="exportView">
       <h3>Export</h3>
       <button onClick={() => exportJson(true)}>Export All</button>
       <button onClick={() => exportJson(false)}>Export Filtered</button>
+      <button onClick={() => exportBuffer(false)}>Export Buffer</button>
       <button onClick={() => exportJson(false, isActive)}>Export Selected</button>
     </div>
   );
