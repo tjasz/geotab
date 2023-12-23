@@ -177,13 +177,15 @@ function ExportView(props) {
   const exportBuffer = (includeHidden, filterFunc = f => true) => {
     const downloadLink = document.createElement("a");
     const features = (includeHidden ? context.data : context.filteredData).filter(filterFunc);
-    const bufferFeature = features.slice(1).reduce(
-      (cumulativeBuffer, feature) => union(cumulativeBuffer, buffer(feature, 0.5, {units: "miles"})),
-      buffer(features[0], 0.5, {units: "miles"})
-      );
+    const bufferDistances = [0.1, 0.2, 0.4, 0.8, 1.6];
+    const bufferFeatures = bufferDistances.map(dist =>
+      features.slice(1).reduce(
+        (cumulativeBuffer, feature) => union(cumulativeBuffer, buffer(feature, dist, {units: "kilometers"}), {properties: { bufferDistance: `${dist} kilometers`}}),
+        buffer(features[0], dist, {units: "kilometers"})
+        ));
     const featureCollection = {
       type: "FeatureCollection",
-      features: [bufferFeature],
+      features: bufferFeatures,
       geotabMetadata: {
         columns: context.columns,
         filter: context.filter,
