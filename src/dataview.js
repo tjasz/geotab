@@ -1,6 +1,6 @@
 import React, {useContext, useState} from 'react';
 import { useSearchParams } from "react-router-dom";
-import {buffer, combine} from "@turf/turf"
+import {buffer, combine, union} from "@turf/turf"
 import {DataContext} from './dataContext'
 import {defaultFilter, ConditionOperator, ConditionGroupOperator, parametersMap, operandTypes, Condition, ConditionGroup, filterEquals, FilterType, validateFilter} from './filter'
 import {FieldTypeDescription} from './fieldtype'
@@ -177,16 +177,20 @@ function ExportView(props) {
   const exportBuffer = (includeHidden, filterFunc = f => true) => {
     const downloadLink = document.createElement("a");
     const features = (includeHidden ? context.data : context.filteredData).filter(filterFunc);
+    const bufferFeature = features.slice(1).reduce(
+      (cumulativeBuffer, feature) => union(cumulativeBuffer, buffer(feature, 0.5, {units: "miles"})),
+      buffer(features[0], 0.5, {units: "miles"})
+      );
     const featureCollection = {
       type: "FeatureCollection",
-      features,
+      features: [bufferFeature],
       geotabMetadata: {
         columns: context.columns,
         filter: context.filter,
         symbology: context.symbology
       }
     };
-    const textContent = JSON.stringify(buffer(combine(featureCollection), 0.5, { units: "miles"}));
+    const textContent = JSON.stringify(featureCollection);
     const file = new Blob([textContent], {type: 'text/plain'});
     downloadLink.href = URL.createObjectURL(file);
     downloadLink.download = "geotabExport.json";
@@ -198,8 +202,11 @@ function ExportView(props) {
       <h3>Export</h3>
       <button onClick={() => exportJson(true)}>Export All</button>
       <button onClick={() => exportJson(false)}>Export Filtered</button>
-      <button onClick={() => exportBuffer(false)}>Export Buffer</button>
       <button onClick={() => exportJson(false, isActive)}>Export Selected</button>
+      <br />
+      <button onClick={() => exportBuffer(true)}>Export Buffer (All)</button>
+      <button onClick={() => exportBuffer(false)}>Export Buffer (Filtered)</button>
+      <button onClick={() => exportBuffer(false, isActive)}>Export Buffer (Active)</button>
     </div>
   );
 }
