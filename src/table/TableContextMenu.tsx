@@ -10,6 +10,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import { CheckListDialog } from './../CheckListDialog';
 import {MousePosition} from '../MousePosition'
 import {Column} from '../column'
+import { NumberFieldDialog } from '../NumberFieldDialog';
 
 type TableContextMenuProps = {
   disabled: boolean,
@@ -22,6 +23,7 @@ type TableContextMenuProps = {
 export default function TableContextMenu(props:PropsWithChildren<TableContextMenuProps>) {
   const [contextMenu, setContextMenu] = useState<MousePosition|null>(null);
   const [visibilityOpen, setVisibilityOpen] = useState(false);
+  const [addRowOpen, setAddRowOpen] = useState(false);
   const handleContextMenu = (event:MouseEvent) => {
     setContextMenu(
       contextMenu === null
@@ -69,13 +71,21 @@ export default function TableContextMenu(props:PropsWithChildren<TableContextMen
           <ListItemText>Set Visible Columns</ListItemText>
         </MenuItem>
         <MenuItem
-          onClick={() => { props.addRows(1); handleClose() }}>
+          onClick={() => { setAddRowOpen(true); handleClose() }}>
           <ListItemIcon>
             <AddIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText>Add Row</ListItemText>
+          <ListItemText>Add Rows</ListItemText>
         </MenuItem>
       </Menu>
+      <NumberFieldDialog
+        open={addRowOpen}
+        onCancel={() => setAddRowOpen(false)}
+        onConfirm={(draft:number) => { props.addRows(draft); setAddRowOpen(false) }}
+        defaultValue={1}
+        title="Add Rows"
+        label="Number of Rows:"
+        />
       <CheckListDialog
         open={visibilityOpen}
         onCancel={() => setVisibilityOpen(false)}
