@@ -12,6 +12,7 @@ type DataTableHeaderProps = {
   setColumns: (cols:Column[]) => void,
   sorting?: Sorting,
   setSorting: (sorting:Sorting|undefined) => void,
+  addRows: (amount:number) => void,
 }
 
 export default function DataTableHeader(props:DataTableHeaderProps) {
@@ -23,6 +24,7 @@ export default function DataTableHeader(props:DataTableHeaderProps) {
           setDisabled={props.setDisabled}
           columns={props.columns}
           setColumns={props.setColumns}
+          addRows={props.addRows}
           >
             <MenuIcon />
         </TableContextMenu>

@@ -3,6 +3,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
+import AddIcon from '@mui/icons-material/Add';
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -15,6 +16,7 @@ type TableContextMenuProps = {
   setDisabled: (disabled:boolean) => void,
   columns: Column[],
   setColumns: (columns:Column[]) => void,
+  addRows: (amount:number) => void,
 };
 
 export default function TableContextMenu(props:PropsWithChildren<TableContextMenuProps>) {
@@ -65,6 +67,13 @@ export default function TableContextMenu(props:PropsWithChildren<TableContextMen
             <VisibilityIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>Set Visible Columns</ListItemText>
+        </MenuItem>
+        <MenuItem
+          onClick={() => { props.addRows(1); handleClose() }}>
+          <ListItemIcon>
+            <AddIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Add Row</ListItemText>
         </MenuItem>
       </Menu>
       <CheckListDialog
