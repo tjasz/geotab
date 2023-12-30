@@ -152,6 +152,7 @@ function FileImporter({onRead}) {
 
 function ExportView(props) {
   const context = useContext(DataContext);
+  const [exportOption, setExportOption] = useState("all");
   const isActive = (feature) => {
     const status = feature.properties["geotab:selectionStatus"];
     return status !== undefined && !status.includes("inactive");
@@ -194,16 +195,41 @@ function ExportView(props) {
     document.body.appendChild(downloadLink); // Required for this to work in FireFox
     downloadLink.click();
   };
+  const exportAction = (option) => {
+    console.log(option);
+    switch(option) {
+      case "all":
+        exportJson(true);
+        break;
+      case "filtered":
+        exportJson(false);
+        break;
+      case "selected":
+        exportJson(false, isActive);
+        break;
+      case "bufferAll":
+        exportBuffer(true);
+        break;
+      case "bufferFiltered":
+        exportBuffer(false);
+        break;
+      case "bufferSelected":
+        exportBuffer(false, isActive);
+        break;
+    }
+  };
   return (
     <div id="exportView">
       <h3>Export</h3>
-      <button onClick={() => exportJson(true)}>Export All</button>
-      <button onClick={() => exportJson(false)}>Export Filtered</button>
-      <button onClick={() => exportJson(false, isActive)}>Export Selected</button>
-      <br />
-      <button onClick={() => exportBuffer(true)}>Export Buffer (All)</button>
-      <button onClick={() => exportBuffer(false)}>Export Buffer (Filtered)</button>
-      <button onClick={() => exportBuffer(false, isActive)}>Export Buffer (Active)</button>
+      <select defaultValue={exportOption} onChange={(ev) => setExportOption(ev.target.value)}>
+        <option value="all">All</option>
+        <option value="filtered">Filtered</option>
+        <option value="selected">Selected</option>
+        <option value="bufferAll">Buffer (All)</option>
+        <option value="bufferFiltered">Buffer (Filtered)</option>
+        <option value="bufferSelected">Buffer (Selected)</option>
+      </select>
+      <button onClick={() => exportAction(exportOption)}>Export</button>
     </div>
   );
 }
