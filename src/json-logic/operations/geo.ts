@@ -8,6 +8,9 @@ const length : OperatorBody = (feature) => {
 };
 
 const distancePointToPoint : OperatorBody = (p1, p2) => {
+  if (p1 === undefined || p2 === undefined) {
+    return undefined;
+  }
   return distance(p1, p2);
 };
 
