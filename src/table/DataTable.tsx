@@ -93,7 +93,14 @@ export default function DataTable() {
     context.setData(newFeatures);
   };
   const addRows = (amount:number) => {
-    const newFeatures : Feature[] = Array(amount).fill({}).map(_ => ({id: uuidv4(), type: FeatureType.Feature, geometry: {type: GeometryType.Point, coordinates: [-122.3,47.5]}, properties: { "geotab:selectionStatus": "inactive" }}));
+    const newFeatures : Feature[] = Array(amount).fill({}).map(_ => ({
+      id: uuidv4(),
+      type: FeatureType.Feature,
+      geometry: {
+        type: GeometryType.Point,
+        coordinates: [0,0]},
+      properties: { "geotab:selectionStatus": "inactive" }
+    }));
     context.setFromJson({type: FeatureType.FeatureCollection, features: newFeatures});
   };
 
