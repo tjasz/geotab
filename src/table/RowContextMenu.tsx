@@ -9,6 +9,8 @@ import {DataContext} from './../dataContext';
 import {Feature} from '../geojson-types'
 import {MousePosition} from '../MousePosition'
 import { simplify } from '../geojson-calc';
+import { DataObject } from '@mui/icons-material';
+import { TextFieldDialog } from '../TextFieldDialog';
 
 type RowContextMenuProps = {
   feature: Feature,
@@ -17,6 +19,7 @@ type RowContextMenuProps = {
 export default function RowContextMenu(props:PropsWithChildren<RowContextMenuProps>) {
   const context = useContext(DataContext);
   const [contextMenu, setContextMenu] = React.useState<MousePosition|null>(null);
+  const [editGeometryOpen, setEditGeometryOpen] = React.useState<boolean>(false);
   
   const deleteRow = () => {
     if (context === null) return;
@@ -27,6 +30,11 @@ export default function RowContextMenu(props:PropsWithChildren<RowContextMenuPro
   const simplifyGeometry = () => {
     if (context === null) return;
     context.setData(context.data.map((feature) => feature.id !== props.feature.id ? feature : simplify(feature, 10)));
+  }
+
+  const setGeometry = (newGeometry) => {
+    if (context === null) return;
+    context.setData(context.data.map((feature) => feature.id !== props.feature.id ? feature : {...feature, geometry: newGeometry}));
   }
 
   const handleContextMenu = (event) => {
@@ -76,7 +84,24 @@ export default function RowContextMenu(props:PropsWithChildren<RowContextMenuPro
           </ListItemIcon>
           <ListItemText>Simplify Geometry</ListItemText>
         </MenuItem>
+        <MenuItem
+          onClick={() => { setEditGeometryOpen(true); handleClose() }}>
+          <ListItemIcon>
+            <DataObject fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Edit Geometry</ListItemText>
+        </MenuItem>
       </Menu>
+      <TextFieldDialog
+        title="Edit Geometry"
+        label="Geometry"
+        confirmLabel="Update"
+        defaultValue={JSON.stringify(props.feature.geometry)}
+        open={editGeometryOpen}
+        onConfirm={(newGeometry) => { setGeometry(JSON.parse(newGeometry)); setEditGeometryOpen(false); }}
+        onCancel={() => { setEditGeometryOpen(false); }}
+        multiline
+      />
     </React.Fragment>
   );
 }
