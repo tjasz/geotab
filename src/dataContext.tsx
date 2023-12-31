@@ -42,7 +42,7 @@ export type DataContextType = {
   setColumns: {(newColumns:UpdaterOrValue<Column[]>) : void},
   setSymbology: {(newSymbology:UpdaterOrValue<Symbology|null>) : void},
   setFeatureListener: {(id:string, view:"table"|"map", f:FeatureListener)}
-  setFromJson: {(json:GeoJson.FeatureCollection & {geotabMetadata:GeotabMetadata}) : void},
+  setFromJson: {(json:GeoJson.FeatureCollection & {geotabMetadata?:GeotabMetadata}) : void},
 } | null;
 
 export const DataContext = React.createContext<DataContextType>(null);

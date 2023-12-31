@@ -1,4 +1,5 @@
 import React, {useContext, PropsWithChildren} from 'react';
+import CalculateIcon from '@mui/icons-material/Calculate';
 import DeleteIcon from '@mui/icons-material/Delete';
 import StraightenIcon from '@mui/icons-material/Straighten';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -9,14 +10,22 @@ import {DataContext} from './../dataContext';
 import {Feature} from '../geojson-types'
 import {MousePosition} from '../MousePosition'
 import { simplify } from '../geojson-calc';
+import { DataObject } from '@mui/icons-material';
+import { TextFieldDialog } from '../TextFieldDialog';
+import { ComputeFieldDialog } from './ComputeFieldDialog';
+import { AdditionalOperation, apply, RulesLogic } from 'json-logic-js';
+import { getSchema } from '../json-logic/rjsf';
 
 type RowContextMenuProps = {
   feature: Feature,
+  index: number,
 }
 
 export default function RowContextMenu(props:PropsWithChildren<RowContextMenuProps>) {
   const context = useContext(DataContext);
   const [contextMenu, setContextMenu] = React.useState<MousePosition|null>(null);
+  const [editGeometryOpen, setEditGeometryOpen] = React.useState<boolean>(false);
+  const [calculateDialogOpen, setCalculateDialogOpen] = React.useState<boolean>(false);
   
   const deleteRow = () => {
     if (context === null) return;
@@ -28,6 +37,31 @@ export default function RowContextMenu(props:PropsWithChildren<RowContextMenuPro
     if (context === null) return;
     context.setData(context.data.map((feature) => feature.id !== props.feature.id ? feature : simplify(feature, 10)));
   }
+
+  const setGeometry = (newGeometry) => {
+    if (context === null) return;
+    context.setData(context.data.map((feature) => feature.id !== props.feature.id ? feature : {...feature, geometry: newGeometry}));
+  }
+
+  const calculateGeometry = (formula:RulesLogic<AdditionalOperation>) => {
+    if (context === null) return;
+    try {
+      if (formula !== undefined) {
+        context.setData(context.data.map((feature, index) => {
+          const geometry = apply(formula, {feature, index, features: context.filteredData});
+          return feature.id !== props.feature.id ? feature : {...feature, geometry };
+        }));
+      }
+    }
+    catch (error) {
+      if (error instanceof SyntaxError) {
+        alert(`Error parsing formula "${formula}": ${error.message}`);
+      }
+      else {
+        throw error;
+      }
+    }
+  };
 
   const handleContextMenu = (event) => {
     setContextMenu(
@@ -76,7 +110,40 @@ export default function RowContextMenu(props:PropsWithChildren<RowContextMenuPro
           </ListItemIcon>
           <ListItemText>Simplify Geometry</ListItemText>
         </MenuItem>
+        <MenuItem
+          onClick={() => { setEditGeometryOpen(true); handleClose() }}>
+          <ListItemIcon>
+            <DataObject fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Edit Geometry</ListItemText>
+        </MenuItem>
+        <MenuItem
+          onClick={() => { setCalculateDialogOpen(true); handleClose() }}>
+          <ListItemIcon>
+            <CalculateIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Compute Geometry</ListItemText>
+        </MenuItem>
       </Menu>
+      <TextFieldDialog
+        title="Edit Geometry"
+        label="Geometry"
+        confirmLabel="Update"
+        defaultValue={JSON.stringify(props.feature.geometry)}
+        open={editGeometryOpen}
+        onConfirm={(newGeometry) => { setGeometry(JSON.parse(newGeometry)); setEditGeometryOpen(false); }}
+        onCancel={() => { setEditGeometryOpen(false); }}
+        multiline
+      />
+      <ComputeFieldDialog
+        title={"Calculate Geometry"}
+        confirmLabel="Calculate"
+        defaultValue={{ var : `features.${props.index}` }}
+        schema={getSchema(context?.columns ?? [])}
+        open={calculateDialogOpen}
+        onConfirm={(formula) => { calculateGeometry(formula); setCalculateDialogOpen(false); }}
+        onCancel={() => { setCalculateDialogOpen(false); }}
+      />
     </React.Fragment>
   );
 }

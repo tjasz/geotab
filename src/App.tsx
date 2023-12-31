@@ -79,15 +79,15 @@ class App extends React.Component<IAppProps, IState> {
     }
     this.state.featureListeners[id][view] = f;
   }
-  setFromJson(json:GeoJson.FeatureCollection & {geotabMetadata:GeotabMetadata}) {
+  setFromJson(json:GeoJson.FeatureCollection & {geotabMetadata?:GeotabMetadata}) {
     const flattened = getFeatures(json);
     if (flattened.length) {
       if (this.state && this.state.data.length === 0) {
-        if (json.geotabMetadata) {
+        if (json.geotabMetadata !== undefined) {
           this.setState({
             data: flattened,
             filter: json.geotabMetadata.filter,
-            filteredData: flattened.filter((row) => evaluateFilter(row, json.geotabMetadata.filter)),
+            filteredData: flattened.filter((row) => evaluateFilter(row, json.geotabMetadata!.filter)),
             columns: withSelectionStatus(json.geotabMetadata.columns),
             active: null,
             symbology: json.geotabMetadata.symbology,

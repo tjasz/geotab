@@ -135,10 +135,17 @@ function ChangeView() {
     const features = context.filteredData;
     if (features && features.length) {
       const featureListBounds = getFeatureListBounds(features);
-      featureListBounds && map.fitBounds(featureListBounds);
-    } else {
-      map.setView([47.5,-122.3], 6);
+      if(featureListBounds
+        && featureListBounds[0][0] !== featureListBounds[1][0]
+        && featureListBounds[0][1] !== featureListBounds[1][1]) {
+          map.fitBounds(featureListBounds);
+          return;
+        } else {
+          map.setView(featureListBounds[0], 6);
+        }
     }
+
+    map.setView([47.5,-122.3], 6);
   }
 }
 

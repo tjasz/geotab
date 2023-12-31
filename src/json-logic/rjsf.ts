@@ -44,6 +44,8 @@ const supportedOperations : string[] = [
   "Geo.beginning",
   "Geo.ending",
   "Geo.novelty",
+  "Geo.bufferMeters",
+  "Geo.unionMany",
 ];
 
 export const getSchema = (columns: Column[]) => {
@@ -58,6 +60,7 @@ export const getSchema = (columns: Column[]) => {
           { $ref: "#/$defs/booleanLiteral" },
           { $ref: "#/$defs/dateTimeLiteral" },
           { $ref: "#/$defs/pointLiteral" },
+          { $ref: "#/$defs/featureReference" },
           { $ref: "#/$defs/property" },
           { $ref: "#/$defs/operation" },
         ],
@@ -72,6 +75,11 @@ export const getSchema = (columns: Column[]) => {
         items: {type: "number", default: 0},
         title: "Point Literal",
         default: [-122.33419, 47.60005],
+      },
+      featureReference: {
+        type: "object",
+        title: "Feature Reference",
+        properties: {index: { type: "number", title: "Index" }},
       },
       property: {type: "object", title: "Property", properties: {var: { $ref: "#/$defs/propertyNames" }}},
       propertyNames: {

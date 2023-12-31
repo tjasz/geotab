@@ -1,10 +1,11 @@
 import React, {useContext, useEffect, useRef, useState, KeyboardEvent} from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { sortBy } from './../algorithm'
 import {DataContext} from './../dataContext'
 import DataTableRow from './DataTableRow'
 import DataTableHeader from './DataTableHeader'
 import {Sorting} from './sorting'
-import {Feature, FeatureProperties} from '../geojson-types'
+import {Feature, FeatureProperties, FeatureType, GeometryType} from '../geojson-types'
 
 export default function DataTable() {
   const context = useContext(DataContext);
@@ -91,6 +92,17 @@ export default function DataTable() {
     const newFeatures = context.data.map((f) => f.id === features[idx].id ? {...f, properties: newRow} : f);
     context.setData(newFeatures);
   };
+  const addRows = (amount:number) => {
+    const newFeatures : Feature[] = Array(amount).fill({}).map(_ => ({
+      id: uuidv4(),
+      type: FeatureType.Feature,
+      geometry: {
+        type: GeometryType.Point,
+        coordinates: [0,0]},
+      properties: { "geotab:selectionStatus": "inactive" }
+    }));
+    context.setFromJson({type: FeatureType.FeatureCollection, features: newFeatures});
+  };
 
   return (
     <table id="data-table" cellSpacing={0}>
@@ -101,7 +113,9 @@ export default function DataTable() {
           sorting={sorting}
           setSorting={handleSortingChange}
           disabled={disabled}
-          setDisabled={setDisabled} />
+          setDisabled={setDisabled}
+          addRows={addRows}
+          />
       </thead>
       <tbody>
         {features.map((feature, fidx) =>

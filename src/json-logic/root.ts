@@ -14,17 +14,27 @@ export type Operation = {
   arguments: Expression[]
 };
 
+export type FeatureReference = {
+  index: number;
+};
+
 export type Expression<AddOps extends AdditionalOperation = never> =
     | boolean
     | string
     | number
     | JsonLogicVar<AddOps>
-    | Operation;
+    | Operation
+    | FeatureReference;
 
 export const toJsonLogic = (exp: Expression) : RulesLogic<AdditionalOperation>=> {
   const op = exp as Operation;
   if (op.operator) {
     const jsonOp : RulesLogic<AdditionalOperation> = { [op.operator]: op.arguments.map(arg => toJsonLogic(arg)) };
+    return jsonOp;
+  }
+  const ref = exp as FeatureReference;
+  if (ref.index !== undefined) {
+    const jsonOp = { var: `features.${ref.index}` };
     return jsonOp;
   }
   return exp as RulesLogic;
@@ -39,6 +49,12 @@ export const fromJsonLogic = (logic : RulesLogic<AdditionalOperation>) : Express
         operator: Object.keys(logic)[0],
         arguments: Array.isArray(logic[key]) ? logic[key].map(fromJsonLogic) : [fromJsonLogic(logic[key])]};
       return exp;
+    }
+    const varName = (logic as {var: string}).var;
+    if (varName.startsWith("features.")) {
+      return {
+        index: parseInt(varName.replace("features.", ""))
+      };
     }
   }
   return logic as Expression;
