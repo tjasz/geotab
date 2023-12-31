@@ -1,3 +1,4 @@
+import {buffer, combine, union} from "@turf/turf";
 import { getEndingCoord, getFeatureLengthMeters, getFeatureVertMeters, getStartingCoord } from "../../algorithm";
 import { distance, pathNovelty } from "../../geojson-calc";
 
@@ -26,10 +27,15 @@ const novelty : OperatorBody = (feature) => {
   return pathNovelty(feature);
 };
 
+const bufferMeters : OperatorBody = (feature, distMeters) => {
+  return buffer(feature, distMeters / 1000, {units: "kilometers"}).geometry;
+};
+
 export const Geo = {
   length,
   distancePointToPoint,
   beginning,
   ending,
   novelty,
+  bufferMeters,
 };

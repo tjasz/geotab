@@ -80,7 +80,7 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
         }));
         context.setData(context.data.map((feature, index) => {
           let {[name]: _, ...rest} = feature.properties;
-          return {...feature, properties: {...rest, [name]: apply(formula, {feature, index})}};
+          return {...feature, properties: {...rest, [name]: apply(formula, {feature, index, features: context.filteredData})}};
         }));
       }
     }
