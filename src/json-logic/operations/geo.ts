@@ -31,6 +31,10 @@ const bufferMeters : OperatorBody = (feature, distMeters) => {
   return buffer(feature, distMeters / 1000, {units: "kilometers"}).geometry;
 };
 
+const unionMany : OperatorBody = (...features) => {
+  return features.reduce((cumulator, feature) => union(cumulator, feature)).geometry
+};
+
 export const Geo = {
   length,
   distancePointToPoint,
@@ -38,4 +42,5 @@ export const Geo = {
   ending,
   novelty,
   bufferMeters,
+  unionMany
 };

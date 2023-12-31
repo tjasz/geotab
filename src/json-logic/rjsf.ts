@@ -45,6 +45,7 @@ const supportedOperations : string[] = [
   "Geo.ending",
   "Geo.novelty",
   "Geo.bufferMeters",
+  "Geo.unionMany",
 ];
 
 export const getSchema = (columns: Column[]) => {
