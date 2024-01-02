@@ -28,11 +28,11 @@ const novelty : OperatorBody = (feature) => {
 };
 
 const bufferMeters : OperatorBody = (feature, distMeters) => {
-  return buffer(feature, distMeters / 1000, {units: "kilometers"}).geometry;
+  return buffer(feature, distMeters / 1000, {units: "kilometers"});
 };
 
 const unionMany : OperatorBody = (...features) => {
-  return features.reduce((cumulator, feature) => union(cumulator, feature)).geometry
+  return features.reduce((cumulator, feature) => union(cumulator, feature))
 };
 
 export const Geo = {

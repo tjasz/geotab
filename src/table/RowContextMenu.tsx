@@ -48,7 +48,7 @@ export default function RowContextMenu(props:PropsWithChildren<RowContextMenuPro
     try {
       if (formula !== undefined) {
         context.setData(context.data.map((feature, index) => {
-          const geometry = apply(formula, {feature, index, features: context.filteredData});
+          const geometry = apply(formula, {feature, index, features: context.filteredData}).geometry;
           return feature.id !== props.feature.id ? feature : {...feature, geometry };
         }));
       }
