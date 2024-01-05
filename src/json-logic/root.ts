@@ -67,10 +67,6 @@ export const fromJsonLogic = (logic : RulesLogic<AdditionalOperation>) : Express
   return logic as Expression;
 }
 
-export const apply = (exp: Expression, data?: unknown) => {
-  return applyLogic(toJsonLogic(exp), data);
-};
-
 const zip = (seq1, seq2) => {
   if (Array.isArray(seq2)) {
     return seq1.map((obj, i) => ({a: obj, b: seq2[i % seq2.length]}));
