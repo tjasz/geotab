@@ -8,6 +8,7 @@
 
 import { AdditionalOperation, JsonLogicVar, RulesLogic, apply as applyLogic, add_operation } from "json-logic-js";
 import { Geo } from "./operations/geo";
+import * as Turf from "@turf/turf";
 
 export type Operation = {
   operator: string,
@@ -68,6 +69,8 @@ export const apply = (exp: Expression, data?: unknown) => {
 export const add_operations = (): void => {
     // @ts-ignore
     add_operation("Math", Math);
+    // @ts-ignore
+    add_operation("Turf", Turf); // https://turfjs.org/docs
     // @ts-ignore
     add_operation("Geo", Geo);
 }
