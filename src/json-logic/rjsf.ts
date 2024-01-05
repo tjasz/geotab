@@ -33,6 +33,7 @@ const supportedOperations : string[] = [
   "in",
   "cat",
   "substr",
+  "zip",
   "Math.abs",
   "Math.ceil",
   "Math.exp",

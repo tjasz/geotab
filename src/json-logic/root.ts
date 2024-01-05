@@ -51,7 +51,13 @@ export const fromJsonLogic = (logic : RulesLogic<AdditionalOperation>) : Express
         arguments: Array.isArray(logic[key]) ? logic[key].map(fromJsonLogic) : [fromJsonLogic(logic[key])]};
       return exp;
     }
-    const varName = (logic as {var: string}).var;
+  
+    const varName =
+      (typeof (logic as {var: string}).var === "string") 
+      ? (logic as {var: string}).var
+      : (Array.isArray((logic as {var: string[]}).var) && typeof (logic as {var: string[]}).var[0] === "string")
+      ? (logic as {var: string[]}).var[0]
+      : "undefined";
     if (varName.startsWith("features.")) {
       return {
         index: parseInt(varName.replace("features.", ""))
@@ -65,6 +71,14 @@ export const apply = (exp: Expression, data?: unknown) => {
   return applyLogic(toJsonLogic(exp), data);
 };
 
+const zip = (seq1, seq2) => {
+  if (Array.isArray(seq2)) {
+    return seq1.map((obj, i) => ({a: obj, b: seq2[i % seq2.length]}));
+  }
+
+  return seq1.map((obj, i) => ({a: obj, b: seq2}));
+}
+
 // add the operations to JSON logic used by geotab
 export const add_operations = (): void => {
     // @ts-ignore
@@ -73,4 +87,6 @@ export const add_operations = (): void => {
     add_operation("Turf", Turf); // https://turfjs.org/docs
     // @ts-ignore
     add_operation("Geo", Geo);
+    // @ts-ignore
+    add_operation("zip", zip);
 }
