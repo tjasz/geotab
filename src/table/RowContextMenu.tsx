@@ -26,6 +26,7 @@ export default function RowContextMenu(props:PropsWithChildren<RowContextMenuPro
   const [contextMenu, setContextMenu] = React.useState<MousePosition|null>(null);
   const [editGeometryOpen, setEditGeometryOpen] = React.useState<boolean>(false);
   const [calculateDialogOpen, setCalculateDialogOpen] = React.useState<boolean>(false);
+  const [calculateJsonDialogOpen, setCalculateJsonDialogOpen] = React.useState<boolean>(false);
   
   const deleteRow = () => {
     if (context === null) return;
@@ -124,6 +125,13 @@ export default function RowContextMenu(props:PropsWithChildren<RowContextMenuPro
           </ListItemIcon>
           <ListItemText>Compute Geometry</ListItemText>
         </MenuItem>
+        <MenuItem
+          onClick={() => { setCalculateJsonDialogOpen(true); handleClose() }}>
+          <ListItemIcon>
+            <CalculateIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Compute Geometry (JSON)</ListItemText>
+        </MenuItem>
       </Menu>
       <TextFieldDialog
         title="Edit Geometry"
@@ -143,6 +151,16 @@ export default function RowContextMenu(props:PropsWithChildren<RowContextMenuPro
         open={calculateDialogOpen}
         onConfirm={(formula) => { calculateGeometry(formula); setCalculateDialogOpen(false); }}
         onCancel={() => { setCalculateDialogOpen(false); }}
+      />
+      <TextFieldDialog
+        title="Calculate Geometry (JSON)"
+        label="Calculate Geometry (JSON)"
+        confirmLabel="Calculate"
+        defaultValue={JSON.stringify({var: "feature"})}
+        open={calculateJsonDialogOpen}
+        onConfirm={(formula) => { calculateGeometry(JSON.parse(formula)); setCalculateJsonDialogOpen(false); }}
+        onCancel={() => { setCalculateJsonDialogOpen(false); }}
+        multiline
       />
     </React.Fragment>
   );
