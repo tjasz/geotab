@@ -291,6 +291,7 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
         open={calculateJsonDialogOpen}
         onConfirm={(formula) => { calculateColumn(props.columnName, JSON.parse(formula)); setCalculateJsonDialogOpen(false); }}
         onCancel={() => { setCalculateJsonDialogOpen(false); }}
+        multiline
       />
       <TextFieldDialog
         title={`Insert column ${insertDialog} of '${props.columnName}'?`}

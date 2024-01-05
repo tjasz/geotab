@@ -44,6 +44,9 @@ export const toJsonLogic = (exp: Expression) : RulesLogic<AdditionalOperation>=>
 export const fromJsonLogic = (logic : RulesLogic<AdditionalOperation>) : Expression => {
   if (typeof logic === "object")
   {
+    if (logic === null) {
+      return logic;
+    }
     const key = Object.keys(logic)[0];
     if (key !== "var") {
       const exp : Expression = {
