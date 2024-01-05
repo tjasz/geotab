@@ -42,6 +42,7 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
   const [renameDialogOpen, setRenameDialogOpen] = React.useState(false);
   const [retypeDialogOpen, setRetypeDialogOpen] = React.useState(false);
   const [calculateDialogOpen, setCalculateDialogOpen] = React.useState(false);
+  const [calculateJsonDialogOpen, setCalculateJsonDialogOpen] = React.useState(false);
   const [insertDialog, setInsertDialog] = React.useState<InsertDialog>(null);
   const [columnMetadataOpen, setColumnMetadataOpen] = React.useState(false);
   
@@ -189,6 +190,13 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
           <ListItemText>Calculate</ListItemText>
         </MenuItem>
         <MenuItem
+          onClick={() => { setCalculateJsonDialogOpen(true); handleClose() }}>
+          <ListItemIcon>
+            <CalculateIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Calculate (JSON)</ListItemText>
+        </MenuItem>
+        <MenuItem
           onClick={() => { swapColumns(props.columnIndex, props.columnIndex-1); handleClose() }}>
           <ListItemIcon>
             <WestIcon fontSize="small" />
@@ -275,6 +283,14 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
         open={calculateDialogOpen}
         onConfirm={(formula) => { calculateColumn(props.columnName, formula); setCalculateDialogOpen(false); }}
         onCancel={() => { setCalculateDialogOpen(false); }}
+      />
+      <TextFieldDialog
+        title={`Calculate values for column '${props.columnName}'?`}
+        label="Calculate (JSON)"
+        confirmLabel="Calculate"
+        open={calculateJsonDialogOpen}
+        onConfirm={(formula) => { calculateColumn(props.columnName, JSON.parse(formula)); setCalculateJsonDialogOpen(false); }}
+        onCancel={() => { setCalculateJsonDialogOpen(false); }}
       />
       <TextFieldDialog
         title={`Insert column ${insertDialog} of '${props.columnName}'?`}
