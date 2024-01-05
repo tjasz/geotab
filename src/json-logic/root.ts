@@ -67,6 +67,25 @@ export const fromJsonLogic = (logic : RulesLogic<AdditionalOperation>) : Express
   return logic as Expression;
 }
 
+const varOf = (pathString, data, fallback) => {
+  var not_found = (fallback === undefined) ? null : fallback;
+  if (typeof pathString === "undefined" || pathString === "" || pathString === null) {
+    return data;
+  }
+  var sub_props = String(pathString).split(".");
+  for (var i = 0; i < sub_props.length; i++) {
+    if (data === null || data === undefined) {
+      return not_found;
+    }
+    // Descending into data
+    data = data[sub_props[i]];
+    if (data === undefined) {
+      return not_found;
+    }
+  }
+  return data;
+}
+
 const zip = (seq1, seq2) => {
   if (Array.isArray(seq2)) {
     return seq1.map((obj, i) => ({a: obj, b: seq2[i % seq2.length]}));
@@ -85,4 +104,6 @@ export const add_operations = (): void => {
     add_operation("Geo", Geo);
     // @ts-ignore
     add_operation("zip", zip);
+    // @ts-ignore
+    add_operation("varOf", varOf);
 }
