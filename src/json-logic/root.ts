@@ -8,6 +8,7 @@
 
 import { AdditionalOperation, JsonLogicVar, RulesLogic, apply as applyLogic, add_operation } from "json-logic-js";
 import { Geo } from "./operations/geo";
+import * as Turf from "@turf/turf";
 
 export type Operation = {
   operator: string,
@@ -43,6 +44,9 @@ export const toJsonLogic = (exp: Expression) : RulesLogic<AdditionalOperation>=>
 export const fromJsonLogic = (logic : RulesLogic<AdditionalOperation>) : Expression => {
   if (typeof logic === "object")
   {
+    if (logic === null) {
+      return logic;
+    }
     const key = Object.keys(logic)[0];
     if (key !== "var") {
       const exp : Expression = {
@@ -50,7 +54,13 @@ export const fromJsonLogic = (logic : RulesLogic<AdditionalOperation>) : Express
         arguments: Array.isArray(logic[key]) ? logic[key].map(fromJsonLogic) : [fromJsonLogic(logic[key])]};
       return exp;
     }
-    const varName = (logic as {var: string}).var;
+  
+    const varName =
+      (typeof (logic as {var: string}).var === "string") 
+      ? (logic as {var: string}).var
+      : (Array.isArray((logic as {var: string[]}).var) && typeof (logic as {var: string[]}).var[0] === "string")
+      ? (logic as {var: string[]}).var[0]
+      : "undefined";
     if (varName.startsWith("features.")) {
       return {
         index: parseInt(varName.replace("features.", ""))
@@ -60,14 +70,43 @@ export const fromJsonLogic = (logic : RulesLogic<AdditionalOperation>) : Express
   return logic as Expression;
 }
 
-export const apply = (exp: Expression, data?: unknown) => {
-  return applyLogic(toJsonLogic(exp), data);
-};
+const varOf = (pathString, data, fallback) => {
+  var not_found = (fallback === undefined) ? null : fallback;
+  if (typeof pathString === "undefined" || pathString === "" || pathString === null) {
+    return data;
+  }
+  var sub_props = String(pathString).split(".");
+  for (var i = 0; i < sub_props.length; i++) {
+    if (data === null || data === undefined) {
+      return not_found;
+    }
+    // Descending into data
+    data = data[sub_props[i]];
+    if (data === undefined) {
+      return not_found;
+    }
+  }
+  return data;
+}
+
+const zip = (seq1, seq2) => {
+  if (Array.isArray(seq2)) {
+    return seq1.map((obj, i) => ({a: obj, b: seq2[i % seq2.length]}));
+  }
+
+  return seq1.map((obj, i) => ({a: obj, b: seq2}));
+}
 
 // add the operations to JSON logic used by geotab
 export const add_operations = (): void => {
     // @ts-ignore
     add_operation("Math", Math);
     // @ts-ignore
+    add_operation("Turf", Turf); // https://turfjs.org/docs
+    // @ts-ignore
     add_operation("Geo", Geo);
+    // @ts-ignore
+    add_operation("zip", zip);
+    // @ts-ignore
+    add_operation("varOf", varOf);
 }

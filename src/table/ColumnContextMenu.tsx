@@ -42,6 +42,7 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
   const [renameDialogOpen, setRenameDialogOpen] = React.useState(false);
   const [retypeDialogOpen, setRetypeDialogOpen] = React.useState(false);
   const [calculateDialogOpen, setCalculateDialogOpen] = React.useState(false);
+  const [calculateJsonDialogOpen, setCalculateJsonDialogOpen] = React.useState(false);
   const [insertDialog, setInsertDialog] = React.useState<InsertDialog>(null);
   const [columnMetadataOpen, setColumnMetadataOpen] = React.useState(false);
   
@@ -130,6 +131,10 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
     setContextMenu(null);
   };
 
+  const columnFormula = props.columnFormula
+  ? props.columnFormula
+  : { var : `feature.properties.${props.columnName}` };
+
   return (
     <React.Fragment>
       <span onClick={handleContextMenu}>
@@ -187,6 +192,13 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
             <CalculateIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>Calculate</ListItemText>
+        </MenuItem>
+        <MenuItem
+          onClick={() => { setCalculateJsonDialogOpen(true); handleClose() }}>
+          <ListItemIcon>
+            <CalculateIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Calculate (JSON)</ListItemText>
         </MenuItem>
         <MenuItem
           onClick={() => { swapColumns(props.columnIndex, props.columnIndex-1); handleClose() }}>
@@ -268,13 +280,21 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
       <ComputeFieldDialog
         title={`Calculate values for column '${props.columnName}'`}
         confirmLabel="Calculate"
-        defaultValue={props.columnFormula
-          ? props.columnFormula
-          : { var : `feature.properties.${props.columnName}` }}
+        defaultValue={columnFormula}
         schema={getSchema(context?.columns ?? [])}
         open={calculateDialogOpen}
         onConfirm={(formula) => { calculateColumn(props.columnName, formula); setCalculateDialogOpen(false); }}
         onCancel={() => { setCalculateDialogOpen(false); }}
+      />
+      <TextFieldDialog
+        title={`Calculate values for column '${props.columnName}'?`}
+        label="Calculate (JSON)"
+        confirmLabel="Calculate"
+        defaultValue={JSON.stringify(columnFormula)}
+        open={calculateJsonDialogOpen}
+        onConfirm={(formula) => { calculateColumn(props.columnName, JSON.parse(formula)); setCalculateJsonDialogOpen(false); }}
+        onCancel={() => { setCalculateJsonDialogOpen(false); }}
+        multiline
       />
       <TextFieldDialog
         title={`Insert column ${insertDialog} of '${props.columnName}'?`}
