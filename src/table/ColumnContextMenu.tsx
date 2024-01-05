@@ -131,6 +131,10 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
     setContextMenu(null);
   };
 
+  const columnFormula = props.columnFormula
+  ? props.columnFormula
+  : { var : `feature.properties.${props.columnName}` };
+
   return (
     <React.Fragment>
       <span onClick={handleContextMenu}>
@@ -276,9 +280,7 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
       <ComputeFieldDialog
         title={`Calculate values for column '${props.columnName}'`}
         confirmLabel="Calculate"
-        defaultValue={props.columnFormula
-          ? props.columnFormula
-          : { var : `feature.properties.${props.columnName}` }}
+        defaultValue={columnFormula}
         schema={getSchema(context?.columns ?? [])}
         open={calculateDialogOpen}
         onConfirm={(formula) => { calculateColumn(props.columnName, formula); setCalculateDialogOpen(false); }}
@@ -288,6 +290,7 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
         title={`Calculate values for column '${props.columnName}'?`}
         label="Calculate (JSON)"
         confirmLabel="Calculate"
+        defaultValue={JSON.stringify(columnFormula)}
         open={calculateJsonDialogOpen}
         onConfirm={(formula) => { calculateColumn(props.columnName, JSON.parse(formula)); setCalculateJsonDialogOpen(false); }}
         onCancel={() => { setCalculateJsonDialogOpen(false); }}
