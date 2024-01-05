@@ -3,6 +3,7 @@ import { Column } from "../column";
 
 const supportedOperations : string[] = [
   "var",
+  "varOf",
   "if",
   "==",
   "===",
@@ -30,10 +31,10 @@ const supportedOperations : string[] = [
   "none",
   "some",
   "merge",
+  "zip",
   "in",
   "cat",
   "substr",
-  "zip",
   "Math.abs",
   "Math.ceil",
   "Math.exp",
@@ -193,6 +194,7 @@ const supportedOperations : string[] = [
   "Geo.ending",
   "Geo.novelty",
   "Geo.unionMany",
+  "Geo.distanceToPoint",
 ];
 
 export const getSchema = (columns: Column[]) => {
