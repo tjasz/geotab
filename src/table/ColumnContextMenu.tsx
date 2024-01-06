@@ -26,6 +26,7 @@ import {Sorting} from './sorting'
 import {ComputeFieldDialog} from './ComputeFieldDialog'
 import { getSchema } from '../json-logic/rjsf';
 import { AdditionalOperation, apply, RulesLogic } from 'json-logic-js';
+import { JsonFieldDialog } from '../JsonFieldDialog';
 
 type InsertDialog = "left"|"right"|null;
 
@@ -286,7 +287,7 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
         onConfirm={(formula) => { calculateColumn(props.columnName, formula); setCalculateDialogOpen(false); }}
         onCancel={() => { setCalculateDialogOpen(false); }}
       />
-      <TextFieldDialog
+      <JsonFieldDialog
         title={`Calculate values for column '${props.columnName}'?`}
         label="Calculate (JSON)"
         confirmLabel="Calculate"

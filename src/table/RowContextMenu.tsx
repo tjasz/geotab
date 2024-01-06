@@ -15,6 +15,7 @@ import { TextFieldDialog } from '../TextFieldDialog';
 import { ComputeFieldDialog } from './ComputeFieldDialog';
 import { AdditionalOperation, apply, RulesLogic } from 'json-logic-js';
 import { getSchema } from '../json-logic/rjsf';
+import { JsonFieldDialog } from '../JsonFieldDialog';
 
 type RowContextMenuProps = {
   feature: Feature,
@@ -133,7 +134,7 @@ export default function RowContextMenu(props:PropsWithChildren<RowContextMenuPro
           <ListItemText>Compute Geometry (JSON)</ListItemText>
         </MenuItem>
       </Menu>
-      <TextFieldDialog
+      <JsonFieldDialog
         title="Edit Geometry"
         label="Geometry"
         confirmLabel="Update"
@@ -152,7 +153,7 @@ export default function RowContextMenu(props:PropsWithChildren<RowContextMenuPro
         onConfirm={(formula) => { calculateGeometry(formula); setCalculateDialogOpen(false); }}
         onCancel={() => { setCalculateDialogOpen(false); }}
       />
-      <TextFieldDialog
+      <JsonFieldDialog
         title="Calculate Geometry (JSON)"
         label="Calculate Geometry (JSON)"
         confirmLabel="Calculate"
