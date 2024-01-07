@@ -138,7 +138,7 @@ export default function RowContextMenu(props:PropsWithChildren<RowContextMenuPro
         title="Edit Geometry"
         label="Geometry"
         confirmLabel="Update"
-        defaultValue={JSON.stringify(props.feature.geometry)}
+        defaultValue={JSON.stringify(props.feature.geometry, null, 2)}
         open={editGeometryOpen}
         onConfirm={(newGeometry) => { setGeometry(JSON.parse(newGeometry)); setEditGeometryOpen(false); }}
         onCancel={() => { setEditGeometryOpen(false); }}
@@ -157,7 +157,7 @@ export default function RowContextMenu(props:PropsWithChildren<RowContextMenuPro
         title="Calculate Geometry (JSON)"
         label="Calculate Geometry (JSON)"
         confirmLabel="Calculate"
-        defaultValue={JSON.stringify({var: "feature"})}
+        defaultValue={JSON.stringify({var: "feature"}, null, 2)}
         open={calculateJsonDialogOpen}
         onConfirm={(formula) => { calculateGeometry(JSON.parse(formula)); setCalculateJsonDialogOpen(false); }}
         onCancel={() => { setCalculateJsonDialogOpen(false); }}

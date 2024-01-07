@@ -291,7 +291,7 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
         title={`Calculate values for column '${props.columnName}'?`}
         label="Calculate (JSON)"
         confirmLabel="Calculate"
-        defaultValue={JSON.stringify(columnFormula)}
+        defaultValue={JSON.stringify(columnFormula, null, 2)}
         open={calculateJsonDialogOpen}
         onConfirm={(formula) => { calculateColumn(props.columnName, JSON.parse(formula)); setCalculateJsonDialogOpen(false); }}
         onCancel={() => { setCalculateJsonDialogOpen(false); }}

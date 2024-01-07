@@ -39,6 +39,7 @@ export function JsonFieldDialog(props:JsonFieldDialogProps) {
           focus
           onChange={(s) => setDraft(s)}
           value={draft ?? ""}
+          tabSize={2}
         />
       </DialogContent>
       <DialogActions>
