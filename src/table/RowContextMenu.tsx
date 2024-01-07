@@ -11,10 +11,8 @@ import {Feature} from '../geojson-types'
 import {MousePosition} from '../MousePosition'
 import { simplify } from '../geojson-calc';
 import { DataObject } from '@mui/icons-material';
-import { TextFieldDialog } from '../TextFieldDialog';
-import { ComputeFieldDialog } from './ComputeFieldDialog';
 import { AdditionalOperation, apply, RulesLogic } from 'json-logic-js';
-import { getSchema } from '../json-logic/rjsf';
+import { getSchema } from '../json-logic/schema';
 import { JsonFieldDialog } from '../JsonFieldDialog';
 import { Draft07 } from 'json-schema-library';
 import { geojsonGeometrySchema } from '../geojson-schema'
@@ -28,7 +26,6 @@ export default function RowContextMenu(props:PropsWithChildren<RowContextMenuPro
   const context = useContext(DataContext);
   const [contextMenu, setContextMenu] = React.useState<MousePosition|null>(null);
   const [editGeometryOpen, setEditGeometryOpen] = React.useState<boolean>(false);
-  const [calculateDialogOpen, setCalculateDialogOpen] = React.useState<boolean>(false);
   const [calculateJsonDialogOpen, setCalculateJsonDialogOpen] = React.useState<boolean>(false);
   
   const deleteRow = () => {
@@ -122,18 +119,11 @@ export default function RowContextMenu(props:PropsWithChildren<RowContextMenuPro
           <ListItemText>Edit Geometry</ListItemText>
         </MenuItem>
         <MenuItem
-          onClick={() => { setCalculateDialogOpen(true); handleClose() }}>
-          <ListItemIcon>
-            <CalculateIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Compute Geometry</ListItemText>
-        </MenuItem>
-        <MenuItem
           onClick={() => { setCalculateJsonDialogOpen(true); handleClose() }}>
           <ListItemIcon>
             <CalculateIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText>Compute Geometry (JSON)</ListItemText>
+          <ListItemText>Compute Geometry</ListItemText>
         </MenuItem>
       </Menu>
       <JsonFieldDialog
@@ -145,17 +135,8 @@ export default function RowContextMenu(props:PropsWithChildren<RowContextMenuPro
         onConfirm={(newGeometry) => { setGeometry(newGeometry); setEditGeometryOpen(false); }}
         onCancel={() => { setEditGeometryOpen(false); }}
       />
-      <ComputeFieldDialog
-        title={"Calculate Geometry"}
-        confirmLabel="Calculate"
-        defaultValue={{ var : `features.${props.index}` }}
-        schema={getSchema(context?.columns ?? [])}
-        open={calculateDialogOpen}
-        onConfirm={(formula) => { calculateGeometry(formula); setCalculateDialogOpen(false); }}
-        onCancel={() => { setCalculateDialogOpen(false); }}
-      />
       <JsonFieldDialog
-        title="Calculate Geometry (JSON)"
+        title="Calculate Geometry"
         confirmLabel="Calculate"
         defaultValue={{var: "feature"}}
         schema={new Draft07(getSchema(context?.columns ?? []))}

@@ -53,3 +53,5 @@ export const Geo = {
   unionMany,
   distanceToPoint,
 };
+
+export default Geo;

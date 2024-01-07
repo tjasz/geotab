@@ -20,11 +20,9 @@ import {SortAscendingIcon} from './../icon/SortAscendingIcon'
 import {InsertLeftIcon} from './../icon/InsertLeftIcon'
 import {InsertRightIcon} from './../icon/InsertRightIcon'
 import { FieldTypeDescription } from '../fieldtype';
-import { Feature } from '../geojson-types';
 import { MousePosition } from '../MousePosition';
 import {Sorting} from './sorting'
-import {ComputeFieldDialog} from './ComputeFieldDialog'
-import { getSchema } from '../json-logic/rjsf';
+import { getSchema } from '../json-logic/schema';
 import { AdditionalOperation, apply, RulesLogic } from 'json-logic-js';
 import { JsonFieldDialog } from '../JsonFieldDialog';
 import { Draft07 } from 'json-schema-library';
@@ -43,7 +41,6 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
   const [contextMenu, setContextMenu] = React.useState<MousePosition|null>(null);
   const [renameDialogOpen, setRenameDialogOpen] = React.useState(false);
   const [retypeDialogOpen, setRetypeDialogOpen] = React.useState(false);
-  const [calculateDialogOpen, setCalculateDialogOpen] = React.useState(false);
   const [calculateJsonDialogOpen, setCalculateJsonDialogOpen] = React.useState(false);
   const [insertDialog, setInsertDialog] = React.useState<InsertDialog>(null);
   const [columnMetadataOpen, setColumnMetadataOpen] = React.useState(false);
@@ -189,18 +186,11 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
           <ListItemText>Change Type</ListItemText>
         </MenuItem>
         <MenuItem
-          onClick={() => { setCalculateDialogOpen(true); handleClose() }}>
-          <ListItemIcon>
-            <CalculateIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Calculate</ListItemText>
-        </MenuItem>
-        <MenuItem
           onClick={() => { setCalculateJsonDialogOpen(true); handleClose() }}>
           <ListItemIcon>
             <CalculateIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText>Calculate (JSON)</ListItemText>
+          <ListItemText>Calculate</ListItemText>
         </MenuItem>
         <MenuItem
           onClick={() => { swapColumns(props.columnIndex, props.columnIndex-1); handleClose() }}>
@@ -278,15 +268,6 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
         open={renameDialogOpen}
         onConfirm={(newname) => { renameColumn(props.columnName, newname); setRenameDialogOpen(false); }}
         onCancel={() => { setRenameDialogOpen(false); }}
-      />
-      <ComputeFieldDialog
-        title={`Calculate values for column '${props.columnName}'`}
-        confirmLabel="Calculate"
-        defaultValue={columnFormula}
-        schema={getSchema(context?.columns ?? [])}
-        open={calculateDialogOpen}
-        onConfirm={(formula) => { calculateColumn(props.columnName, formula); setCalculateDialogOpen(false); }}
-        onCancel={() => { setCalculateDialogOpen(false); }}
       />
       <JsonFieldDialog
         title={`Calculate values for column '${props.columnName}'?`}

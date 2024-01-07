@@ -40,6 +40,8 @@ export function JsonFieldDialog<T>(props:JsonFieldDialogProps<T>) {
     catch (e) {
       if (e instanceof SyntaxError) {
         alert(e.message);
+      } else {
+        throw e;
       }
     }
   };
