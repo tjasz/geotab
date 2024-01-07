@@ -136,13 +136,11 @@ export default function RowContextMenu(props:PropsWithChildren<RowContextMenuPro
       </Menu>
       <JsonFieldDialog
         title="Edit Geometry"
-        label="Geometry"
         confirmLabel="Update"
-        defaultValue={JSON.stringify(props.feature.geometry, null, 2)}
+        defaultValue={props.feature.geometry}
         open={editGeometryOpen}
-        onConfirm={(newGeometry) => { setGeometry(JSON.parse(newGeometry)); setEditGeometryOpen(false); }}
+        onConfirm={(newGeometry) => { setGeometry(newGeometry); setEditGeometryOpen(false); }}
         onCancel={() => { setEditGeometryOpen(false); }}
-        multiline
       />
       <ComputeFieldDialog
         title={"Calculate Geometry"}
@@ -155,13 +153,11 @@ export default function RowContextMenu(props:PropsWithChildren<RowContextMenuPro
       />
       <JsonFieldDialog
         title="Calculate Geometry (JSON)"
-        label="Calculate Geometry (JSON)"
         confirmLabel="Calculate"
-        defaultValue={JSON.stringify({var: "feature"}, null, 2)}
+        defaultValue={{var: "feature"}}
         open={calculateJsonDialogOpen}
-        onConfirm={(formula) => { calculateGeometry(JSON.parse(formula)); setCalculateJsonDialogOpen(false); }}
+        onConfirm={(formula) => { calculateGeometry(formula); setCalculateJsonDialogOpen(false); }}
         onCancel={() => { setCalculateJsonDialogOpen(false); }}
-        multiline
       />
     </React.Fragment>
   );

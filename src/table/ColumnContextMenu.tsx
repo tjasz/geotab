@@ -289,13 +289,11 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
       />
       <JsonFieldDialog
         title={`Calculate values for column '${props.columnName}'?`}
-        label="Calculate (JSON)"
         confirmLabel="Calculate"
-        defaultValue={JSON.stringify(columnFormula, null, 2)}
+        defaultValue={columnFormula}
         open={calculateJsonDialogOpen}
-        onConfirm={(formula) => { calculateColumn(props.columnName, JSON.parse(formula)); setCalculateJsonDialogOpen(false); }}
+        onConfirm={(formula) => { calculateColumn(props.columnName, formula); setCalculateJsonDialogOpen(false); }}
         onCancel={() => { setCalculateJsonDialogOpen(false); }}
-        multiline
       />
       <TextFieldDialog
         title={`Insert column ${insertDialog} of '${props.columnName}'?`}

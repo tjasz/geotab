@@ -6,27 +6,25 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 
-type JsonFieldDialogProps = {
-  defaultValue?:string;
+type JsonFieldDialogProps<T> = {
+  defaultValue?:T;
   onCancel:{():void};
-  onConfirm:{(draft:string):void};
+  onConfirm:{(draft:T):void};
   open:boolean;
   title:string;
-  multiline?:boolean;
-  label:string;
   cancelLabel?:string;
   confirmLabel?:string;
 }
 
-export function JsonFieldDialog(props:JsonFieldDialogProps) {
-  const [ draft, setDraft] = useState(props.defaultValue);
+export function JsonFieldDialog<T>(props:JsonFieldDialogProps<T>) {
+  const [ draft, setDraft] = useState(props.defaultValue ? JSON.stringify(props.defaultValue, null, 2) : null);
 
   const handleCancel = () => {
     props.onCancel();
   };
 
   const handleConfirm = () => {
-    props.onConfirm(draft ?? "");
+    props.onConfirm(JSON.parse(draft ?? "null"));
   };
   
   return (
