@@ -27,6 +27,7 @@ import {ComputeFieldDialog} from './ComputeFieldDialog'
 import { getSchema } from '../json-logic/rjsf';
 import { AdditionalOperation, apply, RulesLogic } from 'json-logic-js';
 import { JsonFieldDialog } from '../JsonFieldDialog';
+import { Draft07 } from 'json-schema-library';
 
 type InsertDialog = "left"|"right"|null;
 
@@ -291,6 +292,7 @@ export default function ColumnContextMenu(props:PropsWithChildren<ColumnContextM
         title={`Calculate values for column '${props.columnName}'?`}
         confirmLabel="Calculate"
         defaultValue={columnFormula}
+        schema={new Draft07(getSchema(context?.columns ?? []))}
         open={calculateJsonDialogOpen}
         onConfirm={(formula) => { calculateColumn(props.columnName, formula); setCalculateJsonDialogOpen(false); }}
         onCancel={() => { setCalculateJsonDialogOpen(false); }}

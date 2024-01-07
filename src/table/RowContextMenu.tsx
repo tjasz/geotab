@@ -16,6 +16,8 @@ import { ComputeFieldDialog } from './ComputeFieldDialog';
 import { AdditionalOperation, apply, RulesLogic } from 'json-logic-js';
 import { getSchema } from '../json-logic/rjsf';
 import { JsonFieldDialog } from '../JsonFieldDialog';
+import { Draft07 } from 'json-schema-library';
+import { geojsonGeometrySchema } from '../geojson-schema'
 
 type RowContextMenuProps = {
   feature: Feature,
@@ -138,6 +140,7 @@ export default function RowContextMenu(props:PropsWithChildren<RowContextMenuPro
         title="Edit Geometry"
         confirmLabel="Update"
         defaultValue={props.feature.geometry}
+        schema={new Draft07(geojsonGeometrySchema)}
         open={editGeometryOpen}
         onConfirm={(newGeometry) => { setGeometry(newGeometry); setEditGeometryOpen(false); }}
         onCancel={() => { setEditGeometryOpen(false); }}
@@ -155,6 +158,7 @@ export default function RowContextMenu(props:PropsWithChildren<RowContextMenuPro
         title="Calculate Geometry (JSON)"
         confirmLabel="Calculate"
         defaultValue={{var: "feature"}}
+        schema={new Draft07(getSchema(context?.columns ?? []))}
         open={calculateJsonDialogOpen}
         onConfirm={(formula) => { calculateGeometry(formula); setCalculateJsonDialogOpen(false); }}
         onCancel={() => { setCalculateJsonDialogOpen(false); }}

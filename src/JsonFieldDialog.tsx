@@ -1,5 +1,6 @@
 import {useState} from 'react'
 import ReactAce from 'react-ace';
+import { Draft07, JsonError } from "json-schema-library";
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -8,6 +9,7 @@ import DialogContent from '@mui/material/DialogContent';
 
 type JsonFieldDialogProps<T> = {
   defaultValue?:T;
+  schema?: Draft07;
   onCancel:{():void};
   onConfirm:{(draft:T):void};
   open:boolean;
@@ -24,7 +26,15 @@ export function JsonFieldDialog<T>(props:JsonFieldDialogProps<T>) {
   };
 
   const handleConfirm = () => {
-    props.onConfirm(JSON.parse(draft ?? "null"));
+    const value = JSON.parse(draft ?? "null");
+    if (props.schema) {
+      const errors: JsonError[] = props.schema.validate(value);
+      if (errors.length) {
+        alert(errors.map(e => e.message).join("\n"));
+        return;
+      }
+    }
+    props.onConfirm(value);
   };
   
   return (
