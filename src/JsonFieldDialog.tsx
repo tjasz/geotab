@@ -26,15 +26,22 @@ export function JsonFieldDialog<T>(props:JsonFieldDialogProps<T>) {
   };
 
   const handleConfirm = () => {
-    const value = JSON.parse(draft ?? "null");
-    if (props.schema) {
-      const errors: JsonError[] = props.schema.validate(value);
-      if (errors.length) {
-        alert(errors.map(e => e.message).join("\n"));
-        return;
+    try {
+      const value = JSON.parse(draft ?? "null");
+      if (props.schema) {
+        const errors: JsonError[] = props.schema.validate(value);
+        if (errors.length) {
+          alert(errors.map(e => e.message).join("\n"));
+          return;
+        }
+      }
+      props.onConfirm(value);
+    }
+    catch (e) {
+      if (e instanceof SyntaxError) {
+        alert(e.message);
       }
     }
-    props.onConfirm(value);
   };
   
   return (
