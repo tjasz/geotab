@@ -19,7 +19,7 @@ type JsonFieldDialogProps<T> = {
 }
 
 export function JsonFieldDialog<T>(props:JsonFieldDialogProps<T>) {
-  const [ draft, setDraft] = useState(props.defaultValue ? JSON.stringify(props.defaultValue, null, 2) : null);
+  const [ draft, setDraft] = useState(props.defaultValue !== null ? JSON.stringify(props.defaultValue, null, 2) : null);
 
   const handleCancel = () => {
     props.onCancel();
