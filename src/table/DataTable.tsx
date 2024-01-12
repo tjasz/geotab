@@ -1,12 +1,15 @@
 import React, {useContext, useEffect, useRef, useState, KeyboardEvent} from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import CalculateIcon from '@mui/icons-material/Calculate';
+import DeleteIcon from '@mui/icons-material/Delete';
+import StraightenIcon from '@mui/icons-material/Straighten';
 import { sortBy } from './../algorithm'
 import {DataContext} from './../dataContext'
 import DataTableRow from './DataTableRow'
 import DataTableHeader from './DataTableHeader'
 import {Sorting} from './sorting'
 import {Feature, FeatureProperties, FeatureType, GeometryType} from '../geojson-types'
-import { Table, TableBody, TableHead } from '@mui/material';
+import { Button, Table, TableBody, TableHead, Toolbar, Typography } from '@mui/material';
 
 export default function DataTable() {
   const context = useContext(DataContext);
@@ -107,8 +110,14 @@ export default function DataTable() {
 
   // --------------------------
 
-  const handleDeleteRows = (ids : string[]) => {
-    const newData = [];
+  const activeRows = new Set(features.filter(f => 
+    f.properties["geotab:selectionStatus"] === "active" ||
+    f.properties["geotab:selectionStatus"] === "hoveractive")
+    .map(f => f.id));
+  const numActiveRows = activeRows.size;
+
+  const handleDeleteRows = () => {
+    const newData = context.data.filter(f => !activeRows.has(f.id));
     context.setData(newData);
   };
 
@@ -136,35 +145,49 @@ export default function DataTable() {
   }
 
   return (
-    <Table>
-      <TableHead>
-        <DataTableHeader
-          columns={context.columns}
-          setColumns={context.setColumns}
-          sorting={sorting}
-          setSorting={handleSortingChange}
-          disabled={disabled}
-          setDisabled={setDisabled}
-          addRows={addRows}
-          />
-      </TableHead>
-      <TableBody>
-        {features.map((feature, fidx) =>
-          <DataTableRow
-            key={feature.id}
-            cellRefs={refs}
-            handleKeyDown={handleKeyDown}
+    <>
+      <Toolbar>
+        <Button
+          startIcon={<DeleteIcon />}
+          disabled={numActiveRows < 1}
+          onClick={handleDeleteRows}
+          >
+          Delete
+        </Button>
+        <Typography>
+          {numActiveRows} Selected
+        </Typography>
+      </Toolbar>
+      <Table>
+        <TableHead>
+          <DataTableHeader
             columns={context.columns}
-            fidx={fidx}
-            feature={feature}
-            rowId={feature.id}
-            onChange={handleRowChange}
+            setColumns={context.setColumns}
+            sorting={sorting}
+            setSorting={handleSortingChange}
             disabled={disabled}
-            isRowSelected={feature.properties["geotab:selectionStatus"] === "active" ||
-            feature.properties["geotab:selectionStatus"] === "hoveractive"}
-            onClick={(e, id) => handleToggleSelection(id)}
-            />)}
-      </TableBody>
-    </Table>
+            setDisabled={setDisabled}
+            addRows={addRows}
+            />
+        </TableHead>
+        <TableBody>
+          {features.map((feature, fidx) =>
+            <DataTableRow
+              key={feature.id}
+              cellRefs={refs}
+              handleKeyDown={handleKeyDown}
+              columns={context.columns}
+              fidx={fidx}
+              feature={feature}
+              rowId={feature.id}
+              onChange={handleRowChange}
+              disabled={disabled}
+              isRowSelected={feature.properties["geotab:selectionStatus"] === "active" ||
+              feature.properties["geotab:selectionStatus"] === "hoveractive"}
+              onClick={(e, id) => handleToggleSelection(id)}
+              />)}
+        </TableBody>
+      </Table>
+    </>
   );
 }
