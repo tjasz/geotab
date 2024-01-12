@@ -4,6 +4,7 @@ import TableContextMenu from './TableContextMenu';
 import ColumnContextMenu from './ColumnContextMenu'
 import {Sorting} from './sorting'
 import {Column} from '../column'
+import { TableCell, TableRow } from '@mui/material';
 
 type DataTableHeaderProps = {
   disabled: boolean,
@@ -17,8 +18,8 @@ type DataTableHeaderProps = {
 
 export default function DataTableHeader(props:DataTableHeaderProps) {
   return (
-    <tr>
-      <th className="tableCorner">
+    <TableRow>
+      <TableCell className="tableCorner">
         <TableContextMenu
           disabled={props.disabled}
           setDisabled={props.setDisabled}
@@ -28,9 +29,12 @@ export default function DataTableHeader(props:DataTableHeaderProps) {
           >
             <MenuIcon />
         </TableContextMenu>
-      </th>
+      </TableCell>
+      <TableCell>
+        #
+      </TableCell>
       {Array.from(props.columns).map((column, idx) => {return {column, idx}}).filter((info) => info.column.visible).map((info) =>
-        <th key={info.column.name} >
+        <TableCell key={info.column.name} >
           <span
             onClick={() => {
               props.setSorting({col: info.column, asc: (props.sorting && props.sorting.col.name === info.column.name) ? !props.sorting.asc : true});
@@ -44,7 +48,7 @@ export default function DataTableHeader(props:DataTableHeaderProps) {
           <ColumnContextMenu columnName={info.column.name} columnIndex={info.idx} columnFormula={info.column.formula} setSorting={props.setSorting}>
             <MoreVertIcon className="inlineIcon" />
           </ColumnContextMenu>
-        </th>)}
-    </tr>
+        </TableCell>)}
+    </TableRow>
   );
 }

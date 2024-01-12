@@ -7,6 +7,7 @@ import {Column} from './../column'
 import {Feature, FeatureProperties} from './../geojson-types'
 import {toggleActive, addHover, removeHover} from '../selection'
 import {DataContext} from '../dataContext'
+import { TableCell, TableRow } from '@mui/material';
 
 type TableRowProps = {
   fidx: number,
@@ -21,7 +22,7 @@ type TableRowProps = {
   handleKeyDown: (e:KeyboardEvent, row:number, col:string) => void,
 }
 
-export default function TableRow(props:TableRowProps) {
+export default function DataTableRow(props:TableRowProps) {
   const context = useContext(DataContext);
   const [className, setClassName] = useState(props.feature.properties["geotab:selectionStatus"] ?? "inactive");
   if (context !== null) {
@@ -32,7 +33,7 @@ export default function TableRow(props:TableRowProps) {
     props.onChange(newFeatureProperties, props.fidx);
   };
   return (
-    <tr
+    <TableRow
       onContextMenu={() => console.log(props.feature)}
       onClick={(e) => {
         props.onClick(e, props.feature.id);
@@ -61,12 +62,14 @@ export default function TableRow(props:TableRowProps) {
       }}
       className={className}
       >
-      <th>
+      <TableCell component="th">
         <Checkbox
           checked={props.isRowSelected}
           />
+      </TableCell>
+      <TableCell component="th">
         {props.fidx}
-      </th>
+      </TableCell>
       {Array.from(props.columns).filter((column) => column.visible).map((column) =>
         <DataTableCell
           key={`${props.rowId}:${column.name}`}
@@ -78,6 +81,6 @@ export default function TableRow(props:TableRowProps) {
           onChange={handleCellChange}
           disabled={props.disabled}
           />)}
-    </tr>
+    </TableRow>
   );
 }
