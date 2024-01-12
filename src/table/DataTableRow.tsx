@@ -1,4 +1,5 @@
 import {KeyboardEvent, RefObject, useContext, useState} from 'react'
+import Checkbox from '@mui/material/Checkbox';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import DataTableCell from './DataTableCell'
 import RowContextMenu from './RowContextMenu';
@@ -14,6 +15,8 @@ type TableRowProps = {
   disabled: boolean,
   cellRefs: RefObject<{[colName:string]: HTMLInputElement|null}[]>,
   feature: Feature,
+  isRowSelected: boolean,
+  onClick: (event: React.MouseEvent<HTMLTableRowElement, MouseEvent>, id: string) => void,
   onChange: (properties:FeatureProperties, fidx:number) => void,
   handleKeyDown: (e:KeyboardEvent, row:number, col:string) => void,
 }
@@ -32,6 +35,7 @@ export default function TableRow(props:TableRowProps) {
     <tr
       onContextMenu={() => console.log(props.feature)}
       onClick={(e) => {
+        props.onClick(e, props.feature.id);
         props.feature.properties["geotab:selectionStatus"] = toggleActive(props.feature.properties["geotab:selectionStatus"]);
         setClassName(props.feature.properties["geotab:selectionStatus"]);
         const mapListener = context?.featureListeners[props.feature.id]?.["map"];
@@ -58,13 +62,10 @@ export default function TableRow(props:TableRowProps) {
       className={className}
       >
       <th>
+        <Checkbox
+          checked={props.isRowSelected}
+          />
         {props.fidx}
-        <RowContextMenu
-          feature={props.feature}
-          index={props.fidx}
-          >
-            <MoreHorizIcon className="inlineIcon" />
-        </RowContextMenu>
       </th>
       {Array.from(props.columns).filter((column) => column.visible).map((column) =>
         <DataTableCell

@@ -6,6 +6,7 @@ import DataTableRow from './DataTableRow'
 import DataTableHeader from './DataTableHeader'
 import {Sorting} from './sorting'
 import {Feature, FeatureProperties, FeatureType, GeometryType} from '../geojson-types'
+import { Table, TableBody, TableHead } from '@mui/material';
 
 export default function DataTable() {
   const context = useContext(DataContext);
@@ -104,9 +105,39 @@ export default function DataTable() {
     context.setFromJson({type: FeatureType.FeatureCollection, features: newFeatures});
   };
 
+  // --------------------------
+
+  const handleDeleteRows = (ids : string[]) => {
+    const newData = [];
+    context.setData(newData);
+  };
+
+  const handleToggleSelection = (id : string) => {
+    const f = features.find(f => f.id === id);
+    if (f === undefined) {
+      throw Error(`Could not find feature with ID ${id}`);
+    }
+
+    let status = "active";
+    switch(f.properties["geotab:selectionStatus"])
+    {
+      case "active":
+      case "hoveractive":
+        status = "inactive";
+        break;
+      case "inactive":
+      case "hoverinactive":
+        status = "active";
+        break;
+    }
+
+    const newData = context.data.map(feat => feat.id === f.id ? {...f, properties: {...f.properties, ["geotab:selectionStatus"]: status}} : feat);
+    context.setData(newData);
+  }
+
   return (
-    <table id="data-table" cellSpacing={0}>
-      <thead>
+    <Table>
+      <TableHead>
         <DataTableHeader
           columns={context.columns}
           setColumns={context.setColumns}
@@ -116,8 +147,8 @@ export default function DataTable() {
           setDisabled={setDisabled}
           addRows={addRows}
           />
-      </thead>
-      <tbody>
+      </TableHead>
+      <TableBody>
         {features.map((feature, fidx) =>
           <DataTableRow
             key={feature.id}
@@ -129,8 +160,11 @@ export default function DataTable() {
             rowId={feature.id}
             onChange={handleRowChange}
             disabled={disabled}
+            isRowSelected={feature.properties["geotab:selectionStatus"] === "active" ||
+            feature.properties["geotab:selectionStatus"] === "hoveractive"}
+            onClick={(e, id) => handleToggleSelection(id)}
             />)}
-      </tbody>
-    </table>
+      </TableBody>
+    </Table>
   );
 }
