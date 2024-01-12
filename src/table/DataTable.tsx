@@ -1,7 +1,7 @@
 import React, {useContext, useEffect, useRef, useState, KeyboardEvent} from 'react';
 import { apply, AdditionalOperation, RulesLogic } from 'json-logic-js';
 import { v4 as uuidv4 } from 'uuid';
-import { DataObject } from '@mui/icons-material';
+import { Calculate, DataObject } from '@mui/icons-material';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import DeleteIcon from '@mui/icons-material/Delete';
 import StraightenIcon from '@mui/icons-material/Straighten';
@@ -145,7 +145,7 @@ export default function DataTable() {
     try {
       if (formula !== undefined) {
         const newData = context.data.map((feature, index) =>
-          !activeRows.has(feature.id)
+          activeRows.has(feature.id)
             ? {...feature, geometry: apply(formula, {feature, index, features: context.filteredData}).geometry}
             : feature);
         context.setData(newData);
@@ -209,6 +209,15 @@ export default function DataTable() {
           }}
           >
           Edit Geometry
+        </Button>
+        <Button
+          startIcon={<Calculate />}
+          disabled={numActiveRows < 1}
+          onClick={() => {
+            setCalculateJsonDialogOpen(true);
+          }}
+          >
+          Calculate Geometry
         </Button>
         <Typography>
           {numActiveRows} Selected
