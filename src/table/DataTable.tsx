@@ -21,11 +21,6 @@ import { geometry } from '@turf/turf';
 
 export default function DataTable() {
   const context = useContext(DataContext);
-  const activeRows = new Set(context?.data.filter(f => 
-    f.properties["geotab:selectionStatus"] === "active" ||
-    f.properties["geotab:selectionStatus"] === "hoveractive")
-    .map(f => f.id) ?? []);
-  const numActiveRows = activeRows.size;
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -33,6 +28,7 @@ export default function DataTable() {
   const [disabled, setDisabled] = useState(true);
   const [editGeometryOpen, setEditGeometryOpen] = React.useState<boolean>(false);
   const [calculateJsonDialogOpen, setCalculateJsonDialogOpen] = React.useState<boolean>(false);
+  const [selectedRows, setSelectedRows] = React.useState<Set<string>>(new Set([]));
 
   const features:Feature[] = context?.filteredData ?? [];
   const visibleFeatures = features.slice(page * rowsPerPage, (page+1) * rowsPerPage);
@@ -131,17 +127,17 @@ export default function DataTable() {
   // --------------------------
 
   const handleDeleteRows = () => {
-    const newData = context.data.filter(f => !activeRows.has(f.id));
+    const newData = context.data.filter(f => !selectedRows.has(f.id));
     context.setData(newData);
   };
 
   const handleSimplifyGeometry = () => {
-    const newData = context.data.map(f => activeRows.has(f.id) ? simplify(f, 10) : f);
+    const newData = context.data.map(f => selectedRows.has(f.id) ? simplify(f, 10) : f);
     context.setData(newData);
   }
 
   const setGeometry = (newGeometry) => {
-    const newData = context.data.map(f => activeRows.has(f.id) ? {...f, geometry: newGeometry} : f);
+    const newData = context.data.map(f => selectedRows.has(f.id) ? {...f, geometry: newGeometry} : f);
     context.setData(newData);
   }
 
@@ -149,7 +145,7 @@ export default function DataTable() {
     try {
       if (formula !== undefined) {
         const newData = context.data.map((feature, index) =>
-          activeRows.has(feature.id)
+          selectedRows.has(feature.id)
             ? {...feature, geometry: apply(formula, {feature, index, features: context.filteredData}).geometry}
             : feature);
         context.setData(newData);
@@ -166,26 +162,13 @@ export default function DataTable() {
   };
 
   const handleToggleSelection = (id : string) => {
-    const f = features.find(f => f.id === id);
-    if (f === undefined) {
-      throw Error(`Could not find feature with ID ${id}`);
+    const newSet = new Set(selectedRows);
+    if (selectedRows.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
     }
-
-    let status = "active";
-    switch(f.properties["geotab:selectionStatus"])
-    {
-      case "active":
-      case "hoveractive":
-        status = "inactive";
-        break;
-      case "inactive":
-      case "hoverinactive":
-        status = "active";
-        break;
-    }
-
-    const newData = context.data.map(feat => feat.id === f.id ? {...f, properties: {...f.properties, ["geotab:selectionStatus"]: status}} : feat);
-    context.setData(newData);
+    setSelectedRows(newSet);
   }
 
   return (
@@ -193,21 +176,21 @@ export default function DataTable() {
       <Toolbar>
         <Button
           startIcon={<DeleteIcon />}
-          disabled={numActiveRows < 1}
+          disabled={selectedRows.size < 1}
           onClick={handleDeleteRows}
           >
           Delete
         </Button>
         <Button
           startIcon={<StraightenIcon />}
-          disabled={numActiveRows < 1}
+          disabled={selectedRows.size < 1}
           onClick={handleSimplifyGeometry}
           >
           Simplify Geometry
         </Button>
         <Button
           startIcon={<DataObject />}
-          disabled={numActiveRows !== 1}
+          disabled={selectedRows.size !== 1}
           onClick={() => {
             setEditGeometryOpen(true);
           }}
@@ -216,7 +199,7 @@ export default function DataTable() {
         </Button>
         <Button
           startIcon={<Calculate />}
-          disabled={numActiveRows < 1}
+          disabled={selectedRows.size < 1}
           onClick={() => {
             setCalculateJsonDialogOpen(true);
           }}
@@ -224,7 +207,7 @@ export default function DataTable() {
           Calculate Geometry
         </Button>
         <Typography>
-          {numActiveRows} Selected
+          {selectedRows.size} Selected
         </Typography>
       </Toolbar>
       <Table>
@@ -251,16 +234,15 @@ export default function DataTable() {
               rowId={feature.id}
               onChange={handleRowChange}
               disabled={disabled}
-              isRowSelected={feature.properties["geotab:selectionStatus"] === "active" ||
-              feature.properties["geotab:selectionStatus"] === "hoveractive"}
+              isRowSelected={selectedRows.has(feature.id)}
               onClick={(e, id) => handleToggleSelection(id)}
               />)}
         </TableBody>
       </Table>
-      {numActiveRows === 1 ? <JsonFieldDialog
+      {selectedRows.size === 1 ? <JsonFieldDialog
         title="Edit Geometry"
         confirmLabel="Update"
-        defaultValue={context?.data.find(f => activeRows.has(f.id))?.geometry ?? null}
+        defaultValue={context?.data.find(f => selectedRows.has(f.id))?.geometry ?? null}
         schema={new Draft07(geojsonGeometrySchema)}
         open={editGeometryOpen}
         onConfirm={(newGeometry) => { setGeometry(newGeometry); setEditGeometryOpen(false); }}
