@@ -27,12 +27,16 @@ export default function DataTable() {
     .map(f => f.id) ?? []);
   const numActiveRows = activeRows.size;
 
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [sorting, setSorting] = useState<Sorting|undefined>(undefined);
   const [disabled, setDisabled] = useState(true);
   const [editGeometryOpen, setEditGeometryOpen] = React.useState<boolean>(false);
   const [calculateJsonDialogOpen, setCalculateJsonDialogOpen] = React.useState<boolean>(false);
 
   const features:Feature[] = context?.filteredData ?? [];
+  const visibleFeatures = features.slice(page * rowsPerPage, (page+1) * rowsPerPage);
+
   const refs = useRef<{[colName:string]: HTMLInputElement|null}[]>([]);
   // useEffect to update the ref on data update
   useEffect(() => {
@@ -236,7 +240,7 @@ export default function DataTable() {
             />
         </TableHead>
         <TableBody>
-          {features.map((feature, fidx) =>
+          {visibleFeatures.map((feature, fidx) =>
             <DataTableRow
               key={feature.id}
               cellRefs={refs}
