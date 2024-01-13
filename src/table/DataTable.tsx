@@ -274,6 +274,17 @@ export default function DataTable() {
         open={calculateJsonDialogOpen}
         onConfirm={(formula) => { calculateGeometry(formula); setCalculateJsonDialogOpen(false); }}
         onCancel={() => { setCalculateJsonDialogOpen(false); }}
+        // TODO document additional operations addd to JSON logic
+        description={
+          <p>
+            Input a valid <a href="https://jsonlogic.com">JSON logic</a> to compute the geometry of the selected features.
+            In addition to the default <a href="https://jsonlogic.com/operations.html">JSON logic operations</a>,
+            the methods of <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math">JavaScript's Math object</a> are
+            included under "Math" (ex: "Math.abs")
+            and the <a href="https://turfjs.org/docs">Turf.js operations</a> are included under "Turf"
+            (ex: "Turf.buffer").
+          </p>
+        }
       />
     </>
   );

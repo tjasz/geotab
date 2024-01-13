@@ -14,6 +14,7 @@ type JsonFieldDialogProps<T> = {
   onConfirm:{(draft:T):void};
   open:boolean;
   title:string;
+  description?: JSX.Element;
   cancelLabel?:string;
   confirmLabel?:string;
 }
@@ -50,6 +51,7 @@ export function JsonFieldDialog<T>(props:JsonFieldDialogProps<T>) {
     <Dialog onClose={handleCancel} open={props.open}>
       <DialogTitle>{props.title}</DialogTitle>
       <DialogContent>
+        {props.description}
         <ReactAce
           mode="json"
           theme="github"
