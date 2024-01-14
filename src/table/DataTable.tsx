@@ -1,10 +1,7 @@
 import React, {useContext, useEffect, useRef, useState, KeyboardEvent} from 'react';
 import { apply, AdditionalOperation, RulesLogic } from 'json-logic-js';
 import { v4 as uuidv4 } from 'uuid';
-import { Calculate, DataObject } from '@mui/icons-material';
-import CalculateIcon from '@mui/icons-material/Calculate';
-import DeleteIcon from '@mui/icons-material/Delete';
-import StraightenIcon from '@mui/icons-material/Straighten';
+import { Calculate, DataObject, Delete, Straighten } from '@mui/icons-material';
 import { sortBy } from './../algorithm'
 import {DataContext} from './../dataContext'
 import DataTableRow from './DataTableRow'
@@ -17,13 +14,12 @@ import { JsonFieldDialog } from '../JsonFieldDialog';
 import { Draft07 } from 'json-schema-library';
 import { getSchema } from '../json-logic/schema';
 import { geojsonGeometrySchema } from '../geojson-schema'
-import { geometry } from '@turf/turf';
 
 export default function DataTable() {
   const context = useContext(DataContext);
 
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(1630);
   const [sorting, setSorting] = useState<Sorting|undefined>(undefined);
   const [disabled, setDisabled] = useState(true);
   const [editGeometryOpen, setEditGeometryOpen] = React.useState<boolean>(false);
@@ -175,14 +171,14 @@ export default function DataTable() {
     <>
       <Toolbar>
         <Button
-          startIcon={<DeleteIcon />}
+          startIcon={<Delete />}
           disabled={selectedRows.size < 1}
           onClick={handleDeleteRows}
           >
           Delete
         </Button>
         <Button
-          startIcon={<StraightenIcon />}
+          startIcon={<Straighten />}
           disabled={selectedRows.size < 1}
           onClick={handleSimplifyGeometry}
           >
