@@ -8,7 +8,7 @@ import DataTableRow from './DataTableRow'
 import DataTableHeader from './DataTableHeader'
 import {Sorting} from './sorting'
 import {Feature, FeatureProperties, FeatureType, GeometryType, Geometry, GeometryCollection} from '../geojson-types'
-import { Button, Table, TableBody, TableHead, TablePagination, Toolbar, Typography } from '@mui/material';
+import { Button, Table, TableBody, TableContainer, TableHead, TablePagination, Toolbar, Typography } from '@mui/material';
 import { simplify } from '../geojson-calc';
 import { JsonFieldDialog } from '../JsonFieldDialog';
 import { Draft07 } from 'json-schema-library';
@@ -217,35 +217,37 @@ export default function DataTable() {
           {selectedRows.size} Selected
         </Typography>
       </Toolbar>
-      <Table stickyHeader>
-        <TableHead>
-          <DataTableHeader
-            columns={context.columns}
-            setColumns={context.setColumns}
-            sorting={sorting}
-            setSorting={handleSortingChange}
-            disabled={disabled}
-            setDisabled={setDisabled}
-            addRows={addRows}
-            />
-        </TableHead>
-        <TableBody>
-          {visibleFeatures.map((feature, fidx) =>
-            <DataTableRow
-              key={feature.id}
-              cellRefs={refs}
-              handleKeyDown={handleKeyDown}
+      <TableContainer style={{ maxHeight: "85%" }}>
+        <Table stickyHeader>
+          <TableHead>
+            <DataTableHeader
               columns={context.columns}
-              fidx={fidx + page*rowsPerPage}
-              feature={feature}
-              rowId={feature.id}
-              onChange={handleRowChange}
+              setColumns={context.setColumns}
+              sorting={sorting}
+              setSorting={handleSortingChange}
               disabled={disabled}
-              isRowSelected={selectedRows.has(feature.id)}
-              onClick={(e, id) => handleToggleSelection(id)}
-              />)}
-        </TableBody>
-      </Table>
+              setDisabled={setDisabled}
+              addRows={addRows}
+              />
+          </TableHead>
+          <TableBody>
+            {visibleFeatures.map((feature, fidx) =>
+              <DataTableRow
+                key={feature.id}
+                cellRefs={refs}
+                handleKeyDown={handleKeyDown}
+                columns={context.columns}
+                fidx={fidx + page*rowsPerPage}
+                feature={feature}
+                rowId={feature.id}
+                onChange={handleRowChange}
+                disabled={disabled}
+                isRowSelected={selectedRows.has(feature.id)}
+                onClick={(e, id) => handleToggleSelection(id)}
+                />)}
+          </TableBody>
+        </Table>
+      </TableContainer>
       <TablePagination
         rowsPerPageOptions={[12, 25, 50, 100, 200, 400]}
         component="div"
