@@ -8,7 +8,7 @@ import DataTableRow from './DataTableRow'
 import DataTableHeader from './DataTableHeader'
 import {Sorting} from './sorting'
 import {Feature, FeatureProperties, FeatureType, GeometryType, Geometry, GeometryCollection} from '../geojson-types'
-import { Button, Table, TableBody, TableHead, Toolbar, Typography } from '@mui/material';
+import { Button, Table, TableBody, TableHead, TablePagination, Toolbar, Typography } from '@mui/material';
 import { simplify } from '../geojson-calc';
 import { JsonFieldDialog } from '../JsonFieldDialog';
 import { Draft07 } from 'json-schema-library';
@@ -19,7 +19,7 @@ export default function DataTable() {
   const context = useContext(DataContext);
 
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(1630);
+  const [rowsPerPage, setRowsPerPage] = useState(50);
   const [sorting, setSorting] = useState<Sorting|undefined>(undefined);
   const [disabled, setDisabled] = useState(true);
   const [editGeometryOpen, setEditGeometryOpen] = React.useState<boolean>(false);
@@ -121,6 +121,17 @@ export default function DataTable() {
   };
 
   // --------------------------
+
+  const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage);
+    setSelectedRows(new Set([]));
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+    setSelectedRows(new Set([]));
+  };
 
   const handleDeleteRows = () => {
     const newData = context.data.filter(f => !selectedRows.has(f.id));
@@ -225,7 +236,7 @@ export default function DataTable() {
               cellRefs={refs}
               handleKeyDown={handleKeyDown}
               columns={context.columns}
-              fidx={fidx}
+              fidx={fidx + page*rowsPerPage}
               feature={feature}
               rowId={feature.id}
               onChange={handleRowChange}
@@ -235,6 +246,15 @@ export default function DataTable() {
               />)}
         </TableBody>
       </Table>
+      <TablePagination
+        rowsPerPageOptions={[12, 25, 50, 100, 200, 400]}
+        component="div"
+        count={features.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+        />
       {selectedRows.size === 1 ? <JsonFieldDialog
         title="Edit Geometry"
         confirmLabel="Update"
