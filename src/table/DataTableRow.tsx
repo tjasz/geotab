@@ -61,6 +61,15 @@ export default function DataTableRow(props:TableRowProps) {
         }
       }}
       className={className}
+      style={
+        className === "active"
+        ? { backgroundColor: "#ffff00" }
+        : className === "hoveractive"
+        ? { backgroundColor: "#ffff9f" }
+        : className === "hoverinactive"
+        ? { backgroundColor: "#ffffcf" }
+        : {}
+      }
       >
       <TableCell component="th">
         <Checkbox
