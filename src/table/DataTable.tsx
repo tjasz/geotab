@@ -217,7 +217,7 @@ export default function DataTable() {
           {selectedRows.size} Selected
         </Typography>
       </Toolbar>
-      <Table>
+      <Table stickyHeader>
         <TableHead>
           <DataTableHeader
             columns={context.columns}
