@@ -16,6 +16,10 @@ import { getSchema } from '../json-logic/schema';
 import { geojsonGeometrySchema } from '../geojson-schema'
 
 export default function DataTable() {
+  const isActive = (feature) =>
+    feature.properties["geotab:selectionStatus"] === "active" ||
+    feature.properties["geotab:selectionStatus"] === "hoveractive";
+
   const context = useContext(DataContext);
 
   const [page, setPage] = useState(0);
@@ -24,10 +28,12 @@ export default function DataTable() {
   const [disabled, setDisabled] = useState(true);
   const [editGeometryOpen, setEditGeometryOpen] = React.useState<boolean>(false);
   const [calculateJsonDialogOpen, setCalculateJsonDialogOpen] = React.useState<boolean>(false);
-  const [selectedRows, setSelectedRows] = React.useState<Set<string>>(new Set([]));
 
   const features:Feature[] = context?.filteredData ?? [];
   const visibleFeatures = features.slice(page * rowsPerPage, (page+1) * rowsPerPage);
+  const [selectedRows, setSelectedRows] = React.useState<Set<string>>(new Set(
+    features.filter(isActive).map(feature => feature.id)
+  ));
 
   const refs = useRef<{[colName:string]: HTMLInputElement|null}[]>([]);
   // useEffect to update the ref on data update
@@ -124,13 +130,11 @@ export default function DataTable() {
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
-    setSelectedRows(new Set([]));
   };
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
-    setSelectedRows(new Set([]));
   };
 
   const handleDeleteRows = () => {
@@ -168,12 +172,12 @@ export default function DataTable() {
     }
   };
 
-  const handleToggleSelection = (id : string) => {
+  const handleToggleSelection = (f : Feature) => {
     const newSet = new Set(selectedRows);
-    if (selectedRows.has(id)) {
-      newSet.delete(id);
-    } else {
-      newSet.add(id);
+    if (selectedRows.has(f.id) && !isActive(f)) {
+      newSet.delete(f.id);
+    } else if (isActive(f)) {
+      newSet.add(f.id);
     }
     setSelectedRows(newSet);
   }
@@ -243,7 +247,7 @@ export default function DataTable() {
                 onChange={handleRowChange}
                 disabled={disabled}
                 isRowSelected={selectedRows.has(feature.id)}
-                onClick={(e, id) => handleToggleSelection(id)}
+                onClick={(e, f) => handleToggleSelection(f)}
                 />)}
           </TableBody>
         </Table>

@@ -17,7 +17,7 @@ type TableRowProps = {
   cellRefs: RefObject<{[colName:string]: HTMLInputElement|null}[]>,
   feature: Feature,
   isRowSelected: boolean,
-  onClick: (event: React.MouseEvent<HTMLTableRowElement, MouseEvent>, id: string) => void,
+  onClick: (event: React.MouseEvent<HTMLTableRowElement, MouseEvent> | undefined, f: Feature) => void,
   onChange: (properties:FeatureProperties, fidx:number) => void,
   handleKeyDown: (e:KeyboardEvent, row:number, col:string) => void,
 }
@@ -26,7 +26,11 @@ export default function DataTableRow(props:TableRowProps) {
   const context = useContext(DataContext);
   const [className, setClassName] = useState(props.feature.properties["geotab:selectionStatus"] ?? "inactive");
   if (context !== null) {
-    context.setFeatureListener(props.feature.id, "table", (f) => setClassName(f.properties["geotab:selectionStatus"]))
+    context.setFeatureListener(
+      props.feature.id,
+      "table",
+      (f) => { setClassName(f.properties["geotab:selectionStatus"]); props.onClick(undefined, f); }
+    );
   }
   const handleCellChange = (value:any, column:Column) => {
     const newFeatureProperties = {...props.feature.properties, [column.name]: value};
@@ -36,8 +40,8 @@ export default function DataTableRow(props:TableRowProps) {
     <TableRow
       onContextMenu={() => console.log(props.feature)}
       onClick={(e) => {
-        props.onClick(e, props.feature.id);
         props.feature.properties["geotab:selectionStatus"] = toggleActive(props.feature.properties["geotab:selectionStatus"]);
+        props.onClick(e, props.feature);
         setClassName(props.feature.properties["geotab:selectionStatus"]);
         const mapListener = context?.featureListeners[props.feature.id]?.["map"];
         if (mapListener !== undefined) {
