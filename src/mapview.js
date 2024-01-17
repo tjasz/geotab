@@ -37,12 +37,12 @@ function MapView(props) {
             <GeoJSON data={features} key={hashCode(JSON.stringify(features))} style={painter(context.symbology)}
             pointToLayer={painter(context.symbology)}
             onEachFeature={(feature, layer) => {
-              context.setFeatureListener(feature.id, "map", restyleLayer.bind(null, layer))
+              context.setFeatureListener("map", feature.id, restyleLayer.bind(null, layer))
               layer.once({
                 mouseover: (e) => {
                   feature.properties["geotab:selectionStatus"] = addHover(feature.properties["geotab:selectionStatus"]);
                   restyleLayer(e.target, feature);
-                  const tableListener = context?.featureListeners[feature.id]?.["table"];
+                  const tableListener = context?.featureListeners.table[feature.id] ?? context?.featureListeners.table["default"];
                   if (tableListener !== undefined) {
                     tableListener(feature);
                   }
@@ -52,7 +52,7 @@ function MapView(props) {
                 click: (e) => {
                   feature.properties["geotab:selectionStatus"] = toggleActive(feature.properties["geotab:selectionStatus"]);
                   restyleLayer(e.target, feature);
-                  const tableListener = context?.featureListeners[feature.id]?.["table"];
+                  const tableListener = context?.featureListeners.table[feature.id] ?? context?.featureListeners.table["default"];
                   if (tableListener !== undefined) {
                     tableListener(feature);
                   }
@@ -64,13 +64,13 @@ function MapView(props) {
                     mouseover: (e) => {
                       feature.properties["geotab:selectionStatus"] = addHover(feature.properties["geotab:selectionStatus"]);
                       restyleLayer(e.target, feature);
-                      const tableListener = context?.featureListeners[feature.id]?.["table"];
+                      const tableListener = context?.featureListeners.table[feature.id] ?? context?.featureListeners.table["default"];
                       if (tableListener !== undefined) {
                         tableListener(feature);
                       }
                     },
                   });
-                  const tableListener = context?.featureListeners[feature.id]?.["table"];
+                  const tableListener = context?.featureListeners.table[feature.id] ?? context?.featureListeners.table["default"];
                   if (tableListener !== undefined) {
                     tableListener(feature);
                   }

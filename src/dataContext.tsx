@@ -25,8 +25,10 @@ export function getValueFromUpdaterOrValue<T>(updaterOrValue:UpdaterOrValue<T>, 
 }
 
 export type FeatureListener = (feature:GeoJson.Feature) => void;
+export type  FeatureListenerMap = { [id:string]: FeatureListener|undefined };
 export type FeatureListenerTable = {
-  [id:string]: {table: FeatureListener|undefined, map: FeatureListener|undefined}
+  table: FeatureListenerMap,
+  map: FeatureListenerMap,
 }
 
 export type DataContextType = {
@@ -41,7 +43,7 @@ export type DataContextType = {
   setDataAndFilter: {(newData:UpdaterOrValue<GeoJson.Feature[]>, newFilter:UpdaterOrValue<ConditionGroup|undefined>) : void},
   setColumns: {(newColumns:UpdaterOrValue<Column[]>) : void},
   setSymbology: {(newSymbology:UpdaterOrValue<Symbology|null>) : void},
-  setFeatureListener: {(id:string, view:"table"|"map", f:FeatureListener)}
+  setFeatureListener: {(view:"table"|"map", id:string, f:FeatureListener)}
   setFromJson: {(json:GeoJson.FeatureCollection & {geotabMetadata?:GeotabMetadata}) : void},
 } | null;
 

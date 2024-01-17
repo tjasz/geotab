@@ -182,6 +182,14 @@ export default function DataTable() {
     setSelectedRows(newSet);
   }
 
+  if (context !== null) {
+    context.setFeatureListener(
+      "table",
+      "default",
+      (f) => { handleToggleSelection(f); }
+    );
+  }
+
   return (
     <>
       <Toolbar>

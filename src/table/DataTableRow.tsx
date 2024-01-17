@@ -27,8 +27,8 @@ export default function DataTableRow(props:TableRowProps) {
   const [className, setClassName] = useState(props.feature.properties["geotab:selectionStatus"] ?? "inactive");
   if (context !== null) {
     context.setFeatureListener(
-      props.feature.id,
       "table",
+      props.feature.id,
       (f) => { setClassName(f.properties["geotab:selectionStatus"]); props.onClick(undefined, f); }
     );
   }
@@ -43,7 +43,7 @@ export default function DataTableRow(props:TableRowProps) {
         props.feature.properties["geotab:selectionStatus"] = toggleActive(props.feature.properties["geotab:selectionStatus"]);
         props.onClick(e, props.feature);
         setClassName(props.feature.properties["geotab:selectionStatus"]);
-        const mapListener = context?.featureListeners[props.feature.id]?.["map"];
+        const mapListener = context?.featureListeners.map[props.feature.id] ?? context?.featureListeners.map["default"];
         if (mapListener !== undefined) {
           mapListener(props.feature);
         }
@@ -51,7 +51,7 @@ export default function DataTableRow(props:TableRowProps) {
       onMouseOver={(e) => {
         props.feature.properties["geotab:selectionStatus"] = addHover(props.feature.properties["geotab:selectionStatus"]);
         setClassName(props.feature.properties["geotab:selectionStatus"]);
-        const mapListener = context?.featureListeners[props.feature.id]?.["map"];
+        const mapListener = context?.featureListeners.map[props.feature.id] ?? context?.featureListeners.map["default"];
         if (mapListener !== undefined) {
           mapListener(props.feature);
         }
@@ -59,7 +59,7 @@ export default function DataTableRow(props:TableRowProps) {
       onMouseOut={(e) => {
         props.feature.properties["geotab:selectionStatus"] = removeHover(props.feature.properties["geotab:selectionStatus"]);
         setClassName(props.feature.properties["geotab:selectionStatus"]);
-        const mapListener = context?.featureListeners[props.feature.id]?.["map"];
+        const mapListener = context?.featureListeners.map[props.feature.id] ?? context?.featureListeners.map["default"];
         if (mapListener !== undefined) {
           mapListener(props.feature);
         }

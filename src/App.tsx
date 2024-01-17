@@ -28,7 +28,7 @@ class App extends React.Component<IAppProps, IState> {
       filteredData: [],
       columns: [],
       symbology: null,
-      featureListeners: {},
+      featureListeners: {table: {}, map: {}},
       setData: this.setData.bind(this),
       setFilter: this.setFilter.bind(this),
       setDataAndFilter: this.setDataAndFilter.bind(this),
@@ -72,12 +72,9 @@ class App extends React.Component<IAppProps, IState> {
     const newSymbology = getValueFromUpdaterOrValue(newSymbologyOrUpdater, this.state?.symbology);
     this.setState({symbology: newSymbology});
   }
-  setListener(id:string, view:"table"|"map", f:FeatureListener) {
+  setListener(view:"table"|"map", id:string, f:FeatureListener) {
     if (this.state === null) return;
-    if (this.state.featureListeners[id] === undefined) {
-      this.state.featureListeners[id] = {map: undefined, table: undefined};
-    }
-    this.state.featureListeners[id][view] = f;
+    this.state.featureListeners[view][id] = f;
   }
   setFromJson(json:GeoJson.FeatureCollection & {geotabMetadata?:GeotabMetadata}) {
     const flattened = getFeatures(json);
