@@ -1,8 +1,6 @@
 import {KeyboardEvent, RefObject, useContext, useState} from 'react'
 import Checkbox from '@mui/material/Checkbox';
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import DataTableCell from './DataTableCell'
-import RowContextMenu from './RowContextMenu';
 import {Column} from './../column'
 import {Feature, FeatureProperties} from './../geojson-types'
 import {toggleActive, addHover, removeHover} from '../selection'
