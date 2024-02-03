@@ -80,7 +80,7 @@ const overlays = [
     type: "WMSTileLayer",
     name: "NOAA Snow Depth",
     checked: false,
-    layers: 'show%3A3',
+    layers: 'show:3',
     f: 'image',
     imageSR: 102100,
     bboxSR: 102100,
