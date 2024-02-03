@@ -1,6 +1,7 @@
 import {KeyboardEvent, RefObject, FocusEvent} from 'react'
 import DataCellValue from './DataCellValue'
 import {Column} from '../column'
+import { TableCell } from '@mui/material';
 
 type TableCellProps = {
   column:Column,
@@ -12,20 +13,20 @@ type TableCellProps = {
   onChange: (val:string, col:Column) => void,
 }
 
-export default function TableCell(props:TableCellProps) {
+export default function DataTableCell(props:TableCellProps) {
   const handleBlur = (e:FocusEvent<HTMLInputElement>) => {
     props.onChange(e.target.value, props.column);
   };
 
   if (props.disabled) {
     return (
-      <td>
+      <TableCell>
         <DataCellValue value={props.value} column={props.column} />
-      </td>
+      </TableCell>
     );
   }
   return (
-    <td>
+    <TableCell>
       <input
         ref={el => {
           if (props.cellRefs.current != null) {
@@ -41,6 +42,6 @@ export default function TableCell(props:TableCellProps) {
         size={props.value?.length ?? 17 + 3}
         onBlur={handleBlur}
         />
-    </td>
+    </TableCell>
   );
 }

@@ -7,8 +7,7 @@
 // and that we can convert to JSON logic at application time.
 
 import { AdditionalOperation, JsonLogicVar, RulesLogic, apply as applyLogic, add_operation } from "json-logic-js";
-import { Geo } from "./operations/geo";
-import * as Turf from "@turf/turf";
+import op from "./operations";
 
 export type Operation = {
   operator: string,
@@ -70,43 +69,16 @@ export const fromJsonLogic = (logic : RulesLogic<AdditionalOperation>) : Express
   return logic as Expression;
 }
 
-const varOf = (pathString, data, fallback) => {
-  var not_found = (fallback === undefined) ? null : fallback;
-  if (typeof pathString === "undefined" || pathString === "" || pathString === null) {
-    return data;
-  }
-  var sub_props = String(pathString).split(".");
-  for (var i = 0; i < sub_props.length; i++) {
-    if (data === null || data === undefined) {
-      return not_found;
-    }
-    // Descending into data
-    data = data[sub_props[i]];
-    if (data === undefined) {
-      return not_found;
-    }
-  }
-  return data;
-}
-
-const zip = (seq1, seq2) => {
-  if (Array.isArray(seq2)) {
-    return seq1.map((obj, i) => ({a: obj, b: seq2[i % seq2.length]}));
-  }
-
-  return seq1.map((obj, i) => ({a: obj, b: seq2}));
-}
-
 // add the operations to JSON logic used by geotab
 export const add_operations = (): void => {
     // @ts-ignore
     add_operation("Math", Math);
     // @ts-ignore
-    add_operation("Turf", Turf); // https://turfjs.org/docs
+    add_operation("Turf", op.Turf); // https://turfjs.org/docs
     // @ts-ignore
-    add_operation("Geo", Geo);
+    add_operation("Geo", op.Geo);
     // @ts-ignore
-    add_operation("zip", zip);
+    add_operation("zip", op.zip);
     // @ts-ignore
-    add_operation("varOf", varOf);
+    add_operation("varOf", op.varOf);
 }

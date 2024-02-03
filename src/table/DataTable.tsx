@@ -1,18 +1,40 @@
 import React, {useContext, useEffect, useRef, useState, KeyboardEvent} from 'react';
+import { apply, AdditionalOperation, RulesLogic } from 'json-logic-js';
 import { v4 as uuidv4 } from 'uuid';
+import { Calculate, DataObject, Delete, Straighten } from '@mui/icons-material';
 import { sortBy } from './../algorithm'
 import {DataContext} from './../dataContext'
 import DataTableRow from './DataTableRow'
 import DataTableHeader from './DataTableHeader'
 import {Sorting} from './sorting'
-import {Feature, FeatureProperties, FeatureType, GeometryType} from '../geojson-types'
+import {Feature, FeatureProperties, FeatureType, GeometryType, Geometry, GeometryCollection} from '../geojson-types'
+import { Button, Table, TableBody, TableContainer, TableHead, TablePagination, Toolbar, Typography } from '@mui/material';
+import { simplify } from '../geojson-calc';
+import { JsonFieldDialog } from '../JsonFieldDialog';
+import { Draft07 } from 'json-schema-library';
+import { getSchema } from '../json-logic/schema';
+import { geojsonGeometrySchema } from '../geojson-schema'
 
 export default function DataTable() {
+  const isActive = (feature) =>
+    feature.properties["geotab:selectionStatus"] === "active" ||
+    feature.properties["geotab:selectionStatus"] === "hoveractive";
+
   const context = useContext(DataContext);
+
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(50);
   const [sorting, setSorting] = useState<Sorting|undefined>(undefined);
   const [disabled, setDisabled] = useState(true);
+  const [editGeometryOpen, setEditGeometryOpen] = React.useState<boolean>(false);
+  const [calculateJsonDialogOpen, setCalculateJsonDialogOpen] = React.useState<boolean>(false);
 
   const features:Feature[] = context?.filteredData ?? [];
+  const visibleFeatures = features.slice(page * rowsPerPage, (page+1) * rowsPerPage);
+  const [selectedRows, setSelectedRows] = React.useState<Set<string>>(new Set(
+    features.filter(isActive).map(feature => feature.id)
+  ));
+
   const refs = useRef<{[colName:string]: HTMLInputElement|null}[]>([]);
   // useEffect to update the ref on data update
   useEffect(() => {
@@ -104,33 +126,178 @@ export default function DataTable() {
     context.setFromJson({type: FeatureType.FeatureCollection, features: newFeatures});
   };
 
+  // --------------------------
+
+  const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const handleDeleteRows = () => {
+    const newData = context.data.filter(f => !selectedRows.has(f.id));
+    context.setData(newData);
+  };
+
+  const handleSimplifyGeometry = () => {
+    const newData = context.data.map(f => selectedRows.has(f.id) ? simplify(f, 10) : f);
+    context.setData(newData);
+  }
+
+  const setGeometry = (newGeometry) => {
+    const newData = context.data.map(f => selectedRows.has(f.id) ? {...f, geometry: newGeometry} : f);
+    context.setData(newData);
+  }
+
+  const calculateGeometry = (formula:RulesLogic<AdditionalOperation>) => {
+    try {
+      if (formula !== undefined) {
+        const newData = context.data.map((feature, index) =>
+          selectedRows.has(feature.id)
+            ? {...feature, geometry: apply(formula, {feature, index, features: context.filteredData}).geometry}
+            : feature);
+        context.setData(newData);
+      }
+    }
+    catch (error) {
+      if (error instanceof SyntaxError) {
+        alert(`Error parsing formula "${formula}": ${error.message}`);
+      }
+      else {
+        throw error;
+      }
+    }
+  };
+
+  const handleToggleSelection = (f : Feature) => {
+    const newSet = new Set(selectedRows);
+    if (selectedRows.has(f.id) && !isActive(f)) {
+      newSet.delete(f.id);
+    } else if (isActive(f)) {
+      newSet.add(f.id);
+    }
+    setSelectedRows(newSet);
+  }
+
+  if (context !== null) {
+    context.setFeatureListener(
+      "table",
+      "default",
+      (f) => { handleToggleSelection(f); }
+    );
+  }
+
   return (
-    <table id="data-table" cellSpacing={0}>
-      <thead>
-        <DataTableHeader
-          columns={context.columns}
-          setColumns={context.setColumns}
-          sorting={sorting}
-          setSorting={handleSortingChange}
-          disabled={disabled}
-          setDisabled={setDisabled}
-          addRows={addRows}
-          />
-      </thead>
-      <tbody>
-        {features.map((feature, fidx) =>
-          <DataTableRow
-            key={feature.id}
-            cellRefs={refs}
-            handleKeyDown={handleKeyDown}
-            columns={context.columns}
-            fidx={fidx}
-            feature={feature}
-            rowId={feature.id}
-            onChange={handleRowChange}
-            disabled={disabled}
-            />)}
-      </tbody>
-    </table>
+    <>
+      <Toolbar>
+        <Button
+          startIcon={<Delete />}
+          disabled={selectedRows.size < 1}
+          onClick={handleDeleteRows}
+          >
+          Delete
+        </Button>
+        <Button
+          startIcon={<Straighten />}
+          disabled={selectedRows.size < 1}
+          onClick={handleSimplifyGeometry}
+          >
+          Simplify Geometry
+        </Button>
+        <Button
+          startIcon={<DataObject />}
+          disabled={selectedRows.size !== 1}
+          onClick={() => {
+            setEditGeometryOpen(true);
+          }}
+          >
+          Edit Geometry
+        </Button>
+        <Button
+          startIcon={<Calculate />}
+          disabled={selectedRows.size < 1}
+          onClick={() => {
+            setCalculateJsonDialogOpen(true);
+          }}
+          >
+          Calculate Geometry
+        </Button>
+        <Typography>
+          {selectedRows.size} Selected
+        </Typography>
+      </Toolbar>
+      <TableContainer style={{ maxHeight: "85%" }}>
+        <Table stickyHeader>
+          <TableHead>
+            <DataTableHeader
+              columns={context.columns}
+              setColumns={context.setColumns}
+              sorting={sorting}
+              setSorting={handleSortingChange}
+              disabled={disabled}
+              setDisabled={setDisabled}
+              addRows={addRows}
+              />
+          </TableHead>
+          <TableBody>
+            {visibleFeatures.map((feature, fidx) =>
+              <DataTableRow
+                key={feature.id}
+                cellRefs={refs}
+                handleKeyDown={handleKeyDown}
+                columns={context.columns}
+                fidx={fidx + page*rowsPerPage}
+                feature={feature}
+                rowId={feature.id}
+                onChange={handleRowChange}
+                disabled={disabled}
+                isRowSelected={selectedRows.has(feature.id)}
+                onClick={(e, f) => handleToggleSelection(f)}
+                />)}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <TablePagination
+        rowsPerPageOptions={[12, 25, 50, 100, 200, 400]}
+        component="div"
+        count={features.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+        />
+      {selectedRows.size === 1 ? <JsonFieldDialog
+        title="Edit Geometry"
+        confirmLabel="Update"
+        defaultValue={context?.data.find(f => selectedRows.has(f.id))?.geometry ?? null}
+        schema={new Draft07(geojsonGeometrySchema)}
+        open={editGeometryOpen}
+        onConfirm={(newGeometry) => { setGeometry(newGeometry); setEditGeometryOpen(false); }}
+        onCancel={() => { setEditGeometryOpen(false); }}
+      /> : null}
+      <JsonFieldDialog
+        title="Calculate Geometry"
+        confirmLabel="Calculate"
+        defaultValue={{var: "feature"}}
+        schema={new Draft07(getSchema(context?.columns ?? []))}
+        open={calculateJsonDialogOpen}
+        onConfirm={(formula) => { calculateGeometry(formula); setCalculateJsonDialogOpen(false); }}
+        onCancel={() => { setCalculateJsonDialogOpen(false); }}
+        // TODO document additional operations addd to JSON logic
+        description={
+          <p>
+            Input a valid <a href="https://jsonlogic.com">JSON logic</a> to compute the geometry of the selected features.
+            In addition to the default <a href="https://jsonlogic.com/operations.html">JSON logic operations</a>,
+            the methods of <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math">JavaScript's Math object</a> are
+            included under "Math" (ex: "Math.abs")
+            and the <a href="https://turfjs.org/docs">Turf.js operations</a> are included under "Turf"
+            (ex: "Turf.buffer").
+          </p>
+        }
+      />
+    </>
   );
 }
