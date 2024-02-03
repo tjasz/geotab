@@ -88,8 +88,8 @@ const overlays = [
     transparent: true,
     opacity: 0.6,
     dpi: 96,
-    url: "https://idpgis.ncep.noaa.gov/arcgis/rest/services/NWS_Observations/NOHRSC_Snow_Analysis/MapServer/export?",
-    attribution: 'Snow data &copy; <a href="https://idpgis.ncep.noaa.gov/arcgis/rest/services/NWS_Observations/NOHRSC_Snow_Analysis/MapServer/legend">NOAA</a>',
+    url: "https://mapservices.weather.noaa.gov/raster/rest/services/snow/NOHRSC_Snow_Analysis/MapServer/export?",
+    attribution: 'Snow data &copy; <a href="https://mapservices.weather.noaa.gov/raster/rest/services/snow/NOHRSC_Snow_Analysis/MapServer/legend">NOAA</a>',
   },
   {
     type: "WMSTileLayer",
