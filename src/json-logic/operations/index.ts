@@ -17,6 +17,7 @@ const mathOperations = getMethods(Math).map(op => `Math.${op}`);
 const geoOperaitons = getMethods(Geo).map(op => `Geo.${op}`);
 
 const jsonLogicOperations = [
+  "log",
   "var",
   "if",
   "==",

@@ -46,12 +46,28 @@ const distanceToPoint : OperatorBody = (feature, point) => {
   }
 }
 
+const toOutAndBack : OperatorBody = (feature, point) => {
+  switch (feature.geometry.type) {
+    case "Point":
+    case "MultiPoint":
+      throw new Error("toOutAndBack not implemented for this geometry type");
+    case "LineString":
+      return {...feature, geometry: {...feature.geometry, coordinates: feature.geometry.coordinates.concat(feature.geometry.coordinates.toReversed())}};
+    case "MultiLineString":
+    case "Polygon":
+    case "MultiPolygon":
+    case "GeometryCollection":
+      throw new Error("toOutAndBack not implemented for this geometry type");
+  }
+}
+
 export const Geo = {
   beginning,
   ending,
   novelty,
   unionMany,
   distanceToPoint,
+  toOutAndBack,
 };
 
 export default Geo;

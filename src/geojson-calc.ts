@@ -250,7 +250,11 @@ export function pathNovelty(f:gj.Feature) : number {
 
       const noveltyPerPoint = points.map(
         (pt1, i) => points.reduce(
-          (acc, pt2, j) => Math.min(acc, i === j ? Infinity : distanceGrid[i][j] / Math.abs(cumulativeDistance[i] - cumulativeDistance[j])),
+          (acc, pt2, j) => Math.min(
+            acc,
+            i === j || cumulativeDistance[i] - cumulativeDistance[j] === 0
+              ? Infinity
+              : distanceGrid[i][j] / Math.abs(cumulativeDistance[i] - cumulativeDistance[j])),
           Infinity
         )
       );
