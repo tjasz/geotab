@@ -99,6 +99,7 @@ function ActivePopup(props) {
 
 function PopupBody({feature}) {
   return (
+    <div style={{height: "200px", overflow: "auto"}}>
     <table><tbody>
       {Object.entries(feature.properties).map(([key, value]) =>
         <tr key={key}>
@@ -115,6 +116,7 @@ function PopupBody({feature}) {
         </tr>
       )}
     </tbody></table>
+    </div>
   );
 }
 
