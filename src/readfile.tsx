@@ -201,14 +201,21 @@ function csvToGeoJSON(csvString:string) : GeoJson.FeatureCollection {
   return {
     type: GeoJson.FeatureType.FeatureCollection,
     features: parseResult.data.map((row) =>
-      { return {
-        type: "Feature",
-        geometry: {
-          type: "Point",
-          coordinates: [row[lonfield], row[latfield]],
-        },
-        properties: row,
-      }}
+      {
+        const lat = parseFloat(row[latfield]);
+        const lon = parseFloat(row[lonfield]);
+        const geometry = isNaN(lat) || isNaN(lon)
+          ? null
+          : {
+            type: "Point",
+            coordinates: [lon, lat],
+          };
+        return {
+          type: "Feature",
+          geometry,
+          properties: row,
+        }
+      }
     )
   };
 }
