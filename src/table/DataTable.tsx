@@ -1,19 +1,20 @@
 import React, {useContext, useEffect, useRef, useState, KeyboardEvent} from 'react';
 import { apply, AdditionalOperation, RulesLogic } from 'json-logic-js';
 import { v4 as uuidv4 } from 'uuid';
-import { Calculate, DataObject, Delete, Straighten } from '@mui/icons-material';
+import { Calculate, DataObject, Delete, Straighten, Upload } from '@mui/icons-material';
 import { sortBy } from './../algorithm'
 import {DataContext} from './../dataContext'
 import DataTableRow from './DataTableRow'
 import DataTableHeader from './DataTableHeader'
 import {Sorting} from './sorting'
-import {Feature, FeatureProperties, FeatureType, GeometryType, Geometry, GeometryCollection} from '../geojson-types'
+import {Feature, FeatureProperties, FeatureType, GeometryType } from '../geojson-types'
 import { Button, Table, TableBody, TableContainer, TableHead, TablePagination, Toolbar, Typography } from '@mui/material';
 import { simplify } from '../geojson-calc';
 import { JsonFieldDialog } from '../JsonFieldDialog';
 import { Draft07 } from 'json-schema-library';
 import { getSchema } from '../json-logic/schema';
 import { geojsonGeometrySchema } from '../geojson-schema'
+import { FileUploadDialog } from './FileUploadDialog';
 
 export default function DataTable() {
   const isActive = (feature) =>
@@ -28,6 +29,7 @@ export default function DataTable() {
   const [disabled, setDisabled] = useState(true);
   const [editGeometryOpen, setEditGeometryOpen] = React.useState<boolean>(false);
   const [calculateJsonDialogOpen, setCalculateJsonDialogOpen] = React.useState<boolean>(false);
+  const [uploadJsonDialogOpen, setUploadJsonDialogOpen] = React.useState<boolean>(false);
 
   const features:Feature[] = context?.filteredData ?? [];
   const visibleFeatures = features.slice(page * rowsPerPage, (page+1) * rowsPerPage);
@@ -172,6 +174,19 @@ export default function DataTable() {
     }
   };
 
+  const handleUpload = (json:any) => {
+    const geometry = json?.features?.[0]?.geometry;
+    if (geometry !== undefined) {
+      const newData = context.data.map((feature, index) =>
+        selectedRows.has(feature.id)
+          ? {...feature, geometry}
+          : feature);
+      context.setData(newData);
+    } else{
+      alert("Could not find .features[0].geometry in uploaded file.")
+    }
+  }
+
   const handleToggleSelection = (f : Feature) => {
     const newSet = new Set(selectedRows);
     if (selectedRows.has(f.id) && !isActive(f)) {
@@ -224,6 +239,15 @@ export default function DataTable() {
           }}
           >
           Calculate Geometry
+        </Button>
+        <Button
+          startIcon={<Upload />}
+          disabled={selectedRows.size !== 1}
+          onClick={() => {
+            setUploadJsonDialogOpen(true);
+          }}
+          >
+          Upload Geometry
         </Button>
         <Typography>
           {selectedRows.size} Selected
@@ -298,6 +322,19 @@ export default function DataTable() {
           </p>
         }
       />
+      <FileUploadDialog
+        id="upload-geometry"
+        open={uploadJsonDialogOpen}
+        title="Upload Geometry"
+        description={
+          <p>
+            Upload a JSON file containing a GeoJSON FeatureCollection.
+            The geometry from the first feature in the collection will replace the geometry of this feature.
+          </p>
+        }
+        onCancel={() => setUploadJsonDialogOpen(false)}
+        onConfirm={(json) => { handleUpload(json); setUploadJsonDialogOpen(false); }}
+        />
     </>
   );
 }
