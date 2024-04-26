@@ -1,4 +1,5 @@
 import React, {useRef, useContext, useState} from 'react';
+import { useSearchParams } from "react-router-dom";
 import ReactDOMServer from "react-dom/server";
 import L from 'leaflet'
 import { MapContainer, TileLayer, WMSTileLayer, LayersControl, ScaleControl, GeoJSON, Popup, useMap, useMapEvents } from 'react-leaflet';
@@ -121,6 +122,7 @@ function PopupBody({feature}) {
 }
 
 function ChangeView() {
+  const [urlParams, setUrlParams] = useSearchParams();
   const context = useContext(DataContext);
   const [center, setCenter] = useState(null);
   const [zoom, setZoom] = useState(null);
@@ -133,6 +135,7 @@ function ChangeView() {
           setCenter(mapEvents.getCenter());
       },
   });
+
   if (!center && !zoom) {
     const features = context.filteredData;
     if (features && features.length) {
@@ -147,7 +150,10 @@ function ChangeView() {
         }
     }
 
-    map.setView([47.5,-122.3], 6);
+    map.setView(
+      urlParams.get("ll")?.split(",").map(s => parseFloat(s)) ?? [47.5,-122.3],
+      urlParams.get("z") ?? 6
+    );
   }
 }
 
