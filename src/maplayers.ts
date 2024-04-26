@@ -6,7 +6,7 @@ const baseLayers = [
     maxZoom: 18,
     tileSize: 512,
     zoomOffset: -1,
-    id: null,
+    id: "om",
     url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
   },

@@ -11,6 +11,7 @@ import {painter} from './painter'
 import {addHover, removeHover, toggleActive} from './selection'
 
 function MapView(props) {
+  const [urlParams, setUrlParams] = useSearchParams();
     const context = useContext(DataContext);
       const resizeMap = ( mapRef ) => {
         const resizeObserver = new ResizeObserver(() => mapRef.current?.invalidateSize())
@@ -83,7 +84,15 @@ function MapView(props) {
                 )
               )
             }} />
-            <MyLayersControl position="topright" mapLayers={mapLayers} />
+            <MyLayersControl position="topright" mapLayers={
+              {
+                baseLayers: mapLayers.baseLayers.map((layer, index) => ({
+                  ...layer,
+                  checked: urlParams.get("b") === layer.id
+                })),
+                overlays: mapLayers.overlays
+              }
+            } />
           </MapContainer>
         </div>
       );
