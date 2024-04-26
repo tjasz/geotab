@@ -129,10 +129,16 @@ function ChangeView() {
   const map = useMap();
   const mapEvents = useMapEvents({
       zoomend: () => {
-          setZoom(mapEvents.getZoom());
+        const ll = mapEvents.getCenter();
+        const z = mapEvents.getZoom();
+        setZoom(z);
+        setUrlParams({z, ll: `${ll.lat.toFixed(5)},${ll.lng.toFixed(5)}`});
       },
       moveend: () => {
-          setCenter(mapEvents.getCenter());
+        const ll = mapEvents.getCenter();
+        const z = mapEvents.getZoom();
+        setCenter(ll);
+        setUrlParams({z, ll: `${ll.lat.toFixed(5)},${ll.lng.toFixed(5)}`});
       },
   });
 
