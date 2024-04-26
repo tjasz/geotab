@@ -143,17 +143,19 @@ function ChangeView() {
   });
 
   if (!center && !zoom) {
-    const features = context.filteredData;
-    if (features && features.length) {
-      const featureListBounds = getFeatureListBounds(features);
-      if(featureListBounds
-        && featureListBounds[0][0] !== featureListBounds[1][0]
-        && featureListBounds[0][1] !== featureListBounds[1][1]) {
-          map.fitBounds(featureListBounds);
-          return;
-        } else {
-          map.setView(featureListBounds[0], 6);
-        }
+    if (!urlParams.has("ll")) {
+      const features = context.filteredData;
+      if (features && features.length) {
+        const featureListBounds = getFeatureListBounds(features);
+        if(featureListBounds
+          && featureListBounds[0][0] !== featureListBounds[1][0]
+          && featureListBounds[0][1] !== featureListBounds[1][1]) {
+            map.fitBounds(featureListBounds);
+            return;
+          } else {
+            map.setView(featureListBounds[0], urlParams.get("z") ?? 6);
+          }
+      }
     }
 
     map.setView(
