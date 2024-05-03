@@ -11,7 +11,6 @@ import {painter} from './painter'
 import {addHover, removeHover, toggleActive} from './selection'
 
 function MapView(props) {
-  const [urlParams, setUrlParams] = useSearchParams();
     const context = useContext(DataContext);
       const resizeMap = ( mapRef ) => {
         const resizeObserver = new ResizeObserver(() => mapRef.current?.invalidateSize())
@@ -84,15 +83,6 @@ function MapView(props) {
                 )
               )
             }} />
-            <MyLayersControl position="topright" mapLayers={
-              {
-                baseLayers: mapLayers.baseLayers.map((layer, index) => ({
-                  ...layer,
-                  checked: urlParams.get("b") === layer.id
-                })),
-                overlays: mapLayers.overlays
-              }
-            } />
           </MapContainer>
         </div>
       );
@@ -135,19 +125,20 @@ function ChangeView() {
   const context = useContext(DataContext);
   const [center, setCenter] = useState(null);
   const [zoom, setZoom] = useState(null);
+  const [baseLayerId, setBaseLayerId] = useState(urlParams.get("b") ?? "om");
   const map = useMap();
   const mapEvents = useMapEvents({
       zoomend: () => {
         const ll = mapEvents.getCenter();
         const z = mapEvents.getZoom();
         setZoom(z);
-        setUrlParams({z, ll: `${ll.lat.toFixed(5)},${ll.lng.toFixed(5)}`});
+        setUrlParams({z, ll: `${ll.lat.toFixed(5)},${ll.lng.toFixed(5)}`, b: baseLayerId});
       },
       moveend: () => {
         const ll = mapEvents.getCenter();
         const z = mapEvents.getZoom();
         setCenter(ll);
-        setUrlParams({z, ll: `${ll.lat.toFixed(5)},${ll.lng.toFixed(5)}`});
+        setUrlParams({z, ll: `${ll.lat.toFixed(5)},${ll.lng.toFixed(5)}`, b: baseLayerId});
       },
   });
 
@@ -172,6 +163,18 @@ function ChangeView() {
       urlParams.get("z") ?? 2
     );
   }
+
+  return <MyLayersControl position="topright" mapLayers={
+    {
+      baseLayers: mapLayers.baseLayers.map((layer, index) => ({
+        ...layer,
+        checked:
+          baseLayerId === layer.id ||
+            (index === 0 && baseLayerId === null)
+      })),
+      overlays: mapLayers.overlays
+    }
+  } />;
 }
 
 function MyLayersControl({position, mapLayers}) {
