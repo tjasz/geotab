@@ -140,6 +140,13 @@ function ChangeView() {
         setCenter(ll);
         setUrlParams({z, ll: `${ll.lat.toFixed(5)},${ll.lng.toFixed(5)}`, b: baseLayerId});
       },
+      baselayerchange: (event) => {
+        const ll = mapEvents.getCenter();
+        const z = mapEvents.getZoom();
+        setBaseLayerId(event.layer.options.geotabId);
+        console.log(event)
+        setUrlParams({z, ll: `${ll.lat.toFixed(5)},${ll.lng.toFixed(5)}`, b: baseLayerId});
+      }
   });
 
   if (!center && !zoom) {
@@ -169,7 +176,7 @@ function ChangeView() {
       baseLayers: mapLayers.baseLayers.map((layer, index) => ({
         ...layer,
         checked:
-          baseLayerId === layer.id ||
+          baseLayerId === layer.geotabId ||
             (index === 0 && baseLayerId === null)
       })),
       overlays: mapLayers.overlays
