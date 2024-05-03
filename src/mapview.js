@@ -125,27 +125,25 @@ function ChangeView() {
   const context = useContext(DataContext);
   const [center, setCenter] = useState(null);
   const [zoom, setZoom] = useState(null);
-  const [baseLayerId, setBaseLayerId] = useState(urlParams.get("b") ?? "om");
+  const [baseLayerId, setBaseLayerId] = useState(null);
   const map = useMap();
   const mapEvents = useMapEvents({
       zoomend: () => {
         const ll = mapEvents.getCenter();
         const z = mapEvents.getZoom();
         setZoom(z);
-        setUrlParams({z, ll: `${ll.lat.toFixed(5)},${ll.lng.toFixed(5)}`, b: baseLayerId});
+        setUrlParams({z, ll: `${ll.lat.toFixed(5)},${ll.lng.toFixed(5)}`, b: (urlParams.get("b") ?? "om")});
       },
       moveend: () => {
         const ll = mapEvents.getCenter();
         const z = mapEvents.getZoom();
         setCenter(ll);
-        setUrlParams({z, ll: `${ll.lat.toFixed(5)},${ll.lng.toFixed(5)}`, b: baseLayerId});
+        setUrlParams({z, ll: `${ll.lat.toFixed(5)},${ll.lng.toFixed(5)}`, b: (urlParams.get("b") ?? "om")});
       },
       baselayerchange: (event) => {
         const ll = mapEvents.getCenter();
         const z = mapEvents.getZoom();
-        setBaseLayerId(event.layer.options.geotabId);
-        console.log(event)
-        setUrlParams({z, ll: `${ll.lat.toFixed(5)},${ll.lng.toFixed(5)}`, b: baseLayerId});
+        setUrlParams({z, ll: `${ll.lat.toFixed(5)},${ll.lng.toFixed(5)}`, b: event.layer.options.geotabId});
       }
   });
 
@@ -175,9 +173,7 @@ function ChangeView() {
     {
       baseLayers: mapLayers.baseLayers.map((layer, index) => ({
         ...layer,
-        checked:
-          baseLayerId === layer.geotabId ||
-            (index === 0 && baseLayerId === null)
+        checked: (urlParams.get("b") ?? "om") === layer.geotabId
       })),
       overlays: mapLayers.overlays
     }
