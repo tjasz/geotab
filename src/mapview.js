@@ -159,8 +159,8 @@ function ChangeView() {
     }
 
     map.setView(
-      urlParams.get("ll")?.split(",").map(s => parseFloat(s)) ?? [47.5,-122.3],
-      urlParams.get("z") ?? 6
+      urlParams.get("ll")?.split(",").map(s => parseFloat(s)) ?? [27.83596, -11.07422],
+      urlParams.get("z") ?? 2
     );
   }
 }
