@@ -2,6 +2,8 @@ import React, {useRef, useContext, useState} from 'react';
 import { useSearchParams } from "react-router-dom";
 import ReactDOMServer from "react-dom/server";
 import L from 'leaflet'
+import { Button } from '@mui/material';
+import { ContentCopy } from '@mui/icons-material';
 import { MapContainer, TileLayer, WMSTileLayer, LayersControl, ScaleControl, GeoJSON, Popup, useMap, useMapEvents } from 'react-leaflet';
 import AbridgedUrlLink from './common/AbridgedUrlLink';
 import {DataContext} from './dataContext'
@@ -121,16 +123,35 @@ function PopupBody({feature}) {
 }
 
 function ContextPopup({latlng, zoom}) {
+  const latlng5 = `${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}`;
   const lat3 = latlng.lat.toFixed(3);
   const lng3 = latlng.lng.toFixed(3);
 
   return (
     <Popup position={latlng}>
       <div style={{height: "200px", overflow: "auto"}}>
-        <h3>{`${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}`}</h3>
-        <a href={`https://www.windy.com/${lat3}/${lng3}?${lat3},${lng3},${zoom}`} target="_blank">
-          Windy
-        </a>
+        <h2>
+          {latlng5}
+          <Button
+            onClick={() => {
+              navigator.clipboard.writeText(latlng5)
+            }}
+            startIcon={<ContentCopy />}
+            />
+        </h2>
+        <h3>Forecasts</h3>
+        <ul>
+          <li>
+            <a  href={`https://forecast.weather.gov/MapClick.php?lat=${latlng.lat}&lon=${latlng.lon}&site=all&smap=1`} target="_blank">
+              NOAA
+            </a>
+          </li>
+          <li>
+            <a href={`https://www.windy.com/${lat3}/${lng3}?${lat3},${lng3},${zoom}`} target="_blank">
+              Windy
+            </a>
+          </li>
+        </ul>
       </div>
     </Popup>
   );
