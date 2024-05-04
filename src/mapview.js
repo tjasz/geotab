@@ -1,9 +1,10 @@
 import React, {useRef, useContext, useState} from 'react';
 import { useSearchParams } from "react-router-dom";
 import ReactDOMServer from "react-dom/server";
+import { v4 as uuidv4 } from 'uuid';
 import L from 'leaflet'
 import { Button } from '@mui/material';
-import { ContentCopy } from '@mui/icons-material';
+import { AddLocation, ContentCopy } from '@mui/icons-material';
 import { MapContainer, TileLayer, WMSTileLayer, LayersControl, ScaleControl, GeoJSON, Popup, useMap, useMapEvents } from 'react-leaflet';
 import AbridgedUrlLink from './common/AbridgedUrlLink';
 import {DataContext} from './dataContext'
@@ -11,6 +12,7 @@ import {getCentralCoord, hashCode, getFeatureListBounds} from './algorithm'
 import mapLayers from './maplayers'
 import {painter} from './painter'
 import {addHover, removeHover, toggleActive} from './selection'
+import { FeatureType, GeometryType } from './geojson-types'
 
 function MapView(props) {
     const context = useContext(DataContext);
@@ -123,6 +125,8 @@ function PopupBody({feature}) {
 }
 
 function ContextPopup({latlng, zoom}) {
+  const context = useContext(DataContext);
+
   const latlng5 = `${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}`;
   const lat3 = latlng.lat.toFixed(3);
   const lng3 = latlng.lng.toFixed(3);
@@ -133,10 +137,10 @@ function ContextPopup({latlng, zoom}) {
         <h2>
           {latlng5}
           <Button
+            startIcon={<ContentCopy />}
             onClick={() => {
               navigator.clipboard.writeText(latlng5)
             }}
-            startIcon={<ContentCopy />}
             />
         </h2>
         <h3>Forecasts</h3>
@@ -152,6 +156,22 @@ function ContextPopup({latlng, zoom}) {
             </a>
           </li>
         </ul>
+        <Button
+          startIcon={<AddLocation />}
+          onClick={() => {
+            const newFeature = {
+              id: uuidv4(),
+              type: FeatureType.Feature,
+              geometry: {
+                type: GeometryType.Point,
+                coordinates: [latlng.lng, latlng.lat]},
+              properties: { "geotab:selectionStatus": "inactive" }
+            };
+            context.setData([...context.data, newFeature])
+          }}
+          >
+          Add Point
+        </Button>
       </div>
     </Popup>
   );
