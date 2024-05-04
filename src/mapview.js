@@ -155,6 +155,11 @@ function ContextPopup({latlng, zoom, onClose}) {
               Windy
             </a>
           </li>
+          <li>
+            <a href={`https://www.google.com/maps/dir//${latlng.lat},${latlng.lng}`} target="_blank">
+              Google Directions
+            </a>
+          </li>
         </ul>
         <Button
           startIcon={<AddLocation />}
