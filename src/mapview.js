@@ -124,7 +124,7 @@ function PopupBody({feature}) {
   );
 }
 
-function ContextPopup({latlng, zoom}) {
+function ContextPopup({latlng, zoom, onClose}) {
   const context = useContext(DataContext);
 
   const latlng5 = `${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}`;
@@ -167,7 +167,8 @@ function ContextPopup({latlng, zoom}) {
                 coordinates: [latlng.lng, latlng.lat]},
               properties: { "geotab:selectionStatus": "inactive" }
             };
-            context.setData([...context.data, newFeature])
+            context.setData([...context.data, newFeature]);
+            onClose();
           }}
           >
           Add Point
@@ -272,7 +273,7 @@ function ChangeView() {
         })),
       }
     } />
-    {isContextPopupOpen && <ContextPopup latlng={contextClickLocation} zoom={zoom} />}
+    {isContextPopupOpen && <ContextPopup latlng={contextClickLocation} zoom={zoom} onClose={() => {setIsContextPopupOpen(false)}} />}
   </>;
 }
 
