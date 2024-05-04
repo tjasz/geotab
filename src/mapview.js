@@ -128,22 +128,22 @@ function ChangeView() {
   const [baseLayerId, setBaseLayerId] = useState(null);
   const map = useMap();
   const mapEvents = useMapEvents({
-      zoomend: () => {
-        const ll = mapEvents.getCenter();
-        const z = mapEvents.getZoom();
-        setZoom(z);
-        setUrlParams({z, ll: `${ll.lat.toFixed(5)},${ll.lng.toFixed(5)}`, b: (urlParams.get("b") ?? "om")});
-      },
       moveend: () => {
         const ll = mapEvents.getCenter();
         const z = mapEvents.getZoom();
         setCenter(ll);
-        setUrlParams({z, ll: `${ll.lat.toFixed(5)},${ll.lng.toFixed(5)}`, b: (urlParams.get("b") ?? "om")});
+        setZoom(z);
+        setUrlParams((prev) => {
+          prev.set("z", z);
+          prev.set("ll", `${ll.lat.toFixed(5)},${ll.lng.toFixed(5)}`);
+          return prev;
+        });
       },
       baselayerchange: (event) => {
-        const ll = mapEvents.getCenter();
-        const z = mapEvents.getZoom();
-        setUrlParams({z, ll: `${ll.lat.toFixed(5)},${ll.lng.toFixed(5)}`, b: event.layer.options.geotabId});
+        setUrlParams((prev) => {
+          prev.set("b", event.layer.options.geotabId);
+          return prev;
+        });
       }
   });
 
