@@ -1,4 +1,5 @@
 import React, {useRef, useContext, useState} from 'react';
+import { useSearchParams } from "react-router-dom";
 import ReactDOMServer from "react-dom/server";
 import L from 'leaflet'
 import { MapContainer, TileLayer, WMSTileLayer, LayersControl, ScaleControl, GeoJSON, Popup, useMap, useMapEvents } from 'react-leaflet';
@@ -82,7 +83,6 @@ function MapView(props) {
                 )
               )
             }} />
-            <MyLayersControl position="topright" mapLayers={mapLayers} />
           </MapContainer>
         </div>
       );
@@ -121,34 +121,63 @@ function PopupBody({feature}) {
 }
 
 function ChangeView() {
+  const [urlParams, setUrlParams] = useSearchParams();
   const context = useContext(DataContext);
   const [center, setCenter] = useState(null);
   const [zoom, setZoom] = useState(null);
+  const [baseLayerId, setBaseLayerId] = useState(null);
   const map = useMap();
   const mapEvents = useMapEvents({
-      zoomend: () => {
-          setZoom(mapEvents.getZoom());
-      },
       moveend: () => {
-          setCenter(mapEvents.getCenter());
+        const ll = mapEvents.getCenter();
+        const z = mapEvents.getZoom();
+        setCenter(ll);
+        setZoom(z);
+        setUrlParams((prev) => {
+          prev.set("z", z);
+          prev.set("ll", `${ll.lat.toFixed(5)},${ll.lng.toFixed(5)}`);
+          return prev;
+        });
       },
+      baselayerchange: (event) => {
+        setUrlParams((prev) => {
+          prev.set("b", event.layer.options.geotabId);
+          return prev;
+        });
+      }
   });
+
   if (!center && !zoom) {
-    const features = context.filteredData;
-    if (features && features.length) {
-      const featureListBounds = getFeatureListBounds(features);
-      if(featureListBounds
-        && featureListBounds[0][0] !== featureListBounds[1][0]
-        && featureListBounds[0][1] !== featureListBounds[1][1]) {
-          map.fitBounds(featureListBounds);
-          return;
-        } else {
-          map.setView(featureListBounds[0], 6);
-        }
+    if (!urlParams.has("ll")) {
+      const features = context.filteredData;
+      if (features && features.length) {
+        const featureListBounds = getFeatureListBounds(features);
+        if(featureListBounds
+          && featureListBounds[0][0] !== featureListBounds[1][0]
+          && featureListBounds[0][1] !== featureListBounds[1][1]) {
+            map.fitBounds(featureListBounds);
+            return;
+          } else {
+            map.setView(featureListBounds[0], urlParams.get("z") ?? 6);
+          }
+      }
     }
 
-    map.setView([47.5,-122.3], 6);
+    map.setView(
+      urlParams.get("ll")?.split(",").map(s => parseFloat(s)) ?? [27.83596, -11.07422],
+      urlParams.get("z") ?? 2
+    );
   }
+
+  return <MyLayersControl position="topright" mapLayers={
+    {
+      baseLayers: mapLayers.baseLayers.map((layer, index) => ({
+        ...layer,
+        checked: (urlParams.get("b") ?? "om") === layer.geotabId
+      })),
+      overlays: mapLayers.overlays
+    }
+  } />;
 }
 
 function MyLayersControl({position, mapLayers}) {
