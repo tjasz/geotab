@@ -120,13 +120,29 @@ function PopupBody({feature}) {
   );
 }
 
+function ContextPopup({latlng}) {
+  return (
+    <Popup position={latlng}>
+      <div style={{height: "200px", overflow: "auto"}}>
+        <h3>{`${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}`}</h3>
+      </div>
+    </Popup>
+  );
+}
+
 function ChangeView() {
   const [urlParams, setUrlParams] = useSearchParams();
   const context = useContext(DataContext);
   const [center, setCenter] = useState(null);
   const [zoom, setZoom] = useState(null);
+  const [isContextPopupOpen, setIsContextPopupOpen] = useState(false);
+  const [contextClickLocation, setContextClickLocation] = useState();
   const map = useMap();
   const mapEvents = useMapEvents({
+      contextmenu: (event) => {
+        setIsContextPopupOpen(true);
+        setContextClickLocation(event.latlng);
+      },
       moveend: () => {
         const ll = mapEvents.getCenter();
         const z = mapEvents.getZoom();
@@ -196,18 +212,21 @@ function ChangeView() {
     );
   }
 
-  return <MyLayersControl position="topright" mapLayers={
-    {
-      baseLayers: mapLayers.baseLayers.map((layer, index) => ({
-        ...layer,
-        checked: (urlParams.get("b") ?? "osm") === layer.geotabId
-      })),
-      overlays: mapLayers.overlays.map((layer, index) => ({
-        ...layer,
-        checked: urlParams.get("o")?.split(",").includes(layer.geotabId)
-      })),
-    }
-  } />;
+  return <>
+    <MyLayersControl position="topright" mapLayers={
+      {
+        baseLayers: mapLayers.baseLayers.map((layer, index) => ({
+          ...layer,
+          checked: (urlParams.get("b") ?? "osm") === layer.geotabId
+        })),
+        overlays: mapLayers.overlays.map((layer, index) => ({
+          ...layer,
+          checked: urlParams.get("o")?.split(",").includes(layer.geotabId)
+        })),
+      }
+    } />
+    {isContextPopupOpen && <ContextPopup latlng={contextClickLocation} />}
+  </>;
 }
 
 function MyLayersControl({position, mapLayers}) {
