@@ -149,11 +149,10 @@ function ChangeView() {
           const overlays = prev.get("o")?.split(",") ?? [];
           const newOverlay = event.layer.options.geotabId;
 
-          if (overlays.includes(newOverlay)) {
-            return prev;
+          if (!overlays.includes(newOverlay)) {
+            prev.set("o", [...overlays, newOverlay].join(","));
           }
 
-          prev.set("o", [...overlays, newOverlay].join(","));
           return prev;
         });
       },
@@ -161,8 +160,15 @@ function ChangeView() {
         setUrlParams((prev) => {
           const overlays = prev.get("o")?.split(",") ?? [];
           const removedOverlay = event.layer.options.geotabId;
+          const newOverlays = overlays.filter(id => id !== removedOverlay);
 
-          prev.set("o", overlays.filter(id => id !== event.layer.options.geotabId).join(","));
+          if (newOverlays.length === 0) {
+            prev.delete("o");
+          }
+          else {
+            prev.set("o", newOverlays.join(","));
+          }
+
           return prev;
         });
       }
