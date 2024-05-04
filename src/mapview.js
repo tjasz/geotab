@@ -120,11 +120,17 @@ function PopupBody({feature}) {
   );
 }
 
-function ContextPopup({latlng}) {
+function ContextPopup({latlng, zoom}) {
+  const lat3 = latlng.lat.toFixed(3);
+  const lng3 = latlng.lng.toFixed(3);
+
   return (
     <Popup position={latlng}>
       <div style={{height: "200px", overflow: "auto"}}>
         <h3>{`${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}`}</h3>
+        <a href={`https://www.windy.com/${lat3}/${lng3}?${lat3},${lng3},${zoom}`} target="_blank">
+          Windy
+        </a>
       </div>
     </Popup>
   );
@@ -225,7 +231,7 @@ function ChangeView() {
         })),
       }
     } />
-    {isContextPopupOpen && <ContextPopup latlng={contextClickLocation} />}
+    {isContextPopupOpen && <ContextPopup latlng={contextClickLocation} zoom={zoom} />}
   </>;
 }
 
