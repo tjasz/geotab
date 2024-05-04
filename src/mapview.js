@@ -125,7 +125,6 @@ function ChangeView() {
   const context = useContext(DataContext);
   const [center, setCenter] = useState(null);
   const [zoom, setZoom] = useState(null);
-  const [baseLayerId, setBaseLayerId] = useState(null);
   const map = useMap();
   const mapEvents = useMapEvents({
       moveend: () => {
@@ -142,6 +141,34 @@ function ChangeView() {
       baselayerchange: (event) => {
         setUrlParams((prev) => {
           prev.set("b", event.layer.options.geotabId);
+          return prev;
+        });
+      },
+      overlayadd: (event) => {
+        setUrlParams((prev) => {
+          const overlays = prev.get("o")?.split(",") ?? [];
+          const newOverlay = event.layer.options.geotabId;
+
+          if (!overlays.includes(newOverlay)) {
+            prev.set("o", [...overlays, newOverlay].join(","));
+          }
+
+          return prev;
+        });
+      },
+      overlayremove: (event) => {
+        setUrlParams((prev) => {
+          const overlays = prev.get("o")?.split(",") ?? [];
+          const removedOverlay = event.layer.options.geotabId;
+          const newOverlays = overlays.filter(id => id !== removedOverlay);
+
+          if (newOverlays.length === 0) {
+            prev.delete("o");
+          }
+          else {
+            prev.set("o", newOverlays.join(","));
+          }
+
           return prev;
         });
       }
@@ -175,7 +202,10 @@ function ChangeView() {
         ...layer,
         checked: (urlParams.get("b") ?? "om") === layer.geotabId
       })),
-      overlays: mapLayers.overlays
+      overlays: mapLayers.overlays.map((layer, index) => ({
+        ...layer,
+        checked: urlParams.get("o")?.split(",").includes(layer.geotabId)
+      })),
     }
   } />;
 }

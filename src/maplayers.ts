@@ -2,7 +2,7 @@ const baseLayers = [
   {
     type: "TileLayer",
     name: "OpenStreetMap",
-    geotabId: "om",
+    geotabId: "osm",
     checked: true,
     maxZoom: 18,
     tileSize: 512,
@@ -13,7 +13,7 @@ const baseLayers = [
   {
     type: "TileLayer",
     name: "OpenTopoMap",
-    geotabId: "ot",
+    geotabId: "otm",
     checked: false,
     maxZoom: 18,
     tileSize: 512,
@@ -24,7 +24,7 @@ const baseLayers = [
   {
     type: "TileLayer",
     name: "Mapbox Outdoors",
-    geotabId: "mbo",
+    geotabId: "mbout",
     checked: false,
     maxZoom: 18,
     tileSize: 512,
@@ -36,7 +36,7 @@ const baseLayers = [
   {
     type: "TileLayer",
     name: "Mapbox Satellite",
-    geotabId: "mbs",
+    geotabId: "mbsat",
     checked: false,
     maxZoom: 18,
     tileSize: 512,
@@ -48,7 +48,7 @@ const baseLayers = [
   {
     type: "WMSTileLayer",
     name: "USGS Topo",
-    geotabId: "ust",
+    geotabId: "ustopo",
     checked: false,
     layers: 'show%3A0',
     f: 'image',
@@ -64,7 +64,7 @@ const baseLayers = [
   {
     type: "WMSTileLayer",
     name: "USGS TNM Blank",
-    geotabId: "b",
+    geotabId: "blank",
     checked: false,
     layers: 'show%3A21',
     f: 'image',
@@ -83,6 +83,7 @@ const overlays = [
   {
     type: "WMSTileLayer",
     name: "NOAA Snow Depth",
+    geotabId: "snow",
     checked: false,
     layers: 'show:3',
     f: 'image',
@@ -98,6 +99,7 @@ const overlays = [
   {
     type: "WMSTileLayer",
     name: "USGS Shaded Relief",
+    geotabId: "relief",
     checked: false,
     layers: 'show%3A21',
     f: 'image',
