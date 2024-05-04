@@ -200,7 +200,7 @@ function ChangeView() {
     {
       baseLayers: mapLayers.baseLayers.map((layer, index) => ({
         ...layer,
-        checked: (urlParams.get("b") ?? "om") === layer.geotabId
+        checked: (urlParams.get("b") ?? "osm") === layer.geotabId
       })),
       overlays: mapLayers.overlays.map((layer, index) => ({
         ...layer,
