@@ -1,7 +1,8 @@
 import React, {useContext, useState} from 'react';
 import { useSearchParams } from "react-router-dom";
 import CircularProgress from '@mui/material/CircularProgress';
-import {buffer, combine, union} from "@turf/turf"
+import {buffer, combine, union} from "@turf/turf";
+import { TextFieldDialog } from './TextFieldDialog';
 import {DataContext} from './dataContext'
 import {defaultFilter, ConditionOperator, ConditionGroupOperator, parametersMap, operandTypes, Condition, ConditionGroup, filterEquals, FilterType, validateFilter} from './filter'
 import {FieldTypeDescription} from './fieldtype'
@@ -35,6 +36,7 @@ function DataView(props) {
 function ImportView(props) {
   const context = useContext(DataContext);
   const [urlParams, setUrlParams] = useSearchParams();
+  const [overpassDialogVisible, setOverpassDialogVisible] = useState(false);
   const urlSrc = urlParams.get("src");
   const clearData = () => {
     context.setDataAndFilter([], null);
@@ -111,6 +113,29 @@ function ImportView(props) {
           </button>
         </li>
       </ul>
+      <TextFieldDialog
+        open={overpassDialogVisible}
+        onCancel={() => setOverpassDialogVisible(false)}
+        onConfirm={(query) => {
+          fetch('https://overpass-api.de/api/interpreter',{
+            headers : {
+             },
+             method: 'POST',
+             body: query,
+          }).then((response) => {
+            if (response.ok) {
+              return response.text();
+            }
+          })
+          .then(str => new window.DOMParser().parseFromString(str, "text/xml"))
+          .then(data => console.log(data));
+          setOverpassDialogVisible(false);
+        }}
+        title="Import via Overpass"
+        label="Query"
+        confirmLabel="Run"
+        />
+      <button onClick={() => setOverpassDialogVisible(true)}>Import via Overpass</button>
     </div>
   );
 }
