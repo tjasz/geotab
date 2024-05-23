@@ -1,7 +1,10 @@
 import React, {useRef, useContext, useState} from 'react';
 import { useSearchParams } from "react-router-dom";
 import ReactDOMServer from "react-dom/server";
+import { v4 as uuidv4 } from 'uuid';
 import L from 'leaflet'
+import { Button } from '@mui/material';
+import { AddLocation, ContentCopy } from '@mui/icons-material';
 import { MapContainer, TileLayer, WMSTileLayer, LayersControl, ScaleControl, GeoJSON, Popup, useMap, useMapEvents } from 'react-leaflet';
 import AbridgedUrlLink from './common/AbridgedUrlLink';
 import {DataContext} from './dataContext'
@@ -9,6 +12,7 @@ import {getCentralCoord, hashCode, getFeatureListBounds} from './algorithm'
 import mapLayers from './maplayers'
 import {painter} from './painter'
 import {addHover, removeHover, toggleActive} from './selection'
+import { FeatureType, GeometryType } from './geojson-types'
 
 function MapView(props) {
     const context = useContext(DataContext);
@@ -120,13 +124,78 @@ function PopupBody({feature}) {
   );
 }
 
+function ContextPopup({latlng, zoom, onClose}) {
+  const context = useContext(DataContext);
+
+  const latlng5 = `${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}`;
+  const lat3 = latlng.lat.toFixed(3);
+  const lng3 = latlng.lng.toFixed(3);
+
+  return (
+    <Popup position={latlng}>
+      <div style={{height: "200px", overflow: "auto"}}>
+        <h2>
+          {latlng5}
+          <Button
+            startIcon={<ContentCopy />}
+            onClick={() => {
+              navigator.clipboard.writeText(latlng5)
+            }}
+            />
+        </h2>
+        <h3>Forecasts</h3>
+        <ul>
+          <li>
+            <a  href={`https://forecast.weather.gov/MapClick.php?lat=${latlng.lat}&lon=${latlng.lon}&site=all&smap=1`} target="_blank">
+              NOAA
+            </a>
+          </li>
+          <li>
+            <a href={`https://www.windy.com/${lat3}/${lng3}?${lat3},${lng3},${zoom}`} target="_blank">
+              Windy
+            </a>
+          </li>
+          <li>
+            <a href={`https://www.google.com/maps/dir//${latlng.lat},${latlng.lng}`} target="_blank">
+              Google Directions
+            </a>
+          </li>
+        </ul>
+        <Button
+          startIcon={<AddLocation />}
+          onClick={() => {
+            const newFeature = {
+              id: uuidv4(),
+              type: FeatureType.Feature,
+              geometry: {
+                type: GeometryType.Point,
+                coordinates: [latlng.lng, latlng.lat]},
+              properties: { "geotab:selectionStatus": "inactive" }
+            };
+            context.setData([...context.data, newFeature]);
+            onClose();
+          }}
+          >
+          Add Point
+        </Button>
+      </div>
+    </Popup>
+  );
+}
+
 function ChangeView() {
   const [urlParams, setUrlParams] = useSearchParams();
   const context = useContext(DataContext);
   const [center, setCenter] = useState(null);
   const [zoom, setZoom] = useState(null);
+  const [isContextPopupOpen, setIsContextPopupOpen] = useState(false);
+  const [contextClickLocation, setContextClickLocation] = useState();
   const map = useMap();
   const mapEvents = useMapEvents({
+      contextmenu: (event) => {
+        setIsContextPopupOpen(true);
+        setContextClickLocation(event.latlng);
+      },
       moveend: () => {
         const ll = mapEvents.getCenter();
         const z = mapEvents.getZoom();
@@ -196,18 +265,21 @@ function ChangeView() {
     );
   }
 
-  return <MyLayersControl position="topright" mapLayers={
-    {
-      baseLayers: mapLayers.baseLayers.map((layer, index) => ({
-        ...layer,
-        checked: (urlParams.get("b") ?? "osm") === layer.geotabId
-      })),
-      overlays: mapLayers.overlays.map((layer, index) => ({
-        ...layer,
-        checked: urlParams.get("o")?.split(",").includes(layer.geotabId)
-      })),
-    }
-  } />;
+  return <>
+    <MyLayersControl position="topright" mapLayers={
+      {
+        baseLayers: mapLayers.baseLayers.map((layer, index) => ({
+          ...layer,
+          checked: (urlParams.get("b") ?? "osm") === layer.geotabId
+        })),
+        overlays: mapLayers.overlays.map((layer, index) => ({
+          ...layer,
+          checked: urlParams.get("o")?.split(",").includes(layer.geotabId)
+        })),
+      }
+    } />
+    {isContextPopupOpen && <ContextPopup latlng={contextClickLocation} zoom={zoom} onClose={() => {setIsContextPopupOpen(false)}} />}
+  </>;
 }
 
 function MyLayersControl({position, mapLayers}) {
