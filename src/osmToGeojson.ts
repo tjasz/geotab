@@ -15,18 +15,12 @@ export function osmToGeojson(xmlString : string) : FeatureCollection {
   if (osmElem.tagName !== "osm") {
     throw Error(`Invalid OSM: outer node should be an <osm> element. Found '${osmElem.tagName}'.`);
   }
+  console.log(osmElem);
 
-  const nodes = getChildrenOfTag(osmElem, "node");
+  const nodes = getChildrenOfElem(osmElem, "node");
   const features : Feature[] = nodes.map(node => {
-    const nodeProperties = {};
-    if (node.hasAttributes()) {
-      for (let i = 0; i < node.attributes.length; ++i) {
-        const attr = node.attributes.item(i)!;
-        nodeProperties[attr.name] = attr.value;
-      }
-    }
-
     return {
+      id: node.getAttribute("id"),
       type: FeatureType.Feature,
       geometry: {
         type: GeometryType.Point,
@@ -35,7 +29,7 @@ export function osmToGeojson(xmlString : string) : FeatureCollection {
           Number(node.getAttribute("lat")),
         ]
       },
-      properties: nodeProperties,
+      properties: getTagsAsObj(node),
     }
   });
 
@@ -48,7 +42,31 @@ export function osmToGeojson(xmlString : string) : FeatureCollection {
   return geojson;
 }
 
-function getChildrenOfTag(parent : Element, tagName : string) {
+function getAttributesAsObj(elem : Element) {
+  const obj = {};
+  if (elem.hasAttributes()) {
+    for (let i = 0; i < elem.attributes.length; ++i) {
+      const attr = elem.attributes.item(i)!;
+      obj[attr.name] = attr.value;
+    }
+  }
+  return obj;
+}
+
+function getTagsAsObj(elem : Element) {
+  const tags = getChildrenOfElem(elem, "tag");
+  return tags.reduce(
+    (obj, tag) => {
+      if (tag.hasAttributes() && tag.hasAttribute("k") && tag.hasAttribute("v")) {
+        return {...obj, [tag.getAttribute("k")!]: tag.getAttribute("v")}
+      }
+      return obj;
+    },
+    {}
+  )
+}
+
+function getChildrenOfElem(parent : Element, tagName : string) {
   return Array.from(parent.children).filter((elem) =>
     elem.tagName === tagName
   );
