@@ -2,6 +2,7 @@ import React, {useContext, useState} from 'react';
 import { useSearchParams } from "react-router-dom";
 import CircularProgress from '@mui/material/CircularProgress';
 import {buffer, combine, union} from "@turf/turf";
+import { osmToGeojson } from './osmToGeojson'
 import { TextFieldDialog } from './TextFieldDialog';
 import {DataContext} from './dataContext'
 import {defaultFilter, ConditionOperator, ConditionGroupOperator, parametersMap, operandTypes, Condition, ConditionGroup, filterEquals, FilterType, validateFilter} from './filter'
@@ -127,8 +128,7 @@ function ImportView(props) {
               return response.text();
             }
           })
-          .then(str => new window.DOMParser().parseFromString(str, "text/xml"))
-          .then(data => console.log(data));
+          .then(data => setDataFromJson(osmToGeojson(data)));
           setOverpassDialogVisible(false);
         }}
         title="Import via Overpass"
