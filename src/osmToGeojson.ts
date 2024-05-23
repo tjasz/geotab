@@ -18,9 +18,10 @@ export function osmToGeojson(xmlString : string) : FeatureCollection {
   console.log(osmElem);
 
   const nodes = getChildrenOfElem(osmElem, "node");
-  const features : Feature[] = nodes.map(node => {
-    return {
-      id: node.getAttribute("id"),
+  const nodeFeatures : Map<string, Feature> = new Map(nodes.map(node => {
+    const id = node.getAttribute("id")!;
+    return [id, {
+      id,
       type: FeatureType.Feature,
       geometry: {
         type: GeometryType.Point,
@@ -30,12 +31,31 @@ export function osmToGeojson(xmlString : string) : FeatureCollection {
         ]
       },
       properties: getTagsAsObj(node),
+    }]
+  }));
+
+  const ways = getChildrenOfElem(osmElem, "way");
+  const wayFeatures = ways.map(way => {
+    return {
+      id: way.getAttribute("id"),
+      type: FeatureType.Feature,
+      geometry: {
+        type: GeometryType.LineString,
+        coordinates: getChildrenOfElem(way, "nd").map(nd => {
+          const ref = nd.getAttribute("ref")!;
+          return nodeFeatures.get(ref)?.geometry.coordinates;
+        }),
+      },
+      properties: getTagsAsObj(way),
     }
   });
 
   const geojson = {
     type: FeatureType.FeatureCollection,
-    features,
+    features: [
+      ...Array.from(nodeFeatures.values()).filter(node => Object.keys(node.properties).length > 0),
+      ...wayFeatures
+    ],
     properties: {},
   };
 
