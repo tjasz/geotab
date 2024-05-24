@@ -15,7 +15,6 @@ export function osmToGeojson(xmlString : string) : FeatureCollection {
   if (osmElem.tagName !== "osm") {
     throw Error(`Invalid OSM: outer node should be an <osm> element. Found '${osmElem.tagName}'.`);
   }
-  console.log(osmElem);
 
   const nodes = getChildrenOfElem(osmElem, "node");
   const nodeFeatures : Map<string, Feature> = new Map(nodes.map(node => {
@@ -35,9 +34,10 @@ export function osmToGeojson(xmlString : string) : FeatureCollection {
   }));
 
   const ways = getChildrenOfElem(osmElem, "way");
-  const wayFeatures = ways.map(way => {
-    return {
-      id: way.getAttribute("id"),
+  const wayFeatures : Map<string, Feature> = new Map(ways.map(way => {
+    const id = way.getAttribute("id")!;
+    return [id, {
+      id,
       type: FeatureType.Feature,
       geometry: {
         type: GeometryType.LineString,
@@ -46,15 +46,29 @@ export function osmToGeojson(xmlString : string) : FeatureCollection {
           return nodeFeatures.get(ref)?.geometry.coordinates;
         }),
       },
-      properties: getTagsAsObj(way),
+      properties: {...getTagsAsObj(way), relations: []}
+    }]
+  }));
+
+  const relations = getChildrenOfElem(osmElem, "relation");
+  for (const relation of relations) {
+    const members = getChildrenOfElem(relation, "member")
+      .map(member => member.getAttribute("ref")!);
+    const attributes = getAttributesAsObj(relation);
+    const tags = getTagsAsObj(relation);
+
+    for (const member of members) {
+      if (wayFeatures.has(member)) {
+        wayFeatures.get(member)!.properties.relations.push({attributes, tags});
+      }
     }
-  });
+  }
 
   const geojson = {
     type: FeatureType.FeatureCollection,
     features: [
       ...Array.from(nodeFeatures.values()).filter(node => Object.keys(node.properties).length > 0),
-      ...wayFeatures
+      ...Array.from(wayFeatures.values())
     ],
     properties: {},
   };
