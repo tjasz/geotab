@@ -1,0 +1,4 @@
+public/json/*
+*.gpx
+build/*
+node_modules/*
