@@ -1,130 +1,175 @@
-import React, {useRef, useContext, useState} from 'react';
+import React, { useRef, useContext, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import ReactDOMServer from "react-dom/server";
-import { v4 as uuidv4 } from 'uuid';
-import L from 'leaflet'
-import { Button } from '@mui/material';
-import { AddLocation, ContentCopy } from '@mui/icons-material';
-import { MapContainer, TileLayer, WMSTileLayer, LayersControl, ScaleControl, GeoJSON, Popup, useMap, useMapEvents } from 'react-leaflet';
-import AbridgedUrlLink from './common/AbridgedUrlLink';
-import {DataContext} from './dataContext'
-import {getCentralCoord, hashCode, getFeatureListBounds} from './algorithm'
-import mapLayers from './maplayers'
-import {painter} from './painter'
-import {addHover, removeHover, toggleActive} from './selection'
-import { FeatureType, GeometryType } from './geojson-types'
+import { v4 as uuidv4 } from "uuid";
+import L from "leaflet";
+import { Button } from "@mui/material";
+import { AddLocation, ContentCopy } from "@mui/icons-material";
+import {
+  MapContainer,
+  TileLayer,
+  WMSTileLayer,
+  LayersControl,
+  ScaleControl,
+  GeoJSON,
+  Popup,
+  useMap,
+  useMapEvents,
+} from "react-leaflet";
+import AbridgedUrlLink from "./common/AbridgedUrlLink";
+import { DataContext } from "./dataContext";
+import { getCentralCoord, hashCode, getFeatureListBounds } from "./algorithm";
+import mapLayers from "./maplayers";
+import { painter } from "./painter";
+import { addHover, removeHover, toggleActive } from "./selection";
+import { FeatureType, GeometryType } from "./geojson-types";
 
 function MapView(props) {
-    const context = useContext(DataContext);
-      const resizeMap = ( mapRef ) => {
-        const resizeObserver = new ResizeObserver(() => mapRef.current?.invalidateSize())
-        const container = document.getElementById('mapview')
-        if (container) {
-          resizeObserver.observe(container)
-        }
-      };
-      const restyleLayer = (layer, feature) => {
-        const style = painter(context.symbology)(feature);
-        if (layer.setStyle instanceof Function) {
-          layer.setStyle(style);
-        } else {
-          layer.setIcon(L.divIcon({className: "", html: style.options.icon.options.html}))
-        }
-      }
-      const mapRef = useRef();
-      if (!context.filteredData) return null;
-      const features = context.filteredData;
-      return (
-        <div id="mapview" style={props.style}>
-          <MapContainer scrollWheelZoom={true} ref={mapRef} whenReady={() => resizeMap(mapRef)}>
-            <ChangeView />
-            <ScaleControl position="bottomleft" />
-            <GeoJSON data={features} key={hashCode(JSON.stringify(features))} style={painter(context.symbology)}
-            pointToLayer={painter(context.symbology)}
-            onEachFeature={(feature, layer) => {
-              context.setFeatureListener("map", feature.id, restyleLayer.bind(null, layer))
-              layer.once({
-                mouseover: (e) => {
-                  feature.properties["geotab:selectionStatus"] = addHover(feature.properties["geotab:selectionStatus"]);
-                  restyleLayer(e.target, feature);
-                  const tableListener = context?.featureListeners.table[feature.id] ?? context?.featureListeners.table["default"];
-                  if (tableListener !== undefined) {
-                    tableListener(feature);
-                  }
-                },
-              })
-              layer.on({
-                click: (e) => {
-                  feature.properties["geotab:selectionStatus"] = toggleActive(feature.properties["geotab:selectionStatus"]);
-                  restyleLayer(e.target, feature);
-                  const tableListener = context?.featureListeners.table[feature.id] ?? context?.featureListeners.table["default"];
-                  if (tableListener !== undefined) {
-                    tableListener(feature);
-                  }
-                },
-                mouseout: (e) => {
-                  feature.properties["geotab:selectionStatus"] = removeHover(feature.properties["geotab:selectionStatus"]);
-                  restyleLayer(e.target, feature);
-                  e.target.once({
-                    mouseover: (e) => {
-                      feature.properties["geotab:selectionStatus"] = addHover(feature.properties["geotab:selectionStatus"]);
-                      restyleLayer(e.target, feature);
-                      const tableListener = context?.featureListeners.table[feature.id] ?? context?.featureListeners.table["default"];
-                      if (tableListener !== undefined) {
-                        tableListener(feature);
-                      }
-                    },
-                  });
-                  const tableListener = context?.featureListeners.table[feature.id] ?? context?.featureListeners.table["default"];
-                  if (tableListener !== undefined) {
-                    tableListener(feature);
-                  }
-                },
-              })
-              layer.bindPopup(
-                ReactDOMServer.renderToString(
-                    <PopupBody feature={feature} />
-                )
-              )
-            }} />
-          </MapContainer>
-        </div>
+  const context = useContext(DataContext);
+  const resizeMap = (mapRef) => {
+    const resizeObserver = new ResizeObserver(() =>
+      mapRef.current?.invalidateSize(),
+    );
+    const container = document.getElementById("mapview");
+    if (container) {
+      resizeObserver.observe(container);
+    }
+  };
+  const restyleLayer = (layer, feature) => {
+    const style = painter(context.symbology)(feature);
+    if (layer.setStyle instanceof Function) {
+      layer.setStyle(style);
+    } else {
+      layer.setIcon(
+        L.divIcon({ className: "", html: style.options.icon.options.html }),
       );
     }
-
-function ActivePopup(props) {
+  };
+  const mapRef = useRef();
+  if (!context.filteredData) return null;
+  const features = context.filteredData;
   return (
-    props.feature && props.feature.geometry &&
-      <Popup position={props.latlng ?? getCentralCoord(props.feature)}>
-        <PopupBody feature={props.feature} />
-      </Popup>
-  );
-};
-
-function PopupBody({feature}) {
-  return (
-    <div style={{height: "200px", overflow: "auto"}}>
-    <table><tbody>
-      {Object.entries(feature.properties).map(([key, value]) =>
-        <tr key={key}>
-          <th>{key}</th>
-          <td>
-            {(value === "" ? undefined :
-              typeof value === "string" && value.startsWith("http")
-              ? <AbridgedUrlLink target="_blank" href={value} length={21} />
-              : typeof value === "string" || typeof value === "number"
-                    ? value
-                    : JSON.stringify(value)
-            )}
-          </td>
-        </tr>
-      )}
-    </tbody></table>
+    <div id="mapview" style={props.style}>
+      <MapContainer
+        scrollWheelZoom={true}
+        ref={mapRef}
+        whenReady={() => resizeMap(mapRef)}
+      >
+        <ChangeView />
+        <ScaleControl position="bottomleft" />
+        <GeoJSON
+          data={features}
+          key={hashCode(JSON.stringify(features))}
+          style={painter(context.symbology)}
+          pointToLayer={painter(context.symbology)}
+          onEachFeature={(feature, layer) => {
+            context.setFeatureListener(
+              "map",
+              feature.id,
+              restyleLayer.bind(null, layer),
+            );
+            layer.once({
+              mouseover: (e) => {
+                feature.properties["geotab:selectionStatus"] = addHover(
+                  feature.properties["geotab:selectionStatus"],
+                );
+                restyleLayer(e.target, feature);
+                const tableListener =
+                  context?.featureListeners.table[feature.id] ??
+                  context?.featureListeners.table["default"];
+                if (tableListener !== undefined) {
+                  tableListener(feature);
+                }
+              },
+            });
+            layer.on({
+              click: (e) => {
+                feature.properties["geotab:selectionStatus"] = toggleActive(
+                  feature.properties["geotab:selectionStatus"],
+                );
+                restyleLayer(e.target, feature);
+                const tableListener =
+                  context?.featureListeners.table[feature.id] ??
+                  context?.featureListeners.table["default"];
+                if (tableListener !== undefined) {
+                  tableListener(feature);
+                }
+              },
+              mouseout: (e) => {
+                feature.properties["geotab:selectionStatus"] = removeHover(
+                  feature.properties["geotab:selectionStatus"],
+                );
+                restyleLayer(e.target, feature);
+                e.target.once({
+                  mouseover: (e) => {
+                    feature.properties["geotab:selectionStatus"] = addHover(
+                      feature.properties["geotab:selectionStatus"],
+                    );
+                    restyleLayer(e.target, feature);
+                    const tableListener =
+                      context?.featureListeners.table[feature.id] ??
+                      context?.featureListeners.table["default"];
+                    if (tableListener !== undefined) {
+                      tableListener(feature);
+                    }
+                  },
+                });
+                const tableListener =
+                  context?.featureListeners.table[feature.id] ??
+                  context?.featureListeners.table["default"];
+                if (tableListener !== undefined) {
+                  tableListener(feature);
+                }
+              },
+            });
+            layer.bindPopup(
+              ReactDOMServer.renderToString(<PopupBody feature={feature} />),
+            );
+          }}
+        />
+      </MapContainer>
     </div>
   );
 }
 
-function ContextPopup({latlng, zoom, onClose}) {
+function ActivePopup(props) {
+  return (
+    props.feature &&
+    props.feature.geometry && (
+      <Popup position={props.latlng ?? getCentralCoord(props.feature)}>
+        <PopupBody feature={props.feature} />
+      </Popup>
+    )
+  );
+}
+
+function PopupBody({ feature }) {
+  return (
+    <div style={{ height: "200px", overflow: "auto" }}>
+      <table>
+        <tbody>
+          {Object.entries(feature.properties).map(([key, value]) => (
+            <tr key={key}>
+              <th>{key}</th>
+              <td>
+                {value === "" ? undefined : typeof value === "string" &&
+                  value.startsWith("http") ? (
+                  <AbridgedUrlLink target="_blank" href={value} length={21} />
+                ) : typeof value === "string" || typeof value === "number" ? (
+                  value
+                ) : (
+                  JSON.stringify(value)
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function ContextPopup({ latlng, zoom, onClose }) {
   const context = useContext(DataContext);
 
   const latlng5 = `${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}`;
@@ -133,30 +178,39 @@ function ContextPopup({latlng, zoom, onClose}) {
 
   return (
     <Popup position={latlng}>
-      <div style={{height: "200px", overflow: "auto"}}>
+      <div style={{ height: "200px", overflow: "auto" }}>
         <h2>
           {latlng5}
           <Button
             startIcon={<ContentCopy />}
             onClick={() => {
-              navigator.clipboard.writeText(latlng5)
+              navigator.clipboard.writeText(latlng5);
             }}
-            />
+          />
         </h2>
         <h3>Forecasts</h3>
         <ul>
           <li>
-            <a  href={`https://forecast.weather.gov/MapClick.php?lat=${latlng.lat}&lon=${latlng.lon}&site=all&smap=1`} target="_blank">
+            <a
+              href={`https://forecast.weather.gov/MapClick.php?lat=${latlng.lat}&lon=${latlng.lon}&site=all&smap=1`}
+              target="_blank"
+            >
               NOAA
             </a>
           </li>
           <li>
-            <a href={`https://www.windy.com/${lat3}/${lng3}?${lat3},${lng3},${zoom}`} target="_blank">
+            <a
+              href={`https://www.windy.com/${lat3}/${lng3}?${lat3},${lng3},${zoom}`}
+              target="_blank"
+            >
               Windy
             </a>
           </li>
           <li>
-            <a href={`https://www.google.com/maps/dir//${latlng.lat},${latlng.lng}`} target="_blank">
+            <a
+              href={`https://www.google.com/maps/dir//${latlng.lat},${latlng.lng}`}
+              target="_blank"
+            >
               Google Directions
             </a>
           </li>
@@ -169,13 +223,14 @@ function ContextPopup({latlng, zoom, onClose}) {
               type: FeatureType.Feature,
               geometry: {
                 type: GeometryType.Point,
-                coordinates: [latlng.lng, latlng.lat]},
-              properties: { "geotab:selectionStatus": "inactive" }
+                coordinates: [latlng.lng, latlng.lat],
+              },
+              properties: { "geotab:selectionStatus": "inactive" },
             };
             context.setData([...context.data, newFeature]);
             onClose();
           }}
-          >
+        >
           Add Point
         </Button>
       </div>
@@ -192,55 +247,54 @@ function ChangeView() {
   const [contextClickLocation, setContextClickLocation] = useState();
   const map = useMap();
   const mapEvents = useMapEvents({
-      contextmenu: (event) => {
-        setIsContextPopupOpen(true);
-        setContextClickLocation(event.latlng);
-      },
-      moveend: () => {
-        const ll = mapEvents.getCenter();
-        const z = mapEvents.getZoom();
-        setCenter(ll);
-        setZoom(z);
-        setUrlParams((prev) => {
-          prev.set("z", z);
-          prev.set("ll", `${ll.lat.toFixed(5)},${ll.lng.toFixed(5)}`);
-          return prev;
-        });
-      },
-      baselayerchange: (event) => {
-        setUrlParams((prev) => {
-          prev.set("b", event.layer.options.geotabId);
-          return prev;
-        });
-      },
-      overlayadd: (event) => {
-        setUrlParams((prev) => {
-          const overlays = prev.get("o")?.split(",") ?? [];
-          const newOverlay = event.layer.options.geotabId;
+    contextmenu: (event) => {
+      setIsContextPopupOpen(true);
+      setContextClickLocation(event.latlng);
+    },
+    moveend: () => {
+      const ll = mapEvents.getCenter();
+      const z = mapEvents.getZoom();
+      setCenter(ll);
+      setZoom(z);
+      setUrlParams((prev) => {
+        prev.set("z", z);
+        prev.set("ll", `${ll.lat.toFixed(5)},${ll.lng.toFixed(5)}`);
+        return prev;
+      });
+    },
+    baselayerchange: (event) => {
+      setUrlParams((prev) => {
+        prev.set("b", event.layer.options.geotabId);
+        return prev;
+      });
+    },
+    overlayadd: (event) => {
+      setUrlParams((prev) => {
+        const overlays = prev.get("o")?.split(",") ?? [];
+        const newOverlay = event.layer.options.geotabId;
 
-          if (!overlays.includes(newOverlay)) {
-            prev.set("o", [...overlays, newOverlay].join(","));
-          }
+        if (!overlays.includes(newOverlay)) {
+          prev.set("o", [...overlays, newOverlay].join(","));
+        }
 
-          return prev;
-        });
-      },
-      overlayremove: (event) => {
-        setUrlParams((prev) => {
-          const overlays = prev.get("o")?.split(",") ?? [];
-          const removedOverlay = event.layer.options.geotabId;
-          const newOverlays = overlays.filter(id => id !== removedOverlay);
+        return prev;
+      });
+    },
+    overlayremove: (event) => {
+      setUrlParams((prev) => {
+        const overlays = prev.get("o")?.split(",") ?? [];
+        const removedOverlay = event.layer.options.geotabId;
+        const newOverlays = overlays.filter((id) => id !== removedOverlay);
 
-          if (newOverlays.length === 0) {
-            prev.delete("o");
-          }
-          else {
-            prev.set("o", newOverlays.join(","));
-          }
+        if (newOverlays.length === 0) {
+          prev.delete("o");
+        } else {
+          prev.set("o", newOverlays.join(","));
+        }
 
-          return prev;
-        });
-      }
+        return prev;
+      });
+    },
   });
 
   if (!center && !zoom) {
@@ -248,55 +302,71 @@ function ChangeView() {
       const features = context.filteredData;
       if (features && features.length) {
         const featureListBounds = getFeatureListBounds(features);
-        if(featureListBounds
-          && featureListBounds[0][0] !== featureListBounds[1][0]
-          && featureListBounds[0][1] !== featureListBounds[1][1]) {
-            map.fitBounds(featureListBounds);
-            return;
-          } else {
-            map.setView(featureListBounds[0], urlParams.get("z") ?? 6);
-          }
+        if (
+          featureListBounds &&
+          featureListBounds[0][0] !== featureListBounds[1][0] &&
+          featureListBounds[0][1] !== featureListBounds[1][1]
+        ) {
+          map.fitBounds(featureListBounds);
+          return;
+        } else {
+          map.setView(featureListBounds[0], urlParams.get("z") ?? 6);
+        }
       }
     }
 
     map.setView(
-      urlParams.get("ll")?.split(",").map(s => parseFloat(s)) ?? [27.83596, -11.07422],
-      urlParams.get("z") ?? 2
+      urlParams
+        .get("ll")
+        ?.split(",")
+        .map((s) => parseFloat(s)) ?? [27.83596, -11.07422],
+      urlParams.get("z") ?? 2,
     );
   }
 
-  return <>
-    <MyLayersControl position="topright" mapLayers={
-      {
-        baseLayers: mapLayers.baseLayers.map((layer, index) => ({
-          ...layer,
-          checked: (urlParams.get("b") ?? "osm") === layer.geotabId
-        })),
-        overlays: mapLayers.overlays.map((layer, index) => ({
-          ...layer,
-          checked: urlParams.get("o")?.split(",").includes(layer.geotabId)
-        })),
-      }
-    } />
-    {isContextPopupOpen && <ContextPopup latlng={contextClickLocation} zoom={zoom} onClose={() => {setIsContextPopupOpen(false)}} />}
-  </>;
+  return (
+    <>
+      <MyLayersControl
+        position="topright"
+        mapLayers={{
+          baseLayers: mapLayers.baseLayers.map((layer, index) => ({
+            ...layer,
+            checked: (urlParams.get("b") ?? "osm") === layer.geotabId,
+          })),
+          overlays: mapLayers.overlays.map((layer, index) => ({
+            ...layer,
+            checked: urlParams.get("o")?.split(",").includes(layer.geotabId),
+          })),
+        }}
+      />
+      {isContextPopupOpen && (
+        <ContextPopup
+          latlng={contextClickLocation}
+          zoom={zoom}
+          onClose={() => {
+            setIsContextPopupOpen(false);
+          }}
+        />
+      )}
+    </>
+  );
 }
 
-function MyLayersControl({position, mapLayers}) {
+function MyLayersControl({ position, mapLayers }) {
   return (
     <LayersControl position={position}>
-      {mapLayers.baseLayers.map((baseLayer) =>
+      {mapLayers.baseLayers.map((baseLayer) => (
         <MyBaseLayerControl key={baseLayer.name} {...baseLayer} />
-        )}
-      {mapLayers.overlays.map((overlay) =>
+      ))}
+      {mapLayers.overlays.map((overlay) => (
         <MyOverlayControl key={overlay.name} {...overlay} />
-        )}
+      ))}
     </LayersControl>
   );
 }
 
 function MyBaseLayerControl(props) {
-  switch(props.type) {
+  switch (props.type) {
     case "WMSTileLayer":
       return (
         <LayersControl.BaseLayer name={props.name} checked={props.checked}>
@@ -316,7 +386,7 @@ function MyBaseLayerControl(props) {
 }
 
 function MyOverlayControl(props) {
-  switch(props.type) {
+  switch (props.type) {
     case "WMSTileLayer":
       return (
         <LayersControl.Overlay name={props.name} checked={props.checked}>

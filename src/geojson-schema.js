@@ -1,67 +1,67 @@
 export const geojsonGeometrySchema = {
   $defs: {
-    "pointCoordinates": {
+    pointCoordinates: {
       type: "array",
       items: {
-        type: "number"
-      }
+        type: "number",
+      },
     },
-    "multiPointCoordinates": {
+    multiPointCoordinates: {
       type: "array",
-      items: { $ref: "#/$defs/pointCoordinates" }
+      items: { $ref: "#/$defs/pointCoordinates" },
     },
-    "multiLineStringCoordinates": {
+    multiLineStringCoordinates: {
       type: "array",
-      items: { $ref: "#/$defs/multiPointCoordinates" }
+      items: { $ref: "#/$defs/multiPointCoordinates" },
     },
-    "multiPolygonCoordinates": {
+    multiPolygonCoordinates: {
       type: "array",
-      items: { $ref: "#/$defs/multiLineStringCoordinates" }
+      items: { $ref: "#/$defs/multiLineStringCoordinates" },
     },
-    "pointGeometry": {
+    pointGeometry: {
       type: "object",
       properties: {
         type: "Point",
-        coordinates: { $ref: "#/$defs/pointCoordinates" }
-      }
+        coordinates: { $ref: "#/$defs/pointCoordinates" },
+      },
     },
-    "multiPointGeometry": {
+    multiPointGeometry: {
       type: "object",
       properties: {
         type: "MultiPoint",
-        coordinates: { $ref: "#/$defs/multiPointCoordinates" }
-      }
+        coordinates: { $ref: "#/$defs/multiPointCoordinates" },
+      },
     },
-    "lineStringGeometry": {
+    lineStringGeometry: {
       type: "object",
       properties: {
         type: "LineString",
-        coordinates: { $ref: "#/$defs/multiPointCoordinates" }
-      }
+        coordinates: { $ref: "#/$defs/multiPointCoordinates" },
+      },
     },
-    "multiLineStringGeometry": {
+    multiLineStringGeometry: {
       type: "object",
       properties: {
         type: "MultiLineString",
-        coordinates: { $ref: "#/$defs/multiLineStringCoordinates" }
-      }
+        coordinates: { $ref: "#/$defs/multiLineStringCoordinates" },
+      },
     },
-    "polygonGeometry": {
+    polygonGeometry: {
       type: "object",
       properties: {
         type: "Polygon",
-        coordinates: { $ref: "#/$defs/multiLineStringCoordinates" }
-      }
+        coordinates: { $ref: "#/$defs/multiLineStringCoordinates" },
+      },
     },
-    "multiPolygonGeometry": {
+    multiPolygonGeometry: {
       type: "object",
       properties: {
         type: "MultiPolygon",
-        coordinates: { $ref: "#/$defs/multiPolygonCoordinates" }
-      }
+        coordinates: { $ref: "#/$defs/multiPolygonCoordinates" },
+      },
     },
-    "geometry": {
-      "anyOf": [
+    geometry: {
+      anyOf: [
         { $ref: "#/$defs/pointGeometry" },
         { $ref: "#/$defs/multiPointGeometry" },
         { $ref: "#/$defs/lineStringGeometry" },
@@ -69,18 +69,18 @@ export const geojsonGeometrySchema = {
         { $ref: "#/$defs/polygonGeometry" },
         { $ref: "#/$defs/multiPolygonGeometry" },
         { $ref: "#/$defs/geometryCollection" },
-      ]
+      ],
     },
-    "geometryCollection": {
+    geometryCollection: {
       type: "object",
       properties: {
         type: "GeometryCollection",
         geometries: {
           type: "array",
-          items: { $ref: "#/$defs/geometry" }
-        }
-      }
-    }
+          items: { $ref: "#/$defs/geometry" },
+        },
+      },
+    },
   },
-  $ref: "#/$defs/geometry"
-}
+  $ref: "#/$defs/geometry",
+};

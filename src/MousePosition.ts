@@ -1,4 +1,4 @@
 export type MousePosition = {
-  mouseX: number,
-  mouseY: number,
+  mouseX: number;
+  mouseY: number;
 };

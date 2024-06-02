@@ -23,35 +23,37 @@
 
 /**
  * GPX file parser
- * 
+ *
  * @constructor
  */
- let gpxParser = function () {
+let gpxParser = function () {
   this.xmlSource = "";
-  this.metadata  = {};
+  this.metadata = {};
   this.waypoints = [];
-  this.tracks    = [];
-  this.routes    = [];
+  this.tracks = [];
+  this.routes = [];
 };
 
 /**
-* Parse a gpx formatted string to a GPXParser Object.
-*
-* Format: https://www.topografix.com/GPX/1/1
-* 
-* @param {string} gpxstring - A GPX formatted String
-* 
-* @return {gpxParser} A GPXParser object
-*/
+ * Parse a gpx formatted string to a GPXParser Object.
+ *
+ * Format: https://www.topografix.com/GPX/1/1
+ *
+ * @param {string} gpxstring - A GPX formatted String
+ *
+ * @return {gpxParser} A GPXParser object
+ */
 gpxParser.prototype.parse = function (gpxstring) {
   let keepThis = this;
 
   let domParser = new window.DOMParser();
-  this.xmlSource = domParser.parseFromString(gpxstring, 'text/xml');
+  this.xmlSource = domParser.parseFromString(gpxstring, "text/xml");
 
   const gpxNode = queryDirectSelector(this.xmlSource, "gpx");
   if (gpxNode?.nodeName !== "gpx" || gpxNode?.nodeType !== 1) {
-    throw Error(`Invalid GPX: outer node should be a <gpx> element. Found ${gpxNode.nodeName} of NodeType ${gpxNode.nodeType}.`)
+    throw Error(
+      `Invalid GPX: outer node should be a <gpx> element. Found ${gpxNode.nodeName} of NodeType ${gpxNode.nodeType}.`,
+    );
   }
 
   // required attributes version and creator
@@ -59,16 +61,23 @@ gpxParser.prototype.parse = function (gpxstring) {
   attachOptional(this, "version", gpxNode.getAttribute("version"));
   attachOptional(this, "creator", gpxNode.getAttribute("creator"));
 
-  attachOptional(this, "metadata", getMetadata(this.xmlSource.querySelector("metadata")));
+  attachOptional(
+    this,
+    "metadata",
+    getMetadata(this.xmlSource.querySelector("metadata")),
+  );
 
-  keepThis.waypoints = Array.from(this.xmlSource.querySelectorAll('wpt'))
-                            .map((wpt) => getPointData(wpt));
+  keepThis.waypoints = Array.from(this.xmlSource.querySelectorAll("wpt")).map(
+    (wpt) => getPointData(wpt),
+  );
 
-  keepThis.routes = Array.from(this.xmlSource.querySelectorAll('rte'))
-                         .map((rte) => getRouteData(rte));
+  keepThis.routes = Array.from(this.xmlSource.querySelectorAll("rte")).map(
+    (rte) => getRouteData(rte),
+  );
 
-  keepThis.tracks = Array.from(this.xmlSource.querySelectorAll('trk'))
-                         .map((trk) => getTrackData(trk));
+  keepThis.tracks = Array.from(this.xmlSource.querySelectorAll("trk")).map(
+    (trk) => getTrackData(trk),
+  );
   return this;
 };
 
@@ -86,12 +95,14 @@ function getPersonData(person) {
   if (person === null || person === undefined) return person;
   let data = {};
   attachOptional(data, "name", getElementValue(person, "name"));
-  attachOptional(data, "email", getEmailData(person.querySelector("email")))
+  attachOptional(data, "email", getEmailData(person.querySelector("email")));
   attachOptional(
     data,
     "links",
-    Array.from(person.querySelectorAll('link')).map((link) => getLinkData(link))
-    );
+    Array.from(person.querySelectorAll("link")).map((link) =>
+      getLinkData(link),
+    ),
+  );
   return data;
 }
 
@@ -101,17 +112,27 @@ function getMetadata(metadata) {
   let data = {};
   attachOptional(data, "name", getElementValue(metadata, "name"));
   attachOptional(data, "desc", getElementValue(metadata, "desc"));
-  attachOptional(data, "author", getPersonData(metadata.querySelector("author")));
+  attachOptional(
+    data,
+    "author",
+    getPersonData(metadata.querySelector("author")),
+  );
   // TODO copyright
   attachOptional(
     data,
     "links",
-    Array.from(queryDirectSelectorAll(metadata, 'link')).map((link) => getLinkData(link))
-    );
+    Array.from(queryDirectSelectorAll(metadata, "link")).map((link) =>
+      getLinkData(link),
+    ),
+  );
   attachOptional(data, "time", getDateElementValue(metadata, "time"));
   attachOptional(data, "keywords", getElementValue(metadata, "keywords"));
   // TODO bounds
-  attachOptional(data, "extensions", getUnstructuredData(queryDirectSelector(metadata, "extensions")));
+  attachOptional(
+    data,
+    "extensions",
+    getUnstructuredData(queryDirectSelector(metadata, "extensions")),
+  );
 
   return data;
 }
@@ -119,8 +140,9 @@ function getMetadata(metadata) {
 // https://www.topografix.com/GPX/1/1/#type_trksegType
 function getTrackSegmentData(trkseg) {
   let segment = {};
-  segment.points = Array.from(trkseg.querySelectorAll('trkpt'))
-                        .map((trkpt) => getPointData(trkpt));
+  segment.points = Array.from(trkseg.querySelectorAll("trkpt")).map((trkpt) =>
+    getPointData(trkpt),
+  );
   return segment;
 }
 
@@ -136,15 +158,20 @@ function getTrackData(trk) {
   attachOptional(
     track,
     "links",
-    Array.from(trk.querySelectorAll('link')).map((link) => getLinkData(link))
-    );
+    Array.from(trk.querySelectorAll("link")).map((link) => getLinkData(link)),
+  );
   attachOptional(track, "number", getIntElementValue(trk, "number"));
   attachOptional(track, "type", getElementValue(trk, "type"));
 
-  attachOptional(track, "extensions", getUnstructuredData(queryDirectSelector(trk, "extensions")));
+  attachOptional(
+    track,
+    "extensions",
+    getUnstructuredData(queryDirectSelector(trk, "extensions")),
+  );
 
-  track.segments = Array.from(trk.querySelectorAll('trkseg'))
-                      .map((trkseg) => getTrackSegmentData(trkseg));
+  track.segments = Array.from(trk.querySelectorAll("trkseg")).map((trkseg) =>
+    getTrackSegmentData(trkseg),
+  );
 
   return track;
 }
@@ -161,15 +188,20 @@ function getRouteData(rte) {
   attachOptional(
     route,
     "links",
-    Array.from(rte.querySelectorAll('link')).map((link) => getLinkData(link))
-    );
+    Array.from(rte.querySelectorAll("link")).map((link) => getLinkData(link)),
+  );
   attachOptional(route, "number", getIntElementValue(rte, "number"));
   attachOptional(route, "type", getElementValue(rte, "type"));
 
-  attachOptional(route, "extensions", getUnstructuredData(queryDirectSelector(rte, "extensions")));
+  attachOptional(
+    route,
+    "extensions",
+    getUnstructuredData(queryDirectSelector(rte, "extensions")),
+  );
 
-  route.points = Array.from(rte.querySelectorAll('rtept'))
-                      .map((rtept) => getPointData(rtept));
+  route.points = Array.from(rte.querySelectorAll("rtept")).map((rtept) =>
+    getPointData(rtept),
+  );
 
   return route;
 }
@@ -185,7 +217,7 @@ function getLinkData(linkNode) {
 
 // https://www.topografix.com/GPX/1/1/#type_wptType
 function getPointData(wpt) {
-  let pt  = {};
+  let pt = {};
 
   // Required information
   attachRequired(pt, "lat", getFloatAttribute(wpt, "lat"));
@@ -205,8 +237,8 @@ function getPointData(wpt) {
   attachOptional(
     pt,
     "links",
-    Array.from(wpt.querySelectorAll('link')).map((link) => getLinkData(link))
-    );
+    Array.from(wpt.querySelectorAll("link")).map((link) => getLinkData(link)),
+  );
   attachOptional(pt, "sym", getElementValue(wpt, "sym"));
   attachOptional(pt, "type", getElementValue(wpt, "type"));
 
@@ -216,10 +248,18 @@ function getPointData(wpt) {
   attachOptional(pt, "hdop", getFloatElementValue(wpt, "hdop"));
   attachOptional(pt, "vdop", getFloatElementValue(wpt, "vdop"));
   attachOptional(pt, "pdop", getFloatElementValue(wpt, "pdop"));
-  attachOptional(pt, "ageofdgpsdata", getFloatElementValue(wpt, "ageofdgpsdata"));
+  attachOptional(
+    pt,
+    "ageofdgpsdata",
+    getFloatElementValue(wpt, "ageofdgpsdata"),
+  );
   attachOptional(pt, "dgpsid", getFloatElementValue(wpt, "dgpsid"));
 
-  attachOptional(pt, "extensions", getUnstructuredData(queryDirectSelector(wpt, "extensions")));
+  attachOptional(
+    pt,
+    "extensions",
+    getUnstructuredData(queryDirectSelector(wpt, "extensions")),
+  );
 
   return pt;
 }
@@ -236,7 +276,11 @@ function getUnstructuredData(node) {
       }
       let ob = {};
       for (let i = 0; i < node.childNodes.length; i++) {
-        attachOptional(ob, node.childNodes[i].nodeName, getUnstructuredData(node.childNodes[i]));
+        attachOptional(
+          ob,
+          node.childNodes[i].nodeName,
+          getUnstructuredData(node.childNodes[i]),
+        );
       }
       return ob;
     case 2: // attribute
@@ -251,27 +295,27 @@ function getUnstructuredData(node) {
 }
 
 /**
-* Get value from a XML DOM element
-* 
-* @param  {Element} parent - Parent DOM Element
-* @param  {string} needle - Name of the searched element
-* 
-* @return {} The element value
-*/
-function getElementValue(parent, needle){
+ * Get value from a XML DOM element
+ *
+ * @param  {Element} parent - Parent DOM Element
+ * @param  {string} needle - Name of the searched element
+ *
+ * @return {} The element value
+ */
+function getElementValue(parent, needle) {
   let elem = parent.querySelector(needle);
-  if(elem != null){
-      return elem.innerHTML ?? elem.childNodes[0].data;
+  if (elem != null) {
+    return elem.innerHTML ?? elem.childNodes[0].data;
   }
   return elem;
-};
+}
 
 function getTransformedElementValue(root, name, transform) {
   const raw = getElementValue(root, name);
   if (raw === null || raw === undefined) {
     return raw;
   }
-  return transform ? transform(raw) :raw;
+  return transform ? transform(raw) : raw;
 }
 
 function getIntElementValue(root, name) {
@@ -291,7 +335,7 @@ function getTransformedAttribute(root, name, transform) {
   if (raw === null || raw === undefined) {
     return raw;
   }
-  return transform ? transform(raw) :raw;
+  return transform ? transform(raw) : raw;
 }
 
 function getIntAttribute(root, name) {
@@ -308,7 +352,7 @@ function getDateAttribute(root, name) {
 
 function attachRequired(obj, name, val) {
   if (val === null || val === undefined) {
-    throw Error(`Required attribute '${name}' not found.`)
+    throw Error(`Required attribute '${name}' not found.`);
   }
   obj[name] = val;
 }
@@ -319,61 +363,97 @@ function attachOptional(obj, name, val) {
   }
 }
 
-
 /**
-* Search the value of a direct child XML DOM element
-* 
-* @param  {Element} parent - Parent DOM Element
-* @param  {string} needle - Name of the searched element
-* 
-* @return {} The element value
-*/
+ * Search the value of a direct child XML DOM element
+ *
+ * @param  {Element} parent - Parent DOM Element
+ * @param  {string} needle - Name of the searched element
+ *
+ * @return {} The element value
+ */
 function queryDirectSelector(parent, needle) {
-
-  let elements  = parent.querySelectorAll(needle);
+  let elements = parent.querySelectorAll(needle);
   if (!elements.length) return null;
 
   let finalElem = elements[0];
 
-  if(elements.length > 1) {
-      let directChilds = parent.childNodes;
+  if (elements.length > 1) {
+    let directChilds = parent.childNodes;
 
-      for(const idx in directChilds) {
-          const elem = directChilds[idx];
-          if(elem.tagName === needle) {
-              finalElem = elem;
-          }
+    for (const idx in directChilds) {
+      const elem = directChilds[idx];
+      if (elem.tagName === needle) {
+        finalElem = elem;
       }
+    }
   }
 
   return finalElem;
-};
+}
 
 function queryDirectSelectorAll(parent, needle) {
-  return Array.from(parent.childNodes).filter((elem) =>
-    elem.tagName === needle
+  return Array.from(parent.childNodes).filter(
+    (elem) => elem.tagName === needle,
   );
-};
+}
 
-gpxParser.prototype.calculate = function() {
+gpxParser.prototype.calculate = function () {
   for (const track of this.tracks) {
     for (const segment of track.segments) {
       calculatePointContainer(segment);
     }
-    attachOptional(track, "startTime", track.segments?.[0]?.startTime?.getTime());
-    attachOptional(track, "duration", track.segments?.reduce((d,s) => d+s.duration, 0)); // TODO can be undefined if s.duration is
-    attachOptional(track, "distance", track.segments?.reduce((d,s) => d+s.distance, 0));
-    attachOptional(track, "cumulativeDistance", track.segments?.map((s) => s.distance));
-    attachOptional(track, "minElevation", track.segments?.reduce((e,s) => Math.min(s.minElevation, e), track.segments[0].minElevation));
-    attachOptional(track, "maxElevation", track.segments?.reduce((e,s) => Math.max(s.maxElevation, e), track.segments[0].maxElevation));
-    attachOptional(track, "gain", track.segments?.reduce((d,s) => d+s.gain, 0));
-    attachOptional(track, "loss", track.segments?.reduce((d,s) => d+s.loss, 0));
+    attachOptional(
+      track,
+      "startTime",
+      track.segments?.[0]?.startTime?.getTime(),
+    );
+    attachOptional(
+      track,
+      "duration",
+      track.segments?.reduce((d, s) => d + s.duration, 0),
+    ); // TODO can be undefined if s.duration is
+    attachOptional(
+      track,
+      "distance",
+      track.segments?.reduce((d, s) => d + s.distance, 0),
+    );
+    attachOptional(
+      track,
+      "cumulativeDistance",
+      track.segments?.map((s) => s.distance),
+    );
+    attachOptional(
+      track,
+      "minElevation",
+      track.segments?.reduce(
+        (e, s) => Math.min(s.minElevation, e),
+        track.segments[0].minElevation,
+      ),
+    );
+    attachOptional(
+      track,
+      "maxElevation",
+      track.segments?.reduce(
+        (e, s) => Math.max(s.maxElevation, e),
+        track.segments[0].maxElevation,
+      ),
+    );
+    attachOptional(
+      track,
+      "gain",
+      track.segments?.reduce((d, s) => d + s.gain, 0),
+    );
+    attachOptional(
+      track,
+      "loss",
+      track.segments?.reduce((d, s) => d + s.loss, 0),
+    );
   }
   for (const route of this.routes) {
     calculatePointContainer(route);
   }
   return this;
-}
+};
 
 function calculatePointContainer(container) {
   const points = container.points;
@@ -392,7 +472,7 @@ function calculatePointContainer(container) {
     const cumulativeDist = [0];
     for (let i = 1; i < points.length; i++) {
       // TODO bearing at each point?
-      totalDist += calcDistanceBetween(points[i-1], points[i]);
+      totalDist += calcDistanceBetween(points[i - 1], points[i]);
       cumulativeDist.push(totalDist);
     }
     // set distance, cumulativeDist
@@ -409,7 +489,7 @@ function calculatePointContainer(container) {
         const currElev = points[i].ele;
         if (currElev > maxElev) maxElev = currElev;
         if (currElev < minElev) minElev = currElev;
-        const diff = currElev - points[i-1].ele;
+        const diff = currElev - points[i - 1].ele;
         if (diff < 0) {
           loss -= diff;
         } else {
@@ -426,13 +506,13 @@ function calculatePointContainer(container) {
 }
 
 /**
-* Calcul Distance between two points with lat and lon
-* 
-* @param  {} wpt1 - A geographic point with lat and lon properties
-* @param  {} wpt2 - A geographic point with lat and lon properties
-* 
-* @returns {float} The distance between the two points
-*/
+ * Calcul Distance between two points with lat and lon
+ *
+ * @param  {} wpt1 - A geographic point with lat and lon properties
+ * @param  {} wpt2 - A geographic point with lat and lon properties
+ *
+ * @returns {float} The distance between the two points
+ */
 function calcDistanceBetween(wpt1, wpt2) {
   let latlng1 = {};
   latlng1.lat = wpt1.lat;
@@ -441,14 +521,14 @@ function calcDistanceBetween(wpt1, wpt2) {
   latlng2.lat = wpt2.lat;
   latlng2.lon = wpt2.lon;
   var rad = Math.PI / 180,
-      lat1 = latlng1.lat * rad,
-      lat2 = latlng2.lat * rad,
-      sinDLat = Math.sin((latlng2.lat - latlng1.lat) * rad / 2),
-      sinDLon = Math.sin((latlng2.lon - latlng1.lon) * rad / 2),
-      a = sinDLat * sinDLat + Math.cos(lat1) * Math.cos(lat2) * sinDLon * sinDLon,
-      c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    lat1 = latlng1.lat * rad,
+    lat2 = latlng2.lat * rad,
+    sinDLat = Math.sin(((latlng2.lat - latlng1.lat) * rad) / 2),
+    sinDLon = Math.sin(((latlng2.lon - latlng1.lon) * rad) / 2),
+    a = sinDLat * sinDLat + Math.cos(lat1) * Math.cos(lat2) * sinDLon * sinDLon,
+    c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return 6371000 * c;
-};
+}
 
 // functions below are for converting from processed GPX to GeoJSON
 function pointToGeoJSONCoordinate(pt) {
@@ -471,54 +551,60 @@ function segmentToGeoJSONCoordinates(segment) {
 function trackToGeoJSONMultiLineString(track) {
   const { ["segments"]: segments, ...properties } = track;
   return {
-    "type": "Feature",
-    "geometry": {
-      "type": "MultiLineString",
-      "coordinates": segments.map(segmentToGeoJSONCoordinates)
+    type: "Feature",
+    geometry: {
+      type: "MultiLineString",
+      coordinates: segments.map(segmentToGeoJSONCoordinates),
     },
-    "properties": properties
+    properties: properties,
   };
 }
 
 function routeToGeoJSONLineString(route) {
   const { ["points"]: points, ...properties } = route;
   return {
-    "type": "Feature",
-    "geometry": {
-      "type": "LineString",
-      "coordinates": points.map(pointToGeoJSONCoordinate)
+    type: "Feature",
+    geometry: {
+      type: "LineString",
+      coordinates: points.map(pointToGeoJSONCoordinate),
     },
-    "properties": properties
+    properties: properties,
   };
 }
 
 function waypointToGeoJSONPoint(pt) {
   const { ["lat"]: lat, ["lon"]: lon, ...properties } = pt;
   return {
-    "type": "Feature",
-    "geometry": {
-      "type": "Point",
-      "coordinates": pointToGeoJSONCoordinate(pt)
+    type: "Feature",
+    geometry: {
+      type: "Point",
+      coordinates: pointToGeoJSONCoordinate(pt),
     },
-    "properties": properties
+    properties: properties,
   };
 }
 
 /**
-* Export the GPX object to a GeoJSON formatted Object
-* 
-* @returns {} a GeoJSON formatted Object
-*/
+ * Export the GPX object to a GeoJSON formatted Object
+ *
+ * @returns {} a GeoJSON formatted Object
+ */
 gpxParser.prototype.toGeoJSON = function () {
   var GeoJSON = {
-      "type": "FeatureCollection",
-      "features": [],
-      "properties": this.metadata,
+    type: "FeatureCollection",
+    features: [],
+    properties: this.metadata,
   };
 
-  GeoJSON.features = GeoJSON.features.concat(this.tracks.map(trackToGeoJSONMultiLineString));
-  GeoJSON.features = GeoJSON.features.concat(this.routes.map(routeToGeoJSONLineString));
-  GeoJSON.features = GeoJSON.features.concat(this.waypoints.map(waypointToGeoJSONPoint));
+  GeoJSON.features = GeoJSON.features.concat(
+    this.tracks.map(trackToGeoJSONMultiLineString),
+  );
+  GeoJSON.features = GeoJSON.features.concat(
+    this.routes.map(routeToGeoJSONLineString),
+  );
+  GeoJSON.features = GeoJSON.features.concat(
+    this.waypoints.map(waypointToGeoJSONPoint),
+  );
 
   return GeoJSON;
 };
