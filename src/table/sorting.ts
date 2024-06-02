@@ -1,6 +1,6 @@
-import {Column} from '../column'
+import { Column } from "../column";
 
 export type Sorting = {
-  col:Column,
-  asc:boolean,
-}
+  col: Column;
+  asc: boolean;
+};

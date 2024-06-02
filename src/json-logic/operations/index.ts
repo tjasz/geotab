@@ -1,20 +1,19 @@
-
 import * as Turf from "@turf/turf";
-import zip from './zip'
-import varOf from './varOf'
-import Geo from './geo'
+import zip from "./zip";
+import varOf from "./varOf";
+import Geo from "./geo";
 
-function getMethods(obj : Object) : string[]
-{
-  return Object.getOwnPropertyNames(obj)
-    .filter(p => typeof obj[p] === 'function');
+function getMethods(obj: Object): string[] {
+  return Object.getOwnPropertyNames(obj).filter(
+    (p) => typeof obj[p] === "function",
+  );
 }
 
-const turfOperations = getMethods(Turf).map(op => `Turf.${op}`);
+const turfOperations = getMethods(Turf).map((op) => `Turf.${op}`);
 
-const mathOperations = getMethods(Math).map(op => `Math.${op}`);
+const mathOperations = getMethods(Math).map((op) => `Math.${op}`);
 
-const geoOperaitons = getMethods(Geo).map(op => `Geo.${op}`);
+const geoOperaitons = getMethods(Geo).map((op) => `Geo.${op}`);
 
 const jsonLogicOperations = [
   "log",

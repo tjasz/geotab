@@ -1,9 +1,9 @@
 import { JsonSchema } from "json-schema-library";
 import { Column } from "../column";
-import { operationNames } from "./operations"
+import { operationNames } from "./operations";
 
 export const getSchema = (columns: Column[]) => {
-  const schema : JsonSchema = {
+  const schema: JsonSchema = {
     $ref: "#/$defs/expression",
     $defs: {
       expression: {
@@ -19,14 +19,18 @@ export const getSchema = (columns: Column[]) => {
         ],
         default: { var: "feature" },
       },
-      null: {type: "null"},
-      stringLiteral: {type: "string", title: "String Literal"},
-      numberLiteral: {type: "number", title: "Number Literal"},
-      booleanLiteral: {type: "boolean", title: "Boolean Literal"},
-      dateTimeLiteral: {type: "string", format: "date-time", title: "DateTime Literal"},
+      null: { type: "null" },
+      stringLiteral: { type: "string", title: "String Literal" },
+      numberLiteral: { type: "number", title: "Number Literal" },
+      booleanLiteral: { type: "boolean", title: "Boolean Literal" },
+      dateTimeLiteral: {
+        type: "string",
+        format: "date-time",
+        title: "DateTime Literal",
+      },
       pointLiteral: {
         type: "array",
-        items: {type: "number", default: 0},
+        items: { type: "number", default: 0 },
         minItems: 2,
         title: "Point Literal",
         default: [-122.33419, 47.60005],
@@ -42,10 +46,11 @@ export const getSchema = (columns: Column[]) => {
           "": [
             { $ref: "#/$defs/expression" },
             { $ref: "#/$defs/expressionArray" },
-          ]},
+          ],
+        },
         propertyNames: { enum: operationNames },
       },
-    }
+    },
   };
   return schema;
 };

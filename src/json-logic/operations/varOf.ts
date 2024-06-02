@@ -6,11 +6,18 @@
  * @param fallback A value to return if one is not found at the given path.
  * @returns The property at the given path or the fallback.
  */
-export default function varOf(pathString : string, data : unknown, fallback : unknown) : unknown
-{
-  const defaultValue = (fallback === undefined) ? null : fallback;
+export default function varOf(
+  pathString: string,
+  data: unknown,
+  fallback: unknown,
+): unknown {
+  const defaultValue = fallback === undefined ? null : fallback;
 
-  if (typeof pathString === "undefined" || pathString === "" || pathString === null) {
+  if (
+    typeof pathString === "undefined" ||
+    pathString === "" ||
+    pathString === null
+  ) {
     return data;
   }
 

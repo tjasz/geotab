@@ -12,11 +12,13 @@
  * @param a2 The right-hand arrays, whose values go into property `right` of the zipped objects.
  * @returns The zipped arrays of objects.
  */
-export default function zip(a1 : unknown[], a2 : unknown[] | unknown) : {left: unknown, right: unknown}[]
-{
+export default function zip(
+  a1: unknown[],
+  a2: unknown[] | unknown,
+): { left: unknown; right: unknown }[] {
   if (Array.isArray(a2)) {
-    return a1.map((obj, i) => ({left: obj, right: a2[i % a2.length]}));
+    return a1.map((obj, i) => ({ left: obj, right: a2[i % a2.length] }));
   }
 
-  return a1.map((obj) => ({left: obj, right: a2}));
+  return a1.map((obj) => ({ left: obj, right: a2 }));
 }

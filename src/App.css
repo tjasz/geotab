@@ -1,4 +1,5 @@
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
 }
@@ -16,7 +17,7 @@ button {
   cursor: pointer;
 }
 
-button:hover  {
+button:hover {
   background-color: #5387b9;
   color: white;
 }
@@ -166,7 +167,9 @@ button:active {
   height: 86.5vh;
 }
 
-#map { height: 100%; }
+#map {
+  height: 100%;
+}
 
 .leaflet-container {
   width: 100%;
@@ -183,7 +186,6 @@ button:active {
   height: 86.5vh;
   overflow: scroll;
 }
-
 
 #data-table {
   border-top: 2px solid black;
@@ -226,10 +228,12 @@ button:active {
 #data-table tr.active {
   background-color: #ffff00;
 }
-#data-table tr.hoveractive, #data-table tr.active:hover {
+#data-table tr.hoveractive,
+#data-table tr.active:hover {
   background-color: #ffff9f;
 }
-#data-table tr.hoverinactive, #data-table tr:hover {
+#data-table tr.hoverinactive,
+#data-table tr:hover {
   background-color: #ffffcf;
 }
 #data-table tr:nth-child(odd) {
@@ -238,10 +242,12 @@ button:active {
 #data-table tr.active:nth-child(odd) {
   background-color: #f3f600;
 }
-#data-table tr.hoveractive:nth-child(odd), #data-table tr.active:hover:nth-child(odd) {
+#data-table tr.hoveractive:nth-child(odd),
+#data-table tr.active:hover:nth-child(odd) {
   background-color: #f3f69a;
 }
-#data-table tr.hoverinactive:nth-child(odd), #data-table tr:hover:nth-child(odd) {
+#data-table tr.hoverinactive:nth-child(odd),
+#data-table tr:hover:nth-child(odd) {
   background-color: #f3f6ca;
 }
 #data-table tr td {
