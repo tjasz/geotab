@@ -57,13 +57,13 @@ function getColumnMetadata(features, key, existingProperties) {
   )
     ? "number"
     : features.every(
-          (feature) =>
-            feature.properties[key] === undefined ||
-            feature.properties[key] === "" ||
-            (typeof feature.properties[key] === "string" &&
-              feature.properties[key].match(/^[0-9]{4}/) &&
-              !isNaN(Date.parse(feature.properties[key]))),
-        )
+      (feature) =>
+        feature.properties[key] === undefined ||
+        feature.properties[key] === "" ||
+        (typeof feature.properties[key] === "string" &&
+          feature.properties[key].match(/^[0-9]{4}/) &&
+          !isNaN(Date.parse(feature.properties[key]))),
+    )
       ? "date"
       : "string";
   return {
@@ -140,13 +140,13 @@ export function getCentralCoord(feature) {
     case "MultiLineString":
       const part =
         feature.geometry.coordinates[
-          Math.floor(feature.geometry.coordinates.length / 2)
+        Math.floor(feature.geometry.coordinates.length / 2)
         ];
       return part[Math.floor(part.length / 2)].slice(0, 2).reverse();
     case "Polygon":
       const polypart =
         feature.geometry.coordinates[
-          Math.floor(feature.geometry.coordinates.length / 2)
+        Math.floor(feature.geometry.coordinates.length / 2)
         ];
       const lons = polypart.map((coordinate) => coordinate[0]);
       const lats = polypart.map((coordinate) => coordinate[1]);
@@ -157,7 +157,7 @@ export function getCentralCoord(feature) {
     case "MultiPolygon":
       const multipolypart =
         feature.geometry.coordinates[
-          Math.floor(feature.geometry.coordinates.length / 2)
+        Math.floor(feature.geometry.coordinates.length / 2)
         ];
       const mpolypart = multipolypart[Math.floor(multipolypart.length / 2)];
       const mlons = mpolypart.map((coordinate) => coordinate[0]);
@@ -228,9 +228,9 @@ export function getDistance(pta, ptb) {
   const a =
     sin_half_delta_lat * sin_half_delta_lat +
     math.dcos(ptb[0]) *
-      math.dcos(pta[0]) *
-      sin_half_delta_lon *
-      sin_half_delta_lon;
+    math.dcos(pta[0]) *
+    sin_half_delta_lon *
+    sin_half_delta_lon;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   const d = c * earthRadiusMeters;
   return d;
