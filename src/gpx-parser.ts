@@ -1,9 +1,499 @@
-// MIT License
-
 import { Coordinate } from "./geojson-types";
+
+// Types from XML schema https://www.topografix.com/GPX/1/1
+type Gpx = {
+  // version and creator are technically required by the spec, but many files omit them
+  version?: "1.1";
+  creator?: string;
+  metadata?: Metadata;
+  wpts: Wpt[];
+  rtes: Rte[];
+  trks: Trk[];
+  extensions?: Extensions;
+}
+type Metadata = {
+  name?: string;
+  desc?: string;
+  author?: Person;
+  copyright?: Copyright;
+  links: Link[];
+  time?: Date;
+  keywords?: string;
+  bounds?: Bounds;
+  extensions?: Extensions;
+}
+type Wpt = {
+  lat: Latitude;
+  lon: Longitude;
+  ele?: number;
+  time?: Date;
+  magvar?: Degrees;
+  geoidheight?: number;
+  name?: string;
+  cmt?: string;
+  desc?: string;
+  src?: string;
+  links: Link[];
+  sym?: string;
+  type?: string;
+  fix?: Fix;
+  sat?: number;
+  hdop?: number;
+  vdop?: number;
+  pdop?: number;
+  ageofdgpsdata?: number;
+  dgpsid?: DgpsStation;
+  extensions?: Extensions;
+}
+type Rte = {
+  name?: string;
+  cmt?: string;
+  desc?: string;
+  src?: string;
+  links: Link[];
+  number?: number;
+  type?: string;
+  extensions?: Extensions;
+  rtepts: Wpt[];
+}
+type Trk = {
+  name?: string;
+  cmt?: string;
+  desc?: string;
+  src?: string;
+  links: Link[];
+  number?: number;
+  type?: string;
+  extensions?: Extensions;
+  trksegs: TrkSeg[];
+}
+type Extensions = any;
+type TrkSeg = {
+  trkpts: Wpt[];
+  extensions?: Extensions;
+}
+type Copyright = {
+  author: string;
+  year?: number;
+  license?: string;
+}
+type Link = {
+  href: string;
+  text?: string;
+  type?: string;
+}
+type Email = {
+  id: string;
+  domain: string;
+}
+type Person = {
+  name?: string;
+  email?: Email;
+  link?: Link;
+}
+type Pt = {
+  lat: Latitude;
+  lon: Longitude;
+  ele?: number;
+  time?: Date;
+}
+type PtSeg = {
+  pts: Pt[];
+}
+type Bounds = {
+  minlat: Latitude;
+  minlon: Longitude;
+  maxlat: Latitude;
+  maxlon: Longitude;
+}
+type Latitude = number;
+type Longitude = number;
+type Degrees = number;
+type Fix = "none" | "2d" | "3d" | "dgps" | "pps";
+type DgpsStation = number;
+
+export function parseGpx(xmlString: string): Gpx {
+  const domParser = new window.DOMParser();
+  const document = domParser.parseFromString(xmlString, "text/xml");
+  const gpxNode = document.querySelector("gpx");
+
+  if (!gpxNode) {
+    throw Error("GPX tag not found in document.");
+  }
+
+  const version = gpxNode.getAttribute("version");
+  if (version !== null && version !== "1.1") {
+    throw Error(`Incompatible GPX version ${version} for parser built for version 1.1`)
+  }
+  const creator = gpxNode.getAttribute("creator");
+
+
+  return {
+    version: version ?? undefined,
+    creator: creator ?? undefined,
+    metadata: parseMetadata(gpxNode.querySelector("metadata")),
+    wpts: parseListOf(gpxNode, "wpt", parseWpt),
+    rtes: parseListOf(gpxNode, "rte", parseRte),
+    trks: parseListOf(gpxNode, "trk", parseTrk),
+    extensions: parseExtensions(gpxNode.querySelector("extensions")),
+  }
+}
+
+function parseMetadata(node: Element | null): Metadata | undefined {
+  if (node === null) {
+    return undefined;
+  }
+
+  return {
+    name: node.querySelector("name")?.textContent ?? undefined,
+    desc: node.querySelector("desc")?.textContent ?? undefined,
+    author: parsePerson(node.querySelector("author")),
+    copyright: parseCopyright(node.querySelector("copyright")),
+    links: parseListOf(node, "link", parseLink),
+    time: parseOptionalDate(node.querySelector("time")?.textContent),
+    keywords: node.querySelector("keywords")?.textContent ?? undefined,
+    bounds: parseBounds(node.querySelector("bounds")),
+    extensions: parseExtensions(node.querySelector("extensions")),
+  }
+}
+
+function parseWpt(node: Element | null): Wpt | undefined {
+  if (node === null) {
+    return undefined;
+  }
+
+  const lat = parseLatitude(node.getAttribute("lat"));
+  if (!lat) {
+    throw Error("Invalid Wpt: missing 'lat' attribute");
+  }
+
+  const lon = parseLongitude(node.getAttribute("lon"));
+  if (!lon) {
+    throw Error("Invalid Wpt: missing 'lon' attribute");
+  }
+
+  return {
+    lat,
+    lon,
+    ele: parseOptionalFloat(node.querySelector("ele")?.textContent),
+    time: parseOptionalDate(node.querySelector("time")?.textContent),
+    magvar: parseDegrees(node.querySelector("magvar")?.textContent),
+    geoidheight: parseOptionalFloat(node.querySelector("geoidheight")?.textContent),
+    name: node.querySelector("name")?.textContent ?? undefined,
+    cmt: node.querySelector("cmt")?.textContent ?? undefined,
+    desc: node.querySelector("desc")?.textContent ?? undefined,
+    src: node.querySelector("src")?.textContent ?? undefined,
+    links: parseListOf(node, "link", parseLink),
+    fix: parseFix(node.querySelector("fix")?.textContent),
+    sat: parseOptionalInt(node.querySelector("sat")?.textContent),
+    hdop: parseOptionalFloat(node.querySelector("hdop")?.textContent),
+    vdop: parseOptionalFloat(node.querySelector("vdop")?.textContent),
+    pdop: parseOptionalFloat(node.querySelector("pdop")?.textContent),
+    ageofdgpsdata: parseOptionalFloat(node.querySelector("ageofdgpsdata")?.textContent),
+    dgpsid: parseDgpsStation(node.querySelector("dgpsid")?.textContent),
+    extensions: parseExtensions(node.querySelector("extensions")),
+  }
+}
+
+function parseRte(node: Element | null): Rte | undefined {
+  if (node === null) {
+    return undefined;
+  }
+
+  return {
+    name: node.querySelector("name")?.textContent ?? undefined,
+    cmt: node.querySelector("cmt")?.textContent ?? undefined,
+    desc: node.querySelector("desc")?.textContent ?? undefined,
+    src: node.querySelector("src")?.textContent ?? undefined,
+    links: parseListOf(node, "link", parseLink),
+    number: parseOptionalInt(node.querySelector("number")?.textContent),
+    type: node.querySelector("type")?.textContent ?? undefined,
+    extensions: parseExtensions(node.querySelector("extensions")),
+    rtepts: parseListOf(node, "rtept", parseWpt),
+  }
+}
+
+function parseTrk(node: Element | null): Trk | undefined {
+  if (node === null) {
+    return undefined;
+  }
+
+  return {
+    name: node.querySelector("name")?.textContent ?? undefined,
+    cmt: node.querySelector("cmt")?.textContent ?? undefined,
+    desc: node.querySelector("desc")?.textContent ?? undefined,
+    src: node.querySelector("src")?.textContent ?? undefined,
+    links: parseListOf(node, "link", parseLink),
+    number: parseOptionalInt(node.querySelector("number")?.textContent),
+    type: node.querySelector("type")?.textContent ?? undefined,
+    extensions: parseExtensions(node.querySelector("extensions")),
+    trksegs: parseListOf(node, "trkseg", parseTrkSeg),
+  }
+}
+
+function parseExtensions(node: Element | null): Extensions | undefined {
+  if (node === null) {
+    return undefined;
+  }
+
+  // TODO use own method for this
+  return getUnstructuredData(node);
+}
+
+function parseTrkSeg(node: Element | null): TrkSeg | undefined {
+  if (node === null) {
+    return undefined;
+  }
+
+  return {
+    trkpts: parseListOf(node, "trkpt", parseWpt),
+    extensions: parseExtensions(node.querySelector("extensions")),
+  }
+}
+
+function parseCopyright(node: Element | null): Copyright | undefined {
+  if (node === null) {
+    return undefined;
+  }
+
+  const author = node.getAttribute("author");
+  if (!author) {
+    throw Error("Invalid Copyright tag: missing 'author' attribute");
+  }
+
+  return {
+    author,
+    year: parseOptionalInt(node.querySelector("year")?.textContent),
+    license: node.querySelector("license")?.textContent ?? undefined,
+  }
+}
+
+function parseLink(node: Element | null): Link | undefined {
+  if (node === null) {
+    return undefined;
+  }
+
+  const href = node.getAttribute("href");
+  if (!href) {
+    throw Error("Invalid Link tag: missing 'href' attribute");
+  }
+
+  return {
+    href,
+    text: node.querySelector("text")?.textContent ?? undefined,
+    type: node.querySelector("type")?.textContent ?? undefined,
+  }
+}
+
+function parseEmail(node: Element | null): Email | undefined {
+  if (node === null) {
+    return undefined;
+  }
+
+  const id = node.getAttribute("id");
+  if (!id) {
+    throw Error("Invalid Email tag: missing 'id' attribute");
+  }
+
+  const domain = node.getAttribute("domain");
+  if (!domain) {
+    throw Error("Invalid Email tag: missing 'domain' attribute");
+  }
+
+  return {
+    id,
+    domain,
+  }
+}
+
+function parsePerson(node: Element | null): Person | undefined {
+  if (node === null) {
+    return undefined;
+  }
+
+  return {
+    name: node.querySelector("name")?.textContent ?? undefined,
+    email: parseEmail(node.querySelector("email")),
+    link: parseLink(node.querySelector("link")),
+  }
+}
+
+function parsePt(node: Element | null): Pt | undefined {
+  if (node === null) {
+    return undefined;
+  }
+
+  const lat = parseLatitude(node.getAttribute("lat"));
+  if (!lat) {
+    throw Error("Invalid Pt: missing 'lat' attribute");
+  }
+
+  const lon = parseLongitude(node.getAttribute("lon"));
+  if (!lon) {
+    throw Error("Invalid Pt: missing 'lon' attribute");
+  }
+
+  return {
+    lat,
+    lon,
+    ele: parseOptionalFloat(node.querySelector("ele")?.textContent),
+    time: parseOptionalDate(node.querySelector("time")?.textContent),
+  }
+}
+
+function parsePtSeg(node: Element | null): PtSeg | undefined {
+  if (node === null) {
+    return undefined;
+  }
+
+  return {
+    pts: parseListOf(node, "pt", parsePt),
+  }
+}
+
+function parseBounds(node: Element | null): Bounds | undefined {
+  if (node === null) {
+    return undefined;
+  }
+
+  const minlat = parseLatitude(node.getAttribute("minlat"));
+  if (!minlat) {
+    throw Error("Invalid Bounds: missing 'minlat' attribute");
+  }
+
+  const minlon = parseLongitude(node.getAttribute("minlon"));
+  if (!minlon) {
+    throw Error("Invalid Bounds: missing 'minlon' attribute");
+  }
+
+  const maxlat = parseLatitude(node.getAttribute("maxlat"));
+  if (!maxlat) {
+    throw Error("Invalid Bounds: missing 'maxlat' attribute");
+  }
+
+  const maxlon = parseLongitude(node.getAttribute("maxlon"));
+  if (!maxlon) {
+    throw Error("Invalid Bounds: missing 'maxlon' attribute");
+  }
+
+  return {
+    minlat,
+    minlon,
+    maxlat,
+    maxlon,
+  }
+}
+
+function parseLatitude(str: string | null): Latitude | undefined {
+  if (!str) {
+    return undefined;
+  }
+
+  const val = parseFloat(str);
+  if (isNaN(val) || val < -90 || val > 90) {
+    throw Error(`Invalid latitude: ${str}`);
+  }
+
+  return val;
+}
+
+function parseLongitude(str: string | null): Longitude | undefined {
+  if (!str) {
+    return undefined;
+  }
+
+  const val = parseFloat(str);
+  if (isNaN(val) || val < -180 || val >= 180) {
+    throw Error(`Invalid longitude: ${str}`);
+  }
+
+  return val;
+}
+
+function parseDegrees(str: string | null | undefined): Degrees | undefined {
+  if (!str) {
+    return undefined;
+  }
+
+  const val = parseFloat(str);
+  if (isNaN(val) || val < 0 || val >= 360) {
+    throw Error(`Invalid degrees: ${str}`);
+  }
+
+  return val;
+}
+
+function parseFix(str: string | null | undefined): Fix | undefined {
+  if (!str) {
+    return undefined;
+  }
+
+  const options = ["none", "2d", "3d", "dgpx", "pps"];
+  if (!options.includes(str)) {
+    throw Error(`Invalid fix. Expected ${options.join(", ")}. Found ${str}`);
+  }
+
+  return str as Fix;
+}
+
+function parseDgpsStation(str: string | null | undefined): DgpsStation | undefined {
+  if (!str) {
+    return undefined;
+  }
+
+  const val = parseInt(str);
+  if (isNaN(val) || val < 0 || val > 1023) {
+    throw Error(`Invalid DgpsStation: ${str}`);
+  }
+
+  return val;
+}
+
+function parseListOf<T>(node: Element, selector: string, parser: (node: Element | null) => T | undefined): T[] {
+  return Array.from(node.querySelectorAll(selector)).map(parser).filter(e => !!e) as T[];
+}
+
+function parseOptionalInt(str: string | null | undefined): number | undefined {
+  if (!str) {
+    return undefined;
+  }
+
+  const val = parseInt(str);
+  if (isNaN(val)) {
+    throw Error(`Invalid int: ${str}`);
+  }
+
+  return val;
+}
+
+function parseOptionalFloat(str: string | null | undefined): number | undefined {
+  if (!str) {
+    return undefined;
+  }
+
+  const val = parseFloat(str);
+  if (isNaN(val)) {
+    throw Error(`Invalid int: ${str}`);
+  }
+
+  return val;
+}
+
+function parseOptionalDate(str: string | null | undefined): Date | undefined {
+  if (!str) {
+    return undefined;
+  }
+
+  const val = new Date(str);
+
+  return val;
+}
+
+// MIT License
 
 // Copyright (c) 2018 Lucas Trebouet Voisin
 // https://github.com/Luuka/GPXParser.js
+// Heavily modified by Tyler Jaszkowiak
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,266 +513,6 @@ import { Coordinate } from "./geojson-types";
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-type Point = {
-  lat: number;
-  lon: number;
-  ele?: number;
-}
-
-/**
- * GPX file parser
- *
- * @constructor
- */
-let gpxParser = function () {
-  this.xmlSource = "";
-  this.metadata = {};
-  this.waypoints = [];
-  this.tracks = [];
-  this.routes = [];
-};
-
-/**
- * Parse a gpx formatted string to a GPXParser Object.
- *
- * Format: https://www.topografix.com/GPX/1/1
- *
- * @param {string} gpxstring - A GPX formatted String
- *
- * @return {gpxParser} A GPXParser object
- */
-gpxParser.prototype.parse = function (gpxstring) {
-  let keepThis = this;
-
-  let domParser = new window.DOMParser();
-  this.xmlSource = domParser.parseFromString(gpxstring, "text/xml");
-
-  const gpxNode = queryDirectSelector(this.xmlSource, "gpx");
-  if (gpxNode?.nodeName !== "gpx" || gpxNode?.nodeType !== 1) {
-    throw Error(
-      `Invalid GPX: outer node should be a <gpx> element. Found ${gpxNode.nodeName} of NodeType ${gpxNode.nodeType}.`,
-    );
-  }
-
-  // required attributes version and creator
-  // technically required by the spec, but as spec is still in version 1.x, many files leave it out
-  attachOptional(this, "version", gpxNode.getAttribute("version"));
-  attachOptional(this, "creator", gpxNode.getAttribute("creator"));
-
-  attachOptional(
-    this,
-    "metadata",
-    getMetadata(this.xmlSource.querySelector("metadata")),
-  );
-
-  keepThis.waypoints = Array.from(this.xmlSource.querySelectorAll("wpt")).map(
-    (wpt) => getPointData(wpt),
-  );
-
-  keepThis.routes = Array.from(this.xmlSource.querySelectorAll("rte")).map(
-    (rte) => getRouteData(rte),
-  );
-
-  keepThis.tracks = Array.from(this.xmlSource.querySelectorAll("trk")).map(
-    (trk) => getTrackData(trk),
-  );
-  return this;
-};
-
-// https://www.topografix.com/GPX/1/1/#type_emailType
-type Email = {
-  id: string;
-  domain: string;
-}
-function getEmailData(email): Email | undefined {
-  if (email === null || email === undefined) {
-    return undefined;
-  }
-
-  const id = email.getAttribute("id");
-  const domain = email.getAttribute("domain");
-  return { id, domain };
-}
-
-// https://www.topografix.com/GPX/1/1/#type_personType
-type Person = {
-  name?: string;
-  email?: Email;
-  link?: Link;
-}
-function getPersonData(person): Person | undefined {
-  if (person === null || person === undefined) {
-    return undefined;
-  }
-
-  return {
-    name: getElementValue(person, "name"),
-    email: getEmailData(person.querySelector("email")),
-    link: getLinkData(person.querySelector("link")),
-  };
-}
-
-// https://www.topografix.com/GPX/1/1/#type_metadataType
-function getMetadata(metadata) {
-  if (metadata === null || metadata === undefined) return metadata;
-  let data = {};
-  attachOptional(data, "name", getElementValue(metadata, "name"));
-  attachOptional(data, "desc", getElementValue(metadata, "desc"));
-  attachOptional(
-    data,
-    "author",
-    getPersonData(metadata.querySelector("author")),
-  );
-  // TODO copyright
-  attachOptional(
-    data,
-    "links",
-    Array.from(queryDirectSelectorAll(metadata, "link")).map((link) =>
-      getLinkData(link),
-    ),
-  );
-  attachOptional(data, "time", getDateElementValue(metadata, "time"));
-  attachOptional(data, "keywords", getElementValue(metadata, "keywords"));
-  // TODO bounds
-  attachOptional(
-    data,
-    "extensions",
-    getUnstructuredData(queryDirectSelector(metadata, "extensions")),
-  );
-
-  return data;
-}
-
-// https://www.topografix.com/GPX/1/1/#type_trksegType
-function getTrackSegmentData(trkseg) {
-  let segment = {};
-  segment.points = Array.from(trkseg.querySelectorAll("trkpt")).map((trkpt) =>
-    getPointData(trkpt),
-  );
-  return segment;
-}
-
-// https://www.topografix.com/GPX/1/1/#type_trkType
-function getTrackData(trk) {
-  let track = {};
-
-  // optional information
-  attachOptional(track, "name", getElementValue(trk, "name"));
-  attachOptional(track, "cmt", getElementValue(trk, "cmt"));
-  attachOptional(track, "desc", getElementValue(trk, "desc"));
-  attachOptional(track, "src", getElementValue(trk, "src"));
-  attachOptional(
-    track,
-    "links",
-    Array.from(trk.querySelectorAll("link")).map((link) => getLinkData(link)),
-  );
-  attachOptional(track, "number", getIntElementValue(trk, "number"));
-  attachOptional(track, "type", getElementValue(trk, "type"));
-
-  attachOptional(
-    track,
-    "extensions",
-    getUnstructuredData(queryDirectSelector(trk, "extensions")),
-  );
-
-  track.segments = Array.from(trk.querySelectorAll("trkseg")).map((trkseg) =>
-    getTrackSegmentData(trkseg),
-  );
-
-  return track;
-}
-
-// https://www.topografix.com/GPX/1/1/#type_rteType
-function getRouteData(rte) {
-  let route = {};
-
-  // optional information
-  attachOptional(route, "name", getElementValue(rte, "name"));
-  attachOptional(route, "cmt", getElementValue(rte, "cmt"));
-  attachOptional(route, "desc", getElementValue(rte, "desc"));
-  attachOptional(route, "src", getElementValue(rte, "src"));
-  attachOptional(
-    route,
-    "links",
-    Array.from(rte.querySelectorAll("link")).map((link) => getLinkData(link)),
-  );
-  attachOptional(route, "number", getIntElementValue(rte, "number"));
-  attachOptional(route, "type", getElementValue(rte, "type"));
-
-  attachOptional(
-    route,
-    "extensions",
-    getUnstructuredData(queryDirectSelector(rte, "extensions")),
-  );
-
-  route.points = Array.from(rte.querySelectorAll("rtept")).map((rtept) =>
-    getPointData(rtept),
-  );
-
-  return route;
-}
-
-// https://www.topografix.com/GPX/1/1/#type_linkType
-type Link = {
-  href: string;
-  text?: string;
-  type?: string;
-}
-function getLinkData(linkNode): Link {
-  return {
-    href: linkNode.getAttribute("href"),
-    text: getElementValue(linkNode, "text"),
-    type: getElementValue(linkNode, "type"),
-  };
-}
-
-// https://www.topografix.com/GPX/1/1/#type_wptType
-function getPointData(wpt) {
-  // Required information : lat and lon
-  const lat = getFloatAttribute(wpt, "lat");
-  const lon = getFloatAttribute(wpt, "lon");
-  const pt: Point = { lat, lon };
-
-  // Optional position information
-  attachOptional(pt, "ele", getFloatElementValue(wpt, "ele"));
-  attachOptional(pt, "time", getDateElementValue(wpt, "time"));
-  attachOptional(pt, "magvar", getFloatElementValue(wpt, "magvar"));
-  attachOptional(pt, "geoidheight", getFloatElementValue(wpt, "geoidheight"));
-
-  // Optional description information
-  attachOptional(pt, "name", getElementValue(wpt, "name"));
-  attachOptional(pt, "cmt", getElementValue(wpt, "cmt"));
-  attachOptional(pt, "desc", getElementValue(wpt, "desc"));
-  attachOptional(pt, "src", getElementValue(wpt, "src"));
-  attachOptional(
-    pt,
-    "links",
-    Array.from(wpt.querySelectorAll("link")).map((link) => getLinkData(link)),
-  );
-  attachOptional(pt, "sym", getElementValue(wpt, "sym"));
-  attachOptional(pt, "type", getElementValue(wpt, "type"));
-
-  // Optional accuracy information
-  attachOptional(pt, "fix", getElementValue(wpt, "fix"));
-  attachOptional(pt, "sat", getIntElementValue(wpt, "sat"));
-  attachOptional(pt, "hdop", getFloatElementValue(wpt, "hdop"));
-  attachOptional(pt, "vdop", getFloatElementValue(wpt, "vdop"));
-  attachOptional(pt, "pdop", getFloatElementValue(wpt, "pdop"));
-  attachOptional(
-    pt,
-    "ageofdgpsdata",
-    getFloatElementValue(wpt, "ageofdgpsdata"),
-  );
-  attachOptional(pt, "dgpsid", getFloatElementValue(wpt, "dgpsid"));
-
-  attachOptional(
-    pt,
-    "extensions",
-    getUnstructuredData(queryDirectSelector(wpt, "extensions")),
-  );
-
-  return pt;
-}
 
 function getUnstructuredData(node) {
   if (node === null || node === undefined) {
@@ -314,107 +544,10 @@ function getUnstructuredData(node) {
   return null;
 }
 
-/**
- * Get value from a XML DOM element
- *
- * @param  {Element} parent - Parent DOM Element
- * @param  {string} needle - Name of the searched element
- *
- * @return {} The element value
- */
-function getElementValue(parent, needle) {
-  let elem = parent.querySelector(needle);
-  if (elem != null) {
-    return elem.innerHTML ?? elem.childNodes[0].data;
-  }
-  return elem;
-}
-
-function getTransformedElementValue(root, name, transform) {
-  const raw = getElementValue(root, name);
-  if (raw === null || raw === undefined) {
-    return raw;
-  }
-  return transform ? transform(raw) : raw;
-}
-
-function getIntElementValue(root, name) {
-  return getTransformedElementValue(root, name, (v) => parseInt(v));
-}
-
-function getFloatElementValue(root, name) {
-  return getTransformedElementValue(root, name, (v) => parseFloat(v));
-}
-
-function getDateElementValue(root, name) {
-  return getTransformedElementValue(root, name, (v) => new Date(v));
-}
-
-function getTransformedAttribute(root, name, transform) {
-  const raw = root.getAttribute(name);
-  if (raw === null || raw === undefined) {
-    return raw;
-  }
-  return transform ? transform(raw) : raw;
-}
-
-function getIntAttribute(root, name) {
-  return getTransformedAttribute(root, name, (v) => parseInt(v));
-}
-
-function getFloatAttribute(root, name) {
-  return getTransformedAttribute(root, name, (v) => parseFloat(v));
-}
-
-function getDateAttribute(root, name) {
-  return getTransformedAttribute(root, name, (v) => new Date(v));
-}
-
-function attachRequired(obj, name, val) {
-  if (val === null || val === undefined) {
-    throw Error(`Required attribute '${name}' not found.`);
-  }
-  obj[name] = val;
-}
-
 function attachOptional(obj, name, val) {
   if (val !== null && val !== undefined && val.length !== 0) {
     obj[name] = val;
   }
-}
-
-/**
- * Search the value of a direct child XML DOM element
- *
- * @param  {Element} parent - Parent DOM Element
- * @param  {string} needle - Name of the searched element
- *
- * @return {} The element value
- */
-function queryDirectSelector(parent, needle) {
-  let elements = parent.querySelectorAll(needle);
-  if (!elements.length) return null;
-
-  let finalElem = elements[0];
-
-  if (elements.length > 1) {
-    let directChilds = parent.childNodes;
-
-    for (const idx in directChilds) {
-      const elem = directChilds[idx];
-      if (elem.tagName === needle) {
-        finalElem = elem;
-      }
-    }
-  }
-
-  return finalElem;
-}
-
-function queryDirectSelectorAll(parent, needle) {
-  return Array.from(parent.childNodes).filter(
-    (elem) => elem.tagName === needle,
-  );
 }
 
 gpxParser.prototype.calculate = function () {
@@ -619,5 +752,3 @@ gpxParser.prototype.toGeoJSON = function () {
 
   return GeoJSON;
 };
-
-export default gpxParser;
