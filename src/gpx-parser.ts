@@ -1,5 +1,7 @@
 // MIT License
 
+import { Coordinate } from "./geojson-types";
+
 // Copyright (c) 2018 Lucas Trebouet Voisin
 // https://github.com/Luuka/GPXParser.js
 
@@ -20,6 +22,12 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+
+type Point = {
+  lat: number;
+  lon: number;
+  ele?: number;
+}
 
 /**
  * GPX file parser
@@ -82,28 +90,36 @@ gpxParser.prototype.parse = function (gpxstring) {
 };
 
 // https://www.topografix.com/GPX/1/1/#type_emailType
-function getEmailData(email) {
-  if (email === null || email === undefined) return email;
-  let data = {};
-  attachRequired(data, "id", email.getAttribute("id"));
-  attachRequired(data, "domain", email.getAttribute("domain"));
-  return data;
+type Email = {
+  id: string;
+  domain: string;
+}
+function getEmailData(email): Email | undefined {
+  if (email === null || email === undefined) {
+    return undefined;
+  }
+
+  const id = email.getAttribute("id");
+  const domain = email.getAttribute("domain");
+  return { id, domain };
 }
 
 // https://www.topografix.com/GPX/1/1/#type_personType
-function getPersonData(person) {
-  if (person === null || person === undefined) return person;
-  let data = {};
-  attachOptional(data, "name", getElementValue(person, "name"));
-  attachOptional(data, "email", getEmailData(person.querySelector("email")));
-  attachOptional(
-    data,
-    "links",
-    Array.from(person.querySelectorAll("link")).map((link) =>
-      getLinkData(link),
-    ),
-  );
-  return data;
+type Person = {
+  name?: string;
+  email?: Email;
+  link?: Link;
+}
+function getPersonData(person): Person | undefined {
+  if (person === null || person === undefined) {
+    return undefined;
+  }
+
+  return {
+    name: getElementValue(person, "name"),
+    email: getEmailData(person.querySelector("email")),
+    link: getLinkData(person.querySelector("link")),
+  };
 }
 
 // https://www.topografix.com/GPX/1/1/#type_metadataType
@@ -207,21 +223,25 @@ function getRouteData(rte) {
 }
 
 // https://www.topografix.com/GPX/1/1/#type_linkType
-function getLinkData(linkNode) {
-  let link = {};
-  attachRequired(link, "href", linkNode.getAttribute("href"));
-  attachOptional(link, "text", getElementValue(linkNode, "text"));
-  attachOptional(link, "type", getElementValue(linkNode, "type"));
-  return link;
+type Link = {
+  href: string;
+  text?: string;
+  type?: string;
+}
+function getLinkData(linkNode): Link {
+  return {
+    href: linkNode.getAttribute("href"),
+    text: getElementValue(linkNode, "text"),
+    type: getElementValue(linkNode, "type"),
+  };
 }
 
 // https://www.topografix.com/GPX/1/1/#type_wptType
 function getPointData(wpt) {
-  let pt = {};
-
-  // Required information
-  attachRequired(pt, "lat", getFloatAttribute(wpt, "lat"));
-  attachRequired(pt, "lon", getFloatAttribute(wpt, "lon"));
+  // Required information : lat and lon
+  const lat = getFloatAttribute(wpt, "lat");
+  const lon = getFloatAttribute(wpt, "lon");
+  const pt: Point = { lat, lon };
 
   // Optional position information
   attachOptional(pt, "ele", getFloatElementValue(wpt, "ele"));
@@ -513,33 +533,24 @@ function calculatePointContainer(container) {
  *
  * @returns {float} The distance between the two points
  */
-function calcDistanceBetween(wpt1, wpt2) {
-  let latlng1 = {};
-  latlng1.lat = wpt1.lat;
-  latlng1.lon = wpt1.lon;
-  let latlng2 = {};
-  latlng2.lat = wpt2.lat;
-  latlng2.lon = wpt2.lon;
+function calcDistanceBetween(wpt1: Point, wpt2: Point) {
   var rad = Math.PI / 180,
-    lat1 = latlng1.lat * rad,
-    lat2 = latlng2.lat * rad,
-    sinDLat = Math.sin(((latlng2.lat - latlng1.lat) * rad) / 2),
-    sinDLon = Math.sin(((latlng2.lon - latlng1.lon) * rad) / 2),
+    lat1 = wpt1.lat * rad,
+    lat2 = wpt2.lat * rad,
+    sinDLat = Math.sin(((wpt2.lat - wpt1.lat) * rad) / 2),
+    sinDLon = Math.sin(((wpt2.lon - wpt1.lon) * rad) / 2),
     a = sinDLat * sinDLat + Math.cos(lat1) * Math.cos(lat2) * sinDLon * sinDLon,
     c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return 6371000 * c;
 }
 
 // functions below are for converting from processed GPX to GeoJSON
-function pointToGeoJSONCoordinate(pt) {
-  let coord = [];
+function pointToGeoJSONCoordinate(pt: Point) {
+  let coord: Coordinate = [];
   coord.push(pt.lon);
   coord.push(pt.lat);
   if (pt.ele !== null && pt.ele !== undefined) {
     coord.push(pt.ele);
-  }
-  if (pt.time !== null && pt.time !== undefined) {
-    coord.push(pt.time.getTime());
   }
   return coord;
 }
