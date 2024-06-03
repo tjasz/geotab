@@ -1,5 +1,5 @@
 import Papa from "papaparse";
-import { featureCollection, FeatureCollection, point } from "@turf/turf";
+import { Feature, FeatureCollection, FeatureType, GeometryType } from "../geojson-types";
 
 enum InvalidPositionHandling {
   Throw,
@@ -36,7 +36,7 @@ export function csvToGeoJSON(csvString: string, options?: ICsvToGeoJsonOptions):
   const parseLatLng = options?.parseLatLon ?? parseFloat;
   const invalidPositionHandling = options?.invalidPositionHandling ?? InvalidPositionHandling.ReplaceWithNull;
 
-  return featureCollection(parseResult.data.map((row) => {
+  const features = parseResult.data.map((row): Feature => {
     const lat = parseLatLng(row[latfield]);
     const lon = parseLatLng(row[lonfield]);
 
@@ -57,16 +57,28 @@ export function csvToGeoJSON(csvString: string, options?: ICsvToGeoJsonOptions):
       invalidPositionHandling === InvalidPositionHandling.SkipRow
     ) {
       return {
-        type: "Point",
+        type: FeatureType.Feature,
         geometry: null,
         properties: row,
       };
     }
 
-    return point([lon, lat], row);
-  })
-    .filter(f => !(invalidPositionHandling === InvalidPositionHandling.SkipRow && f.geometry === null))
-  );
+    return {
+      type: FeatureType.Feature,
+      geometry: {
+        type: GeometryType.Point,
+        coordinates: [lon, lat],
+      },
+      properties: row,
+    };
+  });
+
+  return {
+    type: FeatureType.FeatureCollection,
+    features: invalidPositionHandling === InvalidPositionHandling.SkipRow
+      ? features.filter(f => f.geometry !== null)
+      : features
+  };
 }
 
 // Find a field that either matches, starts with, or includes one of the preferred names,

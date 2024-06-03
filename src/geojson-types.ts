@@ -71,7 +71,7 @@ export type FeatureProperties = { [index: string]: any };
 
 export type Feature = Extension & {
   type: FeatureType;
-  geometry: Geometry | GeometryCollection;
+  geometry: Geometry | GeometryCollection | null;
   properties: FeatureProperties;
 };
 

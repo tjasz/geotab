@@ -220,7 +220,7 @@ function fitToGeoJSON(fit): GeoJson.FeatureCollection {
       record.position_lat !== undefined &&
       record.position_long !== undefined
     ) {
-      track.geometry.coordinates.push([
+      track.geometry!.coordinates.push([
         record.position_long,
         record.position_lat,
       ]);
