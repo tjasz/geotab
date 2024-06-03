@@ -39,7 +39,7 @@ import { simplify } from "../geojson-calc";
 import { JsonFieldDialog } from "../JsonFieldDialog";
 import { Draft07 } from "json-schema-library";
 import { getSchema } from "../json-logic/schema";
-import { geojsonGeometrySchema } from "../geojson-schema";
+import { geojsonGeometrySchema } from "../file-formats/geojson-schema";
 import { FileUploadDialog } from "./FileUploadDialog";
 
 export default function DataTable() {
@@ -221,13 +221,13 @@ export default function DataTable() {
         const newData = context.data.map((feature, index) =>
           selectedRows.has(feature.id)
             ? {
-                ...feature,
-                geometry: apply(formula, {
-                  feature,
-                  index,
-                  features: context.filteredData,
-                }).geometry,
-              }
+              ...feature,
+              geometry: apply(formula, {
+                feature,
+                index,
+                features: context.filteredData,
+              }).geometry,
+            }
             : feature,
         );
         context.setData(newData);
