@@ -114,6 +114,7 @@ function ImportView(props) {
         Simplify Geometry
       </button>
       <h3>Import</h3>
+      <p>Supported file types: GeoJSON, GPX, FIT, CSV</p>
       <FileImporter onRead={setDataFromJson} />
       <p>Try pre-loaded data:</p>
       <ul>
@@ -236,14 +237,14 @@ function ExportView(props) {
     return buffer
       ? createBuffer(features)
       : {
-          type: "FeatureCollection",
-          features,
-          geotabMetadata: {
-            columns: context.columns,
-            filter: context.filter,
-            symbology: context.symbology,
-          },
-        };
+        type: "FeatureCollection",
+        features,
+        geotabMetadata: {
+          columns: context.columns,
+          filter: context.filter,
+          symbology: context.symbology,
+        },
+      };
   };
 
   const exportToFile = (featureCollection) => {
