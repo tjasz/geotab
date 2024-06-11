@@ -46,6 +46,7 @@ class TabView extends React.Component<TabViewProps, TabViewState> {
         </div>
         <div className="tabBodies">
           {this.state.Data && <DataView style={{ width: tabwidth + "%" }} />}
+          <div style={{ height: "86.5vh", width: "10px", backgroundColor: "black", float: "left" }}></div>
           {this.state.Map && <MapView style={{ width: tabwidth + "%" }} />}
           {this.state.Table && <TableView style={{ width: tabwidth + "%" }} />}
           {this.state.Symbology && (

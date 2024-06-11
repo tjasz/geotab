@@ -19,8 +19,13 @@ import { FieldTypeDescription } from "./fieldtype";
 import { Column } from "./column";
 import { Symbology } from "./painter";
 import { add_operations } from "./json-logic/root";
+import { SplitView } from "./SplitView";
+import DataView from "./dataview";
+import MapView from "./mapview";
+import TableView from "./table/tableview";
+import SymbologyView from "./symbologyview";
 
-interface IAppProps {}
+interface IAppProps { }
 
 type IState = DataContextType;
 
@@ -202,7 +207,12 @@ function AppFooter() {
 function AppBody() {
   return (
     <div id="App-body">
-      <TabView />
+      <SplitView>
+        <DataView style={{ width: "100%" }} />
+        <MapView style={{ width: "100%" }} />
+        <TableView style={{ width: "100%" }} />
+        <SymbologyView style={{ width: "100%" }} />
+      </SplitView>
     </div>
   );
 }
