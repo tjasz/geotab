@@ -349,6 +349,7 @@ function ChangeView() {
         className="leaflet-control-fitbounds"
         title="Fit Map to Feature Bounds"
         iconClass="leaflet-control-fitbounds-icon"
+        onClick={(map, event) => map.fitBounds(featureListBounds)}
       />}
       {isContextPopupOpen && (
         <ContextPopup

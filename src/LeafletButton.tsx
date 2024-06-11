@@ -5,6 +5,7 @@ type ButtonOptions = ControlOptions & {
   className: string;
   title: string;
   iconClass: string;
+  onClick: (map: L.Map, e: Event) => void;
 };
 
 export class ButtonControl extends L.Control {
@@ -24,6 +25,11 @@ export class ButtonControl extends L.Control {
     link.role = "button";
 
     const span = L.DomUtil.create("span", this.options.iconClass, link);
+
+    L.DomEvent.addListener(div, 'click', (e) => {
+      L.DomEvent.stop(e);
+      this.options.onClick(map, e);
+    });
 
     return div;
   }
