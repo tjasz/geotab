@@ -1,17 +1,17 @@
 {
   "files": {
-    "main.css": "/geotab/static/css/main.1389a79f.css",
-    "main.js": "/geotab/static/js/main.d5f525be.js",
+    "main.css": "/geotab/static/css/main.a0961788.css",
+    "main.js": "/geotab/static/js/main.a1d78754.js",
     "static/js/787.d2868ffa.chunk.js": "/geotab/static/js/787.d2868ffa.chunk.js",
     "index.html": "/geotab/index.html",
     "static/media/plus-square.svg": "/geotab/static/media/plus-square.1254f9745b42217d16e8c047e1aea764.svg",
     "static/media/minus-square.svg": "/geotab/static/media/minus-square.8d669f15adb02523d6793d09e3992072.svg",
-    "main.1389a79f.css.map": "/geotab/static/css/main.1389a79f.css.map",
-    "main.d5f525be.js.map": "/geotab/static/js/main.d5f525be.js.map",
+    "main.a0961788.css.map": "/geotab/static/css/main.a0961788.css.map",
+    "main.a1d78754.js.map": "/geotab/static/js/main.a1d78754.js.map",
     "787.d2868ffa.chunk.js.map": "/geotab/static/js/787.d2868ffa.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.1389a79f.css",
-    "static/js/main.d5f525be.js"
+    "static/css/main.a0961788.css",
+    "static/js/main.a1d78754.js"
   ]
 }
