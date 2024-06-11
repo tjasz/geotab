@@ -1,11 +1,15 @@
 import L, { ControlOptions } from "leaflet";
-import { createControlComponent } from '@react-leaflet/core'
+import { createControlComponent } from '@react-leaflet/core';
+
+type MapEventHandler = (map: L.Map, e: Event) => void;
 
 type ButtonOptions = ControlOptions & {
   className: string;
   title: string;
   iconClass: string;
-  onClick: (map: L.Map, e: Event) => void;
+  onClick?: MapEventHandler;
+  onDblClick?: MapEventHandler;
+  onContextMenu?: MapEventHandler;
 };
 
 export class ButtonControl extends L.Control {
@@ -26,10 +30,25 @@ export class ButtonControl extends L.Control {
 
     const span = L.DomUtil.create("span", this.options.iconClass, link);
 
-    L.DomEvent.addListener(div, 'click', (e) => {
-      L.DomEvent.stop(e);
-      this.options.onClick(map, e);
-    });
+    // add event handlers
+    if (this.options.onClick !== undefined) {
+      L.DomEvent.addListener(div, 'click', (e) => {
+        L.DomEvent.stop(e);
+        this.options.onClick!(map, e);
+      });
+    }
+    if (this.options.onDblClick !== undefined) {
+      L.DomEvent.addListener(div, 'dblclick', (e) => {
+        L.DomEvent.stop(e);
+        this.options.onDblClick!(map, e);
+      });
+    }
+    if (this.options.onContextMenu !== undefined) {
+      L.DomEvent.addListener(div, 'contextmenu', (e) => {
+        L.DomEvent.stop(e);
+        this.options.onContextMenu!(map, e);
+      });
+    }
 
     return div;
   }
