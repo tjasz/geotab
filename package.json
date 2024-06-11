@@ -22,6 +22,7 @@
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",
     "@types/websocket": "^1.0.5",
+    "@uidotdev/usehooks": "^2.4.1",
     "fit-file-parser": "^1.9.3",
     "gapi-script": "^1.2.0",
     "json-logic-js": "^2.0.2",

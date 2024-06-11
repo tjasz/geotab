@@ -1,41 +1,57 @@
-import React, { ReactNode, Children } from "react";
+import { useMeasure } from "@uidotdev/usehooks";
+import { ReactNode, Children, useState } from "react";
 
 type SplitViewProps = {
   children: ReactNode
 };
-type SplitViewState = {
-  widths: string[];
-};
 
-const dividerWidth = "10px";
+export function SplitView(props: SplitViewProps) {
+  const count = Children.count(props.children);
+  const defaultPaneWidth = 300; //`calc((100% - (${count - 1} * ${dividerWidth})) / ${count})`; TODO
+  const [widths, setWidths] = useState<number[]>(Array(count - 1).fill(defaultPaneWidth));
 
-export class SplitView extends React.Component<SplitViewProps, SplitViewState> {
-  constructor(props: SplitViewProps) {
-    super(props);
+  const children = Children.toArray(props.children);
 
-    const count = Children.count(this.props.children);
-    const defaultPaneWidth = `calc((100% - (${count - 1} * ${dividerWidth})) / ${count})`;
-    this.state = {
-      widths: Array(count).fill(defaultPaneWidth)
-    }
-  }
+  console.log(widths)
 
-  render() {
-    const children = Children.toArray(this.props.children);
-
-    const toPane = (child, i: number) =>
-      <div className="splitview-pane" style={{ width: this.state.widths[i], float: "left" }}>
+  return <div className="splitview" style={{ width: "100%" }}>
+    {children.slice(0, -1).map((child, idx) =>
+      <Pane
+        resize="horizontal"
+        initialWidth={`${widths[idx]}px`}
+        onWidthChange={newWidth => setWidths(widths.map((v, i) => idx === i ? newWidth : v))}
+      >
         {child}
-      </div>
+      </Pane>
+    )}
+    <Pane
+      resize="none"
+      initialWidth={`calc(100% - ${widths.reduce((sum, v) => sum + v, 0)}px)`}
+      onWidthChange={() => { }}
+    >
+      {children.at(children.length - 1)}
+    </Pane>
+  </div >
+}
 
-    return <div className="splitview" style={{ width: "100%" }}>
-      {children.slice(0, -1).map((child, i) =>
-        <>
-          {toPane(child, i)}
-          <div className="splitview-divider" style={{ height: "100px", width: dividerWidth, float: "left", backgroundColor: "black" }}></div>
-        </>
-      )}
-      {toPane(children.at(children.length - 1), children.length - 1)}
-    </div>
-  }
+type PaneProps = {
+  children: ReactNode,
+  resize: "horizontal" | "none",
+  initialWidth: string,
+  onWidthChange: (v: number) => void,
+}
+
+function Pane(props: PaneProps) {
+  const [ref, { width, height }] = useMeasure();
+
+
+
+  return <div
+    ref={ref}
+    className="splitview-pane"
+    style={{ resize: props.resize, overflow: "scroll", width: props.initialWidth, float: "left" }}
+    onMouseMove={() => props.onWidthChange(width ?? 0)}
+  >
+    {props.children}
+  </div>
 }

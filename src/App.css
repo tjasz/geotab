@@ -180,6 +180,7 @@ button:active {
 #mapview {
   float: left;
   height: 86.5vh;
+  overflow: hidden;
 }
 
 #map {
@@ -199,7 +200,6 @@ button:active {
 #tableview {
   float: left;
   height: 86.5vh;
-  overflow: scroll;
 }
 
 #data-table {
@@ -291,9 +291,7 @@ button:active {
 
 #dataview {
   float: left;
-  height: 85.5vh;
-  padding: 0.5em 0;
-  overflow: scroll;
+  height: 86.5vh;
 }
 
 #importView {
@@ -362,9 +360,7 @@ button:active {
 
 #symbologyview {
   float: left;
-  height: 85.5vh;
-  padding: 0.5em 0;
-  overflow: scroll;
+  height: 86.5vh;
 }
 
 #symbology-definition {
