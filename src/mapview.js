@@ -3,6 +3,9 @@ import { useSearchParams } from "react-router-dom";
 import ReactDOMServer from "react-dom/server";
 import { v4 as uuidv4 } from "uuid";
 import L from "leaflet";
+import "leaflet.locatecontrol";
+import "leaflet.locatecontrol/dist/L.Control.Locate.min.css";
+import { createControlComponent } from '@react-leaflet/core'
 import { Button } from "@mui/material";
 import { AddLocation, ContentCopy } from "@mui/icons-material";
 import {
@@ -56,6 +59,7 @@ function MapView(props) {
         whenReady={() => resizeMap(mapRef)}
       >
         <ChangeView />
+        <LocateControl />
         <ScaleControl position="bottomleft" />
         <GeoJSON
           data={features}
@@ -404,5 +408,9 @@ function MyOverlayControl(props) {
       return null;
   }
 }
+
+const LocateControl = createControlComponent(function createScaleControl(props) {
+  return new L.Control.Locate(props)
+})
 
 export default MapView;
