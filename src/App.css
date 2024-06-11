@@ -43,31 +43,39 @@ button:active {
   padding: 0.5vh;
   margin: 0;
 }
+
 #App-header h1 {
   margin: 0 10px;
   padding: 0;
 }
+
 #App-header h1 a {
   color: white;
   text-decoration: none;
 }
+
 #App-header p {
   margin: 0 10px;
 }
+
 #App-header div {
   float: left;
   height: calc(7vh - 2px);
 }
+
 #App-header #logoDiv {
   width: calc(7vh - 2px);
 }
+
 #App-header #googleSessionDiv {
   float: right;
 }
+
 #App-header div .verticalCentering {
   height: calc(7vh - 2px);
   position: relative;
 }
+
 #App-header div .verticalCentering svg {
   height: calc(7vh - 2px);
   width: calc(7vh - 2px);
@@ -77,26 +85,31 @@ button:active {
   -ms-transform: translateY(-50%);
   transform: translateY(-50%);
 }
+
 @media (max-width: 1000px) {
   #App-header #appNameDiv p {
     display: none;
   }
+
   #App-header #googleSessionDiv p {
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 150px;
   }
 }
+
 @media (max-width: 650px) {
   #App-header #appNameDiv h1 {
     display: none;
   }
 }
+
 @media (max-width: 550px) {
   #App-header #signinStatus p {
     max-width: 20px;
   }
 }
+
 @media (max-width: 350px) {
   #App-header #googleSessionDiv p {
     max-width: 20px;
@@ -117,12 +130,12 @@ button:active {
   color: white;
   border-top: 2px solid black;
 }
+
 #App-footer p {
   margin: 0.2em;
 }
 
-#tabview {
-}
+#tabview {}
 
 .tabs {
   height: 2.5vh;
@@ -149,10 +162,12 @@ button:active {
   background-color: #5387b9;
   color: white;
 }
+
 .tabs p.active {
   background-color: #73a7d9;
   color: black;
 }
+
 .tabs p.active:hover {
   background-color: #5387b9;
   color: white;
@@ -190,13 +205,16 @@ button:active {
 #data-table {
   border-top: 2px solid black;
 }
+
 #data-table thead th.tableCorner {
   z-index: 100;
 }
+
 #data-table thead th {
   position: sticky;
   z-index: 50;
 }
+
 #data-table th {
   position: sticky;
   z-index: 20;
@@ -210,46 +228,59 @@ button:active {
   cursor: pointer;
   white-space: nowrap;
 }
+
 #data-table th a {
   color: #b3e7ff;
 }
+
 #data-table th a:link {
   color: #b3e7ff;
 }
+
 #data-table th a:visited {
   color: #b3e7ff;
 }
+
 #data-table th a:hover {
   color: #93c7df;
 }
+
 #data-table th a:active {
   color: #73a7bf;
 }
+
 #data-table tr.active {
   background-color: #ffff00;
 }
+
 #data-table tr.hoveractive,
 #data-table tr.active:hover {
   background-color: #ffff9f;
 }
+
 #data-table tr.hoverinactive,
 #data-table tr:hover {
   background-color: #ffffcf;
 }
+
 #data-table tr:nth-child(odd) {
   background-color: #f3f6fa;
 }
+
 #data-table tr.active:nth-child(odd) {
   background-color: #f3f600;
 }
+
 #data-table tr.hoveractive:nth-child(odd),
 #data-table tr.active:hover:nth-child(odd) {
   background-color: #f3f69a;
 }
+
 #data-table tr.hoverinactive:nth-child(odd),
 #data-table tr:hover:nth-child(odd) {
   background-color: #f3f6ca;
 }
+
 #data-table tr td {
   text-align: left;
   border: 1px solid black;
@@ -345,15 +376,18 @@ button:active {
   text-align: left;
   border-spacing: 0;
 }
+
 .pickerTable tbody tr:nth-child(odd) {
   background-color: #f3f6fa;
 }
+
 .pickerTable thead th {
   position: sticky;
   z-index: 50;
   margin: 0;
   padding: 0.5em;
 }
+
 .pickerTable tbody td {
   margin: 0;
   padding: 0.5em;
@@ -362,4 +396,12 @@ button:active {
 
 #fileInfoDialog th {
   text-align: right;
+}
+
+.leaflet-control-fitbounds-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin: 7px;
+  background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill="black" d="M0 0 H100 V100 z"/></svg>')
 }
