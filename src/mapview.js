@@ -26,6 +26,7 @@ import mapLayers from "./maplayers";
 import { painter } from "./painter";
 import { addHover, removeHover, toggleActive } from "./selection";
 import { FeatureType, GeometryType } from "./geojson-types";
+import { LeafletButton } from "./LeafletButton"
 
 function MapView(props) {
   const context = useContext(DataContext);
@@ -59,7 +60,6 @@ function MapView(props) {
         whenReady={() => resizeMap(mapRef)}
       >
         <ChangeView />
-        <LocateControl />
         <ScaleControl position="bottomleft" />
         <GeoJSON
           data={features}
@@ -301,16 +301,16 @@ function ChangeView() {
     },
   });
 
+  const features = context.filteredData;
+  const featureListBounds = getFeatureListBounds(features)
+  const validFeatureListBounds = featureListBounds &&
+    featureListBounds[0][0] !== featureListBounds[1][0] &&
+    featureListBounds[0][1] !== featureListBounds[1][1];
+
   if (!center && !zoom) {
     if (!urlParams.has("ll")) {
-      const features = context.filteredData;
       if (features && features.length) {
-        const featureListBounds = getFeatureListBounds(features);
-        if (
-          featureListBounds &&
-          featureListBounds[0][0] !== featureListBounds[1][0] &&
-          featureListBounds[0][1] !== featureListBounds[1][1]
-        ) {
+        if (validFeatureListBounds) {
           map.fitBounds(featureListBounds);
           return;
         } else {
@@ -343,6 +343,14 @@ function ChangeView() {
           })),
         }}
       />
+      <LocateControl />
+      {validFeatureListBounds && <LeafletButton
+        position="topleft"
+        className="leaflet-control-fitbounds"
+        title="Fit Map to Feature Bounds"
+        iconClass="leaflet-control-fitbounds-icon"
+        onClick={(map, event) => map.fitBounds(featureListBounds)}
+      />}
       {isContextPopupOpen && (
         <ContextPopup
           latlng={contextClickLocation}
@@ -409,8 +417,8 @@ function MyOverlayControl(props) {
   }
 }
 
-const LocateControl = createControlComponent(function createScaleControl(props) {
-  return new L.Control.Locate(props)
-})
+const LocateControl = createControlComponent(
+  props => new L.Control.Locate(props)
+)
 
 export default MapView;
