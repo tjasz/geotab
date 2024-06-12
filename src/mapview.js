@@ -2,9 +2,6 @@ import React, { useRef, useContext, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import ReactDOMServer from "react-dom/server";
 import L from "leaflet";
-import "leaflet.locatecontrol";
-import "leaflet.locatecontrol/dist/L.Control.Locate.min.css";
-import { createControlComponent } from '@react-leaflet/core'
 import {
   MapContainer,
   TileLayer,
@@ -24,6 +21,7 @@ import { painter } from "./painter";
 import { addHover, removeHover, toggleActive } from "./selection";
 import { LeafletButton } from "./LeafletButton"
 import { MapContextPopup } from "./MapContextPopup"
+import { LocateControl } from "./map/LocateControl"
 
 function MapView(props) {
   const context = useContext(DataContext);
@@ -344,9 +342,5 @@ function MyOverlayControl(props) {
       return null;
   }
 }
-
-const LocateControl = createControlComponent(
-  props => new L.Control.Locate(props)
-)
 
 export default MapView;
