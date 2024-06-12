@@ -1,13 +1,10 @@
 import React, { useRef, useContext, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import ReactDOMServer from "react-dom/server";
-import { v4 as uuidv4 } from "uuid";
 import L from "leaflet";
 import "leaflet.locatecontrol";
 import "leaflet.locatecontrol/dist/L.Control.Locate.min.css";
 import { createControlComponent } from '@react-leaflet/core'
-import { Button } from "@mui/material";
-import { AddLocation, ContentCopy } from "@mui/icons-material";
 import {
   MapContainer,
   TileLayer,
@@ -25,8 +22,8 @@ import { getCentralCoord, hashCode, getFeatureListBounds } from "./algorithm";
 import mapLayers from "./maplayers";
 import { painter } from "./painter";
 import { addHover, removeHover, toggleActive } from "./selection";
-import { FeatureType, GeometryType } from "./geojson-types";
 import { LeafletButton } from "./LeafletButton"
+import { MapContextPopup } from "./MapContextPopup"
 
 function MapView(props) {
   const context = useContext(DataContext);
@@ -173,75 +170,6 @@ function PopupBody({ feature }) {
   );
 }
 
-function ContextPopup({ latlng, zoom, onClose }) {
-  const context = useContext(DataContext);
-
-  const latlng5 = `${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}`;
-  const lat3 = latlng.lat.toFixed(3);
-  const lng3 = latlng.lng.toFixed(3);
-
-  return (
-    <Popup position={latlng}>
-      <div style={{ height: "200px", overflow: "auto" }}>
-        <h2>
-          {latlng5}
-          <Button
-            startIcon={<ContentCopy />}
-            onClick={() => {
-              navigator.clipboard.writeText(latlng5);
-            }}
-          />
-        </h2>
-        <h3>Forecasts</h3>
-        <ul>
-          <li>
-            <a
-              href={`https://forecast.weather.gov/MapClick.php?lat=${latlng.lat}&lon=${latlng.lon}&site=all&smap=1`}
-              target="_blank"
-            >
-              NOAA
-            </a>
-          </li>
-          <li>
-            <a
-              href={`https://www.windy.com/${lat3}/${lng3}?${lat3},${lng3},${zoom}`}
-              target="_blank"
-            >
-              Windy
-            </a>
-          </li>
-          <li>
-            <a
-              href={`https://www.google.com/maps/dir//${latlng.lat},${latlng.lng}`}
-              target="_blank"
-            >
-              Google Directions
-            </a>
-          </li>
-        </ul>
-        <Button
-          startIcon={<AddLocation />}
-          onClick={() => {
-            const newFeature = {
-              id: uuidv4(),
-              type: FeatureType.Feature,
-              geometry: {
-                type: GeometryType.Point,
-                coordinates: [latlng.lng, latlng.lat],
-              },
-              properties: { "geotab:selectionStatus": "inactive" },
-            };
-            context.setData([...context.data, newFeature]);
-            onClose();
-          }}
-        >
-          Add Point
-        </Button>
-      </div>
-    </Popup>
-  );
-}
-
 function ChangeView() {
   const [urlParams, setUrlParams] = useSearchParams();
   const context = useContext(DataContext);
@@ -352,7 +280,7 @@ function ChangeView() {
         onClick={(map, event) => map.fitBounds(featureListBounds)}
       />}
       {isContextPopupOpen && (
-        <ContextPopup
+        <MapContextPopup
           latlng={contextClickLocation}
           zoom={zoom}
           onClose={() => {
