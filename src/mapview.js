@@ -218,6 +218,14 @@ function ContextPopup({ latlng, zoom, onClose }) {
               Google Directions
             </a>
           </li>
+          <li>
+            <a
+              href={`https://brouter.de/brouter-web/#map=${zoom}/${latlng.lat}/${latlng.lng}/standard&lonlats=${latlng.lng},${latlng.lat}&profile=shortest`}
+              target="_blank"
+            >
+              BRouter
+            </a>
+          </li>
         </ul>
         <Button
           startIcon={<AddLocation />}
