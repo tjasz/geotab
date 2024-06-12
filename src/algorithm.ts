@@ -1,6 +1,35 @@
 import { v4 as uuidv4 } from "uuid";
 import math from "./math";
 import { toType } from "./fieldtype";
+import { LatLng, LatLngBoundsLiteral, LatLngTuple } from "leaflet";
+import { Coordinate, Feature } from "./geojson-types";
+
+export function parseIntOr(s: string | undefined | null, defaultValue: number): number {
+  if (!s) {
+    return defaultValue;
+  }
+
+  const v = parseInt(s);
+  if (isNaN(v)) {
+    return defaultValue;
+  }
+
+  return v;
+}
+
+export function parseLatLngOr(s: string | undefined | null, defaultValue: LatLngTuple): LatLngTuple {
+  if (!s) {
+    return defaultValue;
+  }
+
+  const ll = s.split(",").map(parseFloat);
+  if (ll.length < 2 || ll.some(isNaN)) {
+    return defaultValue;
+  }
+
+  // ll has at least 2 members, so can safely be cast
+  return ll as LatLngTuple;
+}
 
 export function sleep(time: number): Promise<NodeJS.Timeout> {
   return new Promise((resolve) => setTimeout(resolve, time));
@@ -171,17 +200,19 @@ export function getCentralCoord(feature) {
   }
 }
 
-function getCoordinateListBounds(coords) {
+function CoordinateToLatLngTuple(c: Coordinate): LatLngTuple {
+  return [c[1], c[0]];
+}
+
+function getCoordinateListBounds(coords: Coordinate[]): LatLngBoundsLiteral | undefined {
   if (!coords || !coords.length) {
-    return [
-      [undefined, undefined],
-      [undefined, undefined],
-    ];
+    return undefined;
   }
-  let sw = coords[0].slice(0, 2).reverse();
-  let ne = sw.slice();
+
+  let sw = CoordinateToLatLngTuple(coords[0]);
+  let ne = CoordinateToLatLngTuple(coords[0]);
   for (const coord of coords) {
-    const latlon = coord.slice(0, 2).reverse();
+    const latlon = CoordinateToLatLngTuple(coord);
     if (latlon[0] < sw[0]) {
       sw[0] = latlon[0];
     }
@@ -195,10 +226,11 @@ function getCoordinateListBounds(coords) {
       ne[1] = latlon[1];
     }
   }
+
   return [sw, ne];
 }
 
-export function getFeatureBounds(feature) {
+function getFeatureBounds(feature: Feature): LatLngBoundsLiteral | undefined {
   // TODO: what about going over 0 lon?
   switch (feature.geometry?.type) {
     case "Point":
@@ -213,7 +245,7 @@ export function getFeatureBounds(feature) {
     case "MultiPolygon":
       return getCoordinateListBounds(feature.geometry.coordinates.flat(2));
     default:
-      return null;
+      return undefined;
   }
 }
 
@@ -323,29 +355,40 @@ export function getFeatureVertMeters(feature) {
   }
 }
 
-export function getFeatureListBounds(features) {
-  let bounds = [
-    [null, null],
-    [null, null],
-  ];
-  for (const feature of features) {
+export function getFeatureListBounds(features: Feature[]): LatLngBoundsLiteral | undefined {
+  if (!features || !features.length) {
+    return undefined;
+  }
+
+  // initialize bounds to the first defined feature bounds
+  let bounds: LatLngBoundsLiteral | undefined = undefined;
+  let i = 0; // scoped outside the loop so iteration can continue later
+  while (!bounds) {
+    bounds = getFeatureBounds(features[i]);
+    i++;
+  }
+
+  // continue the loop, setting bounds to more extreme values if found
+  for (; i < features.length; i++) {
+    const feature = features[i];
     const fBounds = getFeatureBounds(feature);
-    if (fBounds !== null) {
-      if (bounds[0][0] === null || fBounds[0][0] < bounds[0][0]) {
+    if (fBounds) {
+      if (fBounds[0][0] < bounds[0][0]) {
         bounds[0][0] = fBounds[0][0];
       }
-      if (bounds[0][1] === null || fBounds[0][1] < bounds[0][1]) {
+      if (fBounds[0][1] < bounds[0][1]) {
         bounds[0][1] = fBounds[0][1];
       }
-      if (bounds[1][0] === null || fBounds[1][0] > bounds[1][0]) {
+      if (fBounds[1][0] > bounds[1][0]) {
         bounds[1][0] = fBounds[1][0];
       }
-      if (bounds[1][1] === null || fBounds[1][1] > bounds[1][1]) {
+      if (fBounds[1][1] > bounds[1][1]) {
         bounds[1][1] = fBounds[1][1];
       }
     }
   }
-  return bounds.flat().some((bound) => bound === null) ? null : bounds;
+
+  return bounds;
 }
 
 export function sortBy(features, sorting) {
