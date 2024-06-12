@@ -4,8 +4,6 @@ import ReactDOMServer from "react-dom/server";
 import L from "leaflet";
 import {
   MapContainer,
-  TileLayer,
-  WMSTileLayer,
   LayersControl,
   ScaleControl,
   GeoJSON,
@@ -22,6 +20,7 @@ import { LeafletButton } from "./map/LeafletButton"
 import { MapContextPopup } from "./map/MapContextPopup"
 import { LocateControl } from "./map/LocateControl"
 import { FeaturePopup } from "./map/FeaturePopup"
+import { MyOverlayControl, MyBaseLayerControl } from "./map/MyLayerControl"
 
 function MapView(props) {
   const context = useContext(DataContext);
@@ -275,46 +274,6 @@ function MyLayersControl({ position, mapLayers }) {
       ))}
     </LayersControl>
   );
-}
-
-function MyBaseLayerControl(props) {
-  switch (props.type) {
-    case "WMSTileLayer":
-      return (
-        <LayersControl.BaseLayer name={props.name} checked={props.checked}>
-          <WMSTileLayer {...props} />
-        </LayersControl.BaseLayer>
-      );
-    case "TileLayer":
-      return (
-        <LayersControl.BaseLayer name={props.name} checked={props.checked}>
-          <TileLayer {...props} />
-        </LayersControl.BaseLayer>
-      );
-    // TODO more overlay types
-    default:
-      return null;
-  }
-}
-
-function MyOverlayControl(props) {
-  switch (props.type) {
-    case "WMSTileLayer":
-      return (
-        <LayersControl.Overlay name={props.name} checked={props.checked}>
-          <WMSTileLayer {...props} />
-        </LayersControl.Overlay>
-      );
-    case "TileLayer":
-      return (
-        <LayersControl.Overlay name={props.name} checked={props.checked}>
-          <TileLayer {...props} />
-        </LayersControl.Overlay>
-      );
-    // TODO more overlay types
-    default:
-      return null;
-  }
 }
 
 export default MapView;
