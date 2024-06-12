@@ -1,11 +1,12 @@
 import { ControlPosition } from "leaflet";
-import { LayersControl, TileLayer, TileLayerProps, WMSTileLayer, WMSTileLayerProps } from "react-leaflet";
+import { LayersControl, TileLayer, WMSTileLayer } from "react-leaflet";
+import { LayerConfig } from "./maplayers";
 
 type MyLayersControlProps = {
   position: ControlPosition | undefined;
   mapLayers: {
-    baseLayers: MyLayerControlProps[],
-    overlays: MyLayerControlProps[],
+    baseLayers: LayerConfig[],
+    overlays: LayerConfig[],
   }
 }
 
@@ -22,16 +23,7 @@ export function MyLayersControl({ position, mapLayers }: MyLayersControlProps) {
   );
 }
 
-type MyLayerControlProps = {
-  name: string;
-  checked: boolean;
-} & (({
-  type: "WMSTileLayer";
-} & WMSTileLayerProps) | ({
-  type: "TileLayer"
-} & TileLayerProps));
-
-function MyOverlayControl(props: MyLayerControlProps) {
+function MyOverlayControl(props: LayerConfig) {
   switch (props.type) {
     case "WMSTileLayer":
       return (
@@ -51,7 +43,7 @@ function MyOverlayControl(props: MyLayerControlProps) {
   }
 }
 
-function MyBaseLayerControl(props: MyLayerControlProps) {
+function MyBaseLayerControl(props: LayerConfig) {
   switch (props.type) {
     case "WMSTileLayer":
       return (
