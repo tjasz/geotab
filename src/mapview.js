@@ -13,7 +13,6 @@ import {
   useMap,
   useMapEvents,
 } from "react-leaflet";
-import AbridgedUrlLink from "./common/AbridgedUrlLink";
 import { DataContext } from "./dataContext";
 import { getCentralCoord, hashCode, getFeatureListBounds } from "./algorithm";
 import mapLayers from "./map/maplayers";
@@ -22,6 +21,7 @@ import { addHover, removeHover, toggleActive } from "./selection";
 import { LeafletButton } from "./map/LeafletButton"
 import { MapContextPopup } from "./map/MapContextPopup"
 import { LocateControl } from "./map/LocateControl"
+import { FeaturePopup } from "./map/FeaturePopup"
 
 function MapView(props) {
   const context = useContext(DataContext);
@@ -122,7 +122,7 @@ function MapView(props) {
               },
             });
             layer.bindPopup(
-              ReactDOMServer.renderToString(<PopupBody feature={feature} />),
+              ReactDOMServer.renderToString(<FeaturePopup feature={feature} />),
             );
           }}
         />
@@ -136,35 +136,9 @@ function ActivePopup(props) {
     props.feature &&
     props.feature.geometry && (
       <Popup position={props.latlng ?? getCentralCoord(props.feature)}>
-        <PopupBody feature={props.feature} />
+        <FeaturePopup feature={props.feature} />
       </Popup>
     )
-  );
-}
-
-function PopupBody({ feature }) {
-  return (
-    <div style={{ height: "200px", overflow: "auto" }}>
-      <table>
-        <tbody>
-          {Object.entries(feature.properties).map(([key, value]) => (
-            <tr key={key}>
-              <th>{key}</th>
-              <td>
-                {value === "" ? undefined : typeof value === "string" &&
-                  value.startsWith("http") ? (
-                  <AbridgedUrlLink target="_blank" href={value} length={21} />
-                ) : typeof value === "string" || typeof value === "number" ? (
-                  value
-                ) : (
-                  JSON.stringify(value)
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
   );
 }
 
