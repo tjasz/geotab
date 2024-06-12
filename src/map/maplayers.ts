@@ -2,6 +2,10 @@ import { TileLayerProps, WMSTileLayerProps } from "react-leaflet";
 
 export type LayerProps = ({
   type: "WMSTileLayer";
+  f: string,
+  imageSR: number,
+  bboxSR: number,
+  dpi: number,
 } & WMSTileLayerProps) | ({
   type: "TileLayer"
 } & TileLayerProps);
