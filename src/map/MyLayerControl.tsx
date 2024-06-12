@@ -1,4 +1,26 @@
+import { ControlPosition } from "leaflet";
 import { LayersControl, TileLayer, TileLayerProps, WMSTileLayer, WMSTileLayerProps } from "react-leaflet";
+
+type MyLayersControlProps = {
+  position: ControlPosition | undefined;
+  mapLayers: {
+    baseLayers: MyLayerControlProps[],
+    overlays: MyLayerControlProps[],
+  }
+}
+
+export function MyLayersControl({ position, mapLayers }: MyLayersControlProps) {
+  return (
+    <LayersControl position={position}>
+      {mapLayers.baseLayers.map((baseLayer) => (
+        <MyBaseLayerControl key={baseLayer.name} {...baseLayer} />
+      ))}
+      {mapLayers.overlays.map((overlay) => (
+        <MyOverlayControl key={overlay.name} {...overlay} />
+      ))}
+    </LayersControl>
+  );
+}
 
 type MyLayerControlProps = {
   name: string;
@@ -9,7 +31,7 @@ type MyLayerControlProps = {
   type: "TileLayer"
 } & TileLayerProps));
 
-export function MyOverlayControl(props: MyLayerControlProps) {
+function MyOverlayControl(props: MyLayerControlProps) {
   switch (props.type) {
     case "WMSTileLayer":
       return (
@@ -29,7 +51,7 @@ export function MyOverlayControl(props: MyLayerControlProps) {
   }
 }
 
-export function MyBaseLayerControl(props: MyLayerControlProps) {
+function MyBaseLayerControl(props: MyLayerControlProps) {
   switch (props.type) {
     case "WMSTileLayer":
       return (

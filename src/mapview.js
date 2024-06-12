@@ -4,7 +4,6 @@ import ReactDOMServer from "react-dom/server";
 import L from "leaflet";
 import {
   MapContainer,
-  LayersControl,
   ScaleControl,
   GeoJSON,
   Popup,
@@ -20,7 +19,7 @@ import { LeafletButton } from "./map/LeafletButton"
 import { MapContextPopup } from "./map/MapContextPopup"
 import { LocateControl } from "./map/LocateControl"
 import { FeaturePopup } from "./map/FeaturePopup"
-import { MyOverlayControl, MyBaseLayerControl } from "./map/MyLayerControl"
+import { MyLayersControl } from "./map/MyLayerControl"
 
 function MapView(props) {
   const context = useContext(DataContext);
@@ -260,19 +259,6 @@ function ChangeView() {
         />
       )}
     </>
-  );
-}
-
-function MyLayersControl({ position, mapLayers }) {
-  return (
-    <LayersControl position={position}>
-      {mapLayers.baseLayers.map((baseLayer) => (
-        <MyBaseLayerControl key={baseLayer.name} {...baseLayer} />
-      ))}
-      {mapLayers.overlays.map((overlay) => (
-        <MyOverlayControl key={overlay.name} {...overlay} />
-      ))}
-    </LayersControl>
   );
 }
 
