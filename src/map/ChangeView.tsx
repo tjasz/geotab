@@ -3,7 +3,7 @@ import React from "react";
 import { useContext, useState } from "react";
 import { useMap, useMapEvents } from "react-leaflet";
 import { useSearchParams } from "react-router-dom";
-import { getFeatureListBounds } from "../algorithm";
+import { getFeatureListBounds, parseIntOr, parseLatLngOr } from "../algorithm";
 import { DataContext } from "../dataContext";
 import { LeafletButton } from "./LeafletButton";
 import { LocateControl } from "./LocateControl";
@@ -37,14 +37,14 @@ export function ChangeView() {
     },
     baselayerchange: (event) => {
       setUrlParams((prev) => {
-        prev.set("b", event.layer.options.geotabId);
+        prev.set("b", event.propagatedFrom.options.geotabId);
         return prev;
       });
     },
     overlayadd: (event) => {
       setUrlParams((prev) => {
         const overlays = prev.get("o")?.split(",") ?? [];
-        const newOverlay = event.layer.options.geotabId;
+        const newOverlay = event.propagatedFrom.options.geotabId;
 
         if (!overlays.includes(newOverlay)) {
           prev.set("o", [...overlays, newOverlay].join(","));
@@ -56,7 +56,7 @@ export function ChangeView() {
     overlayremove: (event) => {
       setUrlParams((prev) => {
         const overlays = prev.get("o")?.split(",") ?? [];
-        const removedOverlay = event.layer.options.geotabId;
+        const removedOverlay = event.propagatedFrom.options.geotabId;
         const newOverlays = overlays.filter((id) => id !== removedOverlay);
 
         if (newOverlays.length === 0) {
@@ -75,25 +75,27 @@ export function ChangeView() {
   const validFeatureListBounds = featureListBounds &&
     featureListBounds[0][0] !== featureListBounds[1][0] &&
     featureListBounds[0][1] !== featureListBounds[1][1];
+  const fitToBounds = (map: L.Map) => {
+    if (featureListBounds) {
+      // if bounds are just a point, center that point at default zoom level
+      if (featureListBounds[0][0] === featureListBounds[1][0] &&
+        featureListBounds[0][1] === featureListBounds[1][1]) {
+        map.setView(featureListBounds[0], parseIntOr(urlParams.get("z"), 6));
+      }
+      else {
+        map.fitBounds(featureListBounds);
+      }
+    }
+  }
 
   if (!center && !zoom) {
     if (!urlParams.has("ll")) {
-      if (features.length) {
-        if (validFeatureListBounds) {
-          map.fitBounds(featureListBounds);
-          return;
-        } else {
-          map.setView(featureListBounds[0], urlParams.get("z") ?? 6);
-        }
-      }
+      fitToBounds(map);
     }
 
     map.setView(
-      urlParams
-        .get("ll")
-        ?.split(",")
-        .map((s) => parseFloat(s)) ?? [27.83596, -11.07422],
-      urlParams.get("z") ?? 2,
+      parseLatLngOr(urlParams.get("ll"), [27.83596, -11.07422]),
+      parseIntOr(urlParams.get("z"), 2)
     );
   }
 
@@ -118,7 +120,7 @@ export function ChangeView() {
         className="leaflet-control-fitbounds"
         title="Fit Map to Feature Bounds"
         iconClass="leaflet-control-fitbounds-icon"
-        onClick={(map, event) => map.fitBounds(featureListBounds)}
+        onClick={fitToBounds}
       />}
       {isContextPopupOpen && (
         <MapContextPopup

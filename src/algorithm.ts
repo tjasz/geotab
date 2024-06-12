@@ -1,8 +1,35 @@
 import { v4 as uuidv4 } from "uuid";
 import math from "./math";
 import { toType } from "./fieldtype";
-import { LatLngBoundsLiteral, LatLngTuple } from "leaflet";
+import { LatLng, LatLngBoundsLiteral, LatLngTuple } from "leaflet";
 import { Coordinate, Feature } from "./geojson-types";
+
+export function parseIntOr(s: string | undefined | null, defaultValue: number): number {
+  if (!s) {
+    return defaultValue;
+  }
+
+  const v = parseInt(s);
+  if (isNaN(v)) {
+    return defaultValue;
+  }
+
+  return v;
+}
+
+export function parseLatLngOr(s: string | undefined | null, defaultValue: LatLngTuple): LatLngTuple {
+  if (!s) {
+    return defaultValue;
+  }
+
+  const ll = s.split(",").map(parseFloat);
+  if (ll.length < 2 || ll.some(isNaN)) {
+    return defaultValue;
+  }
+
+  // ll has at least 2 members, so can safely be cast
+  return ll as LatLngTuple;
+}
 
 export function sleep(time: number): Promise<NodeJS.Timeout> {
   return new Promise((resolve) => setTimeout(resolve, time));
