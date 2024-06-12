@@ -234,8 +234,10 @@ function getFeatureBounds(feature: Feature): LatLngBoundsLiteral | undefined {
   // TODO: what about going over 0 lon?
   switch (feature.geometry?.type) {
     case "Point":
-      const latlon = feature.geometry.coordinates.slice(0, 2).reverse();
-      return [latlon, latlon];
+      const latlon = CoordinateToLatLngTuple(feature.geometry.coordinates);
+      // need to copy in order for callers to treat the coordinates as different objects if needed
+      // can safely cast second copy since slice() without arguments does not change length
+      return [latlon, latlon.slice() as LatLngTuple];
     case "MultiPoint":
     case "LineString":
       return getCoordinateListBounds(feature.geometry.coordinates);
