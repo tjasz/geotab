@@ -110,7 +110,7 @@ export function ChangeView() {
           })),
           overlays: mapLayers.overlays.map((layer, index) => ({
             ...layer,
-            checked: urlParams.get("o")?.split(",").includes(layer.geotabId),
+            checked: urlParams.get("o")?.split(",").includes(layer.geotabId) ?? false,
           })),
         }}
       />
