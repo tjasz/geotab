@@ -16,11 +16,11 @@ import {
 import AbridgedUrlLink from "./common/AbridgedUrlLink";
 import { DataContext } from "./dataContext";
 import { getCentralCoord, hashCode, getFeatureListBounds } from "./algorithm";
-import mapLayers from "./maplayers";
+import mapLayers from "./map/maplayers";
 import { painter } from "./painter";
 import { addHover, removeHover, toggleActive } from "./selection";
-import { LeafletButton } from "./LeafletButton"
-import { MapContextPopup } from "./MapContextPopup"
+import { LeafletButton } from "./map/LeafletButton"
+import { MapContextPopup } from "./map/MapContextPopup"
 import { LocateControl } from "./map/LocateControl"
 
 function MapView(props) {

@@ -2,8 +2,8 @@ import { AddLocation, ContentCopy } from "@mui/icons-material";
 import { Button } from "@mui/material";
 import { useContext } from "react";
 import { Popup } from "react-leaflet";
-import { DataContext } from "./dataContext";
-import { FeatureType, GeometryType } from "./geojson-types";
+import { DataContext } from "../dataContext";
+import { FeatureType, GeometryType } from "../geojson-types";
 
 export function MapContextPopup({ latlng, zoom, onClose }) {
   const context = useContext(DataContext);
