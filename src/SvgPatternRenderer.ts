@@ -7,6 +7,12 @@ export const SvgPatternRenderer = L.SVG.extend({
 })
 
 function pointsToPatternPath(rings, closed: boolean, pattern: string) {
+  const patternParts = pattern.split(",");
+  const tickPath = patternParts[0];
+  const tickOffset = Number(patternParts[1]);
+  const tickInterval = Number(patternParts[2]);
+  const tickType = patternParts[3];
+
   let str = '',
     i, j, len, len2, points, p;
 
@@ -19,8 +25,6 @@ function pointsToPatternPath(rings, closed: boolean, pattern: string) {
 
       // add tick marks perpendicular to path
       if (j) {
-        // TODO get tickInterval and pattern from layer options
-        const tickInterval = 20;
         const prevPoint = points[j - 1];
         const segmentBearing = Math.atan2(p.y - prevPoint.y, p.x - prevPoint.x);
         const segmentDist = dist(prevPoint, p);
@@ -29,14 +33,14 @@ function pointsToPatternPath(rings, closed: boolean, pattern: string) {
         let k = leftoverDist
         for (; k < segmentDist; k += tickInterval) {
           const pk = moveAlongBearing(prevPoint, k, segmentBearing);
-          // connect the line to this point
-          str += `L ${pk.x} ${pk.y}`;
+          // move the marker to this point
+          str += `M${pk.x} ${pk.y}`;
           // draw the pattern
-          str += SvgJsonToString(translate(rotate(stringPathToJson(pattern), segmentBearing), pk.x, pk.y))
+          str += SvgJsonToString(translate(rotate(stringPathToJson(tickPath), segmentBearing + Math.PI / 2), pk.x, pk.y))
           // return to original point
           str += `M${pk.x} ${pk.y}`;
         }
-        str += `L${p.x} ${p.y}`;
+        str += `M${p.x} ${p.y}`;
         leftoverDist = k - segmentDist;
       } else {
         str += `M${p.x} ${p.y}`;
