@@ -44,28 +44,31 @@ function pointsToPatternPath(rings, closed: boolean, pattern: string) {
     for (j = 0, len2 = points.length; j < len2; j++) {
       p = points[j];
 
-      // add tick marks perpendicular to path
       if (j) {
-        const prevPoint = points[j - 1];
-        const segmentBearing = Math.atan2(p.y - prevPoint.y, p.x - prevPoint.x);
-        const segmentDist = dist(prevPoint, p);
+        if (patternOptions.path === "solid") {
+          str += `L${p.x} ${p.y}`;
+        } else {
+          const prevPoint = points[j - 1];
+          const segmentBearing = Math.atan2(p.y - prevPoint.y, p.x - prevPoint.x);
+          const segmentDist = dist(prevPoint, p);
 
-        // add ticks at regular intervals along this segment
-        let k = leftoverDist
-        for (; k < segmentDist; k += patternOptions.interval ?? 20) {
-          const pk = moveAlongBearing(prevPoint, k, segmentBearing);
-          // move the marker to this point
-          str += `${patternOptions.type === "F" ? "M" : "L"}${pk.x} ${pk.y}`;
-          // draw the pattern
-          // pattern is defined with positive y as the direction of travel,
-          // but these bearings assume positive x is direction of travel, so rotate 90 extra degrees
-          str += SvgJsonToString(translate(rotate(stringPathToJson(patternOptions.path), segmentBearing + Math.PI / 2), pk.x, pk.y))
-          // return to original point
-          str += `M${pk.x} ${pk.y}`;
+          // add ticks at regular intervals along this segment
+          let k = leftoverDist
+          for (; k < segmentDist; k += patternOptions.interval ?? 20) {
+            const pk = moveAlongBearing(prevPoint, k, segmentBearing);
+            // move the marker to this point
+            str += `${patternOptions.type === "F" ? "M" : "L"}${pk.x} ${pk.y}`;
+            // draw the pattern
+            // pattern is defined with positive y as the direction of travel,
+            // but these bearings assume positive x is direction of travel, so rotate 90 extra degrees
+            str += SvgJsonToString(translate(rotate(stringPathToJson(patternOptions.path), segmentBearing + Math.PI / 2), pk.x, pk.y))
+            // return to original point
+            str += `M${pk.x} ${pk.y}`;
+          }
+          // set leftover distance and move to end of segment
+          str += `${patternOptions.type === "F" ? "M" : "L"}${p.x} ${p.y}`;
+          leftoverDist = k - segmentDist;
         }
-        // set leftover distance and move to end of segment
-        str += `${patternOptions.type === "F" ? "M" : "L"}${p.x} ${p.y}`;
-        leftoverDist = k - segmentDist;
       } else {
         str += `M${p.x} ${p.y}`;
       }
