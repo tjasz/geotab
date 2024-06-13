@@ -12,6 +12,7 @@ function pointsToPatternPath(rings, closed: boolean, pattern: string) {
   const tickOffset = Number(patternParts[1]);
   const tickInterval = Number(patternParts[2]);
   const tickType = patternParts[3];
+  console.log({ tickPath, tickOffset, tickInterval, tickType })
 
   let str = '',
     i, j, len, len2, points, p;
@@ -34,13 +35,16 @@ function pointsToPatternPath(rings, closed: boolean, pattern: string) {
         for (; k < segmentDist; k += tickInterval) {
           const pk = moveAlongBearing(prevPoint, k, segmentBearing);
           // move the marker to this point
-          str += `M${pk.x} ${pk.y}`;
+          str += `${tickType === "T" ? "L" : "M"}${pk.x} ${pk.y}`;
           // draw the pattern
+          // pattern is defined with positive y as the direction of travel,
+          // but these bearings assume positive x is direction of travel, so rotate 90 extra degrees
           str += SvgJsonToString(translate(rotate(stringPathToJson(tickPath), segmentBearing + Math.PI / 2), pk.x, pk.y))
           // return to original point
           str += `M${pk.x} ${pk.y}`;
         }
-        str += `M${p.x} ${p.y}`;
+        // set leftover distance and move to end of segment
+        str += `${tickType === "T" ? "L" : "M"}${p.x} ${p.y}`;
         leftoverDist = k - segmentDist;
       } else {
         str += `M${p.x} ${p.y}`;
