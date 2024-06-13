@@ -2,11 +2,11 @@ import L from "leaflet";
 
 export const SvgPatternRenderer = L.SVG.extend({
   _updatePoly(layer, closed) {
-    this._setPath(layer, pointsToPatternPath(layer._parts, closed));
+    this._setPath(layer, pointsToPatternPath(layer._parts, closed, layer.options.pattern));
   },
 })
 
-function pointsToPatternPath(rings, closed) {
+function pointsToPatternPath(rings, closed: boolean, pattern: string) {
   let str = '',
     i, j, len, len2, points, p;
 
@@ -21,7 +21,6 @@ function pointsToPatternPath(rings, closed) {
       if (j) {
         // TODO get tickInterval and pattern from layer options
         const tickInterval = 20;
-        const pattern = "M0 5 L5 0 L0 -5" // `M0 ${-tickSize} V${tickSize}`;
         const prevPoint = points[j - 1];
         const segmentBearing = Math.atan2(p.y - prevPoint.y, p.x - prevPoint.x);
         const segmentDist = dist(prevPoint, p);

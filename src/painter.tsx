@@ -226,6 +226,7 @@ export function painter(symbology) {
         lineCap,
         fillColor,
         fillOpacity,
+        pattern: feature.properties["pattern"] ?? "M0 10 L5 0 M0 -10",
       };
     }
   };
