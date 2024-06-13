@@ -2,7 +2,7 @@ import L from "leaflet";
 
 type Pattern = {
   path: string; // SVG path string or "solid"
-  offset?: number; // TODO or percent
+  offset?: number | "100%";
   interval?: number;
   type?: string; // "F" | "T"
 };
@@ -14,7 +14,7 @@ function parsePattern(s: string): Pattern {
 
   const patternParts = s.split(",");
   const path = patternParts[0];
-  const offset = Number(patternParts[1]);
+  const offset = patternParts[1] === "100%" ? "100%" : Number(patternParts[1]);
   const interval = Number(patternParts[2]);
   const type = patternParts[3];
   return {
@@ -39,7 +39,7 @@ function pointsToPatternPath(rings, closed: boolean, pattern: string) {
 
   for (i = 0, len = rings.length; i < len; i++) {
     points = rings[i];
-    let leftoverDist = patternOptions.offset ?? 0;
+    let leftoverDist = typeof patternOptions.offset === "number" ? patternOptions.offset : 0;
 
     for (j = 0, len2 = points.length; j < len2; j++) {
       p = points[j];
@@ -47,7 +47,18 @@ function pointsToPatternPath(rings, closed: boolean, pattern: string) {
       if (j) {
         if (patternOptions.path === "solid") {
           str += `L${p.x} ${p.y}`;
-        } else {
+        }
+        else if (patternOptions.offset === "100%") {
+          str += `L${p.x} ${p.y}`;
+          // draw pattern at last point
+          if (j === len2 - 1) {
+            const prevPoint = points[j - 1];
+            const segmentBearing = Math.atan2(p.y - prevPoint.y, p.x - prevPoint.x);
+            str += SvgJsonToString(translate(rotate(stringPathToJson(patternOptions.path), segmentBearing + Math.PI / 2), p.x, p.y))
+            console.log(str)
+          }
+        }
+        else {
           const prevPoint = points[j - 1];
           const segmentBearing = Math.atan2(p.y - prevPoint.y, p.x - prevPoint.x);
           const segmentDist = dist(prevPoint, p);
