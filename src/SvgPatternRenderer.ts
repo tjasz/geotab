@@ -19,7 +19,7 @@ function pointsToPatternPath(rings, closed: boolean, pattern: string) {
 
   for (i = 0, len = rings.length; i < len; i++) {
     points = rings[i];
-    let leftoverDist = 0;
+    let leftoverDist = tickOffset;
 
     for (j = 0, len2 = points.length; j < len2; j++) {
       p = points[j];
