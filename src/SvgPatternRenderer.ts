@@ -27,13 +27,16 @@ function pointsToPatternPath(rings, closed) {
         const tickDx = tickSize * Math.cos(tickBearing);
         const tickDy = tickSize * Math.sin(tickBearing);
         const segmentDist = dist(prevPoint, p);
+        const tickPattern = `M0 ${-tickSize} V${tickSize}`;
 
         // add ticks at regular intervals along this segment
         let k = leftoverDist
         for (; k < segmentDist; k += tickInterval) {
           const pk = moveAlongBearing(prevPoint, k, segmentBearing);
+          // connect the line to this point
           str += `L ${pk.x} ${pk.y}`;
-          str += `m${-tickDx} ${-tickDy} l${2 * tickDx} ${2 * tickDy}`;
+          // draw the pattern
+          str += SvgJsonToString(translate(rotate(stringPathToJson(tickPattern), segmentBearing), pk.x, pk.y))
           // return to original point
           str += `M${pk.x} ${pk.y}`;
         }
@@ -49,7 +52,6 @@ function pointsToPatternPath(rings, closed) {
   }
 
   // SVG complains about empty path strings
-  console.log(stringPathToJson(str));
   return str || 'M0 0';
 }
 
@@ -140,7 +142,7 @@ function translate(p: SvgPath, dx: number, dy: number): SvgPath {
 }
 
 function rotate(p: SvgPath, dtheta: number): SvgPath {
-  return {
+  const result = {
     source: null,
     commands: p.commands.map(c => {
       if (isAbsolute(c)) {
@@ -152,15 +154,24 @@ function rotate(p: SvgPath, dtheta: number): SvgPath {
           case "S":
           case "Q":
           case "T":
+            const coordinates: number[] = [];
+            for (let i = 1; i < c.coordinates.length; i += 2) {
+              const x = c.coordinates[i - 1];
+              const y = c.coordinates[i];
+              const magnitude = Math.sqrt(square(x) + square(y));
+              const originalBearing = Math.atan2(y, x);
+              coordinates.push(magnitude * Math.cos(originalBearing + dtheta));
+              coordinates.push(magnitude * Math.sin(originalBearing + dtheta));
+            }
             return {
-              source: null, operator: c.operator, coordinates: c.coordinates.map((v, i) => v + (i % 2 ? v * Math.sin(dtheta) : v * Math.cos(dtheta)))
+              source: null, operator: c.operator, coordinates
             }
           // commands with just x coordinates
           case "H":
             return { source: null, operator: "L", coordinates: c.coordinates.map(x => [x * Math.cos(dtheta), x * Math.sin(dtheta)]).flat() }
           // commands with just y coordinates
           case "V":
-            return { source: null, operator: "L", coordinates: c.coordinates.map(y => [y * Math.sin(dtheta), y * Math.cos(dtheta)]).flat() }
+            return { source: null, operator: "L", coordinates: c.coordinates.map(y => [y * Math.cos(dtheta + Math.PI / 2), y * Math.sin(dtheta + Math.PI / 2)]).flat() }
           // commands with no coordinates
           case "Z":
             return c;
@@ -174,7 +185,8 @@ function rotate(p: SvgPath, dtheta: number): SvgPath {
         throw new Error("TODO rotation of relative commands not implemented.")
       }
     }),
-  }
+  };
+  return result;
 }
 
 function isAbsolute(c: SvgCommand) {
