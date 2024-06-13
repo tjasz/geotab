@@ -1,5 +1,30 @@
 import L from "leaflet";
 
+type Pattern = {
+  path: string; // SVG path string or "solid"
+  offset?: number; // TODO or percent
+  interval?: number;
+  type?: string; // "F" | "T"
+};
+
+function parsePattern(s: string): Pattern {
+  if (s === "solid") {
+    return { path: "solid" }
+  }
+
+  const patternParts = s.split(",");
+  const path = patternParts[0];
+  const offset = Number(patternParts[1]);
+  const interval = Number(patternParts[2]);
+  const type = patternParts[3];
+  return {
+    path,
+    offset,
+    interval,
+    type,
+  }
+}
+
 export const SvgPatternRenderer = L.SVG.extend({
   _updatePoly(layer, closed) {
     this._setPath(layer, pointsToPatternPath(layer._parts, closed, layer.options.pattern));
@@ -7,19 +32,14 @@ export const SvgPatternRenderer = L.SVG.extend({
 })
 
 function pointsToPatternPath(rings, closed: boolean, pattern: string) {
-  const patternParts = pattern.split(",");
-  const tickPath = patternParts[0];
-  const tickOffset = Number(patternParts[1]);
-  const tickInterval = Number(patternParts[2]);
-  const tickType = patternParts[3];
-  console.log({ tickPath, tickOffset, tickInterval, tickType })
+  const patternOptions = parsePattern(pattern);
 
   let str = '',
     i, j, len, len2, points, p;
 
   for (i = 0, len = rings.length; i < len; i++) {
     points = rings[i];
-    let leftoverDist = tickOffset;
+    let leftoverDist = patternOptions.offset ?? 0;
 
     for (j = 0, len2 = points.length; j < len2; j++) {
       p = points[j];
@@ -32,19 +52,19 @@ function pointsToPatternPath(rings, closed: boolean, pattern: string) {
 
         // add ticks at regular intervals along this segment
         let k = leftoverDist
-        for (; k < segmentDist; k += tickInterval) {
+        for (; k < segmentDist; k += patternOptions.interval ?? 20) {
           const pk = moveAlongBearing(prevPoint, k, segmentBearing);
           // move the marker to this point
-          str += `${tickType === "T" ? "L" : "M"}${pk.x} ${pk.y}`;
+          str += `${patternOptions.type === "F" ? "M" : "L"}${pk.x} ${pk.y}`;
           // draw the pattern
           // pattern is defined with positive y as the direction of travel,
           // but these bearings assume positive x is direction of travel, so rotate 90 extra degrees
-          str += SvgJsonToString(translate(rotate(stringPathToJson(tickPath), segmentBearing + Math.PI / 2), pk.x, pk.y))
+          str += SvgJsonToString(translate(rotate(stringPathToJson(patternOptions.path), segmentBearing + Math.PI / 2), pk.x, pk.y))
           // return to original point
           str += `M${pk.x} ${pk.y}`;
         }
         // set leftover distance and move to end of segment
-        str += `${tickType === "T" ? "L" : "M"}${p.x} ${p.y}`;
+        str += `${patternOptions.type === "F" ? "M" : "L"}${p.x} ${p.y}`;
         leftoverDist = k - segmentDist;
       } else {
         str += `M${p.x} ${p.y}`;
