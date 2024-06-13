@@ -55,7 +55,6 @@ function pointsToPatternPath(rings, closed: boolean, pattern: string) {
             const prevPoint = points[j - 1];
             const segmentBearing = Math.atan2(p.y - prevPoint.y, p.x - prevPoint.x);
             str += SvgJsonToString(translate(rotate(stringPathToJson(patternOptions.path), segmentBearing + Math.PI / 2), p.x, p.y))
-            console.log(str)
           }
         }
         else {
@@ -119,7 +118,8 @@ function stringPathToJson(path: string): SvgPath {
   const commandStrings = path.trim().split(/(?=[MmZzLlHhVvCcSsQqTtAa])/);
   const commands = commandStrings.map(s => {
     const operator = s[0];
-    const coordinates = s.slice(1).trim().split(/[, ]+/).map(v => Number(v));
+    const coordinateString = s.slice(1).trim();
+    const coordinates = coordinateString.length ? coordinateString.split(/[, ]+/).map(v => Number(v)) : [];
     return {
       source: s,
       operator,
