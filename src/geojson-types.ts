@@ -13,7 +13,7 @@ export enum GeometryType {
   GeometryCollection = "GeometryCollection",
 }
 
-export type Coordinate = [number, number] | [number, number, number];
+export type Coordinate = number[];
 export type PointCoordinates = Coordinate;
 export type MultiPointCoordinates = PointCoordinates[];
 export type LineStringCoordinates = Coordinate[];
