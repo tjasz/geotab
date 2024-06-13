@@ -16,6 +16,8 @@ function pointsToPatternPath(rings, closed) {
     for (j = 0, len2 = points.length; j < len2; j++) {
       p = points[j];
       str += `${(j ? 'L' : 'M') + p.x} ${p.y}`;
+      // add vertical tick mark
+      str += "m0 -5 v10 m0 -5"
     }
 
     // closes the ring for polygons
