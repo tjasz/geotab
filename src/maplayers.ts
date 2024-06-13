@@ -1,22 +1,4 @@
-import { TileLayerProps, WMSTileLayerProps } from "react-leaflet";
-
-export type LayerProps = ({
-  type: "WMSTileLayer";
-  f: string,
-  imageSR: number,
-  bboxSR: number,
-  dpi: number,
-} & WMSTileLayerProps) | ({
-  type: "TileLayer"
-} & TileLayerProps);
-
-export type LayerConfig = {
-  name: string;
-  checked: boolean;
-  geotabId: string;
-} & LayerProps;
-
-const baseLayers: LayerConfig[] = [
+const baseLayers = [
   {
     type: "TileLayer",
     name: "OpenStreetMap",
@@ -103,7 +85,7 @@ const baseLayers: LayerConfig[] = [
   },
 ];
 
-const overlays: LayerConfig[] = [
+const overlays = [
   {
     type: "WMSTileLayer",
     name: "NOAA Snow Depth",

@@ -36,9 +36,9 @@ export function distance(pta: gj.Coordinate, ptb: gj.Coordinate): number {
   const a =
     sin_half_delta_lat * sin_half_delta_lat +
     math.dcos(ptb[1]) *
-    math.dcos(pta[1]) *
-    sin_half_delta_lon *
-    sin_half_delta_lon;
+      math.dcos(pta[1]) *
+      sin_half_delta_lon *
+      sin_half_delta_lon;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   const d = c * earthRadiusMeters;
   return d;
@@ -135,28 +135,28 @@ const featureDistanceFunctions: [
   gj.GeometryType,
   featureDistanceFunction,
 ][] = [
-    [
-      gj.GeometryType.Point,
-      gj.GeometryType.Point,
-      (a, b) => distancePointToPoint(a as gj.Point, b as gj.Point),
-    ],
-    [
-      gj.GeometryType.Point,
-      gj.GeometryType.MultiPoint,
-      (a, b) => distancePointToMultiPoint(a as gj.Point, b as gj.MultiPoint),
-    ],
-    [
-      gj.GeometryType.Point,
-      gj.GeometryType.LineString,
-      (a, b) => distancePointToLineString(a as gj.Point, b as gj.LineString),
-    ],
-    [
-      gj.GeometryType.Point,
-      gj.GeometryType.LineString,
-      (a, b) =>
-        distancePointToMultiLineString(a as gj.Point, b as gj.MultiLineString),
-    ],
-  ];
+  [
+    gj.GeometryType.Point,
+    gj.GeometryType.Point,
+    (a, b) => distancePointToPoint(a as gj.Point, b as gj.Point),
+  ],
+  [
+    gj.GeometryType.Point,
+    gj.GeometryType.MultiPoint,
+    (a, b) => distancePointToMultiPoint(a as gj.Point, b as gj.MultiPoint),
+  ],
+  [
+    gj.GeometryType.Point,
+    gj.GeometryType.LineString,
+    (a, b) => distancePointToLineString(a as gj.Point, b as gj.LineString),
+  ],
+  [
+    gj.GeometryType.Point,
+    gj.GeometryType.LineString,
+    (a, b) =>
+      distancePointToMultiLineString(a as gj.Point, b as gj.MultiLineString),
+  ],
+];
 export function distanceBetweenFeatures(a: gj.Feature, b: gj.Feature): number {
   const functions = featureDistanceFunctions.filter(
     ([t1, t2, f]) => t1 === a.geometry.type && t2 === b.geometry.type,
@@ -181,11 +181,9 @@ function simplifyCoordinate(
 ): gj.Coordinate {
   const dplaces = precisionMetersToDegreeDigits(precisionMeters);
   const roundingFactor = Math.pow(10, dplaces);
-
-  // this doesn't change the length or type, so can safely cast
   return c
     .slice(0, 2)
-    .map((n) => Math.round(roundingFactor * n) / roundingFactor) as gj.Coordinate;
+    .map((n) => Math.round(roundingFactor * n) / roundingFactor);
 }
 // simplify array of coordinates via Douglas-Peucker algorithm
 export function douglasPeucker(
@@ -373,7 +371,7 @@ export function pathNovelty(f: gj.Feature): number {
   if (f.geometry.type == gj.GeometryType.LineString) {
     const points = f.geometry.coordinates as gj.LineStringCoordinates;
 
-    const cumulativeDistance = points.reduce<number[]>(
+    const cumulativeDistance = points.reduce(
       (acc, curr, idx, arr) =>
         idx === 0
           ? [...acc, 0]
@@ -395,7 +393,7 @@ export function pathNovelty(f: gj.Feature): number {
             i === j || cumulativeDistance[i] - cumulativeDistance[j] === 0
               ? Infinity
               : distanceGrid[i][j] /
-              Math.abs(cumulativeDistance[i] - cumulativeDistance[j]),
+                  Math.abs(cumulativeDistance[i] - cumulativeDistance[j]),
           ),
         Infinity,
       ),
