@@ -58,6 +58,7 @@ function MapView(props) {
         scrollWheelZoom={true}
         ref={mapRef}
         whenReady={() => resizeMap(mapRef)}
+        renderer={new L.SVG()}
       >
         <ChangeView />
         <ScaleControl position="bottomleft" />
