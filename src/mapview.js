@@ -27,6 +27,7 @@ import { painter } from "./painter";
 import { addHover, removeHover, toggleActive } from "./selection";
 import { FeatureType, GeometryType } from "./geojson-types";
 import { LeafletButton } from "./LeafletButton"
+import { SvgPatternRenderer } from "./SvgPatternRenderer"
 
 function MapView(props) {
   const context = useContext(DataContext);
@@ -58,7 +59,7 @@ function MapView(props) {
         scrollWheelZoom={true}
         ref={mapRef}
         whenReady={() => resizeMap(mapRef)}
-        renderer={new L.SVG()}
+        renderer={new SvgPatternRenderer()}
       >
         <ChangeView />
         <ScaleControl position="bottomleft" />
