@@ -49,6 +49,7 @@ function pointsToPatternPath(rings, closed) {
   }
 
   // SVG complains about empty path strings
+  console.log(stringPathToJson(str));
   return str || 'M0 0';
 }
 
@@ -64,3 +65,143 @@ function dist(p1, p2) {
 }
 
 const square = x => x * x;
+
+type SvgCommand = {
+  source: string | null;
+  operator: string;
+  coordinates: number[];
+}
+type SvgPath = {
+  source: string | null;
+  commands: SvgCommand[];
+}
+function stringPathToJson(path: string): SvgPath {
+  const commandStrings = path.trim().split(/(?=[MmZzLlHhVvCcSsQqTtAa])/);
+  const commands = commandStrings.map(s => {
+    const operator = s[0];
+    const coordinates = s.slice(1).trim().split(/[, ]+/).map(v => Number(v));
+    return {
+      source: s,
+      operator,
+      coordinates,
+    }
+  })
+  return { source: path, commands };
+}
+
+function SvgJsonToString(j: SvgPath) {
+  let str = "";
+
+  for (const c of j.commands) {
+    str += c.operator;
+    str += c.coordinates.join(" ");
+    str += " ";
+  }
+
+  return str.trim();
+}
+
+function translate(p: SvgPath, dx: number, dy: number): SvgPath {
+  return {
+    source: null,
+    commands: p.commands.map(c => {
+      if (isAbsolute(c)) {
+        switch (c.operator.charAt(0)) {
+          // commands with x and y coordinates
+          case "M":
+          case "L":
+          case "C":
+          case "S":
+          case "Q":
+          case "T":
+            return {
+              source: null, operator: c.operator, coordinates: c.coordinates.map((v, i) => v + (i % 2 ? dy : dx))
+            }
+          // commands with just x coordinates
+          case "H":
+            return { source: null, operator: c.operator, coordinates: c.coordinates.map(x => x + dx) }
+          // commands with just y coordinates
+          case "V":
+            return { source: null, operator: c.operator, coordinates: c.coordinates.map(y => y + dy) }
+          // commands with no coordinates
+          case "Z":
+            return c;
+          // the arc command
+          case "A":
+            throw new Error("TODO Arc command translation not implemented.")
+          default:
+            throw new Error("Invalid SVG command: " + c.operator)
+        }
+      } else {
+        return c;
+      }
+    }),
+  }
+}
+
+function rotate(p: SvgPath, dtheta: number): SvgPath {
+  return {
+    source: null,
+    commands: p.commands.map(c => {
+      if (isAbsolute(c)) {
+        switch (c.operator.charAt(0)) {
+          // commands with x and y coordinates
+          case "M":
+          case "L":
+          case "C":
+          case "S":
+          case "Q":
+          case "T":
+            return {
+              source: null, operator: c.operator, coordinates: c.coordinates.map((v, i) => v + (i % 2 ? v * Math.sin(dtheta) : v * Math.cos(dtheta)))
+            }
+          // commands with just x coordinates
+          case "H":
+            return { source: null, operator: "L", coordinates: c.coordinates.map(x => [x * Math.cos(dtheta), x * Math.sin(dtheta)]).flat() }
+          // commands with just y coordinates
+          case "V":
+            return { source: null, operator: "L", coordinates: c.coordinates.map(y => [y * Math.sin(dtheta), y * Math.cos(dtheta)]).flat() }
+          // commands with no coordinates
+          case "Z":
+            return c;
+          // the arc command
+          case "A":
+            throw new Error("TODO Arc command rotation not implemented.")
+          default:
+            throw new Error("Invalid SVG command: " + c.operator)
+        }
+      } else {
+        throw new Error("TODO rotation of relative commands not implemented.")
+      }
+    }),
+  }
+}
+
+function isAbsolute(c: SvgCommand) {
+  switch (c.operator.charAt(0)) {
+    case "M":
+    case "Z":
+    case "L":
+    case "H":
+    case "V":
+    case "C":
+    case "S":
+    case "Q":
+    case "T":
+    case "A":
+      return true;
+    case "m":
+    case "z":
+    case "l":
+    case "h":
+    case "v":
+    case "c":
+    case "s":
+    case "q":
+    case "t":
+    case "a":
+      return false;
+    default:
+      throw new Error("Invalid SVG command: " + c.operator);
+  }
+}
