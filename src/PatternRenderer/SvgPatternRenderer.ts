@@ -1,7 +1,7 @@
 import L from "leaflet";
 import { dist, moveAlongBearing } from "./math";
 import { parsePattern } from "./Pattern"
-import { parse, toString, rotate, translate } from "./Svg";
+import { toString, rotate, translate } from "./Svg";
 
 export const SvgPatternRenderer = L.SVG.extend({
   _updatePoly(layer, closed) {
