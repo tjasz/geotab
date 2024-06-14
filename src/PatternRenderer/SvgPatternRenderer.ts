@@ -1,5 +1,5 @@
 import L from "leaflet";
-import { dist, moveAlongBearing, square } from "./math";
+import { dist, moveAlongBearing } from "./math";
 import { parsePattern } from "./Pattern"
 import { stringPathToJson, rotate, translate, SvgJsonToString } from "./Svg";
 

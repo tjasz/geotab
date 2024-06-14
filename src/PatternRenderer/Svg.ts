@@ -141,18 +141,20 @@ export function rotate(p: SvgPath, dtheta: number): SvgPath {
   return result;
 }
 
-export function toAbsolute(path: SvgPath): SvgPath {
+// convert a path's commands to all absolute commands
+// and replace H and V commands with L commands
+function toAbsoluteAndRemoveHV(path: SvgPath): SvgPath {
   let subpathStart: Point = { x: 0, y: 0 };
   let marker: Point = { x: 0, y: 0 };
   const commands: SvgCommand[] = [];
   for (let i = 0; i < path.commands.length; i++) {
     const c = path.commands[i];
     if (isAbsolute(c)) {
-      // update marker
       switch (c.operator) {
         case "M":
           marker = { x: c.parameters[c.parameters.length - 2], y: c.parameters[c.parameters.length - 1] };
           subpathStart = marker;
+          commands.push(c);
           break;
         case "L":
         case "C":
@@ -161,25 +163,35 @@ export function toAbsolute(path: SvgPath): SvgPath {
         case "T":
         case "A":
           marker = { x: c.parameters[c.parameters.length - 2], y: c.parameters[c.parameters.length - 1] };
+          commands.push(c);
           break;
         case "H":
           marker = { x: c.parameters[c.parameters.length - 1], y: marker.y };
+          commands.push({ operator: "L", parameters: c.parameters.map(x => [x, marker.y]).flat() });
           break;
         case "V":
           marker = { x: marker.x, y: c.parameters[c.parameters.length - 1] };
+          commands.push({ operator: "L", parameters: c.parameters.map(y => [marker.x, y]).flat() });
+          commands.push(c);
           break;
         case "Z":
           marker = subpathStart;
+          commands.push(c);
+          break;
         default:
           throw new Error("Invalid SVG command: " + c.operator);
       }
-      // push command
-      commands.push(c);
     }
     else {
       // update marker and push command(s)
       switch (c.operator) {
         case "m":
+          for (let j = 1; j < c.parameters.length; j += 2) {
+            marker = { x: marker.x + c.parameters[j - 1], y: marker.y + c.parameters[j] };
+            subpathStart = marker;
+            commands.push({ operator: c.operator.toUpperCase(), parameters: [marker.x, marker.y] })
+          }
+          break;
         case "l":
         case "t":
           for (let j = 1; j < c.parameters.length; j += 2) {
@@ -190,13 +202,13 @@ export function toAbsolute(path: SvgPath): SvgPath {
         case "h":
           for (let j = 0; j < c.parameters.length; j++) {
             marker = { x: marker.x + c.parameters[j], y: marker.y };
-            commands.push({ operator: c.operator.toUpperCase(), parameters: [marker.x] })
+            commands.push({ operator: "L", parameters: c.parameters.map(x => [x, marker.y]).flat() });
           }
           break;
         case "v":
           for (let j = 0; j < c.parameters.length; j++) {
             marker = { x: marker.x, y: marker.y + c.parameters[j] };
-            commands.push({ operator: c.operator.toUpperCase(), parameters: [marker.y] })
+            commands.push({ operator: "L", parameters: c.parameters.map(y => [marker.x, y]).flat() });
           }
           break;
         case "c":
@@ -246,6 +258,8 @@ export function toAbsolute(path: SvgPath): SvgPath {
           break;
         case "z":
           marker = subpathStart;
+          commands.push({ operator: c.operator.toUpperCase(), parameters: [] });
+          break;
         default:
           throw new Error("Invalid SVG command: " + c.operator);
       }
