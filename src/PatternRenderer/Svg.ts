@@ -8,6 +8,12 @@ export type SvgPath = {
   commands: SvgCommand[];
 }
 export function parse(path: string): SvgPath {
+  if (!path || !path.length) {
+    return { commands: [{ operator: "M", parameters: [0, 0] }] };
+  }
+  if (!/^[ MmZzLlHhVvCcSsQqTtAa0-9.,-]*$/.test(path)) {
+    throw new Error(`Invalid SVG contains non-allowed characters: ${path}`)
+  }
   const commandStrings = path.trim().split(/(?=[MmZzLlHhVvCcSsQqTtAa])/);
   const commands = commandStrings.map(s => {
     const operator = s[0];
