@@ -4,9 +4,11 @@ export type SvgCommand = {
   operator: string;
   parameters: number[];
 }
+
 export type SvgPath = {
   commands: SvgCommand[];
 }
+
 export function parse(path: string): SvgPath {
   if (!path || !path.length) {
     return { commands: [{ operator: "M", parameters: [0, 0] }] };
@@ -21,7 +23,13 @@ export function parse(path: string): SvgPath {
   const commands = commandStrings.map(s => {
     const operator = s[0];
     const parametersString = s.slice(1).trim();
-    const parameters = parametersString.length ? parametersString.split(/[, ]+/).map(v => Number(v)) : [];
+    const parameters = parametersString.length ? parametersString.split(/[, ]+/).map(v => {
+      const n = Number(v);
+      if (isNaN(n)) {
+        throw new Error("SVG path command parameter was not a number: " + v)
+      }
+      return n;
+    }) : [];
     return {
       operator,
       parameters,
