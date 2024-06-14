@@ -71,7 +71,7 @@ function pointsToPatternPath(rings, closed: boolean, pattern: string) {
             for (; k < segmentDist; k += patternOptions[patternPart].interval ?? 20) {
               const pk = moveAlongBearing(prevPoint, k, segmentBearing);
               // move the marker to this point
-              str += `${patternOptions[patternPart].type === "F" ? "M" : "L"}${pk.x} ${pk.y}`;
+              str += `${patternOptions[0].type === "F" ? "M" : "L"}${pk.x} ${pk.y}`;
               // draw the pattern
               // pattern is defined with positive y as the direction of travel,
               // but these bearings assume positive x is direction of travel, so rotate 90 extra degrees
@@ -80,7 +80,7 @@ function pointsToPatternPath(rings, closed: boolean, pattern: string) {
               str += `M${pk.x} ${pk.y}`;
             }
             // set leftover distance and move to end of segment
-            str += `${patternOptions[patternPart].type === "F" ? "M" : "L"}${p.x} ${p.y}`;
+            str += `${patternOptions[0].type === "F" ? "M" : "L"}${p.x} ${p.y}`;
             leftoverDistances[patternPart] = k - segmentDist;
           }
         }
