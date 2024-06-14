@@ -1,12 +1,10 @@
-import { square } from "./math";
+import { Point, square } from "./math";
 
 type SvgCommand = {
-  source: string | null;
   operator: string;
   parameters: number[];
 }
 type SvgPath = {
-  source: string | null;
   commands: SvgCommand[];
 }
 export function stringPathToJson(path: string): SvgPath {
@@ -16,12 +14,11 @@ export function stringPathToJson(path: string): SvgPath {
     const parametersString = s.slice(1).trim();
     const parameters = parametersString.length ? parametersString.split(/[, ]+/).map(v => Number(v)) : [];
     return {
-      source: s,
       operator,
       parameters,
     }
   })
-  return { source: path, commands };
+  return { commands };
 }
 
 export function SvgJsonToString(j: SvgPath) {
@@ -37,7 +34,6 @@ export function SvgJsonToString(j: SvgPath) {
 
 export function translate(p: SvgPath, dx: number, dy: number): SvgPath {
   return {
-    source: null,
     commands: p.commands.map(c => {
       if (isAbsolute(c)) {
         switch (c.operator.charAt(0)) {
@@ -49,14 +45,14 @@ export function translate(p: SvgPath, dx: number, dy: number): SvgPath {
           case "Q":
           case "T":
             return {
-              source: null, operator: c.operator, parameters: c.parameters.map((v, i) => v + (i % 2 ? dy : dx))
+              operator: c.operator, parameters: c.parameters.map((v, i) => v + (i % 2 ? dy : dx))
             }
           // commands with just x coordinates
           case "H":
-            return { source: null, operator: c.operator, parameters: c.parameters.map(x => x + dx) }
+            return { operator: c.operator, parameters: c.parameters.map(x => x + dx) }
           // commands with just y coordinates
           case "V":
-            return { source: null, operator: c.operator, parameters: c.parameters.map(y => y + dy) }
+            return { operator: c.operator, parameters: c.parameters.map(y => y + dy) }
           // commands with no coordinates
           case "Z":
             return c;
@@ -64,7 +60,7 @@ export function translate(p: SvgPath, dx: number, dy: number): SvgPath {
           case "A":
             // each arc is defined with 7 parameters where the last two are X and Y
             return {
-              source: null, operator: c.operator, parameters: c.parameters.map((v, i) => v + (i % 7 === 5 ? dx : i % 7 === 6 ? dy : 0))
+              operator: c.operator, parameters: c.parameters.map((v, i) => v + (i % 7 === 5 ? dx : i % 7 === 6 ? dy : 0))
             }
           default:
             throw new Error("Invalid SVG command: " + c.operator)
@@ -86,7 +82,6 @@ export function rotate(p: SvgPath, dtheta: number): SvgPath {
     ];
   }
   const result = {
-    source: null,
     commands: p.commands.map(c => {
       if (isAbsolute(c)) {
         switch (c.operator.charAt(0)) {
@@ -106,14 +101,14 @@ export function rotate(p: SvgPath, dtheta: number): SvgPath {
               parameters.push(rotation[1])
             }
             return {
-              source: null, operator: c.operator, parameters
+              operator: c.operator, parameters
             }
           // commands with just x coordinates
           case "H":
-            return { source: null, operator: "L", parameters: c.parameters.map(x => [x * Math.cos(dtheta), x * Math.sin(dtheta)]).flat() }
+            throw new Error("TODO Rotation of H command not implemented. Need to track previous Y coordinate.")
           // commands with just y coordinates
           case "V":
-            return { source: null, operator: "L", parameters: c.parameters.map(y => [y * Math.cos(dtheta + Math.PI / 2), y * Math.sin(dtheta + Math.PI / 2)]).flat() }
+            throw new Error("TODO Rotation of V command not implemented. Need to track previous X coordinate.")
           // commands with no coordinates
           case "Z":
             return c;
@@ -134,7 +129,7 @@ export function rotate(p: SvgPath, dtheta: number): SvgPath {
                 arcCoords.push(rotation[1])
               }
             }
-            return { source: null, operator: "A", parameters: arcCoords }
+            return { operator: "A", parameters: arcCoords }
           default:
             throw new Error("Invalid SVG command: " + c.operator)
         }
@@ -144,6 +139,120 @@ export function rotate(p: SvgPath, dtheta: number): SvgPath {
     }),
   };
   return result;
+}
+
+export function toAbsolute(path: SvgPath): SvgPath {
+  let subpathStart: Point = { x: 0, y: 0 };
+  let marker: Point = { x: 0, y: 0 };
+  const commands: SvgCommand[] = [];
+  for (let i = 0; i < path.commands.length; i++) {
+    const c = path.commands[i];
+    if (isAbsolute(c)) {
+      // update marker
+      switch (c.operator) {
+        case "M":
+          marker = { x: c.parameters[c.parameters.length - 2], y: c.parameters[c.parameters.length - 1] };
+          subpathStart = marker;
+          break;
+        case "L":
+        case "C":
+        case "S":
+        case "Q":
+        case "T":
+        case "A":
+          marker = { x: c.parameters[c.parameters.length - 2], y: c.parameters[c.parameters.length - 1] };
+          break;
+        case "H":
+          marker = { x: c.parameters[c.parameters.length - 1], y: marker.y };
+          break;
+        case "V":
+          marker = { x: marker.x, y: c.parameters[c.parameters.length - 1] };
+          break;
+        case "Z":
+          marker = subpathStart;
+        default:
+          throw new Error("Invalid SVG command: " + c.operator);
+      }
+      // push command
+      commands.push(c);
+    }
+    else {
+      // update marker and push command(s)
+      switch (c.operator) {
+        case "m":
+        case "l":
+        case "t":
+          for (let j = 1; j < c.parameters.length; j += 2) {
+            marker = { x: marker.x + c.parameters[j - 1], y: marker.y + c.parameters[j] };
+            commands.push({ operator: c.operator.toUpperCase(), parameters: [marker.x, marker.y] })
+          }
+          break;
+        case "h":
+          for (let j = 0; j < c.parameters.length; j++) {
+            marker = { x: marker.x + c.parameters[j], y: marker.y };
+            commands.push({ operator: c.operator.toUpperCase(), parameters: [marker.x] })
+          }
+          break;
+        case "v":
+          for (let j = 0; j < c.parameters.length; j++) {
+            marker = { x: marker.x, y: marker.y + c.parameters[j] };
+            commands.push({ operator: c.operator.toUpperCase(), parameters: [marker.y] })
+          }
+          break;
+        case "c":
+          for (let j = 5; j < c.parameters.length; j += 6) {
+            marker = { x: marker.x + c.parameters[j - 1], y: marker.y + c.parameters[j] };
+            commands.push({
+              operator: c.operator.toUpperCase(), parameters: [
+                marker.x + c.parameters[j - 5],
+                marker.y + c.parameters[j - 4],
+                marker.x + c.parameters[j - 3],
+                marker.y + c.parameters[j - 2],
+                marker.x,
+                marker.y
+              ]
+            })
+          }
+          break;
+        case "s":
+        case "q":
+          for (let j = 3; j < c.parameters.length; j += 4) {
+            marker = { x: marker.x + c.parameters[j - 1], y: marker.y + c.parameters[j] };
+            commands.push({
+              operator: c.operator.toUpperCase(), parameters: [
+                marker.x + c.parameters[j - 3],
+                marker.y + c.parameters[j - 2],
+                marker.x,
+                marker.y
+              ]
+            })
+          }
+          break;
+        case "a":
+          for (let j = 6; j < c.parameters.length; j += 7) {
+            marker = { x: marker.x + c.parameters[j - 1], y: marker.y + c.parameters[j] };
+            commands.push({
+              operator: c.operator.toUpperCase(), parameters: [
+                c.parameters[j - 6],
+                c.parameters[j - 5],
+                c.parameters[j - 4],
+                c.parameters[j - 3],
+                c.parameters[j - 2],
+                marker.x,
+                marker.y
+              ]
+            })
+          }
+          break;
+        case "z":
+          marker = subpathStart;
+        default:
+          throw new Error("Invalid SVG command: " + c.operator);
+      }
+    }
+  }
+
+  return { commands }
 }
 
 function isAbsolute(c: SvgCommand) {
