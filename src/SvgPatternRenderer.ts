@@ -168,7 +168,10 @@ function translate(p: SvgPath, dx: number, dy: number): SvgPath {
             return c;
           // the arc command
           case "A":
-            throw new Error("TODO Arc command translation not implemented.")
+            // each arc is defined with 7 parameters where the last two are X and Y
+            return {
+              source: null, operator: c.operator, coordinates: c.coordinates.map((v, i) => v + (i % 7 === 5 ? dx : i % 7 === 6 ? dy : 0))
+            }
           default:
             throw new Error("Invalid SVG command: " + c.operator)
         }
@@ -180,6 +183,14 @@ function translate(p: SvgPath, dx: number, dy: number): SvgPath {
 }
 
 function rotate(p: SvgPath, dtheta: number): SvgPath {
+  const rotateXY = (x: number, y: number): [number, number] => {
+    const magnitude = Math.sqrt(square(x) + square(y));
+    const originalBearing = Math.atan2(y, x);
+    return [
+      magnitude * Math.cos(originalBearing + dtheta),
+      magnitude * Math.sin(originalBearing + dtheta)
+    ];
+  }
   const result = {
     source: null,
     commands: p.commands.map(c => {
@@ -196,10 +207,9 @@ function rotate(p: SvgPath, dtheta: number): SvgPath {
             for (let i = 1; i < c.coordinates.length; i += 2) {
               const x = c.coordinates[i - 1];
               const y = c.coordinates[i];
-              const magnitude = Math.sqrt(square(x) + square(y));
-              const originalBearing = Math.atan2(y, x);
-              coordinates.push(magnitude * Math.cos(originalBearing + dtheta));
-              coordinates.push(magnitude * Math.sin(originalBearing + dtheta));
+              const rotation = rotateXY(x, y);
+              coordinates.push(rotation[0])
+              coordinates.push(rotation[1])
             }
             return {
               source: null, operator: c.operator, coordinates
@@ -215,7 +225,22 @@ function rotate(p: SvgPath, dtheta: number): SvgPath {
             return c;
           // the arc command
           case "A":
-            throw new Error("TODO Arc command rotation not implemented.")
+            // each arc is defined with 7 parameters where the last two are X and Y
+            const arcCoords: number[] = [];
+            for (let i = 0; i < c.coordinates.length; i++) {
+              if (i % 7 < 5) {
+                arcCoords.push(c.coordinates[i]);
+              }
+              // intentionally do nothing if i % 7 === 5
+              else if (i % 7 === 6) {
+                const x = c.coordinates[i - 1];
+                const y = c.coordinates[i];
+                const rotation = rotateXY(x, y);
+                arcCoords.push(rotation[0])
+                arcCoords.push(rotation[1])
+              }
+            }
+            return { source: null, operator: "A", coordinates: arcCoords }
           default:
             throw new Error("Invalid SVG command: " + c.operator)
         }
