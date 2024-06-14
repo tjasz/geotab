@@ -8,6 +8,8 @@ describe("in some special cases, toString(parse(s)) should not equal s", () => {
     ["M0.00 0.000", "M0 0"],
     // negative 0 will be converted to 0 by Number()
     ["M-0 -0", "M0 0"],
+    // excessive commas and spaces will be removed
+    ["M 0, 0 L 1, 2", "M0 0L1 2"]
   ])(
     "dist(%p)",
     (input: string, expected: string) => {
@@ -18,6 +20,7 @@ describe("in some special cases, toString(parse(s)) should not equal s", () => {
 
 describe("in most cases, toString(parse(s)) should equal s, as functions are lossless", () => {
   it.each<string>([
+    "M-1-2",
     // ensure negatives, decimals, and multiple commands are handled
     "M1 2L-3 -4V8.05H2.05Z",
     // ensure every command type can be handled
