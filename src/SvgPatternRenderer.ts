@@ -28,11 +28,15 @@ function parsePattern(s: string): PatternPart[] {
   });
 }
 
-// TODO fill the shapes that are created?
 export const SvgPatternRenderer = L.SVG.extend({
   _updatePoly(layer, closed) {
     this._setPath(layer, pointsToPatternPath(layer._parts, closed, layer.options.pattern));
   },
+  _updateStyle(layer) {
+    // @ts-expect-error
+    L.SVG.prototype._updateStyle(layer);
+    layer._path.setAttribute("fill", layer.options.color);
+  }
 })
 
 function pointsToPatternPath(rings, closed: boolean, pattern: string) {
