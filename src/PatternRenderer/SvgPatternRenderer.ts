@@ -1,7 +1,7 @@
 import L from "leaflet";
 import { dist, moveAlongBearing } from "./math";
 import { parsePattern } from "./Pattern"
-import { stringPathToJson, rotate, translate, SvgJsonToString } from "./Svg";
+import { parse, toString, rotate, translate } from "./Svg";
 
 export const SvgPatternRenderer = L.SVG.extend({
   _updatePoly(layer, closed) {
@@ -50,7 +50,7 @@ function pointsToPatternPath(rings, closed: boolean, pattern: string) {
             if (j === len2 - 1) {
               const prevPoint = points[j - 1];
               const segmentBearing = Math.atan2(p.y - prevPoint.y, p.x - prevPoint.x);
-              str += SvgJsonToString(translate(rotate(stringPathToJson(patternOptions[0].path), segmentBearing + Math.PI / 2), p.x, p.y))
+              str += toString(translate(rotate(patternOptions[0].path, segmentBearing + Math.PI / 2), p.x, p.y))
             }
           }
           else {
@@ -67,7 +67,7 @@ function pointsToPatternPath(rings, closed: boolean, pattern: string) {
                 // draw the pattern
                 // pattern is defined with positive y as the direction of travel,
                 // but these bearings assume positive x is direction of travel, so rotate 90 extra degrees
-                str += SvgJsonToString(translate(rotate(stringPathToJson(patternOptions[patternPart].path), segmentBearing + Math.PI / 2), pk.x, pk.y))
+                str += toString(translate(rotate(patternOptions[patternPart].path, segmentBearing + Math.PI / 2), pk.x, pk.y))
                 // return to original point
                 str += `M${pk.x} ${pk.y}`;
               }

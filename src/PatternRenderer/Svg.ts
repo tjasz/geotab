@@ -1,13 +1,13 @@
 import { Point, rotateAroundOrigin } from "./math";
 
-type SvgCommand = {
+export type SvgCommand = {
   operator: string;
   parameters: number[];
 }
-type SvgPath = {
+export type SvgPath = {
   commands: SvgCommand[];
 }
-export function stringPathToJson(path: string): SvgPath {
+export function parse(path: string): SvgPath {
   const commandStrings = path.trim().split(/(?=[MmZzLlHhVvCcSsQqTtAa])/);
   const commands = commandStrings.map(s => {
     const operator = s[0];
@@ -21,7 +21,7 @@ export function stringPathToJson(path: string): SvgPath {
   return { commands };
 }
 
-export function SvgJsonToString(j: SvgPath) {
+export function toString(j: SvgPath) {
   let str = "";
 
   for (const c of j.commands) {
@@ -293,3 +293,11 @@ function isAbsolute(c: SvgCommand) {
       throw new Error("Invalid SVG command: " + c.operator);
   }
 }
+
+const Svg = {
+  parse,
+  toString,
+  rotate,
+  translate,
+}
+export default Svg;
