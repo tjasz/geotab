@@ -1,4 +1,4 @@
-type Point = { x: number; y: number };
+export type Point = { x: number; y: number };
 
 export function square(x: number) {
   return x * x;

@@ -3,7 +3,7 @@ import { square } from "./math";
 type SvgCommand = {
   source: string | null;
   operator: string;
-  coordinates: number[];
+  parameters: number[];
 }
 type SvgPath = {
   source: string | null;
@@ -13,12 +13,12 @@ export function stringPathToJson(path: string): SvgPath {
   const commandStrings = path.trim().split(/(?=[MmZzLlHhVvCcSsQqTtAa])/);
   const commands = commandStrings.map(s => {
     const operator = s[0];
-    const coordinateString = s.slice(1).trim();
-    const coordinates = coordinateString.length ? coordinateString.split(/[, ]+/).map(v => Number(v)) : [];
+    const parametersString = s.slice(1).trim();
+    const parameters = parametersString.length ? parametersString.split(/[, ]+/).map(v => Number(v)) : [];
     return {
       source: s,
       operator,
-      coordinates,
+      parameters,
     }
   })
   return { source: path, commands };
@@ -29,8 +29,7 @@ export function SvgJsonToString(j: SvgPath) {
 
   for (const c of j.commands) {
     str += c.operator;
-    str += c.coordinates.join(" ");
-    str += " ";
+    str += c.parameters.join(" ");
   }
 
   return str.trim();
@@ -50,14 +49,14 @@ export function translate(p: SvgPath, dx: number, dy: number): SvgPath {
           case "Q":
           case "T":
             return {
-              source: null, operator: c.operator, coordinates: c.coordinates.map((v, i) => v + (i % 2 ? dy : dx))
+              source: null, operator: c.operator, parameters: c.parameters.map((v, i) => v + (i % 2 ? dy : dx))
             }
           // commands with just x coordinates
           case "H":
-            return { source: null, operator: c.operator, coordinates: c.coordinates.map(x => x + dx) }
+            return { source: null, operator: c.operator, parameters: c.parameters.map(x => x + dx) }
           // commands with just y coordinates
           case "V":
-            return { source: null, operator: c.operator, coordinates: c.coordinates.map(y => y + dy) }
+            return { source: null, operator: c.operator, parameters: c.parameters.map(y => y + dy) }
           // commands with no coordinates
           case "Z":
             return c;
@@ -65,7 +64,7 @@ export function translate(p: SvgPath, dx: number, dy: number): SvgPath {
           case "A":
             // each arc is defined with 7 parameters where the last two are X and Y
             return {
-              source: null, operator: c.operator, coordinates: c.coordinates.map((v, i) => v + (i % 7 === 5 ? dx : i % 7 === 6 ? dy : 0))
+              source: null, operator: c.operator, parameters: c.parameters.map((v, i) => v + (i % 7 === 5 ? dx : i % 7 === 6 ? dy : 0))
             }
           default:
             throw new Error("Invalid SVG command: " + c.operator)
@@ -98,23 +97,23 @@ export function rotate(p: SvgPath, dtheta: number): SvgPath {
           case "S":
           case "Q":
           case "T":
-            const coordinates: number[] = [];
-            for (let i = 1; i < c.coordinates.length; i += 2) {
-              const x = c.coordinates[i - 1];
-              const y = c.coordinates[i];
+            const parameters: number[] = [];
+            for (let i = 1; i < c.parameters.length; i += 2) {
+              const x = c.parameters[i - 1];
+              const y = c.parameters[i];
               const rotation = rotateXY(x, y);
-              coordinates.push(rotation[0])
-              coordinates.push(rotation[1])
+              parameters.push(rotation[0])
+              parameters.push(rotation[1])
             }
             return {
-              source: null, operator: c.operator, coordinates
+              source: null, operator: c.operator, parameters
             }
           // commands with just x coordinates
           case "H":
-            return { source: null, operator: "L", coordinates: c.coordinates.map(x => [x * Math.cos(dtheta), x * Math.sin(dtheta)]).flat() }
+            return { source: null, operator: "L", parameters: c.parameters.map(x => [x * Math.cos(dtheta), x * Math.sin(dtheta)]).flat() }
           // commands with just y coordinates
           case "V":
-            return { source: null, operator: "L", coordinates: c.coordinates.map(y => [y * Math.cos(dtheta + Math.PI / 2), y * Math.sin(dtheta + Math.PI / 2)]).flat() }
+            return { source: null, operator: "L", parameters: c.parameters.map(y => [y * Math.cos(dtheta + Math.PI / 2), y * Math.sin(dtheta + Math.PI / 2)]).flat() }
           // commands with no coordinates
           case "Z":
             return c;
@@ -122,20 +121,20 @@ export function rotate(p: SvgPath, dtheta: number): SvgPath {
           case "A":
             // each arc is defined with 7 parameters where the last two are X and Y
             const arcCoords: number[] = [];
-            for (let i = 0; i < c.coordinates.length; i++) {
+            for (let i = 0; i < c.parameters.length; i++) {
               if (i % 7 < 5) {
-                arcCoords.push(c.coordinates[i]);
+                arcCoords.push(c.parameters[i]);
               }
               // intentionally do nothing if i % 7 === 5
               else if (i % 7 === 6) {
-                const x = c.coordinates[i - 1];
-                const y = c.coordinates[i];
+                const x = c.parameters[i - 1];
+                const y = c.parameters[i];
                 const rotation = rotateXY(x, y);
                 arcCoords.push(rotation[0])
                 arcCoords.push(rotation[1])
               }
             }
-            return { source: null, operator: "A", coordinates: arcCoords }
+            return { source: null, operator: "A", parameters: arcCoords }
           default:
             throw new Error("Invalid SVG command: " + c.operator)
         }
@@ -148,7 +147,7 @@ export function rotate(p: SvgPath, dtheta: number): SvgPath {
 }
 
 function isAbsolute(c: SvgCommand) {
-  switch (c.operator.charAt(0)) {
+  switch (c.operator) {
     case "M":
     case "Z":
     case "L":
