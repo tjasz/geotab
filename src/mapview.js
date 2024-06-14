@@ -27,7 +27,7 @@ import { painter } from "./painter";
 import { addHover, removeHover, toggleActive } from "./selection";
 import { FeatureType, GeometryType } from "./geojson-types";
 import { LeafletButton } from "./LeafletButton"
-import { SvgPatternRenderer } from "./SvgPatternRenderer"
+import { SvgPatternRenderer } from "./PatternRenderer/SvgPatternRenderer"
 
 function MapView(props) {
   const context = useContext(DataContext);
