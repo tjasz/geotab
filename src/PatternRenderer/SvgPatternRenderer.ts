@@ -82,6 +82,7 @@ function pointsToPatternPath(rings, closed: boolean, pattern: string) {
       }
 
       // closes the ring for polygons
+      console.log(str)
       str += closed ? 'z' : '';
     }
   }

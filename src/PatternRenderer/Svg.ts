@@ -1,4 +1,4 @@
-import { Point, square } from "./math";
+import { Point, rotateAroundOrigin } from "./math";
 
 type SvgCommand = {
   operator: string;
@@ -33,7 +33,7 @@ export function SvgJsonToString(j: SvgPath) {
 }
 
 export function translate(p: SvgPath, dx: number, dy: number): SvgPath {
-  return {
+  const result = {
     commands: p.commands.map(c => {
       if (isAbsolute(c)) {
         switch (c.operator.charAt(0)) {
@@ -69,17 +69,13 @@ export function translate(p: SvgPath, dx: number, dy: number): SvgPath {
         return c;
       }
     }),
-  }
+  };
+  return result;
 }
 
 export function rotate(p: SvgPath, dtheta: number): SvgPath {
-  const rotateXY = (x: number, y: number): [number, number] => {
-    const magnitude = Math.sqrt(square(x) + square(y));
-    const originalBearing = Math.atan2(y, x);
-    return [
-      magnitude * Math.cos(originalBearing + dtheta),
-      magnitude * Math.sin(originalBearing + dtheta)
-    ];
+  if (p.commands.some(c => !isAbsolute(c) || c.operator === "H" || c.operator === "V")) {
+    p = toAbsoluteAndRemoveHV(p);
   }
   const result = {
     commands: p.commands.map(c => {
@@ -96,9 +92,9 @@ export function rotate(p: SvgPath, dtheta: number): SvgPath {
             for (let i = 1; i < c.parameters.length; i += 2) {
               const x = c.parameters[i - 1];
               const y = c.parameters[i];
-              const rotation = rotateXY(x, y);
-              parameters.push(rotation[0])
-              parameters.push(rotation[1])
+              const rotation = rotateAroundOrigin({ x, y }, dtheta);
+              parameters.push(rotation.x)
+              parameters.push(rotation.y)
             }
             return {
               operator: c.operator, parameters
@@ -124,9 +120,9 @@ export function rotate(p: SvgPath, dtheta: number): SvgPath {
               else if (i % 7 === 6) {
                 const x = c.parameters[i - 1];
                 const y = c.parameters[i];
-                const rotation = rotateXY(x, y);
-                arcCoords.push(rotation[0])
-                arcCoords.push(rotation[1])
+                const rotation = rotateAroundOrigin({ x, y }, dtheta);
+                arcCoords.push(rotation.x)
+                arcCoords.push(rotation.y)
               }
             }
             return { operator: "A", parameters: arcCoords }
