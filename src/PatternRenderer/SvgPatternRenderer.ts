@@ -4,7 +4,7 @@ import { parsePattern, Pattern } from "./Pattern"
 import { toString, rotate, translate } from "./Svg";
 
 export const SvgPatternRenderer = L.SVG.extend({
-  _updatePoly(layer, closed) {
+  _updatePoly(layer, closed: boolean) {
     this._setPath(layer, pointsToPatternPath(layer._parts, closed, layer.options.pattern));
   },
   _updateStyle(layer) {
