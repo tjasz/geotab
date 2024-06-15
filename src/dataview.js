@@ -199,6 +199,7 @@ function FileImporter({ onRead }) {
 function ExportView(props) {
   const context = useContext(DataContext);
   const [exportOption, setExportOption] = useState("all");
+  const [includeStyle, setIncludeStyle] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const isActive = (feature) => {
     const status = feature.properties["geotab:selectionStatus"];
@@ -230,15 +231,23 @@ function ExportView(props) {
     includeHidden,
     filterFunc = (f) => true,
     buffer = false,
+    includeStyle = false,
   ) => {
     const features = (
       includeHidden ? context.data : context.filteredData
     ).filter(filterFunc);
+
+    const painterInstance = painter(context.symbology);
+    const styledFeatures = includeStyle ? features.map(f => {
+      const style = painterInstance(f);
+      return { ...f, properties: { ...f.properties, pattern: style.pattern } }
+    }) : features;
+
     return buffer
-      ? createBuffer(features)
+      ? createBuffer(styledFeatures)
       : {
         type: "FeatureCollection",
-        features,
+        features: styledFeatures,
         geotabMetadata: {
           columns: context.columns,
           filter: context.filter,
@@ -248,12 +257,7 @@ function ExportView(props) {
   };
 
   const exportToFile = (featureCollection) => {
-    const painterInstance = painter(context.symbology);
-    const styledFeatures = featureCollection.features.map(f => {
-      const style = painterInstance(f);
-      return { ...f, properties: { ...f.properties, pattern: style.pattern } }
-    })
-    const textContent = JSON.stringify({ ...featureCollection, features: styledFeatures });
+    const textContent = JSON.stringify(featureCollection);
     const file = new Blob([textContent], { type: "text/plain" });
     const downloadLink = document.createElement("a");
     downloadLink.href = URL.createObjectURL(file);
@@ -295,6 +299,7 @@ function ExportView(props) {
       includeHidden,
       filter,
       buffer,
+      includeStyle,
     );
     exportToFile(featureCollection);
     setIsLoading(false);
@@ -314,6 +319,8 @@ function ExportView(props) {
         <option value="bufferFiltered">Buffer (Filtered)</option>
         <option value="bufferSelected">Buffer (Selected)</option>
       </select>
+      <input type="checkbox" id="includeStyle" name="includeStyle" checked={includeStyle} onChange={(event) => setIncludeStyle(!includeStyle)} />
+      <label for="includeStyle">Include SimpleStyle?</label>
       {isLoading ? (
         <CircularProgress />
       ) : (
