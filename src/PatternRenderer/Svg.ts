@@ -12,7 +12,7 @@ export function parse(path: string): SvgPath {
     return [{ operator: "M", parameters: [0, 0] }];
   }
 
-  const invalidCharacters = path.match(/[^ MmZzLlHhVvCcSsQqTtAa0-9.,-]/);
+  const invalidCharacters = path.match(/[^ \tMmZzLlHhVvCcSsQqTtAa0-9,.-]/);
   if (invalidCharacters?.length) {
     throw new Error(`Invalid SVG contains non-allowed character '${invalidCharacters.join("")}': ${path}`)
   }
