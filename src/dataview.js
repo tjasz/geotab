@@ -237,10 +237,20 @@ function ExportView(props) {
       includeHidden ? context.data : context.filteredData
     ).filter(filterFunc);
 
+    // add SimpleStyle properties from the symbology
     const painterInstance = painter(context.symbology);
     const styledFeatures = includeStyle ? features.map(f => {
       const style = painterInstance(f);
-      return { ...f, properties: { ...f.properties, pattern: style.pattern } }
+      return {
+        ...f, properties: {
+          ...f.properties,
+          pattern: style.pattern,
+          stroke: style.color,
+          "stroke-width": style.weight,
+          fill: style.fillColor,
+          "fill-opacity": style.fillOpacity,
+        }
+      }
     }) : features;
 
     return buffer

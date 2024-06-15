@@ -188,12 +188,12 @@ export function painter(symbology) {
     const hue = interpolation(symbology?.hue, feature) ?? 209;
     const sat = interpolation(symbology?.saturation, feature) ?? 50;
     const light = interpolation(symbology?.lightness, feature) ?? 40;
-    const opacity = interpolation(symbology?.opacity, feature) ?? 1;
+    const opacity = interpolation(symbology?.opacity, feature) ?? feature.properties["stroke-opacity"] ?? 1;
     const color = `hsla(${hue}, ${sat}%, ${light}%, ${opacity})`;
     // get other attributes
-    const size = interpolation(symbology?.size, feature) ?? 5;
+    const size = interpolation(symbology?.size, feature) ?? feature.properties["stroke-width"] ?? 5;
     const shape = interpolation(symbology?.shape, feature) ?? 3;
-    const linePattern = interpolation(symbology?.linePattern, feature);
+    const linePattern = interpolation(symbology?.linePattern, feature) ?? feature.properties["pattern"] ?? "solid";
 
     if (feature.geometry?.type === "Point") {
       return StarMarker(latlng, Math.round(shape), size, color);
@@ -227,7 +227,7 @@ export function painter(symbology) {
         lineCap,
         fillColor,
         fillOpacity,
-        pattern: linePattern ?? feature.properties["pattern"] ?? "solid",
+        pattern: linePattern,
       };
     }
   };
