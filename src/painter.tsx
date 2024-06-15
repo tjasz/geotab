@@ -184,6 +184,14 @@ export function painter(symbology) {
   //   "hue": {mode: "discrete", values: [150, 250], fieldname: "elevation", breaks: [10000], default: 209},
   // },
   const fn = (feature, latlng) => {
+    // TODO get the following from SimpleStyle:
+    // marker-size, marker-symbol, marker-color, stroke (color)
+    // TODO get additional CalTopo properties that aren't in SimpleStyle:
+    // marker-rotation, marker-size as an integer
+
+    // TODO get the following from GeoJSON+CSS:
+    // fill (none or color), fill-rule, fill-opacity, stroke (none or color), stroke-dasharry, stroke-dashoffset, stroke-linecap, stroke-linejoin, stroke-miterlimit, stroke-opacity, stroke-width
+
     // get color-related attributes
     const hue = interpolation(symbology?.hue, feature) ?? 209;
     const sat = interpolation(symbology?.saturation, feature) ?? 50;
@@ -198,7 +206,8 @@ export function painter(symbology) {
     if (feature.geometry?.type === "Point") {
       return StarMarker(latlng, Math.round(shape), size, color);
     } else {
-      // TODO lineCap, lineJoin, dashArray, dashOffset, fillColor, fillOpacity, fillRule, fill boolean, stroke boolean
+      // TODO pass the following to leaflet:
+      // lineCap, lineJoin, dashArray, dashOffset, fillColor, fillOpacity, fillRule, fill boolean, stroke boolean
       let dashArray = "";
       if (feature.properties["pattern"]) {
         switch (feature.properties["pattern"]) {

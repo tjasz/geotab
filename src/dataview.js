@@ -243,6 +243,9 @@ function ExportView(props) {
       const style = painterInstance(f);
       return {
         ...f, properties: {
+          // TODO pass the following SimpleStyle props: marker-size, marker-symbol, marker-color, stroke (color), stroke-opacity
+          // TODO pass the following CalTopo props: marker-rotation, marker-size as integer
+          // TODO consider passing GeoJSON+CSS format
           ...f.properties,
           pattern: style.pattern,
           stroke: style.color,
