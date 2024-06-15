@@ -35,7 +35,19 @@ describe("in most cases, toString(parse(s)) should equal s, as functions are los
 
 describe("translate", () => {
   it.each<[[SvgPath, number, number], SvgPath]>([
-
+    // The empty path translated by any amount is the empty path
+    [[[], 0, 0], []],
+    [[[], -10, -10], []],
+    [[[], -10, 10], []],
+    [[[], 10, -10], []],
+    [[[], 10, 10], []],
+    // any path translated by 0 is the same
+    [[[{ operator: "M", parameters: [1, 2] }], 0, 0], [{ operator: "M", parameters: [1, 2] }]],
+    // translate into each quadrant
+    [[[{ operator: "M", parameters: [1, 2] }], -10, -10], [{ operator: "M", parameters: [-9, -8] }]],
+    [[[{ operator: "M", parameters: [1, 2] }], -10, 10], [{ operator: "M", parameters: [-9, 12] }]],
+    [[[{ operator: "M", parameters: [1, 2] }], 10, -10], [{ operator: "M", parameters: [11, -8] }]],
+    [[[{ operator: "M", parameters: [1, 2] }], 10, 10], [{ operator: "M", parameters: [11, 12] }]],
   ])(
     "translate(%p)",
     (args: [SvgPath, number, number], expected: SvgPath) => {
