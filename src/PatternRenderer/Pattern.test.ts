@@ -6,7 +6,6 @@ describe("in many cases, patternToString(parsePattern(s)) should equal s, as fun
     "solid",
     "M-5 5L0 -5M5 5L0 -5,40,80,T",
     "M-5 5L0 -5M5 5L0 -5,20,40,T",
-
     "M-6 8L0 -8M6 8L0 -8M0 0L-6 8M0 0L6 8,40,80,T",
     "M-6 8L0 -8M6 8L0 -8M0 0L-6 8M0 0L6 8,20,40,T",
   ])(
