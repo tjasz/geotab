@@ -1,9 +1,10 @@
-export function Select(props: { options: string[] }): JSX.Element {
+export function Select(props: { options: string[], onOptionRender?: (option: string) => JSX.Element }): JSX.Element {
+  const onOptionRender = props.onOptionRender ?? (v => v);
   return (
     <select {...props}>
       {props.options.map((option) => (
         <option value={option} key={option}>
-          {option}
+          {onOptionRender(option)}
         </option>
       ))}
     </select>

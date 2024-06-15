@@ -9,6 +9,7 @@ import { toType } from "./fieldtype";
 import { ReactComponent as MinusSquare } from "./feather/minus-square.svg";
 import { ReactComponent as PlusSquare } from "./feather/plus-square.svg";
 import { LabeledCheckbox } from "./LabeledCheckbox";
+import { pointsToPatternPath } from "./PatternRenderer/SvgPatternRenderer"
 
 function SymbologyView(props) {
   const context = useContext(DataContext);
@@ -114,7 +115,14 @@ function SymbologyDefinition({ symbology, onSave }) {
           "M-4 0L4 0,,8,T", // vertical ticks
           "M-6 8 L-6 0 M-6 0 L6 8 M6 8 L6 0,12,24,T", // letter Z
         ]}
-        valueLabelFormat={(value) => value}
+        valueLabelFormat={(value) => {
+          const path = pointsToPatternPath([[{ x: 0, y: 0 }, { x: 100, y: 0 }]], false, value);
+          return <span style={{
+            backgroundImage: `url( "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 20'%3E%3Cpath d='${path}'/%3E%3C/svg%3E" )`
+          }}>
+            {value}
+          </span>
+        }}
       />
       <button
         id="save-symbology-draft"
@@ -373,7 +381,6 @@ function NonNumericSymbologyProperty({
           <p>
             Used for <em>null</em>, <em>undefined</em> field values.
           </p>
-          {"TODO use valueLabelFormat on below Select"}
           <Select
             id={`symbology-${name}-defaultValue`}
             name={`symbology-${name}-defaultValue`}
@@ -382,7 +389,11 @@ function NonNumericSymbologyProperty({
               onDefaultEdit(event.target.value);
             }}
             options={valueOptions}
+            onOptionRender={valueLabelFormat}
           />
+          <svg width={100} height={20} viewBox="0 -20 100 40">
+            <path d={pointsToPatternPath([[{ x: 0, y: 0 }, { x: 100, y: 0 }]], false, defaultValue)} strokeWidth="3" stroke="black" />
+          </svg>
           <h4>Values</h4>
           <div style={{ width: "calc(100% - 2em)" }}>
             {values.map((value, idx) => (
@@ -395,6 +406,7 @@ function NonNumericSymbologyProperty({
                   onValuesEdit(event.target.value, idx);
                 }}
                 options={valueOptions}
+                onOptionRender={valueLabelFormat}
               />
             ))}
           </div>

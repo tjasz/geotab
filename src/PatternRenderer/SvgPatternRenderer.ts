@@ -15,7 +15,7 @@ export const SvgPatternRenderer = L.SVG.extend({
   }
 })
 
-function pointsToPatternPath(rings: Point[][], closed: boolean, patternString: string) {
+export function pointsToPatternPath(rings: Point[][], closed: boolean, patternString: string) {
   let pattern: Pattern;
   try {
     pattern = parsePattern(patternString);
