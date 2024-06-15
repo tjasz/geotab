@@ -14,21 +14,20 @@ export const options: SvgOptions = {
     { label: "long dashes", pattern: "M0 0L0 8,8,12,F", },
     { label: "dash-dots", pattern: "M0 0L0 2,8,10,F;M0 4L0 8,8,10,F", },
   ],
-  "More": [
-    { label: "dots under", pattern: "M4 0L4 2,2,4,T", },
-    { label: "dashes under", pattern: "M4 0L4 4,4,8,T", },
-    { label: "long dashes under", pattern: "M4 0L4 8,8,12,T", },
-    { label: "dash-dots under", pattern: "M4 0L4 2,8,10,T;M4 4L4 8,8,10,T", },
+  "Ticks": [
     { label: "vertical ticks", pattern: "M-3 0L3 0,10,20,T", },
     { label: "close vertical ticks", pattern: "M-3 0L3 0,8,8,T", },
     { label: "double vertical ticks", pattern: "M-3 0L3 0M-3 4L3 4,10,20,T", },
+    { label: "X ticks", pattern: "M-3 0 3 -6M3 0 -3 -6,10,20,T", },
+    { label: "triangle ticks", pattern: "M2.6 0 -2.6 3 2.6 6Z,20,20,T", },
+    { label: "square ticks", pattern: "M-3 0 3 0 3 6 -3 6Z,20,20,T", },
     { label: "circle ticks", pattern: "M0 0 A3 3 0 0 0 0 6A3 3 0 0 0 0 0,20,20,T", },
-    { label: "large circle ticks", pattern: "M0 0 A4 4 0 0 0 0 8A4 4 0 0 0 0 0,20,20,T", },
-    { label: "just circles", pattern: "M0 0 A3 3 0 0 0 0 6A3 3 0 0 0 0 0,10,12,F", },
-    { label: "just large circles", pattern: "M0 0 A4 4 0 0 0 0 8A4 4 0 0 0 0 0,10,16,F", },
+  ],
+  "Start & End": [
     { label: "hash at start, hash at end", pattern: "M-4 0L4 0,0,100%,T", },
     { label: "square at start, arrow at end", pattern: "M-4 0 4 0 4 -8 -4 -8Z,0,105%,T;M0 0 4 8 -4 8Z,100%,,T", },
     { label: "circle at start, arrow at end", pattern: "M0 0 A4 4 0 0 0 0 -8A4 4 0 0 0 0 0,0,105%,T;M0 0 4 8 -4 8Z,100%,,T", },
+    { label: "circle at start, tick in middle, arrow at end", pattern: "M0 0 A4 4 0 0 0 0 -8A4 4 0 0 0 0 0,0,105%,T;M-3 0 3 0,50%,55%,T;M0 0 4 8 -4 8Z,100%,,T", },
   ],
   "CalTopo Basic Lines": [
     { label: "solid", pattern: "solid", },
