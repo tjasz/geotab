@@ -113,8 +113,17 @@ function SymbologyDefinition({ symbology, onSave }) {
         }}
         valueOptions={[
           "solid",
-          "M-4 0L4 0,,8,T", // vertical ticks
-          "M-6 8 L-6 0 M-6 0 L6 8 M6 8 L6 0,12,24,T", // letter Z
+          "M0 0L0 2,,4,F", // dots
+          "M0 0L0 4,,8,F", // dashes
+          "M0 0L0 8,,12,F", // long dashes
+          "M0 0L0 2,,10,F;M0 4L0 8,,10,F", // dash-dots
+          "M4 0L4 2,,4,T", // solid with dots under
+          "M4 0L4 4,,8,T", // solid with dashes under
+          "M4 0L4 8,,12,T", // solid with long dashes under
+          "M4 0L4 2,,10,T;M4 4L4 8,,10,T", // solid with dash-dots under
+          "M-3 0L3 0,10,20,T", // vertical ticks
+          "M-3 0L3 0M-3 4L3 4,10,20,T", // double vertical ticks
+          "M0 0L3 3M3 3L0 6,10,20,T", // V ticks
         ]}
         valueLabelFormat={(value) => {
           const path = pointsToPatternPath([[{ x: 0, y: 0 }, { x: 100, y: 0 }]], false, value);

@@ -51,6 +51,7 @@ export function SvgSelectorDialog(props: SvgSelectorDialogProps) {
             height={20}
             pattern={pattern}
             onClick={() => props.onConfirm(pattern)}
+            style={{ cursor: "pointer", backgroundColor: "#c0c0c0", margin: 5 }}
           />
         })}
       </DialogContent>
