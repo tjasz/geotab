@@ -14,7 +14,7 @@ export function SvgSelect(props: SvgSelectProps) {
   return <>
     <SvgPatternPreview
       width={100}
-      height={20}
+      height={30}
       pattern={props.value}
       onClick={() => setExpanded(true)}
       style={{ cursor: "pointer" }}
@@ -48,7 +48,7 @@ export function SvgSelectorDialog(props: SvgSelectorDialogProps) {
           return <SvgPatternPreview
             key={pattern}
             width={100}
-            height={20}
+            height={30}
             pattern={pattern}
             onClick={() => props.onConfirm(pattern)}
             style={{ cursor: "pointer", backgroundColor: "#c0c0c0", margin: 5 }}
