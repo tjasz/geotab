@@ -1,6 +1,6 @@
 import L from "leaflet";
 import { dist, moveAlongBearing, Point } from "./math";
-import { parsePattern, Pattern } from "./Pattern"
+import { parsePattern, Pattern, PixelOrPercent } from "./Pattern"
 import { toString, rotate, translate } from "./Svg";
 
 export const SvgPatternRenderer = L.SVG.extend({
@@ -26,7 +26,7 @@ export function pointsToPatternPath(rings: Point[][], closed: boolean, patternSt
   }
 
   let str = '',
-    i, j, len, len2, points, p: { x: number, y: number };
+    i: number, j: number, len: number, len2: number, points: Point[], p: Point;
 
   // if a polygon, pattern is "solid" or any pattern part has type "T", draw the whole polyline first
   // Note that this means polygons essentially don't support "F" type patterns
@@ -52,38 +52,29 @@ export function pointsToPatternPath(rings: Point[][], closed: boolean, patternSt
   if (pattern !== "solid") {
     for (i = 0, len = rings.length; i < len; i++) {
       points = rings[i];
-      let leftoverDistances = pattern.map(p => typeof p.offset === "number" ? p.offset : 0);
+      const ringDistance = points.reduce((cumulativeDist, point, idx) => idx ? cumulativeDist + dist(points[idx - 1], point) : 0, 0);
+      let leftoverDistances = pattern.map(p => pixelsFrom(p.offset, ringDistance));
 
       for (j = 1, len2 = points.length; j < len2; j++) {
         p = points[j];
 
         const prevPoint = points[j - 1];
         const segmentBearing = Math.atan2(p.y - prevPoint.y, p.x - prevPoint.x);
-        // TODO this assumes that when offset is 100%, no other pattern parts are defined
-        if (pattern[0].offset === "100%") {
-          // draw pattern at last point
-          str += `M${p.x} ${p.y}`;
-          if (j === len2 - 1) {
-            str += toString(translate(rotate(pattern[0].path, segmentBearing + Math.PI / 2), p.x, p.y))
+        const segmentDist = dist(prevPoint, p);
+        for (let patternPart = 0; patternPart < pattern.length; patternPart++) {
+          const pixelInterval = pixelsFrom(pattern[patternPart].interval, ringDistance);
+          let k = leftoverDistances[patternPart];
+          for (; k < segmentDist; k += pixelInterval) {
+            const pk = moveAlongBearing(prevPoint, k, segmentBearing);
+            // move the marker to this point
+            str += `M${pk.x} ${pk.y}`;
+            // draw the pattern
+            // pattern is defined with positive y as the direction of travel,
+            // but these bearings assume positive x is direction of travel, so rotate 90 extra degrees
+            str += toString(translate(rotate(pattern[patternPart].path, segmentBearing + Math.PI / 2), pk.x, pk.y))
           }
-        }
-        else {
-          const segmentDist = dist(prevPoint, p);
-
-          for (let patternPart = 0; patternPart < pattern.length; patternPart++) {
-            let k = leftoverDistances[patternPart];
-            for (; k < segmentDist; k += pattern[patternPart].interval) {
-              const pk = moveAlongBearing(prevPoint, k, segmentBearing);
-              // move the marker to this point
-              str += `M${pk.x} ${pk.y}`;
-              // draw the pattern
-              // pattern is defined with positive y as the direction of travel,
-              // but these bearings assume positive x is direction of travel, so rotate 90 extra degrees
-              str += toString(translate(rotate(pattern[patternPart].path, segmentBearing + Math.PI / 2), pk.x, pk.y))
-            }
-            // set leftover distance
-            leftoverDistances[patternPart] = k - segmentDist;
-          }
+          // set leftover distance
+          leftoverDistances[patternPart] = k - segmentDist;
         }
       }
     }
@@ -91,4 +82,12 @@ export function pointsToPatternPath(rings: Point[][], closed: boolean, patternSt
 
   // SVG complains about empty path strings
   return str || 'M0 0';
+}
+
+function pixelsFrom(v: PixelOrPercent, total: number): number {
+  if (v.type === "px") {
+    return v.value;
+  }
+
+  return v.value / 100 * total;
 }

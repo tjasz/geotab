@@ -1,9 +1,13 @@
 import Svg, { SvgPath } from "./Svg"
 
+export type PixelOrPercent = {
+  value: number;
+  type: "px" | "%";
+}
 type PatternPart = {
   path: SvgPath;
-  offset: number | "100%";
-  interval: number;
+  offset: PixelOrPercent;
+  interval: PixelOrPercent;
   type: "F" | "T";
 }
 export type Pattern = "solid" | PatternPart[];
@@ -17,8 +21,8 @@ export function parsePattern(s: string): Pattern {
   return patternParts.map(part => {
     const parameters = part.split(",");
     const path = Svg.parse(parameters[0]);
-    const offset = parameters[1] === "100%" ? "100%" : Number(parameters[1]);
-    const interval = Number(parameters[2]);
+    const offset = parsePixelOrPercent(parameters[1]);
+    const interval = parsePixelOrPercent(parameters[2]);
     const type = parameters[3] === "T" ? "T" : "F";
     return {
       path,
@@ -27,6 +31,26 @@ export function parsePattern(s: string): Pattern {
       type,
     }
   });
+}
+
+function parsePixelOrPercent(s: string): PixelOrPercent {
+  if (!s || !s.length) {
+    return { value: 0, type: "px" };
+  }
+
+  if (s.endsWith("%")) {
+    const percent = Number(s.slice(0, s.length - 1));
+    if (isNaN(percent)) {
+      throw new Error(`Invalid pattern. Could not parse ${s} to number or percent.`)
+    }
+    return { value: percent, type: "%" }
+  }
+
+  const value = Number(s.slice(0, s.length - 1));
+  if (isNaN(value)) {
+    throw new Error(`Invalid pattern. Could not parse ${s} to number or percent.`)
+  }
+  return { value, type: "px" }
 }
 
 export function patternToString(pattern: Pattern): string {
