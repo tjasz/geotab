@@ -64,7 +64,7 @@ export function pointsToPatternPath(rings: Point[][], closed: boolean, patternSt
         for (let patternPart = 0; patternPart < pattern.length; patternPart++) {
           const pixelInterval = pixelsFrom(pattern[patternPart].interval, ringDistance);
           let k = leftoverDistances[patternPart];
-          for (; k < segmentDist; k += pixelInterval ? pixelInterval : ringDistance) {
+          for (; k <= segmentDist; k += pixelInterval ? pixelInterval : ringDistance) {
             const pk = moveAlongBearing(prevPoint, k, segmentBearing);
             // move the marker to this point
             str += `M${pk.x} ${pk.y}`;
