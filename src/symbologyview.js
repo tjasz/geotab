@@ -378,8 +378,8 @@ function NonNumericSymbologyProperty({
             id={`symbology-${name}-defaultValue`}
             name={`symbology-${name}-defaultValue`}
             defaultValue={defaultValue}
-            onChange={(event, defaultValue) => {
-              onDefaultEdit(defaultValue);
+            onChange={(event) => {
+              onDefaultEdit(event.target.value);
             }}
             options={valueOptions}
           />
@@ -391,8 +391,8 @@ function NonNumericSymbologyProperty({
                 id={`symbology-${name}-value-${idx}`}
                 name={`symbology-${name}-value-${idx}`}
                 defaultValue={value}
-                onChange={(event, value) => {
-                  onValuesEdit(value, idx);
+                onChange={(event) => {
+                  onValuesEdit(event.target.value, idx);
                 }}
                 options={valueOptions}
               />
