@@ -3,11 +3,11 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import { pointsToPatternPath } from "./PatternRenderer/SvgPatternRenderer";
 import React, { useState } from "react";
-import { SvgPatternWithLabel } from "./PatternRenderer/options";
+import { SvgOptions } from "./PatternRenderer/options";
 
 type SvgSelectProps = {
   value: string;
-  options: SvgPatternWithLabel[];
+  options: SvgOptions;
   onChange: (v: string) => void;
 };
 export function SvgSelect(props: SvgSelectProps) {
@@ -36,7 +36,7 @@ type SvgSelectorDialogProps = {
   open: boolean;
   title: string;
   description?: JSX.Element;
-  options: SvgPatternWithLabel[];
+  options: SvgOptions;
 };
 
 export function SvgSelectorDialog(props: SvgSelectorDialogProps) {
@@ -45,18 +45,26 @@ export function SvgSelectorDialog(props: SvgSelectorDialogProps) {
       <DialogTitle>{props.title}</DialogTitle>
       <DialogContent>
         {props.description}
-        {props.options.map(option => {
-          return <div title={option.label} style={{ width: 100, float: "left", margin: 5 }}>
-            <SvgPatternPreview
-              key={`${option.label}: ${option.pattern}`}
-              width={100}
-              height={30}
-              pattern={option.pattern}
-              onClick={() => props.onConfirm(option.pattern)}
-              style={{ cursor: "pointer", backgroundColor: "#c0c0c0", margin: 5 }}
-            />
+        {Object.keys(props.options).map(group => {
+          return <div style={{ display: "block", clear: "both" }}>
+            <p>
+              {group}
+            </p>
+            {props.options[group].map(option => {
+              return <div title={option.label} style={{ width: 100, float: "left", margin: 5 }}>
+                <SvgPatternPreview
+                  key={`${option.label}: ${option.pattern}`}
+                  width={100}
+                  height={30}
+                  pattern={option.pattern}
+                  onClick={() => props.onConfirm(option.pattern)}
+                  style={{ cursor: "pointer", backgroundColor: "#eee", margin: 5 }}
+                />
+              </div>
+            })}
           </div>
         })}
+
       </DialogContent>
     </Dialog>
   );
@@ -77,6 +85,7 @@ export function SvgPatternPreview(props: SvgPatternPreviewProps) {
     onClick={props.onClick}
     onContextMenu={() => console.log(props.pattern)}
     style={props.style}
+    fill="none"
   >
     <path
       d={pointsToPatternPath([[{ x: 5, y: 0 }, { x: 95, y: 0 }]], false, props.pattern)}
