@@ -10,7 +10,8 @@ export const SvgPatternRenderer = L.SVG.extend({
   _updateStyle(layer) {
     // @ts-expect-error
     L.SVG.prototype._updateStyle(layer);
-    layer._path.setAttribute("fill", layer.options.color);
+    // TODO figure out how to fill the circles on the paths while not filling the whole line area
+    //layer._path.setAttribute("fill", layer.options.color);
   }
 })
 

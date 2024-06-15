@@ -387,6 +387,7 @@ function NonNumericSymbologyProperty({
           <div style={{ width: "calc(100% - 2em)" }}>
             {values.map((value, idx) => (
               <Select
+                key={`symbology-${name}-value-${idx}`}
                 id={`symbology-${name}-value-${idx}`}
                 name={`symbology-${name}-value-${idx}`}
                 defaultValue={value}

@@ -193,6 +193,7 @@ export function painter(symbology) {
     // get other attributes
     const size = interpolation(symbology?.size, feature) ?? 5;
     const shape = interpolation(symbology?.shape, feature) ?? 3;
+    const linePattern = interpolation(symbology?.linePattern, feature);
 
     if (feature.geometry?.type === "Point") {
       return StarMarker(latlng, Math.round(shape), size, color);
@@ -226,7 +227,7 @@ export function painter(symbology) {
         lineCap,
         fillColor,
         fillOpacity,
-        pattern: feature.properties["pattern"] ?? "solid",
+        pattern: linePattern ?? feature.properties["pattern"] ?? "solid",
       };
     }
   };
