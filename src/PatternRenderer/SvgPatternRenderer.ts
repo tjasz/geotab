@@ -1,5 +1,5 @@
 import L from "leaflet";
-import { dist, moveAlongBearing } from "./math";
+import { dist, moveAlongBearing, Point } from "./math";
 import { parsePattern, Pattern } from "./Pattern"
 import { toString, rotate, translate } from "./Svg";
 
@@ -14,7 +14,7 @@ export const SvgPatternRenderer = L.SVG.extend({
   }
 })
 
-function pointsToPatternPath(rings, closed: boolean, patternString: string) {
+function pointsToPatternPath(rings: Point[][], closed: boolean, patternString: string) {
   let pattern: Pattern;
   try {
     pattern = parsePattern(patternString);
