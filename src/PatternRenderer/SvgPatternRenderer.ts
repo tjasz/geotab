@@ -64,14 +64,17 @@ export function pointsToPatternPath(rings: Point[][], closed: boolean, patternSt
         for (let patternPart = 0; patternPart < pattern.length; patternPart++) {
           const pixelInterval = pixelsFrom(pattern[patternPart].interval, ringDistance);
           let k = leftoverDistances[patternPart];
-          for (; k < segmentDist; k += pixelInterval) {
-            const pk = moveAlongBearing(prevPoint, k, segmentBearing);
-            // move the marker to this point
-            str += `M${pk.x} ${pk.y}`;
-            // draw the pattern
-            // pattern is defined with positive y as the direction of travel,
-            // but these bearings assume positive x is direction of travel, so rotate 90 extra degrees
-            str += toString(translate(rotate(pattern[patternPart].path, segmentBearing + Math.PI / 2), pk.x, pk.y))
+          if (pixelInterval) {
+            for (; k < segmentDist; k += pixelInterval) {
+              const pk = moveAlongBearing(prevPoint, k, segmentBearing);
+              // move the marker to this point
+              str += `M${pk.x} ${pk.y}`;
+              // draw the pattern
+              // pattern is defined with positive y as the direction of travel,
+              // but these bearings assume positive x is direction of travel, so rotate 90 extra degrees
+              const patternInstance = toString(translate(rotate(pattern[patternPart].path, segmentBearing + Math.PI / 2), pk.x, pk.y))
+              str += patternInstance;
+            }
           }
           // set leftover distance
           leftoverDistances[patternPart] = k - segmentDist;
@@ -89,5 +92,5 @@ function pixelsFrom(v: PixelOrPercent, total: number): number {
     return v.value;
   }
 
-  return v.value / 100 * total;
+  return Math.floor(v.value / 100 * total);
 }

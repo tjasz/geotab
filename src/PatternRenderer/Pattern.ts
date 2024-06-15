@@ -46,7 +46,7 @@ function parsePixelOrPercent(s: string): PixelOrPercent {
     return { value: percent, type: "%" }
   }
 
-  const value = Number(s.slice(0, s.length - 1));
+  const value = Number(s);
   if (isNaN(value)) {
     throw new Error(`Invalid pattern. Could not parse ${s} to number or percent.`)
   }
@@ -62,5 +62,12 @@ export function patternToString(pattern: Pattern): string {
 }
 
 function partToString(part: PatternPart): string {
-  return `${Svg.toString(part.path)},${part.offset},${part.interval},${part.type}`;
+  return `${Svg.toString(part.path)},${pixelOrPercentToString(part.offset)},${pixelOrPercentToString(part.interval)},${part.type}`;
+}
+
+function pixelOrPercentToString(v: PixelOrPercent): string {
+  if (v.type === "%") {
+    return `${v.value}%`
+  }
+  return v.value.toString();
 }
