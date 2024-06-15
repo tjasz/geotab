@@ -10,6 +10,7 @@ import { ReactComponent as MinusSquare } from "./feather/minus-square.svg";
 import { ReactComponent as PlusSquare } from "./feather/plus-square.svg";
 import { LabeledCheckbox } from "./LabeledCheckbox";
 import { pointsToPatternPath } from "./PatternRenderer/SvgPatternRenderer"
+import { SvgSelect } from "./SvgSelectorDialog"
 
 function SymbologyView(props) {
   const context = useContext(DataContext);
@@ -142,7 +143,7 @@ function NonNumericSymbologyProperty({
   definition,
   onEdit,
   valueOptions,
-  valueLabelFormat,
+  valueLabelFormat, // TODO instead of valueLabelFormat, make the options selector a parameter so it can be Slider or SvgSelect
 }) {
   const context = useContext(DataContext);
   const [fieldname, setFieldname] = useState(
@@ -381,32 +382,19 @@ function NonNumericSymbologyProperty({
           <p>
             Used for <em>null</em>, <em>undefined</em> field values.
           </p>
-          <Select
-            id={`symbology-${name}-defaultValue`}
-            name={`symbology-${name}-defaultValue`}
-            defaultValue={defaultValue}
-            onChange={(event) => {
-              onDefaultEdit(event.target.value);
-            }}
+          <SvgSelect
+            value={defaultValue}
             options={valueOptions}
-            onOptionRender={valueLabelFormat}
+            onChange={(s) => onDefaultEdit(s)}
           />
-          <svg width={100} height={20} viewBox="0 -20 100 40">
-            <path d={pointsToPatternPath([[{ x: 0, y: 0 }, { x: 100, y: 0 }]], false, defaultValue)} strokeWidth="3" stroke="black" />
-          </svg>
           <h4>Values</h4>
           <div style={{ width: "calc(100% - 2em)" }}>
             {values.map((value, idx) => (
-              <Select
+              <SvgSelect
                 key={`symbology-${name}-value-${idx}`}
-                id={`symbology-${name}-value-${idx}`}
-                name={`symbology-${name}-value-${idx}`}
-                defaultValue={value}
-                onChange={(event) => {
-                  onValuesEdit(event.target.value, idx);
-                }}
+                value={value}
                 options={valueOptions}
-                onOptionRender={valueLabelFormat}
+                onChange={(s) => onValuesEdit(s, idx)}
               />
             ))}
           </div>
