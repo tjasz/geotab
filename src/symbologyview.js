@@ -217,7 +217,7 @@ function NonNumericSymbologyProperty({
   const onFieldnameEdit = (event) => {
     const newFieldname = event.target.value;
     const newType = context.columns.find((c) => c.name === newFieldname).type;
-    const modeOptions = modesForType(newType).map((m) => m.name);
+    const modeOptions = modesForType(newType).map((m) => m.name).filter(m => m !== "continous");
     const newMode = modeOptions.includes(mode) ? mode : modeOptions[0];
     setFieldname(newFieldname);
     setType(newType);
@@ -365,40 +365,17 @@ function NonNumericSymbologyProperty({
             onChange={onModeEdit}
             options={modesForType(
               context.columns.find((column) => column.name === fieldname)?.type,
-            ).map((m) => m.name)}
+            ).map((m) => m.name).filter(m => m !== "continuous")}
           />
           <h4>Default Value</h4>
           <p>
             Used for <em>null</em>, <em>undefined</em> field values.
           </p>
-          <Slider
-            min={valueOptions[0]}
-            max={valueOptions[0]}
-            value={defaultValue}
-            onChange={(event, defaultValue) => {
-              onDefaultEdit(defaultValue);
-            }}
-            valueLabelDisplay="on"
-            valueLabelFormat={valueLabelFormat}
-            track={false}
-            marks
-          />
+          {"TODO put a Select here to choose a value from valueOptions"}
           <h4>Values</h4>
           <div style={{ width: "calc(100% - 2em)" }}>
             {values.map((value, idx) => (
-              <Slider
-                key={idx}
-                min={valueOptions[0]}
-                max={valueOptions[0]}
-                value={value}
-                onChange={(event, value) => {
-                  onValuesEdit(value, idx);
-                }}
-                valueLabelDisplay="on"
-                valueLabelFormat={valueLabelFormat}
-                track={false}
-                marks
-              />
+              "TODO put a Select here to choose a value from valueOptions"
             ))}
           </div>
           <MinusSquare
