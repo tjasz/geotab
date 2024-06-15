@@ -123,6 +123,7 @@ function SymbologyDefinition({ symbology, onSave }) {
           "M4 0L4 2,,10,T;M4 4L4 8,,10,T", // solid with dash-dots under
           "M-3 0L3 0,10,20,T", // vertical ticks
           "M-3 0L3 0M-3 4L3 4,10,20,T", // double vertical ticks
+          "M-4 0L4 0,0,,T;M-4 0L4 0,100%,,T", // hash at start, hash at end
           // TODO below might be proprietary to CalTopo, I just want to see that they work
           "solid",
           "M-4 0L4 0,,8,T",

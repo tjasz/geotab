@@ -22,7 +22,7 @@ export function parsePattern(s: string): Pattern {
     const parameters = part.split(",");
     const path = Svg.parse(parameters[0]);
     const offset = parsePixelOrPercent(parameters[1]);
-    const interval = parsePixelOrPercent(parameters[2]);
+    const interval = parsePixelOrPercent(parameters[2], { value: 100, type: "%" });
     const type = parameters[3] === "T" ? "T" : "F";
     return {
       path,
@@ -33,9 +33,9 @@ export function parsePattern(s: string): Pattern {
   });
 }
 
-function parsePixelOrPercent(s: string): PixelOrPercent {
+function parsePixelOrPercent(s: string, defaultValue?: PixelOrPercent): PixelOrPercent {
   if (!s || !s.length) {
-    return { value: 0, type: "px" };
+    return defaultValue ?? { value: 0, type: "px" };
   }
 
   if (s.endsWith("%")) {

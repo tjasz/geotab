@@ -43,10 +43,10 @@ describe("in some cases, patternToString(parsePattern(s)) should not equal s, as
       "M-5 3L5 0M-5 -3L5 0,,6,F",
       "M-5 3L5 0M-5 -3L5 0,0,6,F",
     ],
-    // a default interval of 0 can be applied
+    // a default interval of 100% can be applied
     [
       "M-5 8 L0 -2 L5 8 Z,100%,,T",
-      "M-5 8L0 -2L5 8Z,100%,0,T",
+      "M-5 8L0 -2L5 8Z,100%,100%,T",
     ],
     [
       "M-4 -4L-4 4L4 4L4 -4Z,,25,T",
@@ -75,7 +75,7 @@ describe("in some cases, patternToString(parsePattern(s)) should not equal s, as
     ],
     [
       "M-6 14L0 -2M6 14L0 -2M0 6L-6 14M0 6L6 14,100%,,T",
-      "M-6 14L0 -2M6 14L0 -2M0 6L-6 14M0 6L6 14,100%,0,T",
+      "M-6 14L0 -2M6 14L0 -2M0 6L-6 14M0 6L6 14,100%,100%,T",
     ],
     [
       "M5 5M-5 -5M3 0A3 3 0 1 0 -3 0 A3 3 0 1 0 3 0,,15,F",
