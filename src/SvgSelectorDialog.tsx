@@ -3,10 +3,11 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import { pointsToPatternPath } from "./PatternRenderer/SvgPatternRenderer";
 import React, { useState } from "react";
+import { SvgPatternWithLabel } from "./PatternRenderer/options";
 
 type SvgSelectProps = {
   value: string;
-  options: string[];
+  options: SvgPatternWithLabel[];
   onChange: (v: string) => void;
 };
 export function SvgSelect(props: SvgSelectProps) {
@@ -35,7 +36,7 @@ type SvgSelectorDialogProps = {
   open: boolean;
   title: string;
   description?: JSX.Element;
-  options: string[];
+  options: SvgPatternWithLabel[];
 };
 
 export function SvgSelectorDialog(props: SvgSelectorDialogProps) {
@@ -44,15 +45,18 @@ export function SvgSelectorDialog(props: SvgSelectorDialogProps) {
       <DialogTitle>{props.title}</DialogTitle>
       <DialogContent>
         {props.description}
-        {props.options.map(pattern => {
-          return <SvgPatternPreview
-            key={pattern}
-            width={100}
-            height={30}
-            pattern={pattern}
-            onClick={() => props.onConfirm(pattern)}
-            style={{ cursor: "pointer", backgroundColor: "#c0c0c0", margin: 5 }}
-          />
+        {props.options.map(option => {
+          return <div style={{ width: 100, float: "left", margin: 5 }}>
+            {option.label}
+            <SvgPatternPreview
+              key={`${option.label}: ${option.pattern}`}
+              width={100}
+              height={30}
+              pattern={option.pattern}
+              onClick={() => props.onConfirm(option.pattern)}
+              style={{ cursor: "pointer", backgroundColor: "#c0c0c0", margin: 5 }}
+            />
+          </div>
         })}
       </DialogContent>
     </Dialog>
@@ -72,6 +76,7 @@ export function SvgPatternPreview(props: SvgPatternPreviewProps) {
     height={props.height}
     viewBox={`0 ${-props.height / 2} ${props.width} ${props.height}`}
     onClick={props.onClick}
+    onContextMenu={() => console.log(props.pattern)}
     style={props.style}
   >
     <path

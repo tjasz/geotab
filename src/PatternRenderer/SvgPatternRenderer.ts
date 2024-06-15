@@ -69,7 +69,7 @@ export function pointsToPatternPath(rings: Point[][], closed: boolean, patternSt
             // move the marker to this point
             str += `M${pk.x} ${pk.y}`;
             // draw the pattern
-            // pattern is defined with positive y as the direction of travel,
+            // pattern is defined with negative y as the direction of travel,
             // but these bearings assume positive x is direction of travel, so rotate 90 extra degrees
             const patternInstance = toString(translate(rotate(pattern[patternPart].path, segmentBearing + Math.PI / 2), pk.x, pk.y))
             str += patternInstance;
