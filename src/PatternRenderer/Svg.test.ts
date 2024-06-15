@@ -1,4 +1,4 @@
-import Svg from "./Svg";
+import Svg, { SvgPath } from "./Svg";
 
 describe("in some special cases, toString(parse(s)) should not equal s", () => {
   it.each<[string, string]>([
@@ -29,6 +29,17 @@ describe("in most cases, toString(parse(s)) should equal s, as functions are los
     "Svg.parse(%p)",
     (path: string) => {
       expect(Svg.toString(Svg.parse(path))).toEqual(path);
+    }
+  )
+})
+
+describe("translate", () => {
+  it.each<[[SvgPath, number, number], SvgPath]>([
+
+  ])(
+    "translate(%p)",
+    (args: [SvgPath, number, number], expected: SvgPath) => {
+      expect(Svg.translate(...args)).toEqual(expected);
     }
   )
 })

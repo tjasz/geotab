@@ -28,3 +28,15 @@ export function parsePattern(s: string): Pattern {
     }
   });
 }
+
+export function patternToString(pattern: Pattern): string {
+  if (pattern === "solid") {
+    return "solid";
+  }
+
+  return pattern.map(partToString).join(";");
+}
+
+function partToString(part: PatternPart): string {
+  return `${Svg.toString(part.path)},${part.offset},${part.interval},${part.type}`;
+}

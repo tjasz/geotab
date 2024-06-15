@@ -5,13 +5,11 @@ export type SvgCommand = {
   parameters: number[];
 }
 
-export type SvgPath = {
-  commands: SvgCommand[];
-}
+export type SvgPath = SvgCommand[];
 
 export function parse(path: string): SvgPath {
   if (!path || !path.length) {
-    return { commands: [{ operator: "M", parameters: [0, 0] }] };
+    return [{ operator: "M", parameters: [0, 0] }];
   }
 
   const invalidCharacters = path.match(/[^ MmZzLlHhVvCcSsQqTtAa0-9.,-]/);
@@ -35,13 +33,13 @@ export function parse(path: string): SvgPath {
       parameters,
     }
   })
-  return { commands };
+  return commands;
 }
 
 export function toString(j: SvgPath) {
   let str = "";
 
-  for (const c of j.commands) {
+  for (const c of j) {
     str += c.operator;
     str += c.parameters.join(" ");
   }
@@ -50,107 +48,103 @@ export function toString(j: SvgPath) {
 }
 
 export function translate(p: SvgPath, dx: number, dy: number): SvgPath {
-  const result = {
-    commands: p.commands.map(c => {
-      if (isAbsolute(c)) {
-        switch (c.operator.charAt(0)) {
-          // commands with x and y coordinates
-          case "M":
-          case "L":
-          case "C":
-          case "S":
-          case "Q":
-          case "T":
-            return {
-              operator: c.operator, parameters: c.parameters.map((v, i) => v + (i % 2 ? dy : dx))
-            }
-          // commands with just x coordinates
-          case "H":
-            return { operator: c.operator, parameters: c.parameters.map(x => x + dx) }
-          // commands with just y coordinates
-          case "V":
-            return { operator: c.operator, parameters: c.parameters.map(y => y + dy) }
-          // commands with no coordinates
-          case "Z":
-            return c;
-          // the arc command
-          case "A":
-            // each arc is defined with 7 parameters where the last two are X and Y
-            return {
-              operator: c.operator, parameters: c.parameters.map((v, i) => v + (i % 7 === 5 ? dx : i % 7 === 6 ? dy : 0))
-            }
-          default:
-            throw new Error("Invalid SVG command: " + c.operator)
-        }
-      } else {
-        return c;
+  const result = p.map(c => {
+    if (isAbsolute(c)) {
+      switch (c.operator.charAt(0)) {
+        // commands with x and y coordinates
+        case "M":
+        case "L":
+        case "C":
+        case "S":
+        case "Q":
+        case "T":
+          return {
+            operator: c.operator, parameters: c.parameters.map((v, i) => v + (i % 2 ? dy : dx))
+          }
+        // commands with just x coordinates
+        case "H":
+          return { operator: c.operator, parameters: c.parameters.map(x => x + dx) }
+        // commands with just y coordinates
+        case "V":
+          return { operator: c.operator, parameters: c.parameters.map(y => y + dy) }
+        // commands with no coordinates
+        case "Z":
+          return c;
+        // the arc command
+        case "A":
+          // each arc is defined with 7 parameters where the last two are X and Y
+          return {
+            operator: c.operator, parameters: c.parameters.map((v, i) => v + (i % 7 === 5 ? dx : i % 7 === 6 ? dy : 0))
+          }
+        default:
+          throw new Error("Invalid SVG command: " + c.operator)
       }
-    }),
-  };
+    } else {
+      return c;
+    }
+  });
   return result;
 }
 
 export function rotate(p: SvgPath, dtheta: number): SvgPath {
-  if (p.commands.some(c => !isAbsolute(c) || c.operator === "H" || c.operator === "V")) {
+  if (p.some(c => !isAbsolute(c) || c.operator === "H" || c.operator === "V")) {
     p = toAbsoluteAndRemoveHV(p);
   }
-  const result = {
-    commands: p.commands.map(c => {
-      if (isAbsolute(c)) {
-        switch (c.operator.charAt(0)) {
-          // commands with x and y coordinates
-          case "M":
-          case "L":
-          case "C":
-          case "S":
-          case "Q":
-          case "T":
-            const parameters: number[] = [];
-            for (let i = 1; i < c.parameters.length; i += 2) {
+  const result = p.map(c => {
+    if (isAbsolute(c)) {
+      switch (c.operator.charAt(0)) {
+        // commands with x and y coordinates
+        case "M":
+        case "L":
+        case "C":
+        case "S":
+        case "Q":
+        case "T":
+          const parameters: number[] = [];
+          for (let i = 1; i < c.parameters.length; i += 2) {
+            const x = c.parameters[i - 1];
+            const y = c.parameters[i];
+            const rotation = rotateAroundOrigin({ x, y }, dtheta);
+            parameters.push(rotation.x)
+            parameters.push(rotation.y)
+          }
+          return {
+            operator: c.operator, parameters
+          }
+        // commands with just x coordinates
+        case "H":
+          throw new Error("TODO Rotation of H command not implemented. Need to track previous Y coordinate.")
+        // commands with just y coordinates
+        case "V":
+          throw new Error("TODO Rotation of V command not implemented. Need to track previous X coordinate.")
+        // commands with no coordinates
+        case "Z":
+          return c;
+        // the arc command
+        case "A":
+          // each arc is defined with 7 parameters where the last two are X and Y
+          const arcCoords: number[] = [];
+          for (let i = 0; i < c.parameters.length; i++) {
+            if (i % 7 < 5) {
+              arcCoords.push(c.parameters[i]);
+            }
+            // intentionally do nothing if i % 7 === 5
+            else if (i % 7 === 6) {
               const x = c.parameters[i - 1];
               const y = c.parameters[i];
               const rotation = rotateAroundOrigin({ x, y }, dtheta);
-              parameters.push(rotation.x)
-              parameters.push(rotation.y)
+              arcCoords.push(rotation.x)
+              arcCoords.push(rotation.y)
             }
-            return {
-              operator: c.operator, parameters
-            }
-          // commands with just x coordinates
-          case "H":
-            throw new Error("TODO Rotation of H command not implemented. Need to track previous Y coordinate.")
-          // commands with just y coordinates
-          case "V":
-            throw new Error("TODO Rotation of V command not implemented. Need to track previous X coordinate.")
-          // commands with no coordinates
-          case "Z":
-            return c;
-          // the arc command
-          case "A":
-            // each arc is defined with 7 parameters where the last two are X and Y
-            const arcCoords: number[] = [];
-            for (let i = 0; i < c.parameters.length; i++) {
-              if (i % 7 < 5) {
-                arcCoords.push(c.parameters[i]);
-              }
-              // intentionally do nothing if i % 7 === 5
-              else if (i % 7 === 6) {
-                const x = c.parameters[i - 1];
-                const y = c.parameters[i];
-                const rotation = rotateAroundOrigin({ x, y }, dtheta);
-                arcCoords.push(rotation.x)
-                arcCoords.push(rotation.y)
-              }
-            }
-            return { operator: "A", parameters: arcCoords }
-          default:
-            throw new Error("Invalid SVG command: " + c.operator)
-        }
-      } else {
-        throw new Error("TODO rotation of relative commands not implemented.")
+          }
+          return { operator: "A", parameters: arcCoords }
+        default:
+          throw new Error("Invalid SVG command: " + c.operator)
       }
-    }),
-  };
+    } else {
+      throw new Error("TODO rotation of relative commands not implemented.")
+    }
+  });
   return result;
 }
 
@@ -160,8 +154,8 @@ function toAbsoluteAndRemoveHV(path: SvgPath): SvgPath {
   let subpathStart: Point = { x: 0, y: 0 };
   let marker: Point = { x: 0, y: 0 };
   const commands: SvgCommand[] = [];
-  for (let i = 0; i < path.commands.length; i++) {
-    const c = path.commands[i];
+  for (let i = 0; i < path.length; i++) {
+    const c = path[i];
     if (isAbsolute(c)) {
       switch (c.operator) {
         case "M":
@@ -279,7 +273,7 @@ function toAbsoluteAndRemoveHV(path: SvgPath): SvgPath {
     }
   }
 
-  return { commands }
+  return commands;
 }
 
 function isAbsolute(c: SvgCommand) {
