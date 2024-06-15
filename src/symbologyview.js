@@ -127,6 +127,8 @@ function SymbologyDefinition({ symbology, onSave }) {
   );
 }
 
+// TODO a lot if copied between this and NumericSymbologyProperty
+// reuse components as possible
 function NonNumericSymbologyProperty({
   name,
   definition,
@@ -371,11 +373,28 @@ function NonNumericSymbologyProperty({
           <p>
             Used for <em>null</em>, <em>undefined</em> field values.
           </p>
-          {"TODO put a Select here to choose a value from valueOptions"}
+          {"TODO use valueLabelFormat on below Select"}
+          <Select
+            id={`symbology-${name}-defaultValue`}
+            name={`symbology-${name}-defaultValue`}
+            defaultValue={defaultValue}
+            onChange={(event, defaultValue) => {
+              onDefaultEdit(defaultValue);
+            }}
+            options={valueOptions}
+          />
           <h4>Values</h4>
           <div style={{ width: "calc(100% - 2em)" }}>
             {values.map((value, idx) => (
-              "TODO put a Select here to choose a value from valueOptions"
+              <Select
+                id={`symbology-${name}-value-${idx}`}
+                name={`symbology-${name}-value-${idx}`}
+                defaultValue={value}
+                onChange={(event, value) => {
+                  onValuesEdit(value, idx);
+                }}
+                options={valueOptions}
+              />
             ))}
           </div>
           <MinusSquare
