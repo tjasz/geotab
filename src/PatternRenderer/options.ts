@@ -27,7 +27,6 @@ export const options: SvgOptions = {
     { label: "hash at start, hash at end", pattern: "M-4 0L4 0,0,100%,T", },
     { label: "square at start, arrow at end", pattern: "M-4 0 4 0 4 -8 -4 -8Z,0,105%,T;M0 0 4 8 -4 8Z,100%,,T", },
     { label: "circle at start, arrow at end", pattern: "M0 0 A4 4 0 0 0 0 -8A4 4 0 0 0 0 0,0,105%,T;M0 0 4 8 -4 8Z,100%,,T", },
-    { label: "circle at start, tick in middle, arrow at end", pattern: "M0 0 A4 4 0 0 0 0 -8A4 4 0 0 0 0 0,0,105%,T;M-3 0 3 0,50%,55%,T;M0 0 4 8 -4 8Z,100%,,T", },
   ],
   "CalTopo Basic Lines": [
     { label: "solid", pattern: "solid", },

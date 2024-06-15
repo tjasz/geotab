@@ -22,6 +22,7 @@ import { Select } from "./common-components";
 import { LabeledCheckbox } from "./LabeledCheckbox";
 import { parseFile, attachProgress } from "./readfile";
 import { simplify } from "./geojson-calc";
+import { painter } from "./painter"
 
 function DataView(props) {
   const context = useContext(DataContext);
@@ -236,18 +237,23 @@ function ExportView(props) {
     return buffer
       ? createBuffer(features)
       : {
-          type: "FeatureCollection",
-          features,
-          geotabMetadata: {
-            columns: context.columns,
-            filter: context.filter,
-            symbology: context.symbology,
-          },
-        };
+        type: "FeatureCollection",
+        features,
+        geotabMetadata: {
+          columns: context.columns,
+          filter: context.filter,
+          symbology: context.symbology,
+        },
+      };
   };
 
   const exportToFile = (featureCollection) => {
-    const textContent = JSON.stringify(featureCollection);
+    const painterInstance = painter(context.symbology);
+    const styledFeatures = featureCollection.features.map(f => {
+      const style = painterInstance(f);
+      return { ...f, properties: { ...f.properties, pattern: style.pattern } }
+    })
+    const textContent = JSON.stringify({ ...featureCollection, features: styledFeatures });
     const file = new Blob([textContent], { type: "text/plain" });
     const downloadLink = document.createElement("a");
     downloadLink.href = URL.createObjectURL(file);

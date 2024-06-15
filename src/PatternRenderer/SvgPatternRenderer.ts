@@ -49,6 +49,8 @@ export function pointsToPatternPath(rings: Point[][], closed: boolean, patternSt
   }
 
   // then draw the patterns
+  // Note: intervals given in percentages will render at % intervals of the portion of the geometry that is VISIBLE,
+  // not of the whole feature.
   if (pattern !== "solid") {
     for (i = 0, len = rings.length; i < len; i++) {
       points = rings[i];
