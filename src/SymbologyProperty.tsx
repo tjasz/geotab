@@ -1,24 +1,41 @@
 import { useContext, useState } from "react";
+import { Histogram, Select } from "./common-components";
 import { DataContext } from "./dataContext";
 import { toType } from "./fieldtype";
+import { LabeledCheckbox } from "./LabeledCheckbox";
+import { modesForType, symbologyModes, SymbologyProperty } from "./painter";
+import { ReactComponent as MinusSquare } from "./feather/minus-square.svg";
+import { ReactComponent as PlusSquare } from "./feather/plus-square.svg";
+import { Slider } from "@mui/material";
+import MultiTextField from "./symbology/MultiTextField";
 
 type NumericOptionsDefinition<T> = {
+  type: "numeric";
   min: T;
   max: T;
   step: T;
 }
 type NonNumericOptionsDefinition<T> = {
+  type: "non-numeric";
   options: T[];
 }
 type OptionsDefinition<T> = NumericOptionsDefinition<T> | NonNumericOptionsDefinition<T>;
 // TODO instead of "minValue", "maxValue", "valueStep" for numbers and "options" for non-numbers, pass ???
 // TODO instead of "valueLabelFormat", pass Slider for numbers and Select for non-numbers
-function SymbologyProperty({
+type SymbologyPropertyViewProps = {
+  name: string;
+  definition: SymbologyProperty;
+  onEdit: (v: SymbologyProperty | undefined) => void;
+  optionsDef: OptionsDefinition<any>;
+}
+function SymbologyPropertyView({
   name,
   definition,
   onEdit,
+  optionsDef,
 }) {
   // initialize the component state
+  const minValue = optionsDef.type === "numeric" ? optionsDef.min : optionsDef.options[0];
   const context = useContext(DataContext);
   const [fieldname, setFieldname] = useState(
     definition?.fieldname ?? context?.columns[0]?.name,
@@ -102,7 +119,11 @@ function SymbologyProperty({
   };
   const onFieldnameEdit = (event) => {
     const newFieldname = event.target.value;
-    const newType = context.columns.find((c) => c.name === newFieldname).type;
+    const newType = context.columns.find((c) => c.name === newFieldname)?.type;
+    if (!newType) {
+      throw new Error(`Could not find column ${newFieldname} among columns: ${context?.columns.join(", ")}`)
+    }
+    // TODO allow continuous for numeric type
     const modeOptions = modesForType(newType).map((m) => m.name).filter(m => m !== "continous");
     const newMode = modeOptions.includes(mode) ? mode : modeOptions[0];
     setFieldname(newFieldname);
@@ -130,7 +151,7 @@ function SymbologyProperty({
     if (values.length < modeDefinition.minimumValues) {
       newValues = [
         ...values,
-        ...Array(modeDefinition.minimumValues - values.length).fill(valueOptions[0]),
+        ...Array(modeDefinition.minimumValues - values.length).fill(minValue),
       ];
     }
     // ensure correct number of breaks for the symbology mode is met
@@ -174,7 +195,7 @@ function SymbologyProperty({
   };
   const onValueAdd = (event) => {
     setValues(
-      Array.isArray(values) ? [...values, valueOptions[0]] : [values, valueOptions[0]],
+      Array.isArray(values) ? [...values, minValue] : [values, minValue],
     );
     setBreaks(
       Array.isArray(breaks) ? [...breaks, minBreak] : [breaks, minBreak],
@@ -182,8 +203,8 @@ function SymbologyProperty({
     onEdit({
       mode,
       values: Array.isArray(values)
-        ? [...values, valueOptions[0]]
-        : [values, valueOptions[0]],
+        ? [...values, minValue]
+        : [values, minValue],
       fieldname,
       type,
       breaks: Array.isArray(breaks)
@@ -241,7 +262,7 @@ function SymbologyProperty({
             name={`symbology-${name}-fieldname`}
             defaultValue={fieldname}
             onChange={onFieldnameEdit}
-            options={context.columns.map((column) => column.name)}
+            options={context?.columns.map((column) => column.name) ?? []}
           />
           <p>TODO disable continuous mode for non-numbers</p>
           <Select
@@ -251,7 +272,7 @@ function SymbologyProperty({
             value={mode}
             onChange={onModeEdit}
             options={modesForType(
-              context.columns.find((column) => column.name === fieldname)?.type,
+              context?.columns.find((column) => column.name === fieldname)?.type,
             ).map((m) => m.name).filter(m => m !== "continuous")}
           />
           <h4>Default Value</h4>
@@ -282,7 +303,7 @@ function SymbologyProperty({
           />
           <PlusSquare className="addButton" onClick={onValueAdd} />
           <h4>Breaks</h4>
-          {context.columns.find((column) => column.name === fieldname)?.type ===
+          {context?.columns.find((column) => column.name === fieldname)?.type ===
             "string" || mode === "byvalue" ? (
             <MultiTextField values={breaks} onChange={onBreaksEdit} />
           ) : (
@@ -316,4 +337,5 @@ function SymbologyProperty({
         </div>
       ) : null}
     </div>
+  )
 }

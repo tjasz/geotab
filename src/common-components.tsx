@@ -1,4 +1,8 @@
-export function Select(props: { options: string[], onOptionRender?: (option: string) => JSX.Element }): JSX.Element {
+export function Select(
+  props: React.HTMLProps<HTMLSelectElement> & {
+    options: string[],
+    onOptionRender?: (option: string) => JSX.Element
+  }): JSX.Element {
   const onOptionRender = props.onOptionRender ?? (v => v);
   return (
     <select {...props}>
