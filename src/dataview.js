@@ -333,7 +333,7 @@ function ExportView(props) {
         <option value="bufferSelected">Buffer (Selected)</option>
       </select>
       <input type="checkbox" id="includeStyle" name="includeStyle" checked={includeStyle} onChange={(event) => setIncludeStyle(!includeStyle)} />
-      <label for="includeStyle">Include SimpleStyle?</label>
+      <label htmlFor="includeStyle">Include SimpleStyle?</label>
       {isLoading ? (
         <CircularProgress />
       ) : (
