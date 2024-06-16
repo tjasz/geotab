@@ -46,14 +46,17 @@ export function SvgSelectorDialog(props: SvgSelectorDialogProps) {
       <DialogContent>
         {props.description}
         {Object.keys(props.options).map(group => {
-          return <div style={{ display: "block", clear: "both" }}>
+          return <div key={group} style={{ display: "block", clear: "both" }}>
             <p>
               {group}
             </p>
             {props.options[group].map(option => {
-              return <div title={option.label} style={{ width: 100, float: "left", margin: 5 }}>
+              return <div
+                key={`${option.label}: ${option.pattern}`}
+                title={option.label}
+                style={{ width: 100, float: "left", margin: 5 }}
+              >
                 <SvgPatternPreview
-                  key={`${option.label}: ${option.pattern}`}
                   width={100}
                   height={30}
                   pattern={option.pattern}
