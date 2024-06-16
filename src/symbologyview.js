@@ -113,7 +113,7 @@ function SymbologyDefinition({ symbology, onSave }) {
         onEdit={(linePatternDef) => {
           updateDraft({ ...draft, linePattern: linePatternDef });
         }}
-        placeholderValue={svgPatternOptions[0]}
+        placeholderValue={svgPatternOptions.Basic[0].pattern}
         onRenderSelector={(value, onChange, key) => {
           return <SvgSelect
             key={key}
