@@ -119,7 +119,7 @@ function SymbologyPropertyView({
   };
   const onFieldnameEdit = (event) => {
     const newFieldname = event.target.value;
-    const newType = context.columns.find((c) => c.name === newFieldname)?.type;
+    const newType = context?.columns.find((c) => c.name === newFieldname)?.type;
     if (!newType) {
       throw new Error(`Could not find column ${newFieldname} among columns: ${context?.columns.join(", ")}`)
     }
@@ -233,7 +233,7 @@ function SymbologyPropertyView({
   };
   const onBreaksEdit = (event, breaks) => {
     const newBreaks = (Array.isArray(breaks) ? breaks : [breaks]).map((b) =>
-      toType(b, type),
+      toType(b, type ?? "string"),
     );
     setBreaks(newBreaks);
     onEdit({
@@ -315,7 +315,7 @@ function SymbologyPropertyView({
                 value={breaks}
                 onChange={onBreaksEdit}
                 valueLabelDisplay="on"
-                valueLabelFormat={(v) => JSON.stringify(toType(v, type))}
+                valueLabelFormat={(v) => JSON.stringify(toType(v, type ?? "string"))}
                 track={false}
                 marks
               />
@@ -324,13 +324,13 @@ function SymbologyPropertyView({
                 left={minBreak}
                 right={maxBreak}
                 binWidth={breakStep}
-                values={context.filteredData.map((feature) => {
-                  const col = context.columns.find(
+                values={context?.filteredData.map((feature) => {
+                  const col = context?.columns.find(
                     (column) => column.name === fieldname,
                   );
                   if (!col) return null;
                   return toType(feature.properties[col.name], col.type);
-                })}
+                }) ?? []}
               />
             </div>
           )}
