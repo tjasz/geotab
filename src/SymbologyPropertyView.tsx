@@ -114,8 +114,8 @@ export function SymbologyPropertyView<T>({
       throw new Error(`Could not find column ${newFieldname} among columns: ${context?.columns.join(", ")}`)
     }
     // TODO allow continuous for numeric type
-    const modeOptions = modesForType(newType).map((m) => m.name).filter(m => m !== "continous");
-    const newMode = SymbologyMode[modeOptions.includes(mode) ? mode : modeOptions[0]];
+    const modeOptions = modesForType(newType).map((m) => m.name).filter(m => m !== "continuous");
+    const newMode = modeOptions.includes(mode) ? mode : modeOptions[0];
     setFieldname(newFieldname);
     setType(newType);
     if (newMode !== mode) {

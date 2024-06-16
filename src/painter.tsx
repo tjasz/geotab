@@ -10,7 +10,7 @@ export enum SymbologyMode {
 }
 
 type ModeDefinition = {
-  name: string;
+  name: SymbologyMode;
   types: Set<string>;
   interpolation: {
     (definition: SymbologyProperty<any>, feature: GeoJson.Feature): number;
