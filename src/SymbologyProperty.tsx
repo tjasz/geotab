@@ -22,28 +22,30 @@ type NonNumericOptionsDefinition<T> = {
 type OptionsDefinition<T> = NumericOptionsDefinition<T> | NonNumericOptionsDefinition<T>;
 // TODO instead of "minValue", "maxValue", "valueStep" for numbers and "options" for non-numbers, pass ???
 // TODO instead of "valueLabelFormat", pass Slider for numbers and Select for non-numbers
-type SymbologyPropertyViewProps = {
+type SymbologyPropertyViewProps<T> = {
   name: string;
   definition: SymbologyProperty;
   onEdit: (v: SymbologyProperty | undefined) => void;
-  optionsDef: OptionsDefinition<any>;
+  optionsDef: OptionsDefinition<T>;
+  onRenderSelector: (value: T, onChange: (v: T) => void) => JSX.Element;
 }
-function SymbologyPropertyView({
+export function SymbologyPropertyView<T>({
   name,
   definition,
   onEdit,
   optionsDef,
-}) {
+  onRenderSelector,
+}: SymbologyPropertyViewProps<T>) {
   // initialize the component state
-  const minValue = optionsDef.type === "numeric" ? optionsDef.min : optionsDef.options[0];
+  const placeholderValue = optionsDef.type === "numeric" ? optionsDef.min : optionsDef.options[0];
   const context = useContext(DataContext);
   const [fieldname, setFieldname] = useState(
     definition?.fieldname ?? context?.columns[0]?.name,
   );
   const [mode, setMode] = useState(definition?.mode ?? "discrete");
-  const [values, setValues] = useState(definition?.values ?? [minValue]);
+  const [values, setValues] = useState(definition?.values ?? [placeholderValue]);
   const [breaks, setBreaks] = useState(definition?.breaks ?? []);
-  const [defaultValue, setDefault] = useState(definition?.default ?? minValue);
+  const [defaultValue, setDefault] = useState(definition?.default ?? placeholderValue);
   const [type, setType] = useState(
     context?.columns.find((c) => c.name === fieldname)?.type,
   );
@@ -151,7 +153,7 @@ function SymbologyPropertyView({
     if (values.length < modeDefinition.minimumValues) {
       newValues = [
         ...values,
-        ...Array(modeDefinition.minimumValues - values.length).fill(minValue),
+        ...Array(modeDefinition.minimumValues - values.length).fill(placeholderValue),
       ];
     }
     // ensure correct number of breaks for the symbology mode is met
@@ -195,7 +197,7 @@ function SymbologyPropertyView({
   };
   const onValueAdd = (event) => {
     setValues(
-      Array.isArray(values) ? [...values, minValue] : [values, minValue],
+      Array.isArray(values) ? [...values, placeholderValue] : [values, placeholderValue],
     );
     setBreaks(
       Array.isArray(breaks) ? [...breaks, minBreak] : [breaks, minBreak],
@@ -203,8 +205,8 @@ function SymbologyPropertyView({
     onEdit({
       mode,
       values: Array.isArray(values)
-        ? [...values, minValue]
-        : [values, minValue],
+        ? [...values, placeholderValue]
+        : [values, placeholderValue],
       fieldname,
       type,
       breaks: Array.isArray(breaks)
