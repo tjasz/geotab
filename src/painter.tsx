@@ -3,7 +3,7 @@ import { toType } from "./fieldtype";
 import * as GeoJson from "./geojson-types";
 import { FieldTypeDescription } from "./fieldtype";
 
-enum SymbologyMode {
+export enum SymbologyMode {
   ByValue = "byvalue",
   Discrete = "discrete",
   Continuous = "continuous",

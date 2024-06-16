@@ -1,9 +1,9 @@
 import { useContext, useState } from "react";
 import { Histogram, Select } from "./common-components";
 import { DataContext } from "./dataContext";
-import { toType } from "./fieldtype";
+import { FieldTypeDescription, toType } from "./fieldtype";
 import { LabeledCheckbox } from "./LabeledCheckbox";
-import { modesForType, symbologyModes, SymbologyProperty } from "./painter";
+import { modesForType, SymbologyMode, symbologyModes, SymbologyProperty } from "./painter";
 import { ReactComponent as MinusSquare } from "./feather/minus-square.svg";
 import { ReactComponent as PlusSquare } from "./feather/plus-square.svg";
 import { Slider } from "@mui/material";
@@ -48,7 +48,7 @@ export function SymbologyPropertyView<T>({
   const [breaks, setBreaks] = useState(definition?.breaks ?? []);
   const [defaultValue, setDefault] = useState(definition?.default ?? placeholderValue);
   const [type, setType] = useState(
-    context?.columns.find((c) => c.name === fieldname)?.type,
+    context?.columns.find((c) => c.name === fieldname)?.type ?? FieldTypeDescription.String,
   );
 
   // find where the appropraite breaks in the field property values should be
@@ -128,7 +128,7 @@ export function SymbologyPropertyView<T>({
     }
     // TODO allow continuous for numeric type
     const modeOptions = modesForType(newType).map((m) => m.name).filter(m => m !== "continous");
-    const newMode = modeOptions.includes(mode) ? mode : modeOptions[0];
+    const newMode = SymbologyMode[modeOptions.includes(mode) ? mode : modeOptions[0]];
     setFieldname(newFieldname);
     setType(newType);
     if (newMode !== mode) {
