@@ -13,7 +13,7 @@ type ModeDefinition = {
   name: string;
   types: Set<string>;
   interpolation: {
-    (definition: SymbologyProperty, feature: GeoJson.Feature): number;
+    (definition: SymbologyProperty<any>, feature: GeoJson.Feature): number;
   };
   minimumValues: number;
   numBreaks: { (numValues: number): number };
@@ -29,7 +29,7 @@ export type SymbologyProperty<T> = {
 };
 
 export type Symbology = {
-  [index: string]: SymbologyProperty;
+  [index: string]: SymbologyProperty<any>;
 };
 
 export const symbologyModes: { [index in SymbologyMode]: ModeDefinition } = {
@@ -72,10 +72,10 @@ function findIndex<T>(array: T[], value: T): number {
   return i;
 }
 
-function byvalueInterpolation(
-  definition: SymbologyProperty,
+function byvalueInterpolation<T>(
+  definition: SymbologyProperty<T>,
   feature: GeoJson.Feature,
-): number {
+): T {
   // return the value from "values" with the same index where the feature value is equal to the "breaks"
   if (definition.values.length !== definition.breaks.length) {
     throw Error(
@@ -91,10 +91,10 @@ function byvalueInterpolation(
   return i === -1 ? definition.default : definition.values[i];
 }
 
-function discreteInterpolation(
-  definition: SymbologyProperty,
+function discreteInterpolation<T>(
+  definition: SymbologyProperty<T>,
   feature: GeoJson.Feature,
-): number {
+): T {
   if (definition.values.length !== definition.breaks.length + 1) {
     throw Error(
       `Discrete Symbology.values should have 1 more value than Symbology.breaks. Values: ${definition.values}; Breaks: ${definition.breaks}.`,
@@ -121,7 +121,7 @@ function linearInterpolation(
 }
 
 function continuousInterpolation(
-  definition: SymbologyProperty,
+  definition: SymbologyProperty<number>,
   feature: GeoJson.Feature,
 ): number {
   if (definition.values.length < 2) {

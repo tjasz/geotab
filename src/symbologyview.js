@@ -12,7 +12,7 @@ import { LabeledCheckbox } from "./LabeledCheckbox";
 import { pointsToPatternPath } from "./PatternRenderer/SvgPatternRenderer"
 import { SvgSelect } from "./SvgSelectorDialog"
 import { options as svgPatternOptions } from "./PatternRenderer/options"
-import { SymbologyPropertyView } from "./src/symbologyPropertyView"
+import { SymbologyPropertyView } from "./SymbologyPropertyView"
 
 function SymbologyView(props) {
   const context = useContext(DataContext);
