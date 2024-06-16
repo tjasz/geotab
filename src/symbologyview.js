@@ -153,7 +153,7 @@ function NumericSymbologyProperty({
       return <Slider
         key={key}
         value={value}
-        onChange={onChange}
+        onChange={(event, value) => onChange(value)}
         min={minValue}
         max={maxValue}
         step={
