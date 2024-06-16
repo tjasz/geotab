@@ -14,6 +14,7 @@ import { ReactComponent as PlusSquare } from "./feather/plus-square.svg";
 type SymbologyPropertyViewProps<T> = {
   name: string;
   definition: SymbologyProperty<T>;
+  allowContinuous: boolean;
   onEdit: (v: SymbologyProperty<T> | undefined) => void;
   placeholderValue: T;
   onRenderSelector: (value: T, onChange: (v: T) => void, key?: string) => JSX.Element;
@@ -21,6 +22,7 @@ type SymbologyPropertyViewProps<T> = {
 export function SymbologyPropertyView<T>({
   name,
   definition,
+  allowContinuous,
   onEdit,
   placeholderValue,
   onRenderSelector,
@@ -113,8 +115,8 @@ export function SymbologyPropertyView<T>({
     if (!newType) {
       throw new Error(`Could not find column ${newFieldname} among columns: ${context?.columns.join(", ")}`)
     }
-    // TODO allow continuous for numeric type
-    const modeOptions = modesForType(newType).map((m) => m.name).filter(m => m !== "continuous");
+    const modesForNewType = modesForType(newType).map((m) => m.name)
+    const modeOptions = allowContinuous ? modesForNewType : modesForNewType.filter(m => m !== "continuous");
     const newMode = modeOptions.includes(mode) ? mode : modeOptions[0];
     setFieldname(newFieldname);
     setType(newType);
@@ -254,7 +256,6 @@ export function SymbologyPropertyView<T>({
             onChange={onFieldnameEdit}
             options={context?.columns.map((column) => column.name) ?? []}
           />
-          <p>TODO disable continuous mode for non-numbers</p>
           <Select
             id={`symbology-${name}-mode`}
             name={`symbology-${name}-mode`}
@@ -263,7 +264,7 @@ export function SymbologyPropertyView<T>({
             onChange={onModeEdit}
             options={modesForType(
               context?.columns.find((column) => column.name === fieldname)?.type,
-            ).map((m) => m.name).filter(m => m !== "continuous")}
+            ).map((m) => m.name).filter(m => allowContinuous || m !== "continuous")}
           />
           <h4>Default Value</h4>
           <p>
