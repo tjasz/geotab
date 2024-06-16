@@ -113,14 +113,14 @@ function SymbologyDefinition({ symbology, onSave }) {
         onEdit={(linePatternDef) => {
           updateDraft({ ...draft, linePattern: linePatternDef });
         }}
-        valueOptions={svgPatternOptions}
-        valueLabelFormat={(value) => {
-          const path = pointsToPatternPath([[{ x: 0, y: 0 }, { x: 100, y: 0 }]], false, value);
-          return <span style={{
-            backgroundImage: `url( "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 20'%3E%3Cpath d='${path}'/%3E%3C/svg%3E" )`
-          }}>
-            {value}
-          </span>
+        placeholderValue={svgPatternOptions[0]}
+        onRenderSelector={(value, onChange, key) => {
+          return <SvgSelect
+            key={key}
+            value={value}
+            options={svgPatternOptions}
+            onChange={onChange}
+          />
         }}
       />
       <button

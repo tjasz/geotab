@@ -19,12 +19,12 @@ type ModeDefinition = {
   numBreaks: { (numValues: number): number };
 };
 
-export type SymbologyProperty = {
+export type SymbologyProperty<T> = {
   mode: SymbologyMode;
-  values: number[];
+  values: T[];
   fieldname: string;
   breaks: any[];
-  default: number;
+  default: T;
   type: FieldTypeDescription;
 };
 

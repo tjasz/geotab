@@ -24,20 +24,21 @@ type OptionsDefinition<T> = NumericOptionsDefinition<T> | NonNumericOptionsDefin
 // TODO instead of "valueLabelFormat", pass Slider for numbers and Select for non-numbers
 type SymbologyPropertyViewProps<T> = {
   name: string;
-  definition: SymbologyProperty;
-  onEdit: (v: SymbologyProperty | undefined) => void;
+  definition: SymbologyProperty<T>;
+  onEdit: (v: SymbologyProperty<T> | undefined) => void;
   optionsDef: OptionsDefinition<T>;
-  onRenderSelector: (value: T, onChange: (v: T) => void) => JSX.Element;
+  placeholderValue: T;
+  onRenderSelector: (value: T, onChange: (v: T) => void, key?: string) => JSX.Element;
 }
 export function SymbologyPropertyView<T>({
   name,
   definition,
   onEdit,
   optionsDef,
+  placeholderValue,
   onRenderSelector,
 }: SymbologyPropertyViewProps<T>) {
   // initialize the component state
-  const placeholderValue = optionsDef.type === "numeric" ? optionsDef.min : optionsDef.options[0];
   const context = useContext(DataContext);
   const [fieldname, setFieldname] = useState(
     definition?.fieldname ?? context?.columns[0]?.name,
@@ -281,23 +282,11 @@ export function SymbologyPropertyView<T>({
           <p>
             Used for <em>null</em>, <em>undefined</em> field values.
           </p>
-          <p>TODO Slider for numbers, Select for non-numbers</p>
-          <SvgSelect
-            value={defaultValue}
-            options={valueOptions}
-            onChange={(s) => onDefaultEdit(s)}
-          />
+          {onRenderSelector(defaultValue, onDefaultEdit)}
           <h4>Values</h4>
-          <p>TODO Slider for numbers, Select for non-numbers</p>
           <div style={{ width: "calc(100% - 2em)" }}>
-            {values.map((value, idx) => (
-              <SvgSelect
-                key={`symbology-${name}-value-${idx}`}
-                value={value}
-                options={valueOptions}
-                onChange={(s) => onValuesEdit(s, idx)}
-              />
-            ))}
+            {values.map((value, idx) =>
+              onRenderSelector(value, s => onValuesEdit(s, idx), `symbology-${name}-value-${idx}`))}
           </div>
           <MinusSquare
             className={`removeButton${values.length > symbologyModes[mode].minimumValues ? "" : "Disabled"}`}
