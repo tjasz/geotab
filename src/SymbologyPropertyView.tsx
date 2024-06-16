@@ -4,10 +4,12 @@ import { DataContext } from "./dataContext";
 import { FieldTypeDescription, toType } from "./fieldtype";
 import { LabeledCheckbox } from "./LabeledCheckbox";
 import { modesForType, SymbologyMode, symbologyModes, SymbologyProperty } from "./painter";
-import { ReactComponent as MinusSquare } from "./feather/minus-square.svg";
-import { ReactComponent as PlusSquare } from "./feather/plus-square.svg";
 import { Slider } from "@mui/material";
 import MultiTextField from "./symbology/MultiTextField";
+// @ts-expect-error
+import { ReactComponent as MinusSquare } from "./feather/minus-square.svg";
+// @ts-expect-error
+import { ReactComponent as PlusSquare } from "./feather/plus-square.svg";
 
 type NumericOptionsDefinition<T> = {
   type: "numeric";
