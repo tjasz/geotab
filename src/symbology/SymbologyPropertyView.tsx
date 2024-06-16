@@ -1,15 +1,15 @@
 import { useContext, useState } from "react";
-import { Histogram, Select } from "./common-components";
-import { DataContext } from "./dataContext";
-import { FieldTypeDescription, toType } from "./fieldtype";
-import { LabeledCheckbox } from "./LabeledCheckbox";
-import { modesForType, SymbologyMode, symbologyModes, SymbologyProperty } from "./painter";
+import { Histogram, Select } from "../common-components";
+import { DataContext } from "../dataContext";
+import { FieldTypeDescription, toType } from "../fieldtype";
+import { LabeledCheckbox } from "../LabeledCheckbox";
+import { modesForType, symbologyModes, SymbologyProperty } from "../painter";
 import { Slider } from "@mui/material";
-import MultiTextField from "./symbology/MultiTextField";
+import MultiTextField from "./MultiTextField";
 // @ts-expect-error
-import { ReactComponent as MinusSquare } from "./feather/minus-square.svg";
+import { ReactComponent as MinusSquare } from "../feather/minus-square.svg";
 // @ts-expect-error
-import { ReactComponent as PlusSquare } from "./feather/plus-square.svg";
+import { ReactComponent as PlusSquare } from "../feather/plus-square.svg";
 
 type SymbologyPropertyViewProps<T> = {
   name: string;
