@@ -12,6 +12,7 @@ import { LabeledCheckbox } from "./LabeledCheckbox";
 import { pointsToPatternPath } from "./PatternRenderer/SvgPatternRenderer"
 import { SvgSelect } from "./SvgSelectorDialog"
 import { options as svgPatternOptions } from "./PatternRenderer/options"
+import { SymbologyPropertyView } from "./src/symbologyPropertyView"
 
 function SymbologyView(props) {
   const context = useContext(DataContext);
@@ -106,7 +107,7 @@ function SymbologyDefinition({ symbology, onSave }) {
         minValue={3}
         maxValue={20}
       />
-      <NonNumericSymbologyProperty
+      <SymbologyPropertyView
         name="line pattern"
         definition={draft?.linePattern}
         onEdit={(linePatternDef) => {
