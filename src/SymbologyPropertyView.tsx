@@ -11,24 +11,10 @@ import { ReactComponent as MinusSquare } from "./feather/minus-square.svg";
 // @ts-expect-error
 import { ReactComponent as PlusSquare } from "./feather/plus-square.svg";
 
-type NumericOptionsDefinition<T> = {
-  type: "numeric";
-  min: T;
-  max: T;
-  step: T;
-}
-type NonNumericOptionsDefinition<T> = {
-  type: "non-numeric";
-  options: T[];
-}
-type OptionsDefinition<T> = NumericOptionsDefinition<T> | NonNumericOptionsDefinition<T>;
-// TODO instead of "minValue", "maxValue", "valueStep" for numbers and "options" for non-numbers, pass ???
-// TODO instead of "valueLabelFormat", pass Slider for numbers and Select for non-numbers
 type SymbologyPropertyViewProps<T> = {
   name: string;
   definition: SymbologyProperty<T>;
   onEdit: (v: SymbologyProperty<T> | undefined) => void;
-  optionsDef: OptionsDefinition<T>;
   placeholderValue: T;
   onRenderSelector: (value: T, onChange: (v: T) => void, key?: string) => JSX.Element;
 }
@@ -36,7 +22,6 @@ export function SymbologyPropertyView<T>({
   name,
   definition,
   onEdit,
-  optionsDef,
   placeholderValue,
   onRenderSelector,
 }: SymbologyPropertyViewProps<T>) {
