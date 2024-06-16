@@ -118,8 +118,8 @@ function SymbologyDefinition({ symbology, onSave }) {
           return <SvgSelect
             key={key}
             value={value}
-            options={svgPatternOptions}
             onChange={onChange}
+            options={svgPatternOptions}
           />
         }}
       />
@@ -135,6 +135,41 @@ function SymbologyDefinition({ symbology, onSave }) {
 }
 
 function NumericSymbologyProperty({
+  name,
+  definition,
+  onEdit,
+  minValue,
+  maxValue,
+  valueStep,
+  valueLabelFormat,
+}) {
+  return <SymbologyPropertyView
+    name={name}
+    definition={definition}
+    allowContinuous
+    onEdit={onEdit}
+    placeholderValue={minValue}
+    onRenderSelector={(value, onChange, key) => {
+      return <Slider
+        key={key}
+        value={value}
+        onChange={onChange}
+        min={minValue}
+        max={maxValue}
+        step={
+          valueStep ??
+          Math.pow(10, Math.round(Math.log10((maxValue - minValue) / 20)))
+        }
+        valueLabelDisplay="on"
+        valueLabelFormat={valueLabelFormat}
+        track={false}
+        marks
+      />
+    }}
+  />
+}
+
+function LegacyNumericSymbologyProperty({
   name,
   definition,
   onEdit,
