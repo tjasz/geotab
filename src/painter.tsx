@@ -185,7 +185,7 @@ export function painter(symbology) {
   // },
   const fn = (feature, latlng) => {
     // TODO get the following from SimpleStyle:
-    // marker-size, marker-symbol, marker-color, stroke (color)
+    // marker-size, marker-symbol, marker-color
     // TODO get additional CalTopo properties that aren't in SimpleStyle:
     // marker-rotation, marker-size as an integer
 
@@ -193,11 +193,14 @@ export function painter(symbology) {
     // fill (none or color), fill-rule, fill-opacity, stroke (none or color), stroke-dasharry, stroke-dashoffset, stroke-linecap, stroke-linejoin, stroke-miterlimit, stroke-opacity, stroke-width
 
     // get color-related attributes
-    const hue = interpolation(symbology?.hue, feature) ?? 209;
-    const sat = interpolation(symbology?.saturation, feature) ?? 50;
-    const light = interpolation(symbology?.lightness, feature) ?? 40;
     const opacity = interpolation(symbology?.opacity, feature) ?? feature.properties["stroke-opacity"] ?? 1;
-    const color = `hsla(${hue}, ${sat}%, ${light}%, ${opacity})`;
+    const hue = interpolation(symbology?.hue, feature);
+    const sat = interpolation(symbology?.saturation, feature);
+    const light = interpolation(symbology?.lightness, feature);
+    // if none of hue, saturation, and lightness are defined, get color from SimpleStyle
+    const color = (!hue && !sat && !light)
+      ? (feature.properties["stroke"] ?? "#336899")
+      : `hsla(${hue ?? 209}, ${sat ?? 50}%, ${light ?? 40}%, ${opacity})`;
     // get other attributes
     const size = interpolation(symbology?.size, feature) ?? feature.properties["stroke-width"] ?? 5;
     const shape = interpolation(symbology?.shape, feature) ?? 3;
