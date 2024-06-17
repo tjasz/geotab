@@ -208,12 +208,18 @@ export function painter(symbology) {
       "stroke-width": size,
     }
 
+    const defaultStyle: PathCss = {
+      stroke: "#336899",
+      "stroke-width": 2,
+      "fill-opacity": 0.4,
+    };
+
     // In order of priority:
     // SimpleStyle is easily editable by the user on individual features.
     // The calculated style is also editable by the user, but not on individual features.
     // The GeoJSON+CSS style is not currently editable by the user in the UI.
     // The default style is not editable by the user.
-    const style = mergeStyles(simpleStyle, calculatedStyle, geoJsonCssStyle);
+    const style = mergeStyles(simpleStyle, calculatedStyle, geoJsonCssStyle, defaultStyle);
 
     if (feature.geometry?.type === "Point") {
       const shape = interpolation(symbology?.shape, feature) ?? 3;
