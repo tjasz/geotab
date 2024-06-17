@@ -82,11 +82,13 @@ export function SvgPatternPreview(props: SvgPatternPreviewProps) {
     onClick={props.onClick}
     style={props.style}
     path={pointsToPatternPath([[{ x: 5, y: 0 }, { x: 95, y: 0 }]], false, props.pattern)}
+    viewBox={`0 ${-props.height / 2} ${props.width} ${props.height}`}
   />
 }
 
 export type SvgPathPreviewProps = {
   path: string;
+  viewBox: string;
   width: number;
   height: number;
   onClick: () => void;
@@ -96,7 +98,7 @@ export function SvgPathPreview(props: SvgPathPreviewProps) {
   return <svg
     width={props.width}
     height={props.height}
-    viewBox={`0 ${-props.height / 2} ${props.width} ${props.height}`}
+    viewBox={props.viewBox}
     onClick={props.onClick}
     onContextMenu={() => console.log(props.path)}
     style={props.style}
