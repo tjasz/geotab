@@ -1,9 +1,8 @@
-import { StarMarker, svgMarker } from "./iconlib";
+import { StarMarker, SvgPathMarker } from "./iconlib";
 import { toType } from "./fieldtype";
 import * as GeoJson from "./geojson-types";
 import { FieldTypeDescription } from "./fieldtype";
 import { mergeStyles, readSimpleStyle, readGeoJsonCss, PathCss } from "./symbology/PathCss";
-import { Marker } from "./icon/Markers";
 
 export enum SymbologyMode {
   ByValue = "byvalue",
@@ -228,7 +227,7 @@ export function painter(symbology) {
       const shape = interpolation(symbology?.shape, feature) ?? 3;
       const markerColor = `hsla(${hue ?? 209}, ${sat ?? 50}%, ${light ?? 40}%, ${opacity ?? 1})`;
       const markerSymbol = simpleStyle["marker-symbol"] ?? interpolation(symbology?.markerSymbol, feature);
-      return svgMarker(latlng, Marker(markerSymbol));
+      return SvgPathMarker(latlng, markerSymbol, size ?? 15, size ?? 15);
       return StarMarker(latlng, Math.round(shape), size ?? 5, markerColor, undefined, markerSymbol?.charAt(0));
     } else {
       return {
