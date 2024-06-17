@@ -2,6 +2,7 @@ import { StarMarker } from "./iconlib";
 import { toType } from "./fieldtype";
 import * as GeoJson from "./geojson-types";
 import { FieldTypeDescription } from "./fieldtype";
+import { getSimpleStyle } from "./symbology/SimpleStyle";
 
 export enum SymbologyMode {
   ByValue = "byvalue",
@@ -188,23 +189,24 @@ export function painter(symbology) {
     // marker-size, marker-symbol, marker-color
     // TODO get additional CalTopo properties that aren't in SimpleStyle:
     // marker-rotation, marker-size as an integer
+    const simpleStyle = getSimpleStyle(feature);
 
     // TODO get the following from GeoJSON+CSS:
     // fill (none or color), fill-rule, fill-opacity, stroke (none or color), stroke-dasharry, stroke-dashoffset, stroke-linecap, stroke-linejoin, stroke-miterlimit, stroke-opacity, stroke-width
 
     // get color-related attributes
-    const opacity = interpolation(symbology?.opacity, feature) ?? feature.properties["stroke-opacity"] ?? 1;
+    const opacity = interpolation(symbology?.opacity, feature) ?? simpleStyle["stroke-opacity"] ?? 1;
     const hue = interpolation(symbology?.hue, feature);
     const sat = interpolation(symbology?.saturation, feature);
     const light = interpolation(symbology?.lightness, feature);
     // if none of hue, saturation, and lightness are defined, get color from SimpleStyle
     const color = (!hue && !sat && !light)
-      ? (feature.properties["stroke"] ?? "#336899")
+      ? (simpleStyle["stroke"] ?? "#336899")
       : `hsl(${hue ?? 209}, ${sat ?? 50}%, ${light ?? 40}%)`;
     // get other attributes
-    const size = interpolation(symbology?.size, feature) ?? feature.properties["stroke-width"] ?? 5;
+    const size = interpolation(symbology?.size, feature) ?? simpleStyle["stroke-width"] ?? 5;
     const shape = interpolation(symbology?.shape, feature) ?? 3;
-    const linePattern = interpolation(symbology?.linePattern, feature) ?? feature.properties["pattern"] ?? "solid";
+    const linePattern = interpolation(symbology?.linePattern, feature) ?? simpleStyle["pattern"] ?? "solid";
 
     if (feature.geometry?.type === "Point") {
       return StarMarker(latlng, Math.round(shape), size, color);
@@ -219,8 +221,8 @@ export function painter(symbology) {
         dashArray: null,
         dashOffset: null,
         // let "fill" boolean default based on whether feature is a polygon
-        fillColor: feature.properties["fill"] ?? color,
-        fillOpacity: feature.properties["fill-opacity"] ?? 0.4,
+        fillColor: simpleStyle.fill ?? color,
+        fillOpacity: simpleStyle["fill-opacity"] ?? 0.4,
         fillRule: "evenodd",
         pattern: linePattern,
         // there's also the option to pass "classsName", but it is left out for now
