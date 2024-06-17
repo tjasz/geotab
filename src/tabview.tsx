@@ -2,7 +2,7 @@ import React from "react";
 import DataView from "./dataview";
 import MapView from "./mapview";
 import TableView from "./table/tableview";
-import SymbologyView from "./symbologyview";
+import SymbologyView from "./symbology/SymbologyView";
 
 enum TabName {
   Data = "Data",

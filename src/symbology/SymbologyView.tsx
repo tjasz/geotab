@@ -1,19 +1,19 @@
-import React, { useContext, useState } from "react";
-import { DataContext } from "./dataContext";
-import ColoredText from "./symbology/ColoredText";
-import { SvgSelect } from "./SvgSelectorDialog"
-import { options as svgPatternOptions } from "./PatternRenderer/options"
-import { SymbologyPropertyView } from "./symbology/SymbologyPropertyView"
-import { NumericSymbologyPropertyView } from "./symbology/NumericSymbologyPropertyView"
+import { useContext, useState } from "react";
+import { DataContext } from "../dataContext";
+import ColoredText from "./ColoredText";
+import { SvgSelect } from "../SvgSelectorDialog"
+import { options as svgPatternOptions } from "../PatternRenderer/options"
+import { SymbologyPropertyView } from "./SymbologyPropertyView"
+import { NumericSymbologyPropertyView } from "./NumericSymbologyPropertyView"
 
-function SymbologyView(props) {
+export function SymbologyView(props) {
   const context = useContext(DataContext);
   const onSave = (draft) => {
     context?.setSymbology(draft);
   };
 
   if (!context) {
-    return "No symbology defined";
+    return <p>No symbology defined.</p>;
   }
 
   return (
