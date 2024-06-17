@@ -14,7 +14,7 @@ import { ReactComponent as PlusSquare } from "../feather/plus-square.svg";
 type SymbologyPropertyViewProps<T> = {
   name: string;
   definition: SymbologyProperty<T>;
-  allowContinuous: boolean;
+  allowContinuous?: boolean;
   onEdit: (v: SymbologyProperty<T> | undefined) => void;
   placeholderValue: T;
   onRenderSelector: (value: T, onChange: (v: T) => void, key?: string) => JSX.Element;

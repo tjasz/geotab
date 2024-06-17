@@ -1,6 +1,16 @@
 import { Slider } from "@mui/material"
+import { SymbologyProperty } from "../painter";
 import { SymbologyPropertyView } from "./SymbologyPropertyView"
 
+export type NumericSymbologyPropertyViewProps = {
+  name: string;
+  definition: SymbologyProperty<number>;
+  onEdit: (v: SymbologyProperty<number> | undefined) => void;
+  minValue: number;
+  maxValue: number;
+  valueStep?: number;
+  valueLabelFormat?: (value: number) => JSX.Element;
+};
 export function NumericSymbologyPropertyView({
   name,
   definition,
@@ -9,7 +19,7 @@ export function NumericSymbologyPropertyView({
   maxValue,
   valueStep,
   valueLabelFormat,
-}) {
+}: NumericSymbologyPropertyViewProps) {
   return <SymbologyPropertyView
     name={name}
     definition={definition}
@@ -20,7 +30,7 @@ export function NumericSymbologyPropertyView({
       return <Slider
         key={key}
         value={value}
-        onChange={(event, value) => onChange(value)}
+        onChange={(event, value) => onChange(value as number)}
         min={minValue}
         max={maxValue}
         step={

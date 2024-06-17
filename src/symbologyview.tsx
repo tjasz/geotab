@@ -9,8 +9,13 @@ import { NumericSymbologyPropertyView } from "./symbology/NumericSymbologyProper
 function SymbologyView(props) {
   const context = useContext(DataContext);
   const onSave = (draft) => {
-    context.setSymbology(draft);
+    context?.setSymbology(draft);
   };
+
+  if (!context) {
+    return "No symbology defined";
+  }
+
   return (
     <div id="symbologyview" style={props.style}>
       <h2 onContextMenu={() => console.log(context.symbology)}>Symbology</h2>
@@ -39,7 +44,7 @@ function SymbologyDefinition({ symbology, onSave }) {
         maxValue={360}
         valueLabelFormat={(value) => (
           <ColoredText color={`hsla(${value}, 100%, 80%, 1)`}>
-            {value}
+            {value.toString()}
           </ColoredText>
         )}
       />
@@ -53,7 +58,7 @@ function SymbologyDefinition({ symbology, onSave }) {
         maxValue={100}
         valueLabelFormat={(value) => (
           <ColoredText color={`hsla(0, ${value}%, 80%, 1)`}>
-            {value}
+            {value.toString()}
           </ColoredText>
         )}
       />
@@ -66,7 +71,7 @@ function SymbologyDefinition({ symbology, onSave }) {
         minValue={0}
         maxValue={100}
         valueLabelFormat={(value) => (
-          <ColoredText color={`hsla(0, 0%, ${value}%, 1)`}>{value}</ColoredText>
+          <ColoredText color={`hsla(0, 0%, ${value}%, 1)`}>{value.toString()}</ColoredText>
         )}
       />
       <NumericSymbologyPropertyView
@@ -78,7 +83,7 @@ function SymbologyDefinition({ symbology, onSave }) {
         minValue={0}
         maxValue={1}
         valueLabelFormat={(value) => (
-          <ColoredText color={`hsla(0, 0%, 0%, ${value})`}>{value}</ColoredText>
+          <ColoredText color={`hsla(0, 0%, 0%, ${value})`}>{value.toString()}</ColoredText>
         )}
       />
       <NumericSymbologyPropertyView
