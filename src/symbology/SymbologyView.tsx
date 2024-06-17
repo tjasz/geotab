@@ -136,7 +136,7 @@ function SymbologyDefinition({ symbology, onSave }) {
         onEdit={(markerSymbolDef) => {
           updateDraft({ ...draft, markerSymbol: markerSymbolDef });
         }}
-        placeholderValue={"M0 7.5A7.5 7.5 0 0 0 15 7A7.5 7.5 0 1 0 15 7.5Z"}
+        placeholderValue={"M0 7.5A7.5 7.5 0 0 0 15 7.5A7.5 7.5 0 1 0 0 7.5Z"}
         onRenderSelector={(value, onChange, key) => {
           return <SvgSelect
             key={key}
@@ -148,9 +148,11 @@ function SymbologyDefinition({ symbology, onSave }) {
                 width={15}
                 height={15}
                 viewBox="0 0 15 15"
-                path={option.replace("&#xA;&#x9;", "")}
+                path={option.replaceAll("&#xA;&#x9;", "")}
                 onClick={onClick}
                 style={style}
+                strokeWidth={0}
+                fill="black"
               />
             }}
           />

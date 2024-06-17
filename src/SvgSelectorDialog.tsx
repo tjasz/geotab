@@ -83,6 +83,7 @@ export function SvgPatternPreview(props: SvgPatternPreviewProps) {
     style={props.style}
     path={pointsToPatternPath([[{ x: 5, y: 0 }, { x: 95, y: 0 }]], false, props.pattern)}
     viewBox={`0 ${-props.height / 2} ${props.width} ${props.height}`}
+    strokeWidth={2}
   />
 }
 
@@ -93,6 +94,8 @@ export type SvgPathPreviewProps = {
   height: number;
   onClick: () => void;
   style?: React.CSSProperties;
+  strokeWidth: number;
+  fill?: string;
 }
 export function SvgPathPreview(props: SvgPathPreviewProps) {
   return <svg
@@ -106,8 +109,9 @@ export function SvgPathPreview(props: SvgPathPreviewProps) {
   >
     <path
       d={props.path}
-      strokeWidth="2"
+      strokeWidth={props.strokeWidth}
       stroke="black"
+      fill={props.fill ?? "none"}
     />
   </svg>
 }
