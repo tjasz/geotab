@@ -16,14 +16,14 @@ export type PathCss = {
 export function readGeoJsonCss(f: Feature): PathCss {
   return {
     stroke: getNonEmpty(f.style?.["stroke"]),
-    "stroke-opacity": getNonEmptyTransformed(f.style?.["stroke-opacity"], Number),
-    "stroke-width": getNonEmptyTransformed(f.style?.["stroke-width"], Number),
+    "stroke-opacity": getNonEmptyAsNumber(f.style?.["stroke-opacity"]),
+    "stroke-width": getNonEmptyAsNumber(f.style?.["stroke-width"]),
     "stroke-linecap": getNonEmpty(f.style?.["stroke-linecap"]),
     "stroke-linejoin": getNonEmpty(f.style?.["stroke-linejoin"]),
     "stroke-dasharray": getNonEmpty(f.style?.["stroke-dasharray"]),
     "stroke-dashoffset": getNonEmpty(f.style?.["stroke-dashoffset"]),
     fill: getNonEmpty(f.style?.["fill"]),
-    "fill-opacity": getNonEmptyTransformed(f.style?.["fill-opacity"], Number),
+    "fill-opacity": getNonEmptyAsNumber(f.style?.["fill-opacity"]),
     "fill-rule": getNonEmpty(f.style?.["fill-rule"]),
   }
 }
@@ -37,10 +37,10 @@ export function readSimpleStyle(f: Feature): PathCss {
     // "marker-symbol": getNonEmpty(f.properties["marker-symbol"]),
     // "marker-color": getNonEmpty(f.properties["marker-color"]),
     stroke: getNonEmpty(f.properties["stroke"]),
-    "stroke-opacity": getNonEmptyTransformed(f.properties["stroke-opacity"], Number),
-    "stroke-width": getNonEmptyTransformed(f.properties["stroke-width"], Number),
+    "stroke-opacity": getNonEmptyAsNumber(f.properties["stroke-opacity"]),
+    "stroke-width": getNonEmptyAsNumber(f.properties["stroke-width"]),
     fill: getNonEmpty(f.properties["fill"]),
-    "fill-opacity": getNonEmptyTransformed(f.properties["fill-opacity"], Number),
+    "fill-opacity": getNonEmptyAsNumber(f.properties["fill-opacity"]),
   }
 }
 
@@ -68,6 +68,9 @@ function getNonEmpty(s: string): string | undefined {
   return s?.trim().length ? s : undefined;
 }
 
-function getNonEmptyTransformed<T>(s: string, t: (s: string) => T): T | undefined {
-  return s?.trim().length ? t(s) : undefined;
+function getNonEmptyAsNumber(s: string): number | undefined {
+  if (typeof s === "number") {
+    return s;
+  }
+  return s?.trim().length ? Number(s) : undefined;
 }
