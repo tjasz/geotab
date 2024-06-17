@@ -209,24 +209,6 @@ export function painter(symbology) {
     if (feature.geometry?.type === "Point") {
       return StarMarker(latlng, Math.round(shape), size, color);
     } else {
-      let dashArray = "";
-      if (feature.properties["pattern"]) {
-        switch (feature.properties["pattern"]) {
-          default:
-          case "solid":
-            dashArray = "";
-            break;
-          case "M0 -1 L0 1,,8,F": // dot
-            dashArray = `${size} ${2 * size}`;
-            break;
-          case "M0 -3 L0 3,,12,F": // dash
-            dashArray = `${4 * size} ${2 * size}`;
-            break;
-          case "M0 -3 L0 3,0,16,F;M0 -1L0 0,8,16": // dashdot
-            dashArray = `${4 * size} ${2 * size} ${size} ${2 * size}`;
-            break;
-        }
-      }
       return {
         stroke: true,
         color,
@@ -234,7 +216,7 @@ export function painter(symbology) {
         opacity,
         lineCap: "round",
         lineJoin: "round",
-        dashArray,
+        dashArray: null,
         dashOffset: null,
         // let "fill" boolean default based on whether feature is a polygon
         fillColor: feature.properties["fill"] ?? color,
