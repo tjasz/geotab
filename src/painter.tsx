@@ -213,7 +213,7 @@ export function painter(symbology) {
     const defaultStyle: PathCss = {
       stroke: "#336899",
       "stroke-opacity": 1,
-      "stroke-width": 2,
+      "stroke-width": 4,
     };
 
     // In order of priority:
