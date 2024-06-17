@@ -227,7 +227,7 @@ export function painter(symbology) {
       const shape = interpolation(symbology?.shape, feature) ?? 3;
       const markerColor = `hsla(${hue ?? 209}, ${sat ?? 50}%, ${light ?? 40}%, ${opacity ?? 1})`;
       const markerSymbol = simpleStyle["marker-symbol"] ?? interpolation(symbology?.markerSymbol, feature);
-      return SvgPathMarker(latlng, markerSymbol, size ?? 15, size ?? 15);
+      return SvgPathMarker(latlng, markerSymbol, markerColor, undefined, size ?? 15, size ?? 15);
       return StarMarker(latlng, Math.round(shape), size ?? 5, markerColor, undefined, markerSymbol?.charAt(0));
     } else {
       return {
