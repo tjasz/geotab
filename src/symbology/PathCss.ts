@@ -13,35 +13,29 @@ export type PathCss = {
   "fill-rule"?: string;
 }
 
-export function readGeoJsonCss(f: Feature): PathCss {
+function readPathCss(o: Object): PathCss {
   return {
-    stroke: getNonEmpty(f.style?.["stroke"]),
-    "stroke-opacity": getNonEmptyAsNumber(f.style?.["stroke-opacity"]),
-    "stroke-width": getNonEmptyAsNumber(f.style?.["stroke-width"]),
-    "stroke-linecap": getNonEmpty(f.style?.["stroke-linecap"]),
-    "stroke-linejoin": getNonEmpty(f.style?.["stroke-linejoin"]),
-    "stroke-dasharray": getNonEmpty(f.style?.["stroke-dasharray"]),
-    "stroke-dashoffset": getNonEmpty(f.style?.["stroke-dashoffset"]),
-    fill: getNonEmpty(f.style?.["fill"]),
-    "fill-opacity": getNonEmptyAsNumber(f.style?.["fill-opacity"]),
-    "fill-rule": getNonEmpty(f.style?.["fill-rule"]),
+    stroke: getNonEmpty(o?.["stroke"]),
+    "stroke-opacity": getNonEmptyAsNumber(o?.["stroke-opacity"]),
+    "stroke-width": getNonEmptyAsNumber(o?.["stroke-width"]),
+    "stroke-linecap": getNonEmpty(o?.["stroke-linecap"]),
+    "stroke-linejoin": getNonEmpty(o?.["stroke-linejoin"]),
+    "stroke-dasharray": getNonEmpty(o?.["stroke-dasharray"]),
+    "stroke-dashoffset": getNonEmpty(o?.["stroke-dashoffset"]),
+    fill: getNonEmpty(o?.["fill"]),
+    "fill-opacity": getNonEmptyAsNumber(o?.["fill-opacity"]),
+    "fill-rule": getNonEmpty(o?.["fill-rule"]),
   }
 }
 
+export function readGeoJsonCss(f: Feature): PathCss {
+  return readPathCss(f.style);
+}
+
 export function readSimpleStyle(f: Feature): PathCss {
-  return {
-    // TODO get the non-CSS properties from SimpleStyle
-    // title: getNonEmpty(f.properties["title"]),
-    // description: getNonEmpty(f.properties["description"]),
-    // "marker-size": getNonEmpty(f.properties["marker-size"]),
-    // "marker-symbol": getNonEmpty(f.properties["marker-symbol"]),
-    // "marker-color": getNonEmpty(f.properties["marker-color"]),
-    stroke: getNonEmpty(f.properties["stroke"]),
-    "stroke-opacity": getNonEmptyAsNumber(f.properties["stroke-opacity"]),
-    "stroke-width": getNonEmptyAsNumber(f.properties["stroke-width"]),
-    fill: getNonEmpty(f.properties["fill"]),
-    "fill-opacity": getNonEmptyAsNumber(f.properties["fill-opacity"]),
-  }
+  // TODO get the non-CSS properties from SimpleStyle:
+  // title, description, "marker-size", "marker-symbol", "marker-color"
+  return readPathCss(f.properties);
 }
 
 // merge several styles, passed in order of priority
