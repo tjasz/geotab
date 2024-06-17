@@ -234,7 +234,7 @@ export function painter(symbology) {
         lineCap: style["stroke-linecap"],
         lineJoin: style["stroke-linejoin"],
         dashArray: style["stroke-dasharray"],
-        dashOffset: style["stroke-dasoffset"],
+        dashOffset: style["stroke-dashoffset"],
         // let "fill" boolean default based on whether feature is a polygon
         fillColor: style.fill,
         fillOpacity: style["fill-opacity"],
