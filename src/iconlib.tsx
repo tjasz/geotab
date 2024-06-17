@@ -1,7 +1,7 @@
 import L from "leaflet";
 import math from "./math";
 
-function svgMarker(
+export function svgMarker(
   latlng: L.LatLngExpression,
   svg: HTMLElement | string,
 ): L.Marker<any> {
