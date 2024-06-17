@@ -15,16 +15,16 @@ export type PathCss = {
 
 export function readGeoJsonCss(f: Feature): PathCss {
   return {
-    stroke: getNonEmpty(f.style["stroke"]),
-    "stroke-opacity": getNonEmptyTransformed(f.style["stroke-opacity"], Number),
-    "stroke-width": getNonEmptyTransformed(f.style["stroke-width"], Number),
-    "stroke-linecap": getNonEmpty(f.style["stroke-linecap"]),
-    "stroke-linejoin": getNonEmpty(f.style["stroke-linejoin"]),
-    "stroke-dasharray": getNonEmpty(f.style["stroke-dasharray"]),
-    "stroke-dashoffset": getNonEmpty(f.style["stroke-dashoffset"]),
-    fill: getNonEmpty(f.style["fill"]),
-    "fill-opacity": getNonEmptyTransformed(f.style["fill-opacity"], Number),
-    "fill-rule": getNonEmpty(f.style["fill-rule"]),
+    stroke: getNonEmpty(f.style?.["stroke"]),
+    "stroke-opacity": getNonEmptyTransformed(f.style?.["stroke-opacity"], Number),
+    "stroke-width": getNonEmptyTransformed(f.style?.["stroke-width"], Number),
+    "stroke-linecap": getNonEmpty(f.style?.["stroke-linecap"]),
+    "stroke-linejoin": getNonEmpty(f.style?.["stroke-linejoin"]),
+    "stroke-dasharray": getNonEmpty(f.style?.["stroke-dasharray"]),
+    "stroke-dashoffset": getNonEmpty(f.style?.["stroke-dashoffset"]),
+    fill: getNonEmpty(f.style?.["fill"]),
+    "fill-opacity": getNonEmptyTransformed(f.style?.["fill-opacity"], Number),
+    "fill-rule": getNonEmpty(f.style?.["fill-rule"]),
   }
 }
 
