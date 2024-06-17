@@ -212,8 +212,8 @@ export function painter(symbology) {
 
     const defaultStyle: PathCss = {
       stroke: "#336899",
+      "stroke-opacity": 1,
       "stroke-width": 2,
-      "fill-opacity": 0.4,
     };
 
     // In order of priority:
@@ -239,7 +239,7 @@ export function painter(symbology) {
         dashOffset: style["stroke-dashoffset"],
         // let "fill" boolean default based on whether feature is a polygon
         fillColor: style.fill,
-        fillOpacity: style["fill-opacity"],
+        fillOpacity: style["fill-opacity"] ?? 0.5 * (style["stroke-opacity"] ?? 1),
         fillRule: style["fill-rule"],
         pattern: feature.properties["pattern"] ?? interpolation(symbology?.linePattern, feature) ?? "solid",
         // TODO there's also the option to pass "classsName", but it is left out for now
