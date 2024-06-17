@@ -1,10 +1,10 @@
 import React, { useContext, useState } from "react";
-import { Slider } from "@mui/material";
 import { DataContext } from "./dataContext";
 import ColoredText from "./symbology/ColoredText";
 import { SvgSelect } from "./SvgSelectorDialog"
 import { options as svgPatternOptions } from "./PatternRenderer/options"
 import { SymbologyPropertyView } from "./symbology/SymbologyPropertyView"
+import { NumericSymbologyPropertyView } from "./symbology/NumericSymbologyPropertyView"
 
 function SymbologyView(props) {
   const context = useContext(DataContext);
@@ -29,7 +29,7 @@ function SymbologyDefinition({ symbology, onSave }) {
   };
   return (
     <div id="symbology-definition">
-      <NumericSymbologyProperty
+      <NumericSymbologyPropertyView
         name="hue"
         definition={draft?.hue}
         onEdit={(hueDef) => {
@@ -43,7 +43,7 @@ function SymbologyDefinition({ symbology, onSave }) {
           </ColoredText>
         )}
       />
-      <NumericSymbologyProperty
+      <NumericSymbologyPropertyView
         name="saturation"
         definition={draft?.saturation}
         onEdit={(saturationDef) => {
@@ -57,7 +57,7 @@ function SymbologyDefinition({ symbology, onSave }) {
           </ColoredText>
         )}
       />
-      <NumericSymbologyProperty
+      <NumericSymbologyPropertyView
         name="lightness"
         definition={draft?.lightness}
         onEdit={(lightnessDef) => {
@@ -69,7 +69,7 @@ function SymbologyDefinition({ symbology, onSave }) {
           <ColoredText color={`hsla(0, 0%, ${value}%, 1)`}>{value}</ColoredText>
         )}
       />
-      <NumericSymbologyProperty
+      <NumericSymbologyPropertyView
         name="opacity"
         definition={draft?.opacity}
         onEdit={(opacityDef) => {
@@ -81,7 +81,7 @@ function SymbologyDefinition({ symbology, onSave }) {
           <ColoredText color={`hsla(0, 0%, 0%, ${value})`}>{value}</ColoredText>
         )}
       />
-      <NumericSymbologyProperty
+      <NumericSymbologyPropertyView
         name="size"
         definition={draft?.size}
         onEdit={(sizeDef) => {
@@ -90,7 +90,7 @@ function SymbologyDefinition({ symbology, onSave }) {
         minValue={1}
         maxValue={20}
       />
-      <NumericSymbologyProperty
+      <NumericSymbologyPropertyView
         name="shape"
         definition={draft?.shape}
         onEdit={(shapeDef) => {
@@ -124,41 +124,6 @@ function SymbologyDefinition({ symbology, onSave }) {
       </button>
     </div>
   );
-}
-
-function NumericSymbologyProperty({
-  name,
-  definition,
-  onEdit,
-  minValue,
-  maxValue,
-  valueStep,
-  valueLabelFormat,
-}) {
-  return <SymbologyPropertyView
-    name={name}
-    definition={definition}
-    allowContinuous
-    onEdit={onEdit}
-    placeholderValue={minValue}
-    onRenderSelector={(value, onChange, key) => {
-      return <Slider
-        key={key}
-        value={value}
-        onChange={(event, value) => onChange(value)}
-        min={minValue}
-        max={maxValue}
-        step={
-          valueStep ??
-          Math.pow(10, Math.round(Math.log10((maxValue - minValue) / 20)))
-        }
-        valueLabelDisplay="on"
-        valueLabelFormat={valueLabelFormat}
-        track={false}
-        marks
-      />
-    }}
-  />
 }
 
 export default SymbologyView;
