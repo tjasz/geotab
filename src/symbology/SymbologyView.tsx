@@ -120,6 +120,21 @@ function SymbologyDefinition({ symbology, onSave }) {
           />
         }}
       />
+      <SymbologyPropertyView
+        name="marker symbol"
+        definition={draft?.markerSymbol}
+        onEdit={(markerSymbolDef) => {
+          updateDraft({ ...draft, markerSymbol: markerSymbolDef });
+        }}
+        placeholderValue={""}
+        onRenderSelector={(value, onChange, key) => {
+          return <input type="text"
+            key={key}
+            value={value}
+            onChange={(event) => onChange(event.target.value)}
+          />
+        }}
+      />
       <button
         id="save-symbology-draft"
         onClick={saveDraft}

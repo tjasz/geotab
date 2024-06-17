@@ -226,7 +226,7 @@ export function painter(symbology) {
       // marker-rotation, marker-size as an integer
       const shape = interpolation(symbology?.shape, feature) ?? 3;
       const markerColor = `hsla(${hue ?? 209}, ${sat ?? 50}%, ${light ?? 40}%, ${opacity ?? 1})`;
-      const markerSymbol = simpleStyle["marker-symbol"];
+      const markerSymbol = simpleStyle["marker-symbol"] ?? interpolation(symbology?.markerSymbol, feature);
       return StarMarker(latlng, Math.round(shape), size ?? 5, markerColor, undefined, markerSymbol?.charAt(0));
     } else {
       return {
