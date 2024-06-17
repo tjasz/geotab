@@ -243,15 +243,20 @@ function ExportView(props) {
       const style = painterInstance(f);
       return {
         ...f, properties: {
-          // TODO pass the following SimpleStyle props: marker-size, marker-symbol, marker-color, stroke-opacity
+          // TODO pass the following SimpleStyle props: marker-size, marker-symbol, marker-color
           // TODO pass the following CalTopo props: marker-rotation, marker-size as integer
           // TODO consider passing GeoJSON+CSS format
           ...f.properties,
           pattern: style.pattern,
-          stroke: style.color,
+          stroke: style.stroke ? style.color : "none",
           "stroke-width": style.weight,
-          fill: style.fillColor,
+          "stroke-opacity": style.opacity,
+          "stroke-linecap": style.lineCap,
+          "stroke-dasharray": style.dashArray,
+          "stroke-dashoffset": style.dashOffset,
+          fill: style.fill ? style.fillColor : "none",
           "fill-opacity": style.fillOpacity,
+          "fill-rule": style.fillRule,
         }
       }
     }) : features;
