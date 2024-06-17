@@ -1,10 +1,11 @@
 import { useContext, useState } from "react";
 import { DataContext } from "../dataContext";
 import ColoredText from "./ColoredText";
-import { SvgSelect } from "../SvgSelectorDialog"
+import { SvgPathPreview, SvgPatternPreview, SvgSelect } from "../SvgSelectorDialog"
 import { options as svgPatternOptions } from "../PatternRenderer/options"
 import { SymbologyPropertyView } from "./SymbologyPropertyView"
 import { NumericSymbologyPropertyView } from "./NumericSymbologyPropertyView"
+import { library as markersLibrary } from "../icon/Markers";
 
 export function SymbologyView(props) {
   const context = useContext(DataContext);
@@ -117,6 +118,15 @@ function SymbologyDefinition({ symbology, onSave }) {
             value={value}
             onChange={onChange}
             options={svgPatternOptions}
+            onOptionRender={(option, onClick, style) => {
+              return <SvgPatternPreview
+                width={100}
+                height={30}
+                pattern={option}
+                onClick={onClick}
+                style={style}
+              />
+            }}
           />
         }}
       />
@@ -126,12 +136,22 @@ function SymbologyDefinition({ symbology, onSave }) {
         onEdit={(markerSymbolDef) => {
           updateDraft({ ...draft, markerSymbol: markerSymbolDef });
         }}
-        placeholderValue={""}
+        placeholderValue={"M0 0A3.5 3.5 0 0 0 7 0A3.5 3.5 0 1 0 0 0Z"}
         onRenderSelector={(value, onChange, key) => {
-          return <input type="text"
+          return <SvgSelect
             key={key}
             value={value}
-            onChange={(event) => onChange(event.target.value)}
+            onChange={onChange}
+            options={markersLibrary}
+            onOptionRender={(option, onClick, style) => {
+              return <SvgPathPreview
+                width={100}
+                height={30}
+                path={option}
+                onClick={onClick}
+                style={style}
+              />
+            }}
           />
         }}
       />

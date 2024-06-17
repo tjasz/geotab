@@ -9,23 +9,19 @@ type SvgSelectProps = {
   value: string;
   options: SvgOptions;
   onChange: (v: string) => void;
+  onOptionRender: (option: string, onClick: () => void, style: React.CSSProperties) => JSX.Element;
 };
 export function SvgSelect(props: SvgSelectProps) {
   const [expanded, setExpanded] = useState(false);
   return <>
-    <SvgPatternPreview
-      width={100}
-      height={30}
-      pattern={props.value}
-      onClick={() => setExpanded(true)}
-      style={{ cursor: "pointer" }}
-    />
+    {props.onOptionRender(props.value, () => setExpanded(true), { cursor: "pointer" })}
     <SvgSelectorDialog
       open={expanded}
       onCancel={() => setExpanded(false)}
       onConfirm={(s: string) => { props.onChange(s); setExpanded(false) }}
       title="Choose a pattern"
       options={props.options}
+      onOptionRender={props.onOptionRender}
     />
   </>
 }
@@ -37,6 +33,7 @@ type SvgSelectorDialogProps = {
   title: string;
   description?: JSX.Element;
   options: SvgOptions;
+  onOptionRender: (option: string, onClick: () => void, style: React.CSSProperties) => JSX.Element;
 };
 
 export function SvgSelectorDialog(props: SvgSelectorDialogProps) {
@@ -56,13 +53,11 @@ export function SvgSelectorDialog(props: SvgSelectorDialogProps) {
                 title={option.label}
                 style={{ width: 100, float: "left", margin: 5 }}
               >
-                <SvgPatternPreview
-                  width={100}
-                  height={30}
-                  pattern={option.pattern}
-                  onClick={() => props.onConfirm(option.pattern)}
-                  style={{ cursor: "pointer", backgroundColor: "#eee", margin: 5 }}
-                />
+                {props.onOptionRender(
+                  option.pattern,
+                  () => props.onConfirm(option.pattern),
+                  { cursor: "pointer", backgroundColor: "#eee", margin: 5 }
+                )}
               </div>
             })}
           </div>
@@ -81,17 +76,34 @@ export type SvgPatternPreviewProps = {
   style?: React.CSSProperties;
 };
 export function SvgPatternPreview(props: SvgPatternPreviewProps) {
+  return <SvgPathPreview
+    width={props.width}
+    height={props.height}
+    onClick={props.onClick}
+    style={props.style}
+    path={pointsToPatternPath([[{ x: 5, y: 0 }, { x: 95, y: 0 }]], false, props.pattern)}
+  />
+}
+
+export type SvgPathPreviewProps = {
+  path: string;
+  width: number;
+  height: number;
+  onClick: () => void;
+  style?: React.CSSProperties;
+}
+export function SvgPathPreview(props: SvgPathPreviewProps) {
   return <svg
     width={props.width}
     height={props.height}
     viewBox={`0 ${-props.height / 2} ${props.width} ${props.height}`}
     onClick={props.onClick}
-    onContextMenu={() => console.log(props.pattern)}
+    onContextMenu={() => console.log(props.path)}
     style={props.style}
     fill="none"
   >
     <path
-      d={pointsToPatternPath([[{ x: 5, y: 0 }, { x: 95, y: 0 }]], false, props.pattern)}
+      d={props.path}
       strokeWidth="2"
       stroke="black"
     />
