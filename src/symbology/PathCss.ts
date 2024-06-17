@@ -32,10 +32,22 @@ export function readGeoJsonCss(f: Feature): PathCss {
   return readPathCss(f.style);
 }
 
-export function readSimpleStyle(f: Feature): PathCss {
-  // TODO get the non-CSS properties from SimpleStyle:
-  // title, description, "marker-size", "marker-symbol", "marker-color"
-  return readPathCss(f.properties);
+type SimpleStyle = PathCss & {
+  title?: string;
+  description?: string;
+  "marker-size"?: string;
+  "marker-symbol"?: string;
+  "marker-color"?: string;
+};
+export function readSimpleStyle(f: Feature): SimpleStyle {
+  return {
+    ...readPathCss(f.properties),
+    title: getNonEmpty(f.properties?.["title"]),
+    description: getNonEmpty(f.properties?.["description"]),
+    "marker-size": getNonEmpty(f.properties?.["marker-size"]),
+    "marker-symbol": getNonEmpty(f.properties?.["marker-symbol"]),
+    "marker-color": getNonEmpty(f.properties?.["marker-color"]),
+  };
 }
 
 // merge several styles, passed in order of priority

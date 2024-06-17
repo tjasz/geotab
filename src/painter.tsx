@@ -185,10 +185,6 @@ export function painter(symbology) {
   //   "hue": {mode: "discrete", values: [150, 250], fieldname: "elevation", breaks: [10000], default: 209},
   // },
   const fn = (feature, latlng) => {
-    // TODO get and use the following from SimpleStyle:
-    // marker-size, marker-symbol, marker-color
-    // TODO get and use additional CalTopo properties that aren't in SimpleStyle:
-    // marker-rotation, marker-size as an integer
     const simpleStyle = readSimpleStyle(feature);
 
     // get GeoJSON+CSS style
@@ -224,9 +220,14 @@ export function painter(symbology) {
     const style = mergeStyles(simpleStyle, calculatedStyle, geoJsonCssStyle, defaultStyle);
 
     if (feature.geometry?.type === "Point") {
+      // TODO use the following from SimpleStyle:
+      // marker-size, marker-symbol, marker-color
+      // TODO get and use additional CalTopo properties that aren't in SimpleStyle:
+      // marker-rotation, marker-size as an integer
       const shape = interpolation(symbology?.shape, feature) ?? 3;
       const markerColor = `hsla(${hue ?? 209}, ${sat ?? 50}%, ${light ?? 40}%, ${opacity ?? 1})`;
-      return StarMarker(latlng, Math.round(shape), size ?? 5, markerColor);
+      const markerSymbol = simpleStyle["marker-symbol"];
+      return StarMarker(latlng, Math.round(shape), size ?? 5, markerColor, undefined, markerSymbol?.charAt(0));
     } else {
       return {
         stroke: style.stroke !== "none",
