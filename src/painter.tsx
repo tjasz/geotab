@@ -2,7 +2,7 @@ import { StarMarker } from "./iconlib";
 import { toType } from "./fieldtype";
 import * as GeoJson from "./geojson-types";
 import { FieldTypeDescription } from "./fieldtype";
-import { getSimpleStyle } from "./symbology/SimpleStyle";
+import { mergeStyles, readSimpleStyle, readGeoJsonCss, PathCss } from "./symbology/PathCss";
 
 export enum SymbologyMode {
   ByValue = "byvalue",
@@ -185,47 +185,56 @@ export function painter(symbology) {
   //   "hue": {mode: "discrete", values: [150, 250], fieldname: "elevation", breaks: [10000], default: 209},
   // },
   const fn = (feature, latlng) => {
-    // TODO get the following from SimpleStyle:
+    // TODO get and use the following from SimpleStyle:
     // marker-size, marker-symbol, marker-color
-    // TODO get additional CalTopo properties that aren't in SimpleStyle:
+    // TODO get and use additional CalTopo properties that aren't in SimpleStyle:
     // marker-rotation, marker-size as an integer
-    const simpleStyle = getSimpleStyle(feature);
+    const simpleStyle = readSimpleStyle(feature);
 
-    // TODO get the following from GeoJSON+CSS:
-    // fill (none or color), fill-rule, fill-opacity, stroke (none or color), stroke-dasharry, stroke-dashoffset, stroke-linecap, stroke-linejoin, stroke-miterlimit, stroke-opacity, stroke-width
+    // get GeoJSON+CSS style
+    const geoJsonCssStyle = readGeoJsonCss(feature);
 
-    // get color-related attributes
-    const opacity = interpolation(symbology?.opacity, feature) ?? simpleStyle["stroke-opacity"] ?? 1;
+    // calculate a style based on the symbology definitions
     const hue = interpolation(symbology?.hue, feature);
     const sat = interpolation(symbology?.saturation, feature);
     const light = interpolation(symbology?.lightness, feature);
-    // if none of hue, saturation, and lightness are defined, get color from SimpleStyle
-    const color = (!hue && !sat && !light)
-      ? (simpleStyle["stroke"] ?? "#336899")
-      : `hsl(${hue ?? 209}, ${sat ?? 50}%, ${light ?? 40}%)`;
-    // get other attributes
-    const size = interpolation(symbology?.size, feature) ?? simpleStyle["stroke-width"] ?? 5;
-    const shape = interpolation(symbology?.shape, feature) ?? 3;
-    const linePattern = interpolation(symbology?.linePattern, feature) ?? simpleStyle["pattern"] ?? "solid";
+    const opacity = interpolation(symbology?.opacity, feature);
+    // stroke color is defined if one of hue, saturation, or lightness is defined
+    const color = (hue || sat || light) ? `hsl(${hue ?? 209}, ${sat ?? 50}%, ${light ?? 40}%)` : undefined;
+    const size = interpolation(symbology?.size, feature);
+    const calculatedStyle: PathCss = {
+      stroke: color,
+      "stroke-opacity": opacity,
+      "stroke-width": size,
+    }
+
+    // In order of priority:
+    // SimpleStyle is easily editable by the user on individual features.
+    // The calculated style is also editable by the user, but not on individual features.
+    // The GeoJSON+CSS style is not currently editable by the user in the UI.
+    // The default style is not editable by the user.
+    const style = mergeStyles(simpleStyle, calculatedStyle, geoJsonCssStyle);
 
     if (feature.geometry?.type === "Point") {
-      return StarMarker(latlng, Math.round(shape), size, color);
+      const shape = interpolation(symbology?.shape, feature) ?? 3;
+      const markerColor = `hsla(${hue ?? 209}, ${sat ?? 50}%, ${light ?? 40}%, ${opacity ?? 1})`;
+      return StarMarker(latlng, Math.round(shape), size ?? 5, markerColor);
     } else {
       return {
-        stroke: true,
-        color,
-        weight: size,
-        opacity,
-        lineCap: "round",
-        lineJoin: "round",
-        dashArray: null,
-        dashOffset: null,
+        stroke: style.stroke !== "none",
+        color: style.stroke,
+        weight: style["stroke-width"],
+        opacity: style["stroke-opacity"],
+        lineCap: style["stroke-linecap"],
+        lineJoin: style["stroke-linejoin"],
+        dashArray: style["stroke-dasharray"],
+        dashOffset: style["stroke-dasoffset"],
         // let "fill" boolean default based on whether feature is a polygon
-        fillColor: simpleStyle.fill ?? color,
-        fillOpacity: simpleStyle["fill-opacity"] ?? 0.4,
-        fillRule: "evenodd",
-        pattern: linePattern,
-        // there's also the option to pass "classsName", but it is left out for now
+        fillColor: style.fill,
+        fillOpacity: style["fill-opacity"],
+        fillRule: style["fill-rule"],
+        pattern: feature.properties["pattern"] ?? interpolation(symbology?.linePattern, feature) ?? "solid",
+        // TODO there's also the option to pass "classsName", but it is left out for now
       };
     }
   };
