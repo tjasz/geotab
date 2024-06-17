@@ -200,7 +200,7 @@ export function painter(symbology) {
     // if none of hue, saturation, and lightness are defined, get color from SimpleStyle
     const color = (!hue && !sat && !light)
       ? (feature.properties["stroke"] ?? "#336899")
-      : `hsla(${hue ?? 209}, ${sat ?? 50}%, ${light ?? 40}%, ${opacity})`;
+      : `hsl(${hue ?? 209}, ${sat ?? 50}%, ${light ?? 40}%)`;
     // get other attributes
     const size = interpolation(symbology?.size, feature) ?? feature.properties["stroke-width"] ?? 5;
     const shape = interpolation(symbology?.shape, feature) ?? 3;
@@ -209,8 +209,6 @@ export function painter(symbology) {
     if (feature.geometry?.type === "Point") {
       return StarMarker(latlng, Math.round(shape), size, color);
     } else {
-      // TODO pass the following to leaflet:
-      // lineCap, lineJoin, dashArray, dashOffset, fillColor, fillOpacity, fillRule, fill boolean, stroke boolean
       let dashArray = "";
       if (feature.properties["pattern"]) {
         switch (feature.properties["pattern"]) {
@@ -229,17 +227,21 @@ export function painter(symbology) {
             break;
         }
       }
-      const lineCap = "butt";
-      const fillColor = feature.properties["fill"] ?? color;
-      const fillOpacity = feature.properties["fill-opacity"] ?? 0.4;
       return {
+        stroke: true,
         color,
         weight: size,
+        opacity,
+        lineCap: "round",
+        lineJoin: "round",
         dashArray,
-        lineCap,
-        fillColor,
-        fillOpacity,
+        dashOffset: null,
+        // let "fill" boolean default based on whether feature is a polygon
+        fillColor: feature.properties["fill"] ?? color,
+        fillOpacity: feature.properties["fill-opacity"] ?? 0.4,
+        fillRule: "evenodd",
         pattern: linePattern,
+        // there's also the option to pass "classsName", but it is left out for now
       };
     }
   };
