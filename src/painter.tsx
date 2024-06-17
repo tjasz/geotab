@@ -200,7 +200,9 @@ export function painter(symbology) {
     const light = interpolation(symbology?.lightness, feature);
     const opacity = interpolation(symbology?.opacity, feature);
     // stroke color is defined if one of hue, saturation, or lightness is defined
-    const color = (hue || sat || light) ? `hsl(${hue ?? 209}, ${sat ?? 50}%, ${light ?? 40}%)` : undefined;
+    const color = (hue !== undefined || sat !== undefined || light !== undefined)
+      ? `hsl(${hue ?? 209}, ${sat ?? 50}%, ${light ?? 40}%)`
+      : undefined;
     const size = interpolation(symbology?.size, feature);
     const calculatedStyle: PathCss = {
       stroke: color,
