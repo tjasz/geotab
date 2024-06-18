@@ -128,7 +128,7 @@ const steepestInterval: OperatorBody = (feature, intervalMeters: number) => {
         // then, consider if current gain is the most
         const currentGrade = currentIntervalGain / currentIntervalDist;
         if (currentGrade > winner.grade) {
-          winner = { i, j, length: currentIntervalDist, gain: currentIntervalGain, grade: currentIntervalGain / currentIntervalDist };
+          winner = { i, j, length: currentIntervalDist, gain: currentIntervalGain, grade: currentGrade };
         }
         // advance j
         do {
