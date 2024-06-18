@@ -145,8 +145,8 @@ function SymbologyDefinition({ symbology, onSave }) {
             options={markersLibrary}
             onOptionRender={(option, onClick, style) => {
               return <SvgPathPreview
-                width={15}
-                height={15}
+                width={30}
+                height={30}
                 viewBox="0 0 15 15"
                 path={option.pattern.replaceAll("&#xA;&#x9;", "")}
                 onClick={onClick}
