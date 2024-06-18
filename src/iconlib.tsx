@@ -137,44 +137,34 @@ export function SvgPathMarker(
   return svgMarker(latlng, svgString);
 }
 
-const makiPaths = svgArray.map(xmlString => {
-  let domParser = new window.DOMParser();
-  const xml = domParser.parseFromString(xmlString, "text/xml");
-  const svg = xml.getElementsByTagName("svg")[0];
-  const id = svg.getAttribute("id");
-  const svgPath = svg.getElementsByTagName("path")[0];
-  const d = svgPath.getAttribute("d");
-  if (!id?.length) {
-    throw new Error("Undefined or blank svg.id")
-  }
-  if (!d?.length) {
-    throw new Error("Undefined or blank path.d!")
-  }
-  return { label: id ?? "undefined", pattern: d };
-})
-const temakiPaths = temakiSvgArray.map(xmlString => {
-  let domParser = new window.DOMParser();
-  const xml = domParser.parseFromString(xmlString, "text/xml");
-  const svg = xml.getElementsByTagName("svg")[0];
-  const id = svg.getAttribute("id");
-  const svgPath = svg.getElementsByTagName("path")[0];
-  let d = svgPath.getAttribute("d");
-  if (!id?.length) {
-    throw new Error("Undefined or blank svg.id")
-  }
-  if (!d?.length) {
-    throw new Error("Undefined or blank path.d!")
-  }
-  const viewBox = svg.getAttribute("viewBox");
-  if (!viewBox?.length) {
-    throw new Error("Undefined or blank svg.viewBox!")
-  }
-  if (viewBox !== "0 0 15 15" && typeof viewBox === "string") {
-    console.error(`viewBox for ${id} : ${svg.getAttribute("viewBox")}`)
-    d = Svg.toString(Svg.scale(Svg.parse(d), 15 / (parseInt(viewBox.split(" ")[3]))))
-  }
-  return { label: id ?? "undefined", pattern: d };
-})
+function fromSvgArray(svgArray: string[]) {
+  return svgArray.map(xmlString => {
+    let domParser = new window.DOMParser();
+    const xml = domParser.parseFromString(xmlString, "text/xml");
+    const svg = xml.getElementsByTagName("svg")[0];
+    const id = svg.getAttribute("id");
+    const svgPaths = svg.getElementsByTagName("path");
+    let d = Array.from(svgPaths).map(p => p.getAttribute("d")).join("");
+    if (!id?.length) {
+      throw new Error("Undefined or blank svg.id")
+    }
+    if (!d?.length) {
+      throw new Error("Undefined or blank path.d!")
+    }
+    const viewBox = svg.getAttribute("viewBox");
+    if (!viewBox?.length) {
+      throw new Error("Undefined or blank svg.viewBox!")
+    }
+    if (viewBox !== "0 0 15 15" && typeof viewBox === "string") {
+      console.error(`viewBox for ${id} : ${svg.getAttribute("viewBox")}`)
+      d = Svg.toString(Svg.scale(Svg.parse(d), 15 / (parseInt(viewBox.split(" ")[3]))))
+    }
+    return { label: id ?? "undefined", pattern: d };
+  })
+}
+
+const makiPaths = fromSvgArray(svgArray)
+const temakiPaths = fromSvgArray(temakiSvgArray)
 // TODO reuse SvgPatternWithLabel
 export const markersLibrary = {
   Basic: [
@@ -206,4 +196,5 @@ export function getPathForMarker(markerName: string | undefined): string | undef
 export const markersLibraryFlat = [
   ...markersLibrary.Basic,
   ...markersLibrary.Maki,
+  ...markersLibrary.Temaki,
 ];
