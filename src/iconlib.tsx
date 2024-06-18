@@ -1,6 +1,7 @@
 import L from "leaflet";
 import { svgArray } from "./maki";
 import math from "./math";
+import { svgArray as temakiSvgArray } from "./temaki";
 
 export function svgMarker(
   latlng: L.LatLngExpression,
@@ -150,16 +151,35 @@ const makiPaths = svgArray.map(xmlString => {
   }
   return { label: id ?? "undefined", pattern: d };
 })
+const temakiPaths = temakiSvgArray.map(xmlString => {
+  let domParser = new window.DOMParser();
+  const xml = domParser.parseFromString(xmlString, "text/xml");
+  const svg = xml.getElementsByTagName("svg")[0];
+  const id = svg.getAttribute("id");
+  const svgPath = svg.getElementsByTagName("path")[0];
+  const d = svgPath.getAttribute("d");
+  if (!id?.length) {
+    throw new Error("Undefined or blank svg.id")
+  }
+  if (!d?.length) {
+    throw new Error("Undefined or blank path.d!")
+  }
+  if (svg.getAttribute("viewBox") !== "0 0 15 15") {
+    throw new Error(`viewBox for ${id} : ${svg.getAttribute("viewBox")}`)
+  }
+  return { label: id ?? "undefined", pattern: d };
+})
 // TODO reuse SvgPatternWithLabel
 export const markersLibrary = {
-  "Basic": [
+  Basic: [
     { label: "circle", pattern: "M0 7.5A7.5 7.5 0 0 0 15 7.5A7.5 7.5 0 1 0 0 7.5Z" },
     { label: "X", pattern: "M0 2l5.5 5.5 -5.5 5.5 2 2 5.5 -5.5 5.5 5.5 2 -2 -5.5 -5.5 5.5 -5.5 -2 -2 -5.5 5.5 -5.5 -5.5z" },
     { label: "triangle", pattern: "M0 15L7.5 0L15 15Z" },
     { label: "square", pattern: "M0 0 H15 V15 H-15Z" },
     { label: "diamond", pattern: "M0 7.5 L7.5 15L15 7.5L7.5 0Z" },
   ],
-  "Maki": makiPaths
+  Maki: makiPaths,
+  Temaki: temakiPaths,
 };
 
 export function getPathForMarker(markerName: string | undefined): string | undefined {
