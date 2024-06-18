@@ -103,7 +103,6 @@ const steepestInterval: OperatorBody = (feature, intervalMeters: number) => {
       // pre compute distance and gain array so that it doesn't need repeating during looping
       const distances = coords.map((c, i) => i ? Turf.distance(c, coords[i - 1], { units: "meters" }) : 0);
       const gains = coords.map((c, i) => i ? Math.max(0, c[2] - coords[i - 1][2]) : 0);
-      console.log({ feature, distances, gains })
 
       let i = 0, j = 0, currentIntervalDist = 0, currentIntervalGain = 0;
       // increment j until it defines an interval of the desired length
@@ -113,7 +112,6 @@ const steepestInterval: OperatorBody = (feature, intervalMeters: number) => {
         currentIntervalDist += distances[j];
         currentIntervalGain += gains[j];
       }
-      console.log(`initial interval between ${i} and ${j} of length ${currentIntervalDist} with gain ${currentIntervalGain}`)
       // if path is shorter than the interval, there is no steepest interval
       if (j === coords.length - 1) {
         return undefined;
@@ -127,7 +125,6 @@ const steepestInterval: OperatorBody = (feature, intervalMeters: number) => {
           currentIntervalGain -= gains[i];
           i += 1;
         }
-        console.log(`considering interval between ${i} and ${j} of length ${currentIntervalDist} with gain ${currentIntervalGain}`)
         // then, consider if current gain is the most
         const currentGrade = currentIntervalGain / currentIntervalDist;
         if (currentGrade > winner.grade) {
