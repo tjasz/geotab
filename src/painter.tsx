@@ -3,6 +3,7 @@ import { toType } from "./fieldtype";
 import * as GeoJson from "./geojson-types";
 import { FieldTypeDescription } from "./fieldtype";
 import { mergeStyles, readSimpleStyle, readGeoJsonCss, PathCss } from "./symbology/PathCss";
+import Color from "colorjs.io"
 
 export enum SymbologyMode {
   ByValue = "byvalue",
@@ -226,13 +227,14 @@ export function painter(symbology) {
       // marker-rotation, marker-size as an integer
       // TODO allow URL in "marker-symbol"?
       const shape = interpolation(symbology?.shape, feature) ?? 3; // TODO retire shape symbology?
-      // TODO heed opacity when calculating marker color
       const markerColor = simpleStyle["marker-color"]
         ?? `hsla(${hue ?? 209}, ${sat ?? 50}%, ${light ?? 40}%, ${opacity ?? 1})`;
+      const colorObj = new Color(markerColor);
+      const colorDisplay = `hsla(${colorObj.hsl.h}, ${colorObj.hsl.s}%, ${colorObj.hsl.l}%, ${opacity ?? 1})`;
       const markerPath = getPathForMarker(simpleStyle["marker-symbol"])
         ?? interpolation(symbology?.markerSymbol, feature)?.pattern
         ?? markersLibrary.Points[0].pattern;
-      return SvgPathMarker(latlng, markerPath, markerColor, undefined, size ?? 15, size ?? 15);
+      return SvgPathMarker(latlng, markerPath, colorDisplay, undefined, size ?? 15, size ?? 15);
     } else {
       return {
         stroke: style.stroke !== "none",
