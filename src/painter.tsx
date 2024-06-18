@@ -2,7 +2,7 @@ import { getPathForMarker, markersLibrary, StarMarker, SvgPathMarker } from "./i
 import { toType } from "./fieldtype";
 import * as GeoJson from "./geojson-types";
 import { FieldTypeDescription } from "./fieldtype";
-import { mergeStyles, readSimpleStyle, readGeoJsonCss, PathCss } from "./symbology/PathCss";
+import { mergeStyles, readSimpleStyle, readGeoJsonCss, PathCss, MarkerStyle } from "./symbology/PathCss";
 import Color from "colorjs.io"
 
 export enum SymbologyMode {
@@ -188,9 +188,6 @@ export function painter(symbology) {
   const fn = (feature, latlng) => {
     const simpleStyle = readSimpleStyle(feature);
 
-    // get GeoJSON+CSS style
-    const geoJsonCssStyle = readGeoJsonCss(feature);
-
     // calculate a style based on the symbology definitions
     const hue = interpolation(symbology?.hue, feature);
     const sat = interpolation(symbology?.saturation, feature);
@@ -201,41 +198,61 @@ export function painter(symbology) {
       ? `hsl(${hue ?? 209}, ${sat ?? 50}%, ${light ?? 40}%)`
       : undefined;
     const size = interpolation(symbology?.size, feature);
-    const calculatedStyle: PathCss = {
-      stroke: color,
-      "stroke-opacity": opacity,
-      "stroke-width": size,
-    }
-
-    const defaultStyle: PathCss = {
-      stroke: "#336899",
-      "stroke-opacity": 1,
-      "stroke-width": 4,
-    };
-
-    // In order of priority:
-    // SimpleStyle is easily editable by the user on individual features.
-    // The calculated style is also editable by the user, but not on individual features.
-    // The GeoJSON+CSS style is not currently editable by the user in the UI.
-    // The default style is not editable by the user.
-    const style = mergeStyles(simpleStyle, calculatedStyle, geoJsonCssStyle, defaultStyle);
 
     if (feature.geometry?.type === "Point") {
-      // TODO use the following from SimpleStyle:
-      // marker-size, marker-symbol, marker-color
-      // TODO get and use additional CalTopo properties that aren't in SimpleStyle:
-      // marker-rotation, marker-size as an integer
-      // TODO allow URL in "marker-symbol"?
-      const shape = interpolation(symbology?.shape, feature) ?? 3; // TODO retire shape symbology?
-      const markerColor = simpleStyle["marker-color"]
-        ?? `hsla(${hue ?? 209}, ${sat ?? 50}%, ${light ?? 40}%, ${opacity ?? 1})`;
-      const colorObj = new Color(markerColor);
-      const colorDisplay = `hsla(${colorObj.hsl.h}, ${colorObj.hsl.s}%, ${colorObj.hsl.l}%, ${opacity ?? 1})`;
-      const markerPath = getPathForMarker(simpleStyle["marker-symbol"])
-        ?? interpolation(symbology?.markerSymbol, feature)?.pattern
-        ?? markersLibrary.Points[0].pattern;
-      return SvgPathMarker(latlng, markerPath, colorDisplay, undefined, size ?? 15, size ?? 15);
+      const defaultMarkerStyle: MarkerStyle = {
+        symbol: markersLibrary.Points[0].label,
+        color: "#336899",
+        size: 1,
+        rotation: 0,
+        opacity: 1,
+      };
+      const simpleMarkerStyle: MarkerStyle = {
+        symbol: simpleStyle["marker-symbol"],
+        color: simpleStyle["marker-color"],
+        size: simpleStyle["marker-size"],
+        rotation: simpleStyle["marker-rotation"],
+        // TODO interpret opacity from marker-color
+      }
+      const calculatedMarkerStyle: MarkerStyle = {
+        symbol: interpolation(symbology?.markerSymbol, feature)?.label, // TODO or a star based on interpolation(symbology?.shape, feature)
+        color,
+        size: size / 15, // 15px is the normal marker size 1
+        // TODO define symbology for marker rotation
+        opacity,
+      }
+      const markerStyle = mergeStyles(simpleMarkerStyle, calculatedMarkerStyle, defaultMarkerStyle);
+
+      const colorObj = new Color(markerStyle.color!);
+      const colorDisplay = `hsla(${colorObj.hsl.h}, ${colorObj.hsl.s}%, ${colorObj.hsl.l}%, ${markerStyle.opacity ?? 1})`;
+
+      // TODO handle URL in "marker-symbol"?
+      const markerPath = getPathForMarker(markerStyle.symbol)!;
+
+      // TODO handle marker rotation
+      return SvgPathMarker(latlng, markerPath, colorDisplay, undefined, markerStyle.size! * 15, markerStyle.size! * 15);
     } else {
+      const geoJsonCssStyle = readGeoJsonCss(feature);
+
+      const calculatedStyle: PathCss = {
+        stroke: color,
+        "stroke-opacity": opacity,
+        "stroke-width": size,
+      }
+
+      const defaultStyle: PathCss = {
+        stroke: "#336899",
+        "stroke-opacity": 1,
+        "stroke-width": 4,
+      };
+
+      // In order of priority:
+      // SimpleStyle is easily editable by the user on individual features.
+      // The calculated style is also editable by the user, but not on individual features.
+      // The GeoJSON+CSS style is not currently editable by the user in the UI.
+      // The default style is not editable by the user.
+      const style = mergeStyles(simpleStyle, calculatedStyle, geoJsonCssStyle, defaultStyle);
+
       return {
         stroke: style.stroke !== "none",
         color: style.stroke,

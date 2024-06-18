@@ -35,43 +35,59 @@ export function readGeoJsonCss(f: Feature): PathCss {
 type SimpleStyle = PathCss & {
   title?: string;
   description?: string;
-  "marker-size"?: string;
+  "marker-size"?: number;
   "marker-symbol"?: string;
   "marker-color"?: string;
+  "marker-rotation"?: number;
 };
+const markerSizeToNumber = {
+  small: 0.75,
+  medium: 1,
+  large: 2,
+}
 export function readSimpleStyle(f: Feature): SimpleStyle {
   let markerColor = getNonEmpty(f.properties?.["marker-color"]);
-  if (markerColor?.charAt(0) !== "#") {
+  if (markerColor !== undefined && markerColor?.charAt(0) !== "#") {
     markerColor = "#" + markerColor;
   }
+
+  let markerSize = getNonEmpty(f.properties?.["marker-size"]);
+  let markerSizeNumber: number | undefined = undefined;
+  if (markerSize) {
+    try {
+      markerSizeNumber = Number(markerSize);
+    } catch (error) {
+      console.info("marker-size was not a number: " + markerSize);
+      markerSizeNumber = markerSizeToNumber[markerSize];
+    }
+  }
+
   return {
     ...readPathCss(f.properties),
     title: getNonEmpty(f.properties?.["title"]),
     description: getNonEmpty(f.properties?.["description"]),
-    "marker-size": getNonEmpty(f.properties?.["marker-size"]),
+    "marker-size": markerSizeNumber,
     "marker-symbol": getNonEmpty(f.properties?.["marker-symbol"]),
     "marker-color": markerColor,
+    "marker-rotation": getNonEmptyAsNumber(f.properties?.["marker-rotation"]),
   };
 }
 
 // merge several styles, passed in order of priority
-export function mergeStyles(a: PathCss, b: PathCss, c?: PathCss, d?: PathCss): PathCss {
-  const result: PathCss = {};
-  for (const key of [
-    "stroke",
-    "stroke-opacity",
-    "stroke-width",
-    "stroke-linecap",
-    "stroke-linejoin",
-    "stroke-dasharray",
-    "stroke-dashoffset",
-    "fill",
-    "fill-opacity",
-    "fill-rule"
-  ]) {
+export function mergeStyles<T extends {}>(a: T, b: T, c?: T, d?: T): T {
+  const result = {};
+  for (const key of Object.keys(a).concat(Object.keys(b).concat(Object.keys(c ?? {}).concat(Object.keys(d ?? {}))))) {
     result[key] = a[key] ?? b[key] ?? c?.[key] ?? d?.[key];
   }
-  return result;
+  return result as T;
+}
+
+export type MarkerStyle = {
+  symbol?: string,
+  color?: string,
+  size?: number,
+  rotation?: number,
+  opacity?: number,
 }
 
 function getNonEmpty(s: string): string | undefined {
