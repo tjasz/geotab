@@ -229,7 +229,7 @@ export function painter(symbology) {
       const markerColor = `hsla(${hue ?? 209}, ${sat ?? 50}%, ${light ?? 40}%, ${opacity ?? 1})`;
       const markerPath = getPathForMarker(simpleStyle["marker-symbol"])
         ?? interpolation(symbology?.markerSymbol, feature)?.pattern
-        ?? markersLibrary.Basic[0].pattern;
+        ?? markersLibrary.Points[0].pattern;
       return SvgPathMarker(latlng, markerPath, markerColor, undefined, size ?? 15, size ?? 15);
     } else {
       return {

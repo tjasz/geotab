@@ -136,7 +136,7 @@ function SymbologyDefinition({ symbology, onSave }) {
         onEdit={(markerSymbolDef) => {
           updateDraft({ ...draft, markerSymbol: markerSymbolDef });
         }}
-        placeholderValue={markersLibrary.Basic[0]}
+        placeholderValue={markersLibrary.Points[0]}
         onRenderSelector={(value, onChange, key) => {
           return <SvgSelect
             key={key}

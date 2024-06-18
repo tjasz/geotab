@@ -288,13 +288,6 @@ export const markersLibrary = {
     { label: "airport", pattern: makiPaths.airport },
     { label: "wilderness", pattern: temakiPaths["temaki-tree_needleleaved"] },
   ],
-  Basic: [
-    { label: "circle", pattern: "M0 7.5A7.5 7.5 0 0 0 15 7.5A7.5 7.5 0 1 0 0 7.5Z" },
-    { label: "X", pattern: "M0 2l5.5 5.5 -5.5 5.5 2 2 5.5 -5.5 5.5 5.5 2 -2 -5.5 -5.5 5.5 -5.5 -2 -2 -5.5 5.5 -5.5 -5.5z" },
-    { label: "triangle", pattern: "M0 15L7.5 0L15 15Z" },
-    { label: "square", pattern: "M0 0 H15 V15 H-15Z" },
-    { label: "diamond", pattern: "M0 7.5 L7.5 15L15 7.5L7.5 0Z" },
-  ],
   Maki: Object.entries(makiPaths).map(([key, value]) => ({ label: key, pattern: value })),
   Temaki: Object.entries(temakiPaths).map(([key, value]) => ({ label: key, pattern: value })),
 };
@@ -319,7 +312,6 @@ export const markersLibraryFlat = [
   ...markersLibrary.Arrows,
   ...markersLibrary.Pins,
   ...markersLibrary.Recreation,
-  ...markersLibrary.Basic,
   ...markersLibrary.Maki,
   ...markersLibrary.Temaki,
 ];
