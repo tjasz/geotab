@@ -1,6 +1,7 @@
 import * as Turf from "@turf/turf";
 import { getEndingCoord, getStartingCoord } from "../../algorithm";
 import { pathNovelty } from "../../geojson-calc";
+import { FeatureType, GeometryType } from "../../geojson-types";
 
 type OperatorBody = (...args: any[]) => any;
 
@@ -111,7 +112,7 @@ const steepestInterval: OperatorBody = (feature, intervalMeters: number) => {
         return undefined;
       }
       // iterate over intervals
-      let steepestGrade = currentIntervalGain / currentIntervalDist;
+      let winner = { i, j, length: currentIntervalDist, gain: currentIntervalGain, grade: currentIntervalGain / currentIntervalDist };
       while (i < coords.length && j < coords.length) {
         // if interval is too long, advance i
         while (currentIntervalDist > intervalMeters && i < coords.length) {
@@ -122,15 +123,32 @@ const steepestInterval: OperatorBody = (feature, intervalMeters: number) => {
         console.log(`considering interval between ${i} and ${j} of length ${currentIntervalDist} with gain ${currentIntervalGain}`)
         // then, consider if current gain is the most
         const currentGrade = currentIntervalGain / currentIntervalDist;
-        if (currentGrade > steepestGrade) {
-          steepestGrade = currentGrade;
+        if (currentGrade > winner.grade) {
+          winner = { i, j, length: currentIntervalDist, gain: currentIntervalGain, grade: currentIntervalGain / currentIntervalDist };
         }
         // advance j
-        j += 1;
-        currentIntervalDist += distances[j];
-        currentIntervalGain += gains[j];
+        do {
+          j += 1;
+          currentIntervalDist += distances[j];
+          currentIntervalGain += gains[j];
+        } while (currentIntervalDist < intervalMeters && j < coords.length)
       }
-      return steepestGrade;
+      const result = {
+        type: FeatureType.Feature,
+        geometry: {
+          type: GeometryType.LineString,
+          coordinates: coords.slice(winner.i, winner.j + 1),
+        },
+        properties: {
+          lengthMeters: winner.length,
+          gainMeters: winner.gain,
+          grade: winner.grade,
+          i: winner.i,
+          j: winner.j,
+        }
+      };
+      console.log(result);
+      return result;
     case "MultiLineString":
     case "Polygon":
     case "MultiPolygon":
