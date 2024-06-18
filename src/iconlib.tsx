@@ -177,13 +177,13 @@ export const markersLibrary = {
   Arrows: [
     { label: "a:0", pattern: "" },
     { label: "a:1", pattern: "" },
-    { label: "a:2", pattern: "" },
+    { label: "a:2", pattern: Svg.toString(Svg.translate(Svg.rotate(Svg.parse(makiPaths.arrow), -Math.PI / 2), 0, 15)) },
     { label: "a:3", pattern: "" },
     { label: "a:4", pattern: "" },
   ],
   Pins: [
     { label: "pin", pattern: "" },
-    { label: "placemark2", pattern: "" },
+    { label: "placemark2", pattern: temakiPaths["temaki-pin"] },
     { label: "flag-1", pattern: "" },
     { label: "flag-2", pattern: "" },
   ],
