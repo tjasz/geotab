@@ -144,6 +144,9 @@ function SymbologyDefinition({ symbology, onSave }) {
             onChange={option => onChange(option)}
             options={markersLibrary}
             onOptionRender={(option, onClick, style) => {
+              if (!option.pattern) {
+                console.error(option)
+              }
               return <SvgPathPreview
                 width={30}
                 height={30}
