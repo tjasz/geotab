@@ -138,7 +138,7 @@ export function SvgPathMarker(
 }
 
 function fromSvgArray(svgArray: string[]) {
-  return svgArray.map(xmlString => {
+  return Object.fromEntries(svgArray.map(xmlString => {
     let domParser = new window.DOMParser();
     const xml = domParser.parseFromString(xmlString, "text/xml");
     const svg = xml.getElementsByTagName("svg")[0];
@@ -159,14 +159,34 @@ function fromSvgArray(svgArray: string[]) {
       console.error(`viewBox for ${id} : ${svg.getAttribute("viewBox")}`)
       d = Svg.toString(Svg.scale(Svg.parse(d), 15 / (parseInt(viewBox.split(" ")[3]))))
     }
-    return { label: id ?? "undefined", pattern: d };
-  })
+    return [id ?? "undefined", d];
+  }))
 }
 
 const makiPaths = fromSvgArray(svgArray)
 const temakiPaths = fromSvgArray(temakiSvgArray)
 // TODO reuse SvgPatternWithLabel
 export const markersLibrary = {
+  Points: [
+    { label: "point", pattern: makiPaths.circle },
+    { label: "c:ring", pattern: makiPaths["circle-stroked"] },
+    { label: "c:target1", pattern: makiPaths["circle-stroked"] + "M6.5 7.5A1 1 0 0 0 8.5 7.5A1 1 0 0 0 6.5 7.5" },
+    { label: "c:target2", pattern: makiPaths["circle-stroked"] + "M6.5 7.5A1 1 0 0 0 8.5 7.5A1 1 0 0 0 6.5 7.5" },
+    { label: "c:target3", pattern: "M 1 7 A 6 6 0 0 1 7 1 H 8 A 6 6 0 0 1 14 7 V 8 A 6 6 0 0 1 8 14 H 7 A 6 6 0 0 1 1 8 V 7 Z M 7 2 a 5 5 0 0 0 -5 5 h 3 a 2 2 0 0 1 2 -2 z M 2 8 a 5 5 0 0 0 5 5 v -3 a 2 2 0 0 1 -2 -2 z M 8 13 a 5 5 0 0 0 5 -5 h -3 a 2 2 0 0 1 -2 2 z M 13 7 a 5 5 0 0 0 -5 -5 v 3 a 2 2 0 0 1 2 2 z M 7 6 a 1 1 0 0 0 -1 1 h 1 z M 6 8 a 1 1 0 0 0 1 1 v -1 z M 8 9 a 1 1 0 0 0 1 -1 h -1 z M 9 7 a 1 1 0 0 0 -1 -1 v 1 z" },
+  ],
+  Arrows: [
+    { label: "a:0", pattern: "" },
+    { label: "a:1", pattern: "" },
+    { label: "a:2", pattern: "" },
+    { label: "a:3", pattern: "" },
+    { label: "a:4", pattern: "" },
+  ],
+  Pins: [
+    { label: "pin", pattern: "" },
+    { label: "placemark2", pattern: "" },
+    { label: "flag-1", pattern: "" },
+    { label: "flag-2", pattern: "" },
+  ],
   Basic: [
     { label: "circle", pattern: "M0 7.5A7.5 7.5 0 0 0 15 7.5A7.5 7.5 0 1 0 0 7.5Z" },
     { label: "X", pattern: "M0 2l5.5 5.5 -5.5 5.5 2 2 5.5 -5.5 5.5 5.5 2 -2 -5.5 -5.5 5.5 -5.5 -2 -2 -5.5 5.5 -5.5 -5.5z" },
@@ -174,8 +194,8 @@ export const markersLibrary = {
     { label: "square", pattern: "M0 0 H15 V15 H-15Z" },
     { label: "diamond", pattern: "M0 7.5 L7.5 15L15 7.5L7.5 0Z" },
   ],
-  Maki: makiPaths,
-  Temaki: temakiPaths,
+  Maki: Object.entries(makiPaths).map(([key, value]) => ({ label: key, pattern: value })),
+  Temaki: Object.entries(temakiPaths).map(([key, value]) => ({ label: key, pattern: value })),
 };
 
 export function getPathForMarker(markerName: string | undefined): string | undefined {
@@ -194,6 +214,9 @@ export function getPathForMarker(markerName: string | undefined): string | undef
 }
 
 export const markersLibraryFlat = [
+  ...markersLibrary.Points,
+  ...markersLibrary.Arrows,
+  ...markersLibrary.Pins,
   ...markersLibrary.Basic,
   ...markersLibrary.Maki,
   ...markersLibrary.Temaki,
