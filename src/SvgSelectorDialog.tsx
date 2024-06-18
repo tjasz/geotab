@@ -51,7 +51,7 @@ export function SvgSelectorDialog(props: SvgSelectorDialogProps) {
               return <div
                 key={`${option.label}: ${option.pattern}`}
                 title={option.label}
-                style={{ width: 100, float: "left", margin: 5 }}
+                style={{ float: "left", margin: 5 }}
               >
                 {props.onOptionRender(
                   option,
