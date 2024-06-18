@@ -91,7 +91,7 @@ export function scale(p: SvgPath, factor: number): SvgPath {
     switch (c.operator.charAt(0)) {
       case "A":
       case "a":
-        return { ...c, parametetrs: c.parameters.map((v, i) => (i % 7) >= 2 && (i % 7) <= 4 ? v : v * factor) }
+        return { ...c, parameters: c.parameters.map((v, i) => (i % 7) >= 2 && (i % 7) <= 4 ? v : v * factor) }
       default:
         return { ...c, parameters: c.parameters.map(v => v * factor) }
     }
