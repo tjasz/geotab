@@ -224,7 +224,7 @@ export function painter(symbology) {
       // marker-size, marker-symbol, marker-color
       // TODO get and use additional CalTopo properties that aren't in SimpleStyle:
       // marker-rotation, marker-size as an integer
-      // TODO allow external marker URLs?
+      // TODO allow URL in "marker-symbol"?
       const shape = interpolation(symbology?.shape, feature) ?? 3; // TODO retire shape symbology?
       const markerColor = `hsla(${hue ?? 209}, ${sat ?? 50}%, ${light ?? 40}%, ${opacity ?? 1})`;
       const markerPath = getPathForMarker(simpleStyle["marker-symbol"])
