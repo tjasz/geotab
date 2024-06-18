@@ -86,6 +86,19 @@ export function translate(p: SvgPath, dx: number, dy: number): SvgPath {
   return result;
 }
 
+export function scale(p: SvgPath, factor: number): SvgPath {
+  const result = p.map(c => {
+    switch (c.operator.charAt(0)) {
+      case "A":
+      case "a":
+        return { ...c, parametetrs: c.parameters.map((v, i) => (i % 7) >= 2 && (i % 7) <= 4 ? v : v * factor) }
+      default:
+        return { ...c, parameters: c.parameters.map(v => v * factor) }
+    }
+  })
+  return result;
+}
+
 export function rotate(p: SvgPath, dtheta: number): SvgPath {
   if (p.some(c => !isAbsolute(c) || c.operator === "H" || c.operator === "V")) {
     p = toAbsoluteAndRemoveHV(p);
@@ -309,6 +322,7 @@ const Svg = {
   parse,
   toString,
   rotate,
+  scale,
   translate,
 }
 export default Svg;

@@ -1,6 +1,7 @@
 import L from "leaflet";
 import { svgArray } from "./maki";
 import math from "./math";
+import Svg from "./PatternRenderer/Svg";
 import { svgArray as temakiSvgArray } from "./temaki";
 
 export function svgMarker(
@@ -157,15 +158,20 @@ const temakiPaths = temakiSvgArray.map(xmlString => {
   const svg = xml.getElementsByTagName("svg")[0];
   const id = svg.getAttribute("id");
   const svgPath = svg.getElementsByTagName("path")[0];
-  const d = svgPath.getAttribute("d");
+  let d = svgPath.getAttribute("d");
   if (!id?.length) {
     throw new Error("Undefined or blank svg.id")
   }
   if (!d?.length) {
     throw new Error("Undefined or blank path.d!")
   }
-  if (svg.getAttribute("viewBox") !== "0 0 15 15") {
-    throw new Error(`viewBox for ${id} : ${svg.getAttribute("viewBox")}`)
+  const viewBox = svg.getAttribute("viewBox");
+  if (!viewBox?.length) {
+    throw new Error("Undefined or blank svg.viewBox!")
+  }
+  if (viewBox !== "0 0 15 15" && typeof viewBox === "string") {
+    console.error(`viewBox for ${id} : ${svg.getAttribute("viewBox")}`)
+    d = Svg.toString(Svg.scale(Svg.parse(d), 15 / (parseInt(viewBox.split(" ")[3]))))
   }
   return { label: id ?? "undefined", pattern: d };
 })
