@@ -84,6 +84,13 @@ const toOutAndBack: OperatorBody = (feature, point) => {
 };
 
 const steepestInterval: OperatorBody = (feature, intervalMeters: number) => {
+  if (intervalMeters === undefined) {
+    throw new Error("Cannot compute steepest interval of undefined length")
+  }
+  intervalMeters = Number(intervalMeters)
+  if (!intervalMeters) {
+    throw new Error("Cannot compute steepest interval of 0 meters");
+  }
   switch (feature.geometry.type) {
     case "Point":
     case "MultiPoint":
