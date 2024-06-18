@@ -111,18 +111,18 @@ function SymbologyDefinition({ symbology, onSave }) {
         onEdit={(linePatternDef) => {
           updateDraft({ ...draft, linePattern: linePatternDef });
         }}
-        placeholderValue={svgPatternOptions.Basic[0].pattern}
+        placeholderValue={svgPatternOptions.Basic[0]}
         onRenderSelector={(value, onChange, key) => {
           return <SvgSelect
             key={key}
             value={value}
-            onChange={onChange}
+            onChange={option => onChange(option)}
             options={svgPatternOptions}
             onOptionRender={(option, onClick, style) => {
               return <SvgPatternPreview
                 width={100}
                 height={30}
-                pattern={option}
+                pattern={option.pattern}
                 onClick={onClick}
                 style={style}
               />
@@ -136,19 +136,19 @@ function SymbologyDefinition({ symbology, onSave }) {
         onEdit={(markerSymbolDef) => {
           updateDraft({ ...draft, markerSymbol: markerSymbolDef });
         }}
-        placeholderValue={markersLibrary.Basic[0].pattern}
+        placeholderValue={markersLibrary.Basic[0]}
         onRenderSelector={(value, onChange, key) => {
           return <SvgSelect
             key={key}
             value={value}
-            onChange={onChange}
+            onChange={option => onChange(option)}
             options={markersLibrary}
             onOptionRender={(option, onClick, style) => {
               return <SvgPathPreview
                 width={15}
                 height={15}
                 viewBox="0 0 15 15"
-                path={option.replaceAll("&#xA;&#x9;", "")}
+                path={option.pattern.replaceAll("&#xA;&#x9;", "")}
                 onClick={onClick}
                 style={style}
                 strokeWidth={0}

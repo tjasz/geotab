@@ -3,13 +3,13 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import { pointsToPatternPath } from "./PatternRenderer/SvgPatternRenderer";
 import React, { useState } from "react";
-import { SvgOptions } from "./PatternRenderer/options";
+import { SvgOptions, SvgPatternWithLabel } from "./PatternRenderer/options";
 
 type SvgSelectProps = {
-  value: string;
+  value: SvgPatternWithLabel;
   options: SvgOptions;
-  onChange: (v: string) => void;
-  onOptionRender: (option: string, onClick: () => void, style: React.CSSProperties) => JSX.Element;
+  onChange: (v: SvgPatternWithLabel) => void;
+  onOptionRender: (option: SvgPatternWithLabel, onClick: () => void, style: React.CSSProperties) => JSX.Element;
 };
 export function SvgSelect(props: SvgSelectProps) {
   const [expanded, setExpanded] = useState(false);
@@ -18,7 +18,7 @@ export function SvgSelect(props: SvgSelectProps) {
     <SvgSelectorDialog
       open={expanded}
       onCancel={() => setExpanded(false)}
-      onConfirm={(s: string) => { props.onChange(s); setExpanded(false) }}
+      onConfirm={(s: SvgPatternWithLabel) => { props.onChange(s); setExpanded(false) }}
       title="Choose a pattern"
       options={props.options}
       onOptionRender={props.onOptionRender}
@@ -28,12 +28,12 @@ export function SvgSelect(props: SvgSelectProps) {
 
 type SvgSelectorDialogProps = {
   onCancel: { (): void };
-  onConfirm: { (s: string): void };
+  onConfirm: { (s: SvgPatternWithLabel): void };
   open: boolean;
   title: string;
   description?: JSX.Element;
   options: SvgOptions;
-  onOptionRender: (option: string, onClick: () => void, style: React.CSSProperties) => JSX.Element;
+  onOptionRender: (option: SvgPatternWithLabel, onClick: () => void, style: React.CSSProperties) => JSX.Element;
 };
 
 export function SvgSelectorDialog(props: SvgSelectorDialogProps) {
@@ -54,8 +54,8 @@ export function SvgSelectorDialog(props: SvgSelectorDialogProps) {
                 style={{ width: 100, float: "left", margin: 5 }}
               >
                 {props.onOptionRender(
-                  option.pattern,
-                  () => props.onConfirm(option.pattern),
+                  option,
+                  () => props.onConfirm(option),
                   { cursor: "pointer", backgroundColor: "#eee", margin: 5 }
                 )}
               </div>

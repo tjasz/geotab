@@ -1,4 +1,4 @@
-import { StarMarker, SvgPathMarker } from "./iconlib";
+import { getPathForMarker, StarMarker, SvgPathMarker } from "./iconlib";
 import { toType } from "./fieldtype";
 import * as GeoJson from "./geojson-types";
 import { FieldTypeDescription } from "./fieldtype";
@@ -226,9 +226,8 @@ export function painter(symbology) {
       // marker-rotation, marker-size as an integer
       const shape = interpolation(symbology?.shape, feature) ?? 3;
       const markerColor = `hsla(${hue ?? 209}, ${sat ?? 50}%, ${light ?? 40}%, ${opacity ?? 1})`;
-      const markerSymbol = simpleStyle["marker-symbol"] ?? interpolation(symbology?.markerSymbol, feature);
-      return SvgPathMarker(latlng, markerSymbol, markerColor, undefined, size ?? 15, size ?? 15);
-      return StarMarker(latlng, Math.round(shape), size ?? 5, markerColor, undefined, markerSymbol?.charAt(0));
+      const markerPath = getPathForMarker(simpleStyle["marker-symbol"]) ?? interpolation(symbology?.markerSymbol, feature).pattern;
+      return SvgPathMarker(latlng, markerPath, markerColor, undefined, size ?? 15, size ?? 15);
     } else {
       return {
         stroke: style.stroke !== "none",
