@@ -1,8 +1,7 @@
 import L from "leaflet";
-import { svgArray } from "./maki";
 import math from "./math";
 import Svg from "./PatternRenderer/Svg";
-import { svgArray as temakiSvgArray } from "./temaki";
+import { makiPaths, temakiPaths } from "./iconPaths";
 
 export function svgMarker(
   latlng: L.LatLngExpression,
@@ -137,8 +136,12 @@ export function SvgPathMarker(
   return svgMarker(latlng, svgString);
 }
 
+// function used to make maki and temaki icons more regular (fit in 15x15 viewbox)
+// run the "build" command in the maki library to generate an svgArray
+// which can be passed here.
+// run it with modifications to read from the temaki icons to pass that in as well.
 function fromSvgArray(svgArray: string[]) {
-  return Object.fromEntries(svgArray.map(xmlString => {
+  const result = Object.fromEntries(svgArray.map(xmlString => {
     let domParser = new window.DOMParser();
     const xml = domParser.parseFromString(xmlString, "text/xml");
     const svg = xml.getElementsByTagName("svg")[0];
@@ -156,15 +159,29 @@ function fromSvgArray(svgArray: string[]) {
       throw new Error("Undefined or blank svg.viewBox!")
     }
     if (viewBox !== "0 0 15 15" && typeof viewBox === "string") {
-      console.error(`viewBox for ${id} : ${svg.getAttribute("viewBox")}`)
-      d = Svg.toString(Svg.scale(Svg.parse(d), 15 / (parseInt(viewBox.split(" ")[3]))))
+      const [viewBoxX, viewBoxY, viewBoxWidth, viewBoxHeight] = viewBox.split(" ").map(Number);
+      const scaleBy = 15 / Math.max(viewBoxWidth, viewBoxHeight);
+      let translateBy = [0, 0];
+      if (Math.abs(viewBoxWidth - viewBoxHeight) > 0.01) {
+        if (viewBoxWidth < viewBoxHeight) {
+          translateBy[0] = (viewBoxHeight - viewBoxWidth) / 2;
+        } else {
+          console.error(`Non-square viewBox for ${id} is wider than it is tall : ${svg.getAttribute("viewBox")}`)
+        }
+      }
+      if (viewBoxX || viewBoxY) {
+        console.error(`viewBox does not start at origin for ${id} : ${svg.getAttribute("viewBox")}`)
+      }
+      d = Svg.toString(Svg.round(Svg.scale(Svg.translate(Svg.parse(d), translateBy[0], translateBy[1]), scaleBy), 3));
     }
     return [id ?? "undefined", d];
   }))
+  console.log(result)
+  return result;
 }
+// const makiPaths = fromSvgArray(svgArray)
+// const temakiPaths = fromSvgArray(temakiSvgArray)
 
-const makiPaths = fromSvgArray(svgArray)
-const temakiPaths = fromSvgArray(temakiSvgArray)
 // TODO reuse SvgPatternWithLabel
 export const markersLibrary = {
   Points: [

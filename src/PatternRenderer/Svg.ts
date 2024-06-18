@@ -47,7 +47,18 @@ export function toString(j: SvgPath) {
   return str.trim();
 }
 
+export function round(p: SvgPath, places: number): SvgPath {
+  const round = (n: number) => +n.toFixed(places);
+  const result = p.map(c => {
+    return { ...c, parameters: c.parameters.map(round) }
+  });
+  return result;
+}
+
 export function translate(p: SvgPath, dx: number, dy: number): SvgPath {
+  if (dx === 0 && dy === 0) {
+    return p;
+  }
   const result = p.map(c => {
     if (isAbsolute(c)) {
       switch (c.operator.charAt(0)) {
@@ -87,6 +98,9 @@ export function translate(p: SvgPath, dx: number, dy: number): SvgPath {
 }
 
 export function scale(p: SvgPath, factor: number): SvgPath {
+  if (factor === 1) {
+    return p;
+  }
   const result = p.map(c => {
     switch (c.operator.charAt(0)) {
       case "A":
@@ -100,6 +114,9 @@ export function scale(p: SvgPath, factor: number): SvgPath {
 }
 
 export function rotate(p: SvgPath, dtheta: number): SvgPath {
+  if (dtheta === 0) {
+    return p;
+  }
   if (p.some(c => !isAbsolute(c) || c.operator === "H" || c.operator === "V")) {
     p = toAbsoluteAndRemoveHV(p);
   }
@@ -321,6 +338,7 @@ function isAbsolute(c: SvgCommand) {
 const Svg = {
   parse,
   toString,
+  round,
   rotate,
   scale,
   translate,
