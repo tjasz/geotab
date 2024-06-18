@@ -226,7 +226,9 @@ export function painter(symbology) {
       // marker-rotation, marker-size as an integer
       // TODO allow URL in "marker-symbol"?
       const shape = interpolation(symbology?.shape, feature) ?? 3; // TODO retire shape symbology?
-      const markerColor = `hsla(${hue ?? 209}, ${sat ?? 50}%, ${light ?? 40}%, ${opacity ?? 1})`;
+      // TODO heed opacity when calculating marker color
+      const markerColor = simpleStyle["marker-color"]
+        ?? `hsla(${hue ?? 209}, ${sat ?? 50}%, ${light ?? 40}%, ${opacity ?? 1})`;
       const markerPath = getPathForMarker(simpleStyle["marker-symbol"])
         ?? interpolation(symbology?.markerSymbol, feature)?.pattern
         ?? markersLibrary.Points[0].pattern;

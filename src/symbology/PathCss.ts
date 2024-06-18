@@ -40,13 +40,17 @@ type SimpleStyle = PathCss & {
   "marker-color"?: string;
 };
 export function readSimpleStyle(f: Feature): SimpleStyle {
+  let markerColor = getNonEmpty(f.properties?.["marker-color"]);
+  if (markerColor?.charAt(0) !== "#") {
+    markerColor = "#" + markerColor;
+  }
   return {
     ...readPathCss(f.properties),
     title: getNonEmpty(f.properties?.["title"]),
     description: getNonEmpty(f.properties?.["description"]),
     "marker-size": getNonEmpty(f.properties?.["marker-size"]),
     "marker-symbol": getNonEmpty(f.properties?.["marker-symbol"]),
-    "marker-color": getNonEmpty(f.properties?.["marker-color"]),
+    "marker-color": markerColor,
   };
 }
 
