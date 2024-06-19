@@ -185,7 +185,7 @@ export function painter(symbology) {
   // example symbology: {
   //   "hue": {mode: "discrete", values: [150, 250], fieldname: "elevation", breaks: [10000], default: 209},
   // },
-  const fn = (feature, latlng) => {
+  const fn = (feature) => {
     const simpleStyle = readSimpleStyle(feature);
 
     // calculate a style based on the symbology definitions
@@ -218,19 +218,10 @@ export function painter(symbology) {
         symbol: interpolation(symbology?.markerSymbol, feature)?.label, // TODO or a star based on interpolation(symbology?.shape, feature)
         color,
         size: size / 15, // 15px is the normal marker size 1
-        // TODO define symbology for marker rotation
         opacity,
       }
       const markerStyle = mergeStyles(simpleMarkerStyle, calculatedMarkerStyle, defaultMarkerStyle);
-
-      const colorObj = new Color(markerStyle.color!);
-      const colorDisplay = `hsla(${colorObj.hsl.h}, ${colorObj.hsl.s}%, ${colorObj.hsl.l}%, ${markerStyle.opacity ?? 1})`;
-
-      // TODO handle URL in "marker-symbol"?
-      const markerPath = getPathForMarker(markerStyle.symbol)!;
-
-      // TODO handle marker rotation
-      return SvgPathMarker(latlng, markerPath, colorDisplay, undefined, markerStyle.size! * 15, markerStyle.size! * 15);
+      return markerStyle;
     } else {
       const geoJsonCssStyle = readGeoJsonCss(feature);
 
@@ -272,4 +263,15 @@ export function painter(symbology) {
     }
   };
   return fn;
+}
+
+export function markerStyleToMarker(latlng: L.LatLngExpression, markerStyle: MarkerStyle) {
+  const colorObj = new Color(markerStyle.color!);
+  const colorDisplay = `hsla(${colorObj.hsl.h}, ${colorObj.hsl.s}%, ${colorObj.hsl.l}%, ${markerStyle.opacity ?? 1})`;
+
+  // TODO handle URL in "marker-symbol"?
+  const markerPath = getPathForMarker(markerStyle.symbol)!;
+
+  // TODO handle marker rotation
+  return SvgPathMarker(latlng, markerPath, colorDisplay, undefined, markerStyle.size! * 15, markerStyle.size! * 15);
 }
