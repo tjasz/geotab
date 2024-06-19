@@ -266,7 +266,7 @@ export function painter(symbology) {
         fillColor: style.fill,
         fillOpacity: style["fill-opacity"] ?? 0.5 * (style["stroke-opacity"] ?? 1),
         fillRule: style["fill-rule"],
-        pattern: feature.properties["pattern"] ?? interpolation(symbology?.linePattern, feature).pattern ?? "solid",
+        pattern: feature.properties["pattern"] ?? interpolation(symbology?.linePattern, feature)?.pattern ?? "solid",
         // TODO there's also the option to pass "classsName", but it is left out for now
       };
     }
