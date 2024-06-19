@@ -62,7 +62,20 @@ export function ExportView() {
       switch (formatSelection) {
         case "geojson+css":
           // TODO pass styling for markers
-          return { ...f, style };
+          return {
+            ...f,
+            style: {
+              stroke: style.stroke ? style.color : "none",
+              "stroke-width": style.weight,
+              "stroke-opacity": style.opacity,
+              "stroke-linecap": style.lineCap,
+              "stroke-dasharray": style.dashArray,
+              "stroke-dashoffset": style.dashOffset,
+              fill: style.fill ? style.fillColor : "none",
+              "fill-opacity": style.fillOpacity,
+              "fill-rule": style.fillRule,
+            }
+          };
         case "geojson+simplestyle":
           return {
             ...f, properties: {
