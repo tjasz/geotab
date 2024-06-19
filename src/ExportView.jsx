@@ -59,38 +59,30 @@ export function ExportView() {
     const painterInstance = painter(context.symbology);
     const styledFeatures = formatSelection === "geojson" ? features : features.map(f => {
       const style = painterInstance(f);
+      const styleAsCss = {
+        stroke: style.stroke ? style.color : "none",
+        "stroke-width": style.weight,
+        "stroke-opacity": style.opacity,
+        "stroke-linecap": style.lineCap,
+        "stroke-dasharray": style.dashArray,
+        "stroke-dashoffset": style.dashOffset,
+        fill: style.fill ? style.fillColor : "none",
+        "fill-opacity": style.fillOpacity,
+        "fill-rule": style.fillRule,
+      }
       switch (formatSelection) {
         case "geojson+css":
           // TODO pass styling for markers
           return {
             ...f,
-            style: {
-              stroke: style.stroke ? style.color : "none",
-              "stroke-width": style.weight,
-              "stroke-opacity": style.opacity,
-              "stroke-linecap": style.lineCap,
-              "stroke-dasharray": style.dashArray,
-              "stroke-dashoffset": style.dashOffset,
-              fill: style.fill ? style.fillColor : "none",
-              "fill-opacity": style.fillOpacity,
-              "fill-rule": style.fillRule,
-            }
+            style: styleAsCss,
           };
         case "geojson+simplestyle":
           return {
             ...f, properties: {
               // TODO pass the following SimpleStyle props: marker-size, marker-symbol, marker-color
               ...f.properties,
-              pattern: style.pattern,
-              stroke: style.stroke ? style.color : "none",
-              "stroke-width": style.weight,
-              "stroke-opacity": style.opacity,
-              "stroke-linecap": style.lineCap,
-              "stroke-dasharray": style.dashArray,
-              "stroke-dashoffset": style.dashOffset,
-              fill: style.fill ? style.fillColor : "none",
-              "fill-opacity": style.fillOpacity,
-              "fill-rule": style.fillRule,
+              ...styleAsCss,
             }
           }
         case "geojson+caltopo":
@@ -98,16 +90,8 @@ export function ExportView() {
             ...f, properties: {
               // TODO pass the following CalTopo props: marker-rotation, marker-size as integer, marker-symbol, marker-color
               ...f.properties,
+              ...styleAsCss,
               pattern: style.pattern,
-              stroke: style.stroke ? style.color : "none",
-              "stroke-width": style.weight,
-              "stroke-opacity": style.opacity,
-              "stroke-linecap": style.lineCap,
-              "stroke-dasharray": style.dashArray,
-              "stroke-dashoffset": style.dashOffset,
-              fill: style.fill ? style.fillColor : "none",
-              "fill-opacity": style.fillOpacity,
-              "fill-rule": style.fillRule,
             }
           }
       }
