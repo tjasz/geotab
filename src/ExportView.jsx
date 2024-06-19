@@ -1,14 +1,19 @@
 import React, { useContext, useState } from "react";
 import CircularProgress from "@mui/material/CircularProgress";
-import { buffer, combine, union } from "@turf/turf";
+import { buffer, union } from "@turf/turf";
 import { DataContext } from "./dataContext";
 import { painter } from "./painter"
 
-export function ExportView(props) {
+const featureOptions = ["all", "filtered", "selected"];
+const formatOptions = ["geojson", "geojson+css", "geojson+simplestyle", "geojson+caltopo"];
+export function ExportView() {
   const context = useContext(DataContext);
-  const [exportOption, setExportOption] = useState("all");
-  const [includeStyle, setIncludeStyle] = useState(false);
+  const [featureSelection, setFeatureSelection] = useState(featureOptions[0]);
+  const [formatSelection, setFormatSelection] = useState(formatOptions[0]);
+  const [doBuffer, setDoBuffer] = useState(false);
+
   const [isLoading, setIsLoading] = useState(false);
+
   const isActive = (feature) => {
     const status = feature.properties["geotab:selectionStatus"];
     return status !== undefined && !status.includes("inactive");
@@ -39,47 +44,71 @@ export function ExportView(props) {
     includeHidden,
     filterFunc = (f) => true,
     buffer = false,
-    includeStyle = false,
+    format = formatOptions[0],
   ) => {
     const features = (
       includeHidden ? context.data : context.filteredData
     ).filter(filterFunc);
 
+    // don't style the new buffer features - there is no definition for their style
+    if (buffer) {
+      return createBuffer(features);
+    }
+
     // add SimpleStyle properties from the symbology
     const painterInstance = painter(context.symbology);
-    const styledFeatures = includeStyle ? features.map(f => {
+    const styledFeatures = formatSelection === "geojson" ? features : features.map(f => {
       const style = painterInstance(f);
-      return {
-        ...f, properties: {
-          // TODO pass the following SimpleStyle props: marker-size, marker-symbol, marker-color
-          // TODO pass the following CalTopo props: marker-rotation, marker-size as integer
-          // TODO consider passing GeoJSON+CSS format
-          ...f.properties,
-          pattern: style.pattern,
-          stroke: style.stroke ? style.color : "none",
-          "stroke-width": style.weight,
-          "stroke-opacity": style.opacity,
-          "stroke-linecap": style.lineCap,
-          "stroke-dasharray": style.dashArray,
-          "stroke-dashoffset": style.dashOffset,
-          fill: style.fill ? style.fillColor : "none",
-          "fill-opacity": style.fillOpacity,
-          "fill-rule": style.fillRule,
-        }
+      switch (formatSelection) {
+        case "geojson+css":
+          // TODO pass styling for markers
+          return { ...f, style };
+        case "geojson+simplestyle":
+          return {
+            ...f, properties: {
+              // TODO pass the following SimpleStyle props: marker-size, marker-symbol, marker-color
+              ...f.properties,
+              pattern: style.pattern,
+              stroke: style.stroke ? style.color : "none",
+              "stroke-width": style.weight,
+              "stroke-opacity": style.opacity,
+              "stroke-linecap": style.lineCap,
+              "stroke-dasharray": style.dashArray,
+              "stroke-dashoffset": style.dashOffset,
+              fill: style.fill ? style.fillColor : "none",
+              "fill-opacity": style.fillOpacity,
+              "fill-rule": style.fillRule,
+            }
+          }
+        case "geojson+caltopo":
+          return {
+            ...f, properties: {
+              // TODO pass the following CalTopo props: marker-rotation, marker-size as integer, marker-symbol, marker-color
+              ...f.properties,
+              pattern: style.pattern,
+              stroke: style.stroke ? style.color : "none",
+              "stroke-width": style.weight,
+              "stroke-opacity": style.opacity,
+              "stroke-linecap": style.lineCap,
+              "stroke-dasharray": style.dashArray,
+              "stroke-dashoffset": style.dashOffset,
+              fill: style.fill ? style.fillColor : "none",
+              "fill-opacity": style.fillOpacity,
+              "fill-rule": style.fillRule,
+            }
+          }
       }
-    }) : features;
+    });
 
-    return buffer
-      ? createBuffer(styledFeatures)
-      : {
-        type: "FeatureCollection",
-        features: styledFeatures,
-        geotabMetadata: {
-          columns: context.columns,
-          filter: context.filter,
-          symbology: context.symbology,
-        },
-      };
+    return {
+      type: "FeatureCollection",
+      features: styledFeatures,
+      geotabMetadata: {
+        columns: context.columns,
+        filter: context.filter,
+        symbology: context.symbology,
+      },
+    };
   };
 
   const exportToFile = (featureCollection) => {
@@ -96,8 +125,7 @@ export function ExportView(props) {
     // set parameters from export option
     var includeHidden = true;
     var filter = (f) => true;
-    var buffer = false;
-    switch (exportOption) {
+    switch (featureSelection) {
       case "all":
         break;
       case "filtered":
@@ -107,25 +135,13 @@ export function ExportView(props) {
         includeHidden = false;
         filter = isActive;
         break;
-      case "bufferAll":
-        buffer = true;
-        break;
-      case "bufferFiltered":
-        includeHidden = false;
-        buffer = true;
-        break;
-      case "bufferSelected":
-        includeHidden = false;
-        filter = isActive;
-        buffer = true;
-        break;
     }
 
     const featureCollection = createExportFeature(
       includeHidden,
       filter,
-      buffer,
-      includeStyle,
+      doBuffer,
+      formatSelection,
     );
     exportToFile(featureCollection);
     setIsLoading(false);
@@ -135,18 +151,21 @@ export function ExportView(props) {
     <div id="exportView">
       <h3>Export</h3>
       <select
-        defaultValue={exportOption}
-        onChange={(ev) => setExportOption(ev.target.value)}
+        defaultValue={featureSelection}
+        onChange={e => setFeatureSelection(e.target.value)}
       >
-        <option value="all">All</option>
-        <option value="filtered">Filtered</option>
-        <option value="selected">Selected</option>
-        <option value="bufferAll">Buffer (All)</option>
-        <option value="bufferFiltered">Buffer (Filtered)</option>
-        <option value="bufferSelected">Buffer (Selected)</option>
+        {featureOptions.map(o => <option key={o} value={o}>{o}</option>)}
       </select>
-      <input type="checkbox" id="includeStyle" name="includeStyle" checked={includeStyle} onChange={(event) => setIncludeStyle(!includeStyle)} />
-      <label htmlFor="includeStyle">Include SimpleStyle?</label>
+      <select
+        defaultValue={formatSelection}
+        onChange={e => setFormatSelection(e.target.value)}
+      >
+        {formatOptions.map(o => <option key={o} value={o}>{o}</option>)}
+      </select>
+
+
+      <input type="checkbox" id="buffer" name="buffer" checked={doBuffer} onChange={() => setDoBuffer(!doBuffer)} />
+      <label htmlFor="buffer">Buffer</label>
       {isLoading ? (
         <CircularProgress />
       ) : (
