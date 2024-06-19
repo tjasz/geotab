@@ -207,27 +207,32 @@ export function painter(symbology) {
         rotation: 0,
         opacity: 1,
       };
+
       const simpleMarkerStyle: MarkerStyle = {
         symbol: simpleStyle["marker-symbol"],
         color: simpleStyle["marker-color"],
         size: simpleStyle["marker-size"],
         rotation: simpleStyle["marker-rotation"],
-        // TODO interpret opacity from marker-color
       }
+      if (simpleMarkerStyle.color?.match(/^[a-fA-F0-9]{3,6}$/)) {
+        simpleMarkerStyle.color = "#" + simpleMarkerStyle.color;
+      }
+      if (simpleMarkerStyle.color?.match(/^#([a-fA-F0-9]{4}|[a-fA-F0-9]{8})$/)) {
+        simpleMarkerStyle.opacity = new Color(simpleMarkerStyle.color).alpha;
+      }
+
       const calculatedMarkerStyle: MarkerStyle = {
         symbol: interpolation(symbology?.markerSymbol, feature)?.label, // TODO or a star based on interpolation(symbology?.shape, feature)
         color,
         size: size / 15, // 15px is the normal marker size 1
         opacity,
+        // TODO calculate marker rotation
       }
       const markerStyle = mergeStyles(simpleMarkerStyle, calculatedMarkerStyle, defaultMarkerStyle);
 
-      if (markerStyle.color?.match(/^[a-fA-F0-9]{3,6}$/)) {
-        markerStyle.color = "#" + markerStyle.color;
-      }
-      // TODO set opacity as part of color
       const colorObj = new Color(markerStyle.color!).to("srgb");
-      markerStyle.color = colorObj.toString({ format: "hex" }); // `hsla(${colorObj.hsl.h}, ${colorObj.hsl.s}%, ${colorObj.hsl.l}%, ${markerStyle.opacity ?? 1})`;
+      colorObj.alpha = markerStyle.opacity!;
+      markerStyle.color = colorObj.toString({ format: "hex" });
 
       return markerStyle;
     } else {
