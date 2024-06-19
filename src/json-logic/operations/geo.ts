@@ -151,7 +151,6 @@ const steepestInterval: OperatorBody = (feature, intervalMeters: number) => {
           j: winner.j,
         }
       };
-      console.log(result);
       return result;
     case "MultiLineString":
     case "Polygon":
