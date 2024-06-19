@@ -85,13 +85,27 @@ export function ExportView() {
             style: styleAsCss,
           };
         case "geojson+simplestyle":
+          // Technically SimpleStyle requires colors of the format #ace or #aaccee
+          // but MapBox's own geojson.io accepts any valid CSS color definition.
+          // Do no color conversion here.
+
           // TODO try to convert symbol names to Maki icon names
-          // TODO convert marker-size number into marker-size "small" | "medium" | "large"
+
+          // convert marker-size number into marker-size "small" | "medium" | "large"
+          let markerSizeName = "medium";
+          if (style.size <= 0.75) {
+            markerSizeName = "small";
+          }
+          if (style.size >= 1.5) {
+            markerSizeName = "large";
+          }
+
           return {
             ...f, properties: {
               ...f.properties,
               ...styleAsCss,
               ...simpleStyleMarker,
+              "marker-size": markerSizeName,
             }
           }
         case "geojson+caltopo":
@@ -107,7 +121,9 @@ export function ExportView() {
               color = color.slice(0, 4);
             }
           }
+
           // TODO try to convert symbol names to CalTopo compatible names
+
           return {
             ...f, properties: {
               ...f.properties,
