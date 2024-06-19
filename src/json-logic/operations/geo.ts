@@ -147,8 +147,6 @@ const steepestInterval: OperatorBody = (feature, intervalMeters: number) => {
           lengthMeters: winner.length,
           gainMeters: winner.gain,
           grade: winner.grade,
-          i: winner.i,
-          j: winner.j,
         }
       };
       return result;

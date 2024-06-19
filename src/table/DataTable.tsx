@@ -218,17 +218,21 @@ export default function DataTable() {
   const calculateGeometry = (formula: RulesLogic<AdditionalOperation>) => {
     try {
       if (formula !== undefined) {
-        const newData = context.data.map((feature, index) =>
-          selectedRows.has(feature.id)
-            ? {
-                ...feature,
-                geometry: apply(formula, {
-                  feature,
-                  index,
-                  features: context.filteredData,
-                }).geometry,
-              }
-            : feature,
+        const newData = context.data.map((feature, index) => {
+          if (selectedRows.has(feature.id)) {
+            const calculatedFeature = apply(formula, {
+              feature,
+              index,
+              features: context.filteredData,
+            });
+            return {
+              ...feature,
+              properties: { ...calculatedFeature.properties, ...feature.properties },
+              geometry: calculatedFeature.geometry,
+            }
+          }
+          return feature
+        },
         );
         context.setData(newData);
       }
