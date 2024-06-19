@@ -64,6 +64,7 @@ export function ExportView() {
         "stroke-width": style.weight,
         "stroke-opacity": style.opacity,
         "stroke-linecap": style.lineCap,
+        "stroke-linejoin": style.lineJoin,
         "stroke-dasharray": style.dashArray,
         "stroke-dashoffset": style.dashOffset,
         fill: style.fill ? style.fillColor : "none",
