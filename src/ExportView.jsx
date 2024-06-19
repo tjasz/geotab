@@ -94,6 +94,18 @@ export function ExportView() {
             }
           }
         case "geojson+caltopo":
+          // CalTopo does not believe in opacity. It only parses 3 or 6 digit hex values with a # prefix.
+          // Anything else gets replaced with black.
+          // If the provided value was 4 or 7 digits, slice off the last ones.
+          let color = simpleStyleMarker["marker-color"];
+          if (color) {
+            if (color.length > 7) {
+              color = color.slice(0, 7);
+            }
+            if (color.length === 5) {
+              color = color.slice(0, 4);
+            }
+          }
           return {
             ...f, properties: {
               // TODO pass the following CalTopo props: marker-rotation, marker-size as number, marker-symbol, marker-color
@@ -101,6 +113,7 @@ export function ExportView() {
               ...styleAsCss,
               pattern: style.pattern,
               ...simpleStyleMarker,
+              "marker-color": color,
             }
           }
       }
