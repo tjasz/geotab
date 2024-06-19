@@ -71,6 +71,12 @@ export function ExportView() {
         "fill-opacity": style.fillOpacity,
         "fill-rule": style.fillRule,
       }
+      const simpleStyleMarker = {
+        "marker-symbol": style.symbol,
+        "marker-color": style.color,
+        "marker-size": style.size,
+        "marker-rotation": style.rotation,
+      }
       switch (formatSelection) {
         case "geojson+css":
           // TODO pass styling for markers
@@ -84,15 +90,17 @@ export function ExportView() {
               // TODO pass the following SimpleStyle props: marker-size, marker-symbol, marker-color
               ...f.properties,
               ...styleAsCss,
+              ...simpleStyleMarker,
             }
           }
         case "geojson+caltopo":
           return {
             ...f, properties: {
-              // TODO pass the following CalTopo props: marker-rotation, marker-size as integer, marker-symbol, marker-color
+              // TODO pass the following CalTopo props: marker-rotation, marker-size as number, marker-symbol, marker-color
               ...f.properties,
               ...styleAsCss,
               pattern: style.pattern,
+              ...simpleStyleMarker,
             }
           }
       }

@@ -221,6 +221,11 @@ export function painter(symbology) {
         opacity,
       }
       const markerStyle = mergeStyles(simpleMarkerStyle, calculatedMarkerStyle, defaultMarkerStyle);
+
+      if (markerStyle.color?.match(/^[a-fA-F0-9]{3,6}$/)) {
+        markerStyle.color = "#" + markerStyle.color;
+      }
+
       return markerStyle;
     } else {
       const geoJsonCssStyle = readGeoJsonCss(feature);

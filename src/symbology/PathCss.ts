@@ -47,13 +47,11 @@ const markerSizeToNumber = {
 }
 export function readSimpleStyle(f: Feature): SimpleStyle {
   let markerColor = getNonEmpty(f.properties?.["marker-color"]);
-  if (markerColor !== undefined && markerColor?.charAt(0) !== "#") {
-    markerColor = "#" + markerColor;
-  }
 
-  let markerSize = getNonEmpty(f.properties?.["marker-size"]);
+  const markerSizeRaw = f.properties?.["marker-size"];
+  let markerSize = typeof markerSizeRaw === "number" ? markerSizeRaw : getNonEmpty(f.properties?.["marker-size"]);
   let markerSizeNumber: number | undefined = undefined;
-  if (markerSize) {
+  if (markerSize !== undefined) {
     try {
       markerSizeNumber = Number(markerSize);
     } catch (error) {
