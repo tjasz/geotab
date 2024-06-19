@@ -75,7 +75,7 @@ export function ExportView() {
         "marker-symbol": style.symbol,
         "marker-color": style.color,
         "marker-size": style.size,
-        "marker-rotation": style.rotation,
+        "marker-rotation": style.rotation ? style.rotation : undefined,
       }
       switch (formatSelection) {
         case "geojson+css":
