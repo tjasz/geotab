@@ -85,9 +85,10 @@ export function ExportView() {
             style: styleAsCss,
           };
         case "geojson+simplestyle":
+          // TODO try to convert symbol names to Maki icon names
+          // TODO convert marker-size number into marker-size "small" | "medium" | "large"
           return {
             ...f, properties: {
-              // TODO pass the following SimpleStyle props: marker-size, marker-symbol, marker-color
               ...f.properties,
               ...styleAsCss,
               ...simpleStyleMarker,
@@ -106,9 +107,9 @@ export function ExportView() {
               color = color.slice(0, 4);
             }
           }
+          // TODO try to convert symbol names to CalTopo compatible names
           return {
             ...f, properties: {
-              // TODO pass the following CalTopo props: marker-rotation, marker-size as number, marker-symbol, marker-color
               ...f.properties,
               ...styleAsCss,
               pattern: style.pattern,
