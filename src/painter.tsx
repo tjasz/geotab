@@ -225,6 +225,9 @@ export function painter(symbology) {
       if (markerStyle.color?.match(/^[a-fA-F0-9]{3,6}$/)) {
         markerStyle.color = "#" + markerStyle.color;
       }
+      // TODO set opacity as part of color
+      const colorObj = new Color(markerStyle.color!).to("srgb");
+      markerStyle.color = colorObj.toString({ format: "hex" }); // `hsla(${colorObj.hsl.h}, ${colorObj.hsl.s}%, ${colorObj.hsl.l}%, ${markerStyle.opacity ?? 1})`;
 
       return markerStyle;
     } else {
@@ -271,12 +274,9 @@ export function painter(symbology) {
 }
 
 export function markerStyleToMarker(latlng: L.LatLngExpression, markerStyle: MarkerStyle) {
-  const colorObj = new Color(markerStyle.color!);
-  const colorDisplay = `hsla(${colorObj.hsl.h}, ${colorObj.hsl.s}%, ${colorObj.hsl.l}%, ${markerStyle.opacity ?? 1})`;
-
   // TODO handle URL in "marker-symbol"?
   const markerPath = getPathForMarker(markerStyle.symbol)!;
 
   // TODO handle marker rotation
-  return SvgPathMarker(latlng, markerPath, colorDisplay, undefined, markerStyle.size! * 15, markerStyle.size! * 15);
+  return SvgPathMarker(latlng, markerPath, markerStyle.color, undefined, markerStyle.size! * 15, markerStyle.size! * 15);
 }
