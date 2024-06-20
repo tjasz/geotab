@@ -128,6 +128,12 @@ export function ExportView() {
           const compatibility = makiCompatibility.find(i => i.maki === markerSymbol);
           if (compatibility !== undefined) {
             markerSymbol = compatibility.compatible;
+          } else {
+            if (markerSymbol.includes("temaki")) {
+              markerSymbol = `https://raw.githubusercontent.com/rapideditor/temaki/main/icons/${markerSymbol.replace("temaki-", "")}.svg`;
+            } else {
+              markerSymbol = `https://raw.githubusercontent.com/mapbox/maki/main/icons/${markerSymbol}.svg`;
+            }
           }
 
           return {
