@@ -2,6 +2,7 @@ import L from "leaflet";
 import math from "./math";
 import Svg from "./PatternRenderer/Svg";
 import { makiPaths, temakiPaths } from "./iconPaths";
+import { makiCompatibility } from "./maki-compatibility";
 
 export function svgMarker(
   latlng: L.LatLngExpression,
@@ -313,15 +314,13 @@ export function getPathForMarker(markerName: string | undefined): string | undef
   if (!markerName?.length) {
     return undefined;
   }
-  for (const groupKey of Object.keys(markersLibrary)) {
-    const group = markersLibrary[groupKey];
-    for (const marker of group) {
-      if (marker.label === markerName) {
-        return marker.pattern;
-      }
-    }
+  if (markerName !== undefined && !(markerName in makiPaths || markerName in temakiPaths)) {
+    markerName = makiCompatibility.find(i => i.compatible === markerName)?.maki;
   }
-  return undefined;
+  if (!markerName?.length) {
+    return undefined;
+  }
+  return makiPaths[markerName] ?? temakiPaths[markerName];
 }
 
 export const markersLibraryFlat = [
