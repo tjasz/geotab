@@ -280,7 +280,7 @@ export function painter(symbology) {
 
 export function markerStyleToMarker(latlng: L.LatLngExpression, markerStyle: MarkerStyle) {
   // TODO handle URL in "marker-symbol"?
-  const markerPath = getPathForMarker(markerStyle.symbol)!;
+  const markerPath = getPathForMarker(markerStyle.symbol) ?? markersLibrary.Points[0].pattern;
 
   // TODO handle marker rotation
   return SvgPathMarker(latlng, markerPath, markerStyle.color, undefined, markerStyle.size! * 15, markerStyle.size! * 15);
