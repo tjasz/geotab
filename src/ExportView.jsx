@@ -3,6 +3,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import { buffer, union } from "@turf/turf";
 import { DataContext } from "./dataContext";
 import { painter } from "./painter"
+import { makiCompatibility } from "./maki-compatibility";
 
 const featureOptions = ["all", "filtered", "selected"];
 const formatOptions = ["geojson", "geojson+css", "geojson+simplestyle", "geojson+caltopo"];
@@ -122,7 +123,12 @@ export function ExportView() {
             }
           }
 
-          // TODO try to convert symbol names to CalTopo compatible names
+          // try to convert symbol names to CalTopo compatible names
+          let markerSymbol = simpleStyleMarker["marker-symbol"];
+          const compatibility = makiCompatibility.find(i => i.maki === markerSymbol);
+          if (compatibility !== undefined) {
+            markerSymbol = compatibility.compatible;
+          }
 
           return {
             ...f, properties: {
@@ -131,6 +137,7 @@ export function ExportView() {
               pattern: style.pattern,
               ...simpleStyleMarker,
               "marker-color": color,
+              "marker-symbol": markerSymbol,
             }
           }
       }

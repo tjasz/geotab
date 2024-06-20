@@ -322,12 +322,3 @@ export function getPathForMarker(markerName: string | undefined): string | undef
   }
   return makiPaths[markerName] ?? temakiPaths[markerName];
 }
-
-export const markersLibraryFlat = [
-  ...markersLibrary.Points,
-  ...markersLibrary.Arrows,
-  ...markersLibrary.Pins,
-  ...markersLibrary.Recreation,
-  ...markersLibrary.Maki,
-  ...markersLibrary.Temaki,
-];
