@@ -45,32 +45,34 @@ export function SvgSelectorDialog(props: SvgSelectorDialogProps) {
       <DialogContent>
         {props.description}
         Search:
-        <input type="text" onChange={e => setSearchString(e.target.value)} />
-        {Object.keys(props.options).map(group => {
-          return <div key={group} style={{ display: "block", clear: "both" }}>
-            <p>
-              {group}
-            </p>
-            {props.options[group]
-              .map(option => {
-                return <div
-                  key={`${option.label}: ${option.pattern}`}
-                  title={option.label}
-                  style={{
-                    float: "left",
-                    margin: 5,
-                    visibility: searchString !== null && option.label.includes(searchString) ? "visible" : "hidden"
-                  }}
-                >
-                  {props.onOptionRender(
-                    option,
-                    () => props.onConfirm(option),
-                    { cursor: "pointer", backgroundColor: "#eee", margin: 5 }
-                  )}
-                </div>
-              })}
-          </div>
-        })}
+        <input type="text" onChange={e => setSearchString(e.target.value)} defaultValue={searchString ?? ""} />
+        {Object.keys(props.options)
+          .filter(group => searchString !== null && props.options[group].some(option => option.label.includes(searchString)))
+          .map(group => {
+            return <div key={group} style={{ display: "block", clear: "both" }}>
+              <p>
+                {group}
+              </p>
+              {props.options[group]
+                .filter(option => searchString !== null && option.label.includes(searchString))
+                .map(option => {
+                  return <div
+                    key={`${option.label}: ${option.pattern}`}
+                    title={option.label}
+                    style={{
+                      float: "left",
+                      margin: 5,
+                    }}
+                  >
+                    {props.onOptionRender(
+                      option,
+                      () => props.onConfirm(option),
+                      { cursor: "pointer", backgroundColor: "#eee", margin: 5 }
+                    )}
+                  </div>
+                })}
+            </div>
+          })}
 
       </DialogContent>
     </Dialog>
