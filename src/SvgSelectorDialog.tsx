@@ -37,29 +37,38 @@ type SvgSelectorDialogProps = {
 };
 
 export function SvgSelectorDialog(props: SvgSelectorDialogProps) {
+  const [searchString, setSearchString] = useState<string | null>(null);
+
   return (
     <Dialog onClose={props.onCancel} open={props.open}>
       <DialogTitle>{props.title}</DialogTitle>
       <DialogContent>
         {props.description}
+        Search:
+        <input type="text" onChange={e => setSearchString(e.target.value)} />
         {Object.keys(props.options).map(group => {
           return <div key={group} style={{ display: "block", clear: "both" }}>
             <p>
               {group}
             </p>
-            {props.options[group].map(option => {
-              return <div
-                key={`${option.label}: ${option.pattern}`}
-                title={option.label}
-                style={{ float: "left", margin: 5 }}
-              >
-                {props.onOptionRender(
-                  option,
-                  () => props.onConfirm(option),
-                  { cursor: "pointer", backgroundColor: "#eee", margin: 5 }
-                )}
-              </div>
-            })}
+            {props.options[group]
+              .map(option => {
+                return <div
+                  key={`${option.label}: ${option.pattern}`}
+                  title={option.label}
+                  style={{
+                    float: "left",
+                    margin: 5,
+                    visibility: searchString !== null && option.label.includes(searchString) ? "visible" : "hidden"
+                  }}
+                >
+                  {props.onOptionRender(
+                    option,
+                    () => props.onConfirm(option),
+                    { cursor: "pointer", backgroundColor: "#eee", margin: 5 }
+                  )}
+                </div>
+              })}
           </div>
         })}
 
