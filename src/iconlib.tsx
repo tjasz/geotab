@@ -3,6 +3,7 @@ import math from "./math";
 import Svg from "./PatternRenderer/Svg";
 import { makiPaths, temakiPaths } from "./iconPaths";
 import { makiCompatibility } from "./maki-compatibility";
+import { SvgOptions } from "./symbology/SvgOptions";
 
 export function svgMarker(
   latlng: L.LatLngExpression,
@@ -183,8 +184,7 @@ function fromSvgArray(svgArray: string[]) {
 // const makiPaths = fromSvgArray(svgArray)
 // const temakiPaths = fromSvgArray(temakiSvgArray)
 
-// TODO reuse SvgPatternWithLabel
-export const markersLibrary = {
+export const markersLibrary: SvgOptions = {
   Points: [
     { label: "circle", pattern: makiPaths.circle },
     { label: "circle-stroked", pattern: makiPaths["circle-stroked"] },

@@ -1,9 +1,4 @@
-export type SvgPatternWithLabel = {
-  label: string;
-  pattern: string;
-}
-
-export type SvgOptions = { [group: string]: SvgPatternWithLabel[] };
+import { SvgOptions } from "./SvgOptions"
 
 export const linePatternOptions: SvgOptions = {
   "Basic": [
