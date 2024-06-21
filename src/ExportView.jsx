@@ -90,7 +90,7 @@ export function ExportView() {
           // but MapBox's own geojson.io accepts any valid CSS color definition.
           // Do no color conversion here.
 
-          // TODO try to convert symbol names to Maki icon names
+          // marker-symbol names should already be Maki or Temaki. Do not conversion here.
 
           // convert marker-size number into marker-size "small" | "medium" | "large"
           let markerSizeName = "medium";

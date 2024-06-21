@@ -220,6 +220,15 @@ export function painter(symbology) {
       if (simpleMarkerStyle.color?.match(/^#([a-fA-F0-9]{4}|[a-fA-F0-9]{8})$/)) {
         simpleMarkerStyle.opacity = new Color(simpleMarkerStyle.color).alpha;
       }
+      // TODO handle external URLs as marker symbols
+      // Convert URLs from Maki and Temaki repos back into icon IDs
+      if (simpleMarkerStyle.symbol?.match(/https:\/\/raw.githubusercontent.com/)) {
+        const pathParts = simpleMarkerStyle.symbol.split("/");
+        simpleMarkerStyle.symbol = pathParts[pathParts.length - 1].replace(".svg", "");
+        if (pathParts.includes("temaki")) {
+          simpleMarkerStyle.symbol = "temaki-" + simpleMarkerStyle.symbol;
+        }
+      }
 
       const calculatedMarkerStyle: MarkerStyle = {
         symbol: interpolation(symbology?.markerSymbol, feature)?.label, // TODO or a star based on interpolation(symbology?.shape, feature)
