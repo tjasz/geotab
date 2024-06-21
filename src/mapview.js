@@ -2,7 +2,7 @@ import React, { useRef, useContext, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import ReactDOMServer from "react-dom/server";
 import { v4 as uuidv4 } from "uuid";
-import L from "leaflet";
+import L, { marker } from "leaflet";
 import "leaflet.locatecontrol";
 import "leaflet.locatecontrol/dist/L.Control.Locate.min.css";
 import { createControlComponent } from '@react-leaflet/core'
@@ -23,10 +23,11 @@ import AbridgedUrlLink from "./common/AbridgedUrlLink";
 import { DataContext } from "./dataContext";
 import { getCentralCoord, hashCode, getFeatureListBounds } from "./algorithm";
 import mapLayers from "./maplayers";
-import { painter } from "./painter";
+import { painter, markerStyleToMarker } from "./symbology/painter";
 import { addHover, removeHover, toggleActive } from "./selection";
 import { FeatureType, GeometryType } from "./geojson-types";
 import { LeafletButton } from "./LeafletButton"
+import { SvgPatternRenderer } from "./PatternRenderer/SvgPatternRenderer"
 
 function MapView(props) {
   const context = useContext(DataContext);
@@ -44,8 +45,9 @@ function MapView(props) {
     if (layer.setStyle instanceof Function) {
       layer.setStyle(style);
     } else {
+      const marker = markerStyleToMarker([0, 0], style);
       layer.setIcon(
-        L.divIcon({ className: "", html: style.options.icon.options.html }),
+        L.divIcon({ className: "", html: marker.options.icon.options.html }),
       );
     }
   };
@@ -58,6 +60,7 @@ function MapView(props) {
         scrollWheelZoom={true}
         ref={mapRef}
         whenReady={() => resizeMap(mapRef)}
+        renderer={new SvgPatternRenderer()}
       >
         <ChangeView />
         <ScaleControl position="bottomleft" />
@@ -65,7 +68,11 @@ function MapView(props) {
           data={features}
           key={hashCode(JSON.stringify(features))}
           style={painter(context.symbology)}
-          pointToLayer={painter(context.symbology)}
+          pointToLayer={(feature, latlng) => {
+            const painterInstance = painter(context.symbology);
+            const style = painterInstance(feature);
+            return markerStyleToMarker(latlng, style);
+          }}
           onEachFeature={(feature, layer) => {
             context.setFeatureListener(
               "map",

@@ -2,7 +2,7 @@ import React from "react";
 import * as GeoJson from "./geojson-types";
 import { Column } from "./column";
 import { ConditionGroup } from "./filter";
-import { Symbology } from "./painter";
+import { Symbology } from "./symbology/painter";
 
 export type GeotabMetadata = {
   columns: Column[]; // TODO define column definition type

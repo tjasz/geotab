@@ -1,7 +1,5 @@
 import React, { useContext, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import CircularProgress from "@mui/material/CircularProgress";
-import { buffer, combine, union } from "@turf/turf";
 import { DataContext } from "./dataContext";
 import {
   defaultFilter,
@@ -22,6 +20,7 @@ import { Select } from "./common-components";
 import { LabeledCheckbox } from "./LabeledCheckbox";
 import { parseFile, attachProgress } from "./readfile";
 import { simplify } from "./geojson-calc";
+import { ExportView } from "./ExportView";
 
 function DataView(props) {
   const context = useContext(DataContext);
@@ -191,135 +190,6 @@ function FileImporter({ onRead }) {
         Process
       </button>
       <span style={{ paddingLeft: 10 }} id="file-progress"></span>
-    </div>
-  );
-}
-
-function ExportView(props) {
-  const context = useContext(DataContext);
-  const [exportOption, setExportOption] = useState("all");
-  const [isLoading, setIsLoading] = useState(false);
-  const isActive = (feature) => {
-    const status = feature.properties["geotab:selectionStatus"];
-    return status !== undefined && !status.includes("inactive");
-  };
-
-  const createBuffer = (features) => {
-    const bufferDistances = [0.1, 0.2, 0.4, 0.8, 1.6];
-    const bufferFeatures = bufferDistances.map((dist) =>
-      features
-        .slice(1)
-        .reduce(
-          (cumulativeBuffer, feature) =>
-            union(
-              cumulativeBuffer,
-              buffer(feature, dist, { units: "kilometers" }),
-              { properties: { bufferDistance: dist } },
-            ),
-          buffer(features[0], dist, { units: "kilometers" }),
-        ),
-    );
-    return {
-      type: "FeatureCollection",
-      features: bufferFeatures,
-    };
-  };
-
-  const createExportFeature = (
-    includeHidden,
-    filterFunc = (f) => true,
-    buffer = false,
-  ) => {
-    const features = (
-      includeHidden ? context.data : context.filteredData
-    ).filter(filterFunc);
-    return buffer
-      ? createBuffer(features)
-      : {
-          type: "FeatureCollection",
-          features,
-          geotabMetadata: {
-            columns: context.columns,
-            filter: context.filter,
-            symbology: context.symbology,
-          },
-        };
-  };
-
-  const exportToFile = (featureCollection) => {
-    const textContent = JSON.stringify(featureCollection);
-    const file = new Blob([textContent], { type: "text/plain" });
-    const downloadLink = document.createElement("a");
-    downloadLink.href = URL.createObjectURL(file);
-    downloadLink.download = "geotabExport.json";
-    document.body.appendChild(downloadLink); // Required for this to work in FireFox
-    downloadLink.click();
-  };
-
-  const doExport = () => {
-    // set parameters from export option
-    var includeHidden = true;
-    var filter = (f) => true;
-    var buffer = false;
-    switch (exportOption) {
-      case "all":
-        break;
-      case "filtered":
-        includeHidden = false;
-        break;
-      case "selected":
-        includeHidden = false;
-        filter = isActive;
-        break;
-      case "bufferAll":
-        buffer = true;
-        break;
-      case "bufferFiltered":
-        includeHidden = false;
-        buffer = true;
-        break;
-      case "bufferSelected":
-        includeHidden = false;
-        filter = isActive;
-        buffer = true;
-        break;
-    }
-
-    const featureCollection = createExportFeature(
-      includeHidden,
-      filter,
-      buffer,
-    );
-    exportToFile(featureCollection);
-    setIsLoading(false);
-  };
-
-  return (
-    <div id="exportView">
-      <h3>Export</h3>
-      <select
-        defaultValue={exportOption}
-        onChange={(ev) => setExportOption(ev.target.value)}
-      >
-        <option value="all">All</option>
-        <option value="filtered">Filtered</option>
-        <option value="selected">Selected</option>
-        <option value="bufferAll">Buffer (All)</option>
-        <option value="bufferFiltered">Buffer (Filtered)</option>
-        <option value="bufferSelected">Buffer (Selected)</option>
-      </select>
-      {isLoading ? (
-        <CircularProgress />
-      ) : (
-        <button
-          onClick={() => {
-            setIsLoading(true);
-            setTimeout(doExport, 0);
-          }}
-        >
-          Export
-        </button>
-      )}
     </div>
   );
 }

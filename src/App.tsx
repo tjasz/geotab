@@ -17,10 +17,10 @@ import { GoogleSessionContainer } from "./google-drive";
 import { getFeatures, getPropertiesUnion } from "./algorithm";
 import { FieldTypeDescription } from "./fieldtype";
 import { Column } from "./column";
-import { Symbology } from "./painter";
+import { Symbology } from "./symbology/painter";
 import { add_operations } from "./json-logic/root";
 
-interface IAppProps {}
+interface IAppProps { }
 
 type IState = DataContextType;
 
