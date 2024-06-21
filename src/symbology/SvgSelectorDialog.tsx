@@ -1,9 +1,9 @@
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
-import { pointsToPatternPath } from "./PatternRenderer/SvgPatternRenderer";
+import { pointsToPatternPath } from "../PatternRenderer/SvgPatternRenderer";
 import React, { useState } from "react";
-import { SvgOptions, SvgPatternWithLabel } from "./symbology/linePatternOptions";
+import { SvgOptions, SvgPatternWithLabel } from "./linePatternOptions";
 
 type SvgSelectProps = {
   value: SvgPatternWithLabel;

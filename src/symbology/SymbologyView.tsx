@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import { DataContext } from "../dataContext";
 import ColoredText from "./ColoredText";
-import { SvgPathPreview, SvgPatternPreview, SvgSelect } from "../SvgSelectorDialog"
+import { SvgPathPreview, SvgPatternPreview, SvgSelect } from "./SvgSelectorDialog"
 import { linePatternOptions } from "./linePatternOptions"
 import { SymbologyPropertyView } from "./SymbologyPropertyView"
 import { NumericSymbologyPropertyView } from "./NumericSymbologyPropertyView"
