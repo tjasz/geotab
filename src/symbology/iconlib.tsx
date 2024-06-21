@@ -1,9 +1,9 @@
 import L from "leaflet";
-import math from "./math";
-import Svg from "./PatternRenderer/Svg";
+import math from "../math";
+import Svg from "../PatternRenderer/Svg";
+import { makiCompatibility } from "../maki-compatibility";
 import { makiPaths, temakiPaths } from "./iconPaths";
-import { makiCompatibility } from "./maki-compatibility";
-import { SvgOptions } from "./symbology/SvgOptions";
+import { SvgOptions } from "./SvgOptions";
 
 export function svgMarker(
   latlng: L.LatLngExpression,

@@ -5,7 +5,7 @@ import { SvgPathPreview, SvgPatternPreview, SvgSelect } from "./SvgSelectorDialo
 import { linePatternOptions } from "./linePatternOptions"
 import { SymbologyPropertyView } from "./SymbologyPropertyView"
 import { NumericSymbologyPropertyView } from "./NumericSymbologyPropertyView"
-import { markersLibrary } from "../iconlib";
+import { markersLibrary } from "./iconlib";
 
 export function SymbologyView(props) {
   const context = useContext(DataContext);

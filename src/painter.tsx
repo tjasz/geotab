@@ -1,4 +1,4 @@
-import { getPathForMarker, markersLibrary, StarMarker, SvgPathMarker } from "./iconlib";
+import { getPathForMarker, markersLibrary, StarMarker, SvgPathMarker } from "./symbology/iconlib";
 import { toType } from "./fieldtype";
 import * as GeoJson from "./geojson-types";
 import { FieldTypeDescription } from "./fieldtype";
