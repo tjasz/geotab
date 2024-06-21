@@ -23,7 +23,7 @@ import AbridgedUrlLink from "./common/AbridgedUrlLink";
 import { DataContext } from "./dataContext";
 import { getCentralCoord, hashCode, getFeatureListBounds } from "./algorithm";
 import mapLayers from "./maplayers";
-import { painter, markerStyleToMarker } from "./painter";
+import { painter, markerStyleToMarker } from "./symbology/painter";
 import { addHover, removeHover, toggleActive } from "./selection";
 import { FeatureType, GeometryType } from "./geojson-types";
 import { LeafletButton } from "./LeafletButton"

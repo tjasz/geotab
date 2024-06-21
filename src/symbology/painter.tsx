@@ -1,9 +1,9 @@
-import { getPathForMarker, markersLibrary, StarMarker, SvgPathMarker } from "./symbology/iconlib";
-import { toType } from "./fieldtype";
-import * as GeoJson from "./geojson-types";
-import { FieldTypeDescription } from "./fieldtype";
-import { mergeStyles, readSimpleStyle, readGeoJsonCss, PathCss, MarkerStyle } from "./symbology/PathCss";
+
 import Color from "colorjs.io"
+import { toType, FieldTypeDescription } from "../fieldtype";
+import * as GeoJson from "../geojson-types";
+import { getPathForMarker, markersLibrary, StarMarker, SvgPathMarker } from "./iconlib";
+import { mergeStyles, readSimpleStyle, readGeoJsonCss, PathCss, MarkerStyle } from "./PathCss";
 
 export enum SymbologyMode {
   ByValue = "byvalue",

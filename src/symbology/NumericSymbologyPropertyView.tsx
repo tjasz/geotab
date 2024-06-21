@@ -1,5 +1,5 @@
 import { Slider } from "@mui/material"
-import { SymbologyProperty } from "../painter";
+import { SymbologyProperty } from "./painter";
 import { SymbologyPropertyView } from "./SymbologyPropertyView"
 
 export type NumericSymbologyPropertyViewProps = {

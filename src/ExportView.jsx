@@ -2,7 +2,7 @@ import React, { useContext, useState } from "react";
 import CircularProgress from "@mui/material/CircularProgress";
 import { buffer, union } from "@turf/turf";
 import { DataContext } from "./dataContext";
-import { painter } from "./painter"
+import { painter } from "./symbology/painter"
 import { makiCompatibility } from "./maki-compatibility";
 
 const featureOptions = ["all", "filtered", "selected"];

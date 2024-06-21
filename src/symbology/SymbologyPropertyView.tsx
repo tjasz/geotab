@@ -3,7 +3,7 @@ import { Histogram, Select } from "../common-components";
 import { DataContext } from "../dataContext";
 import { FieldTypeDescription, toType } from "../fieldtype";
 import { LabeledCheckbox } from "../LabeledCheckbox";
-import { modesForType, symbologyModes, SymbologyProperty } from "../painter";
+import { modesForType, symbologyModes, SymbologyProperty } from "./painter";
 import { Slider } from "@mui/material";
 import MultiTextField from "./MultiTextField";
 // @ts-expect-error
