@@ -1,4 +1,3 @@
-
 export type SvgPatternWithLabel = {
   label: string;
   pattern: string;
@@ -6,7 +5,7 @@ export type SvgPatternWithLabel = {
 
 export type SvgOptions = { [group: string]: SvgPatternWithLabel[] };
 
-export const options: SvgOptions = {
+export const linePatternOptions: SvgOptions = {
   "Basic": [
     { label: "solid", pattern: "solid", },
     { label: "dots", pattern: "M0 0L0 2,2,4,F", },

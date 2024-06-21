@@ -3,7 +3,7 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import { pointsToPatternPath } from "./PatternRenderer/SvgPatternRenderer";
 import React, { useState } from "react";
-import { SvgOptions, SvgPatternWithLabel } from "./PatternRenderer/options";
+import { SvgOptions, SvgPatternWithLabel } from "./symbology/linePatternOptions";
 
 type SvgSelectProps = {
   value: SvgPatternWithLabel;

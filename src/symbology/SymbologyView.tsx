@@ -2,7 +2,7 @@ import { useContext, useState } from "react";
 import { DataContext } from "../dataContext";
 import ColoredText from "./ColoredText";
 import { SvgPathPreview, SvgPatternPreview, SvgSelect } from "../SvgSelectorDialog"
-import { options as svgPatternOptions } from "../PatternRenderer/options"
+import { linePatternOptions } from "./linePatternOptions"
 import { SymbologyPropertyView } from "./SymbologyPropertyView"
 import { NumericSymbologyPropertyView } from "./NumericSymbologyPropertyView"
 import { markersLibrary } from "../iconlib";
@@ -111,13 +111,13 @@ function SymbologyDefinition({ symbology, onSave }) {
         onEdit={(linePatternDef) => {
           updateDraft({ ...draft, linePattern: linePatternDef });
         }}
-        placeholderValue={svgPatternOptions.Basic[0]}
+        placeholderValue={linePatternOptions.Basic[0]}
         onRenderSelector={(value, onChange, key) => {
           return <SvgSelect
             key={key}
             value={value}
             onChange={option => onChange(option)}
-            options={svgPatternOptions}
+            options={linePatternOptions}
             onOptionRender={(option, onClick, style) => {
               return <SvgPatternPreview
                 width={100}
