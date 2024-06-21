@@ -47,14 +47,14 @@ export function SvgSelectorDialog(props: SvgSelectorDialogProps) {
         Search:
         <input type="text" onChange={e => setSearchString(e.target.value)} defaultValue={searchString ?? ""} />
         {Object.keys(props.options)
-          .filter(group => searchString !== null && props.options[group].some(option => option.label.includes(searchString)))
+          .filter(group => searchString === null || props.options[group].some(option => option.label.includes(searchString)))
           .map(group => {
             return <div key={group} style={{ display: "block", clear: "both" }}>
               <p>
                 {group}
               </p>
               {props.options[group]
-                .filter(option => searchString !== null && option.label.includes(searchString))
+                .filter(option => searchString === null || option.label.includes(searchString))
                 .map(option => {
                   return <div
                     key={`${option.label}: ${option.pattern}`}
