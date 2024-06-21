@@ -125,14 +125,16 @@ export function ExportView() {
 
           // try to convert symbol names to CalTopo compatible names
           let markerSymbol = simpleStyleMarker["marker-symbol"];
-          const compatibility = makiCompatibility.find(i => i.maki === markerSymbol);
-          if (compatibility !== undefined) {
-            markerSymbol = compatibility.compatible;
-          } else {
-            if (markerSymbol.includes("temaki")) {
-              markerSymbol = `https://raw.githubusercontent.com/rapideditor/temaki/main/icons/${markerSymbol.replace("temaki-", "")}.svg`;
+          if (markerSymbol !== undefined) {
+            const compatibility = makiCompatibility.find(i => i.maki === markerSymbol);
+            if (compatibility !== undefined) {
+              markerSymbol = compatibility.compatible;
             } else {
-              markerSymbol = `https://raw.githubusercontent.com/mapbox/maki/main/icons/${markerSymbol}.svg`;
+              if (markerSymbol.includes("temaki")) {
+                markerSymbol = `https://raw.githubusercontent.com/rapideditor/temaki/main/icons/${markerSymbol.replace("temaki-", "")}.svg`;
+              } else {
+                markerSymbol = `https://raw.githubusercontent.com/mapbox/maki/main/icons/${markerSymbol}.svg`;
+              }
             }
           }
 
