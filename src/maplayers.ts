@@ -120,6 +120,18 @@ const overlays = [
     attribution:
       'Map data &copy; <a href="https://basemap.nationalmap.gov/arcgis/rest/services/USGSShadedReliefOnly/MapServer">USGS</a>',
   },
+  {
+    type: "TileLayer",
+    name: "Strava Heatmap",
+    geotabId: "sheat",
+    checked: false,
+    maxZoom: 12,
+    tileSize: 512,
+    zoomOffset: -1,
+    url: "https://heatmap-external-a.strava.com/tiles/all/orange/{z}/{x}/{y}.png",
+    attribution:
+      'Heatmap &copy; <a href="https://www.strava.com">Strava</a>',
+  },
 ];
 
 export const mapLayers = {
