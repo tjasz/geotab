@@ -15,29 +15,57 @@ export function geoJsonToGpx(featureCollection: FeatureCollection) {
   console.log({ featureCollection, geoJsonPoints, waypoints, geoJsonLineStrings, routes })
 
   return `<gpx version="1.1" creator="geotab">
-    ${waypoints.join("\n")}
-    ${routes.join("\n")}
-    </gpx>`
+  ${waypoints.join("\n")}
+  ${routes.join("\n")}
+</gpx>`
 }
 
 function pointToWaypoint(feature: Feature) {
   if (feature.geometry.type === GeometryType.Point) {
-    return `<wpt lat="${feature.geometry.coordinates[1]}}" lon="${feature.geometry.coordinates[0]}">
-        ${feature.geometry.coordinates[2] ? "<ele>" + feature.geometry.coordinates[2] + "</ele>" : ""}
-        ${feature.properties.name ? "<name>" + feature.properties.name + "</name>" : ""}
-      </wpt>`;
+    return `<wpt lat="${feature.geometry.coordinates[1]}" lon="${feature.geometry.coordinates[0]}">
+  ${feature.geometry.coordinates[2] ? "<ele>" + feature.geometry.coordinates[2] + "</ele>" : ""}
+  ${nameTag(feature)}
+  ${cmtTag(feature)}
+  ${descTag(feature)}
+</wpt>`;
   }
 }
 
 function lineStringToRoute(feature: Feature) {
   if (feature.geometry.type === GeometryType.LineString) {
     return `<rte>
-        ${feature.properties.name ? "<name>" + feature.properties.name + "</name>" : ""}
-        ${feature.geometry.coordinates.map(coord =>
-      `<rtept lat="${coord[1]}" lon="${coord[0]}">
-              ${coord[2] ? "<ele>" + coord[2] + "</ele>" : ""}
-            </rtept>`
-    ).join("\n")}
-      </rte>`;
+  ${nameTag(feature)}
+  ${cmtTag(feature)}
+  ${descTag(feature)}
+  ${feature.geometry.coordinates.map(coord =>
+      `  <rtept lat="${coord[1]}" lon="${coord[0]}">
+    ${coord[2] ? "<ele>" + coord[2] + "</ele>" : ""}
+  </rtept>`).join("\n")}
+</rte>`;
   }
+}
+
+function nameTag(feature: Feature) {
+  const name = feature.properties.name ?? feature.properties.title;
+  if (name) {
+    return `<name>${name}</name>`;
+  }
+  return '';
+}
+
+function cmtTag(feature: Feature) {
+  const comment = feature.properties.cmt ?? feature.properties.comment;
+  if (comment) {
+    return `<cmt>${comment}</cmt>`;
+  }
+  return '';
+}
+
+function descTag(feature: Feature) {
+  const description = feature.properties.desc
+    ?? feature.properties.description;
+  if (description) {
+    return `<desc>${description}</desc>`;
+  }
+  return '';
 }
