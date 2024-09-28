@@ -48,7 +48,7 @@ function lineStringToRoute(feature: Feature) {
 function nameTag(feature: Feature) {
   const name = feature.properties.name ?? feature.properties.title;
   if (name) {
-    return `<name>${name}</name>`;
+    return `<name>${escape(name)}</name>`;
   }
   return '';
 }
@@ -56,7 +56,7 @@ function nameTag(feature: Feature) {
 function cmtTag(feature: Feature) {
   const comment = feature.properties.cmt ?? feature.properties.comment;
   if (comment) {
-    return `<cmt>${comment}</cmt>`;
+    return `<cmt>${escape(comment)}</cmt>`;
   }
   return '';
 }
@@ -65,7 +65,16 @@ function descTag(feature: Feature) {
   const description = feature.properties.desc
     ?? feature.properties.description;
   if (description) {
-    return `<desc>${description}</desc>`;
+    return `<desc>${escape(description)}</desc>`;
   }
   return '';
+}
+
+function escape(str: string) {
+  return str
+    .replaceAll("&", "&amp;")
+    .replaceAll(">", "&gt;")
+    .replaceAll("<", "&lt;")
+    .replaceAll("'", "&39;")
+    .replaceAll('"', "&34;")
 }
