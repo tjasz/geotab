@@ -14,38 +14,30 @@ export function geoJsonToGpx(featureCollection: FeatureCollection) {
   // TODO other geometry types
   console.log({ featureCollection, geoJsonPoints, waypoints, geoJsonLineStrings, routes })
 
-  return `
-    <gpx version="1.1" creator="geotab">
+  return `<gpx version="1.1" creator="geotab">
     ${waypoints.join("\n")}
     ${routes.join("\n")}
-    </gpx>
-  `
+    </gpx>`
 }
 
 function pointToWaypoint(feature: Feature) {
   if (feature.geometry.type === GeometryType.Point) {
-    return `
-      <wpt lat="${feature.geometry.coordinates[1]}}" lon="${feature.geometry.coordinates[0]}">
+    return `<wpt lat="${feature.geometry.coordinates[1]}}" lon="${feature.geometry.coordinates[0]}">
         ${feature.geometry.coordinates[2] ? "<ele>" + feature.geometry.coordinates[2] + "</ele>" : ""}
         ${feature.properties.name ? "<name>" + feature.properties.name + "</name>" : ""}
-      </wpt>
-    `;
+      </wpt>`;
   }
 }
 
 function lineStringToRoute(feature: Feature) {
   if (feature.geometry.type === GeometryType.LineString) {
-    return `
-      <rte>
+    return `<rte>
         ${feature.properties.name ? "<name>" + feature.properties.name + "</name>" : ""}
         ${feature.geometry.coordinates.map(coord =>
-      `
-            <rtept lat="${coord[1]}" lon="${coord[0]}">
+      `<rtept lat="${coord[1]}" lon="${coord[0]}">
               ${coord[2] ? "<ele>" + coord[2] + "</ele>" : ""}
-            </rtept>
-          `
+            </rtept>`
     ).join("\n")}
-      </rte>
-    `;
+      </rte>`;
   }
 }
