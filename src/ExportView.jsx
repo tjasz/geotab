@@ -4,9 +4,10 @@ import { buffer, union } from "@turf/turf";
 import { DataContext } from "./dataContext";
 import { painter } from "./symbology/painter"
 import { makiCompatibility } from "./maki-compatibility";
+import { geoJsonToGpx } from "./geojsonToGpx";
 
 const featureOptions = ["all", "filtered", "selected"];
-const formatOptions = ["geojson", "geojson+css", "geojson+simplestyle", "geojson+caltopo"];
+const formatOptions = ["geojson", "geojson+css", "geojson+simplestyle", "geojson+caltopo", "gpx"];
 export function ExportView() {
   const context = useContext(DataContext);
   const [featureSelection, setFeatureSelection] = useState(featureOptions[0]);
@@ -58,7 +59,7 @@ export function ExportView() {
 
     // add SimpleStyle properties from the symbology
     const painterInstance = painter(context.symbology);
-    const styledFeatures = formatSelection === "geojson" ? features : features.map(f => {
+    const styledFeatures = !formatSelection.includes("geojson") ? features : features.map(f => {
       const style = painterInstance(f);
       const styleAsCss = {
         stroke: style.stroke ? style.color : "none",
@@ -162,12 +163,11 @@ export function ExportView() {
     };
   };
 
-  const exportToFile = (featureCollection) => {
-    const textContent = JSON.stringify(featureCollection);
+  const exportToFile = (textContent, ext) => {
     const file = new Blob([textContent], { type: "text/plain" });
     const downloadLink = document.createElement("a");
     downloadLink.href = URL.createObjectURL(file);
-    downloadLink.download = "geotabExport.json";
+    downloadLink.download = `geotabExport.${ext}`;
     document.body.appendChild(downloadLink); // Required for this to work in FireFox
     downloadLink.click();
   };
@@ -194,7 +194,11 @@ export function ExportView() {
       doBuffer,
       formatSelection,
     );
-    exportToFile(featureCollection);
+    exportToFile(formatSelection === "gpx"
+      ? geoJsonToGpx(featureCollection)
+      : JSON.stringify(featureCollection),
+      formatSelection === "gpx" ? "gpx" : "json"
+    );
     setIsLoading(false);
   };
 

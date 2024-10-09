@@ -21,6 +21,7 @@ export function attachProgress(
 export function parseFile(file: File) {
   return new Promise((resolve, reject) => {
     readFileAsText(file).then((text) => {
+      text = text.trim();
       // guess file type based on first character of text
       if (text[0] === "{") {
         // geoJSON
@@ -256,9 +257,9 @@ function csvToGeoJSON(csvString: string): GeoJson.FeatureCollection {
         isNaN(lat) || isNaN(lon)
           ? null
           : {
-              type: "Point",
-              coordinates: [lon, lat],
-            };
+            type: "Point",
+            coordinates: [lon, lat],
+          };
       return {
         type: "Feature",
         geometry,
