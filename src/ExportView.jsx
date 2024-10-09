@@ -59,7 +59,7 @@ export function ExportView() {
 
     // add SimpleStyle properties from the symbology
     const painterInstance = painter(context.symbology);
-    const styledFeatures = !formatSelection.includes("+") ? features : features.map(f => {
+    const styledFeatures = !formatSelection.includes("geojson") ? features : features.map(f => {
       const style = painterInstance(f);
       const styleAsCss = {
         stroke: style.stroke ? style.color : "none",
