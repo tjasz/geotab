@@ -14,7 +14,7 @@ export function geoJsonToGpx(featureCollection: FeatureCollection) {
   // TODO other geometry types
   console.log({ featureCollection, geoJsonPoints, waypoints, geoJsonLineStrings, routes })
 
-  return `<gpx version="1.1" creator="geotab">
+  return `<?xml version="1.0"?><gpx xmlns="http://www.topografix.com/GPX/1/1" version="1.1" creator="geotab">
   ${waypoints.join("\n")}
   ${routes.join("\n")}
 </gpx>`
