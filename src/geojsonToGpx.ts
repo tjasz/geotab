@@ -9,12 +9,12 @@ export function geoJsonToGpx(featureCollection: FeatureCollection) {
 
   const geoJsonLineStrings = featureCollection.features
     .filter(feature => feature.geometry.type === GeometryType.LineString);
-  const routes = geoJsonLineStrings.map(lineStringToRoute);
+  const routes = geoJsonLineStrings.map(lineStringToTrack);
 
   // TODO other geometry types
   console.log({ featureCollection, geoJsonPoints, waypoints, geoJsonLineStrings, routes })
 
-  return `<gpx version="1.1" creator="geotab">
+  return `<?xml version="1.0"?><gpx xmlns="http://www.topografix.com/GPX/1/1" version="1.1" creator="geotab">
   ${waypoints.join("\n")}
   ${routes.join("\n")}
 </gpx>`
@@ -42,6 +42,22 @@ function lineStringToRoute(feature: Feature) {
     ${coord[2] ? "<ele>" + coord[2] + "</ele>" : ""}
   </rtept>`).join("\n")}
 </rte>`;
+  }
+}
+
+function lineStringToTrack(feature: Feature) {
+  if (feature.geometry.type === GeometryType.LineString) {
+    return `<trk>
+  ${nameTag(feature)}
+  ${cmtTag(feature)}
+  ${descTag(feature)}
+  <trkseg>
+  ${feature.geometry.coordinates.map(coord =>
+      `  <trkpt lat="${coord[1]}" lon="${coord[0]}">
+    ${coord[2] ? "<ele>" + coord[2] + "</ele>" : ""}
+  </trkpt>`).join("\n")}
+  </trkseg>
+</trk>`;
   }
 }
 
