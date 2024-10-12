@@ -6,7 +6,7 @@ export default function DataCellValue(props) {
   if (props.value === null || props.value === undefined || props.value === "") {
     return undefined;
   }
-  switch (props.column.type) {
+  switch (props.column?.type) {
     case "number":
       return Number(props.value);
     case "date":

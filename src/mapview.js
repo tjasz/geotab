@@ -28,6 +28,7 @@ import { addHover, removeHover, toggleActive } from "./selection";
 import { FeatureType, GeometryType } from "./geojson-types";
 import { LeafletButton } from "./LeafletButton"
 import { SvgPatternRenderer } from "./PatternRenderer/SvgPatternRenderer"
+import DataCellValue from "./table/DataCellValue"
 
 function MapView(props) {
   const context = useContext(DataContext);
@@ -134,7 +135,7 @@ function MapView(props) {
               },
             });
             layer.bindPopup(
-              ReactDOMServer.renderToString(<PopupBody feature={feature} />),
+              ReactDOMServer.renderToString(<PopupBody feature={feature} columns={context.columns} />),
             );
           }}
         />
@@ -154,7 +155,7 @@ function ActivePopup(props) {
   );
 }
 
-function PopupBody({ feature }) {
+function PopupBody({ feature, columns }) {
   return (
     <div style={{ height: "200px", overflow: "auto" }}>
       <table>
@@ -163,14 +164,7 @@ function PopupBody({ feature }) {
             <tr key={key}>
               <th>{key}</th>
               <td>
-                {value === "" ? undefined : typeof value === "string" &&
-                  value.startsWith("http") ? (
-                  <AbridgedUrlLink target="_blank" href={value} length={21} />
-                ) : typeof value === "string" || typeof value === "number" ? (
-                  value
-                ) : (
-                  JSON.stringify(value)
-                )}
+                <DataCellValue value={value} column={columns.filter(col => col.name === key)[0]} />
               </td>
             </tr>
           ))}
