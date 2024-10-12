@@ -9,7 +9,11 @@ export function geoJsonToGpx(featureCollection: FeatureCollection) {
 
   const geoJsonLineStrings = featureCollection.features
     .filter(feature => feature.geometry.type === GeometryType.LineString);
-  const routes = geoJsonLineStrings.map(lineStringToTrack);
+
+  const geoJsonMultiLineStrings = featureCollection.features
+    .filter(feature => feature.geometry.type === GeometryType.MultiLineString);
+  const routes = geoJsonLineStrings.map(lineStringToTrack)
+    .concat(geoJsonMultiLineStrings.map(multiLineStringToTrack));
 
   // TODO other geometry types
   console.log({ featureCollection, geoJsonPoints, waypoints, geoJsonLineStrings, routes })
@@ -37,10 +41,7 @@ function lineStringToRoute(feature: Feature) {
   ${nameTag(feature)}
   ${cmtTag(feature)}
   ${descTag(feature)}
-  ${feature.geometry.coordinates.map(coord =>
-      `  <rtept lat="${coord[1]}" lon="${coord[0]}">
-    ${coord[2] ? "<ele>" + coord[2] + "</ele>" : ""}
-  </rtept>`).join("\n")}
+  ${feature.geometry.coordinates.map(coord => coordToPoint(coord, 'rtept')).join("\n")}
 </rte>`;
   }
 }
@@ -52,13 +53,28 @@ function lineStringToTrack(feature: Feature) {
   ${cmtTag(feature)}
   ${descTag(feature)}
   <trkseg>
-  ${feature.geometry.coordinates.map(coord =>
-      `  <trkpt lat="${coord[1]}" lon="${coord[0]}">
-    ${coord[2] ? "<ele>" + coord[2] + "</ele>" : ""}
-  </trkpt>`).join("\n")}
+  ${feature.geometry.coordinates.map(coord => coordToPoint(coord, 'trkpt')).join("\n")}
   </trkseg>
 </trk>`;
   }
+}
+
+function multiLineStringToTrack(feature: Feature) {
+  if (feature.geometry.type === GeometryType.MultiLineString) {
+    return `<trk>
+  ${nameTag(feature)}
+  ${cmtTag(feature)}
+  ${descTag(feature)}
+  ${feature.geometry.coordinates.map(coord =>
+      `<trkseg>
+    ${coord.map(c => coordToPoint(c, 'trkpt'))}
+    </trkseg>`)}
+</trk>`;
+  }
+}
+
+function coordToPoint(c: number[], type: string) {
+  return `<${type} lat="${c[1]}" lon="${c[0]}">${c[2] ? "<ele>" + c[2] + "</ele>" : ""}</${type}>`;
 }
 
 function nameTag(feature: Feature) {
