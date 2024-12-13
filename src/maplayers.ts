@@ -83,6 +83,23 @@ const baseLayers = [
     attribution:
       'Map data &copy; <a href="https://basemap.nationalmap.gov/arcgis/rest/services/USGSTNMBlank/MapServer">USGS</a>',
   },
+  {
+    type: "WMSTileLayer",
+    name: "NAIP",
+    geotabId: "naip",
+    checked: false,
+    layers: "show%3A21",
+    f: "image",
+    imageSR: 102100,
+    bboxSR: 102100,
+    format: "png32",
+    transparent: true,
+    opacity: 1,
+    dpi: 96,
+    url: "https://imagery.nationalmap.gov/arcgis/rest/services/USGSNAIPImagery/ImageServer/exportImage",
+    attribution:
+      'Map data &copy; <a href="https://imagery.nationalmap.gov/arcgis/rest/services/USGSNAIPImagery/ImageServer">USGS</a>',
+  },
 ];
 
 const overlays = [
