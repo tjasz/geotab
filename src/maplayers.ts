@@ -1,11 +1,12 @@
 // The National Map services: https://apps.nationalmap.gov/services/
-const makeTnmBaseMap = (id: string) => (
-  {
+const makeTnmBaseMap = (domain: string, id: string, server: string = 'Map', exportSuffix: string = '') => {
+  const base = `https://${domain}.nationalmap.gov/arcgis/rest/services/${id}/${server}Server`;
+  return {
     type: "WMSTileLayer",
     name: id,
     geotabId: id,
     checked: false,
-    layers: "show%3A21",
+    layers: "show%3A0",
     f: "image",
     imageSR: 102100,
     bboxSR: 102100,
@@ -13,10 +14,11 @@ const makeTnmBaseMap = (id: string) => (
     transparent: true,
     opacity: 1,
     dpi: 96,
-    url: `https://basemap.nationalmap.gov/arcgis/rest/services/${id}/MapServer/export`,
+    url: `${base}/export${exportSuffix}`,
     attribution:
-      `Map data &copy; <a href="https://basemap.nationalmap.gov/arcgis/rest/services/${id}/MapServer">USGS</a>`,
-  });
+      `Map data &copy; <a href="${base}">USGS</a>`,
+  }
+};
 
 const baseLayers = [
   {
@@ -121,11 +123,12 @@ const baseLayers = [
       'Map data &copy; <a href="https://imagery.nationalmap.gov/arcgis/rest/services/USGSNAIPImagery/ImageServer">USGS</a>',
   },
   // The National Map services: https://apps.nationalmap.gov/services/
-  makeTnmBaseMap('USGSHydroCached'),
-  makeTnmBaseMap('USGSImageryTopo'),
-  makeTnmBaseMap('USGSImageryOnly'),
-  makeTnmBaseMap('USGSShadedReliefOnly'),
-  makeTnmBaseMap('USGSTopo'),
+  makeTnmBaseMap('basemap', 'USGSHydroCached'),
+  makeTnmBaseMap('basemap', 'USGSImageryTopo'),
+  makeTnmBaseMap('basemap', 'USGSImageryOnly'),
+  makeTnmBaseMap('basemap', 'USGSShadedReliefOnly'),
+  makeTnmBaseMap('basemap', 'USGSTopo'),
+  makeTnmBaseMap('elevation', '3DEPElevation', 'Image', 'Image'),
 ];
 
 const overlays = [
