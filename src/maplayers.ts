@@ -1,3 +1,23 @@
+// The National Map services: https://apps.nationalmap.gov/services/
+const makeTnmBaseMap = (id: string) => (
+  {
+    type: "WMSTileLayer",
+    name: id,
+    geotabId: id,
+    checked: false,
+    layers: "show%3A21",
+    f: "image",
+    imageSR: 102100,
+    bboxSR: 102100,
+    format: "png32",
+    transparent: true,
+    opacity: 1,
+    dpi: 96,
+    url: `https://basemap.nationalmap.gov/arcgis/rest/services/${id}/MapServer/export`,
+    attribution:
+      `Map data &copy; <a href="https://basemap.nationalmap.gov/arcgis/rest/services/${id}/MapServer">USGS</a>`,
+  });
+
 const baseLayers = [
   {
     type: "TileLayer",
@@ -100,6 +120,12 @@ const baseLayers = [
     attribution:
       'Map data &copy; <a href="https://imagery.nationalmap.gov/arcgis/rest/services/USGSNAIPImagery/ImageServer">USGS</a>',
   },
+  // The National Map services: https://apps.nationalmap.gov/services/
+  makeTnmBaseMap('USGSHydroCached'),
+  makeTnmBaseMap('USGSImageryTopo'),
+  makeTnmBaseMap('USGSImageryOnly'),
+  makeTnmBaseMap('USGSShadedReliefOnly'),
+  makeTnmBaseMap('USGSTopo'),
 ];
 
 const overlays = [
