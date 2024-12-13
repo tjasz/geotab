@@ -1,17 +1,17 @@
 {
   "files": {
     "main.css": "/geotab/static/css/main.a0961788.css",
-    "main.js": "/geotab/static/js/main.063b7a4f.js",
+    "main.js": "/geotab/static/js/main.8a4a682d.js",
     "static/js/787.d2868ffa.chunk.js": "/geotab/static/js/787.d2868ffa.chunk.js",
     "index.html": "/geotab/index.html",
     "static/media/plus-square.svg": "/geotab/static/media/plus-square.1254f9745b42217d16e8c047e1aea764.svg",
     "static/media/minus-square.svg": "/geotab/static/media/minus-square.8d669f15adb02523d6793d09e3992072.svg",
     "main.a0961788.css.map": "/geotab/static/css/main.a0961788.css.map",
-    "main.063b7a4f.js.map": "/geotab/static/js/main.063b7a4f.js.map",
+    "main.8a4a682d.js.map": "/geotab/static/js/main.8a4a682d.js.map",
     "787.d2868ffa.chunk.js.map": "/geotab/static/js/787.d2868ffa.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.a0961788.css",
-    "static/js/main.063b7a4f.js"
+    "static/js/main.8a4a682d.js"
   ]
 }
