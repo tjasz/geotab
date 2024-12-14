@@ -94,10 +94,26 @@ const baseLayers = [
   makeTnmBaseMap('basemap', 'USGSImageryTopo'),
   makeTnmBaseMap('basemap', 'USGSImageryOnly'),
   makeTnmBaseMap('basemap', 'USGSShadedReliefOnly'),
-  makeTnmBaseMap('basemap', 'USGSTopo'),
   makeTnmBaseMap('elevation', '3DEPElevation', 'Image', 'Image'),
   makeTnmBaseMap('imagery', 'USGSNAIPPlus', 'Image', 'Image'),
   makeTnmBaseMap('imagery', 'USGSNAIPImagery', 'Image', 'Image'),
+  {
+    type: "WMSTileLayer",
+    name: "USA Topo",
+    geotabId: "usatopo",
+    checked: false,
+    layers: "show%3A2",
+    f: "image",
+    imageSR: 102100,
+    bboxSR: 102100,
+    format: "png32",
+    transparent: true,
+    opacity: 0.6,
+    dpi: 96,
+    url: "https://services.arcgisonline.com/arcgis/rest/services/USA_Topo_Maps/MapServer/export",
+    attribution:
+      'Map data &copy; <a href="https://services.arcgisonline.com/arcgis/rest/services/USA_Topo_Maps/MapServer">US Government</a>',
+  },
 ];
 
 const overlays = [
@@ -134,6 +150,23 @@ const overlays = [
     url: "https://basemap.nationalmap.gov/arcgis/rest/services/USGSShadedReliefOnly/MapServer/export",
     attribution:
       'Map data &copy; <a href="https://basemap.nationalmap.gov/arcgis/rest/services/USGSShadedReliefOnly/MapServer">USGS</a>',
+  },
+  {
+    type: "WMSTileLayer",
+    name: "GAP Land Cover",
+    geotabId: "lc",
+    checked: false,
+    layers: "show%3A2",
+    f: "image",
+    imageSR: 102100,
+    bboxSR: 102100,
+    format: "png32",
+    transparent: true,
+    opacity: 0.3,
+    dpi: 96,
+    url: "https://gis1.usgs.gov/arcgis/rest/services/gap/GAP_Land_Cover_NVC_Formation_Landuse/MapServer/export",
+    attribution:
+      'Map data &copy; <a href="https://gis1.usgs.gov/arcgis/rest/services/gap/GAP_Land_Cover_NVC_Formation_Landuse/MapServer">USGS</a>',
   },
   makeTnmBaseMap('carto', 'contours'),
   makeTnmBaseMap('carto', 'geonames'),
