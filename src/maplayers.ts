@@ -71,23 +71,7 @@ const baseLayers = [
     attribution:
       'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
   },
-  {
-    type: "WMSTileLayer",
-    name: "USGS Topo",
-    geotabId: "ustopo",
-    checked: false,
-    layers: "show%3A0",
-    f: "image",
-    imageSR: 102100,
-    bboxSR: 102100,
-    format: "png32",
-    transparent: true,
-    opacity: 1,
-    dpi: 96,
-    url: "https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/export",
-    attribution:
-      'Map data &copy; <a href="https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer">USGS</a>',
-  },
+  makeTnmBaseMap('basemap', 'USGSTopo'),
   {
     type: "WMSTileLayer",
     name: "USGS TNM Blank",
@@ -105,23 +89,6 @@ const baseLayers = [
     attribution:
       'Map data &copy; <a href="https://basemap.nationalmap.gov/arcgis/rest/services/USGSTNMBlank/MapServer">USGS</a>',
   },
-  {
-    type: "WMSTileLayer",
-    name: "NAIP",
-    geotabId: "naip",
-    checked: false,
-    layers: "show%3A21",
-    f: "image",
-    imageSR: 102100,
-    bboxSR: 102100,
-    format: "png32",
-    transparent: true,
-    opacity: 1,
-    dpi: 96,
-    url: "https://imagery.nationalmap.gov/arcgis/rest/services/USGSNAIPImagery/ImageServer/exportImage",
-    attribution:
-      'Map data &copy; <a href="https://imagery.nationalmap.gov/arcgis/rest/services/USGSNAIPImagery/ImageServer">USGS</a>',
-  },
   // The National Map services: https://apps.nationalmap.gov/services/
   makeTnmBaseMap('basemap', 'USGSHydroCached'),
   makeTnmBaseMap('basemap', 'USGSImageryTopo'),
@@ -129,6 +96,8 @@ const baseLayers = [
   makeTnmBaseMap('basemap', 'USGSShadedReliefOnly'),
   makeTnmBaseMap('basemap', 'USGSTopo'),
   makeTnmBaseMap('elevation', '3DEPElevation', 'Image', 'Image'),
+  makeTnmBaseMap('imagery', 'USGSNAIPPlus', 'Image', 'Image'),
+  makeTnmBaseMap('imagery', 'USGSNAIPImagery', 'Image', 'Image'),
 ];
 
 const overlays = [
@@ -166,6 +135,13 @@ const overlays = [
     attribution:
       'Map data &copy; <a href="https://basemap.nationalmap.gov/arcgis/rest/services/USGSShadedReliefOnly/MapServer">USGS</a>',
   },
+  makeTnmBaseMap('carto', 'contours'),
+  makeTnmBaseMap('carto', 'geonames'),
+  makeTnmBaseMap('carto', 'govunits'),
+  makeTnmBaseMap('carto', 'map_indices'),
+  makeTnmBaseMap('carto', 'transportation'),
+  makeTnmBaseMap('hydro', 'NHDPlus_HR'),
+  makeTnmBaseMap('partnerships', 'USGSTrails'),
 ];
 
 export const mapLayers = {
