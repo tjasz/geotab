@@ -35,6 +35,18 @@ const baseLayers = [
   },
   {
     type: "TileLayer",
+    name: "CyclOSM",
+    geotabId: "cyclosm",
+    checked: false,
+    maxZoom: 18,
+    tileSize: 512,
+    zoomOffset: -1,
+    url: "https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png",
+    attribution:
+      '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+  },
+  {
+    type: "TileLayer",
     name: "OpenTopoMap",
     geotabId: "otm",
     checked: false,
@@ -117,6 +129,42 @@ const baseLayers = [
 ];
 
 const overlays = [
+  {
+    type: "TileLayer",
+    name: "CyclOSM Lite",
+    geotabId: "cyclosm-lite",
+    checked: false,
+    maxZoom: 18,
+    tileSize: 512,
+    zoomOffset: -1,
+    url: "https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm-lite/{z}/{x}/{y}.png",
+    attribution:
+      '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+  },
+  {
+    type: "TileLayer",
+    name: "Hiking Routes",
+    geotabId: "hiking",
+    checked: false,
+    maxZoom: 18,
+    tileSize: 512,
+    zoomOffset: -1,
+    url: "https://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png",
+    attribution:
+      '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+  },
+  {
+    type: "TileLayer",
+    name: "Cycling Routes",
+    geotabId: "cycling",
+    checked: false,
+    maxZoom: 18,
+    tileSize: 512,
+    zoomOffset: -1,
+    url: "https://tile.waymarkedtrails.org/cycling/{z}/{x}/{y}.png",
+    attribution:
+      '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+  },
   {
     type: "WMSTileLayer",
     name: "NOAA Snow Depth",
