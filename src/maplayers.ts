@@ -123,23 +123,6 @@ const baseLayers = [
       'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
   },
   makeTnmBaseMap('basemap', 'USGSTopo'),
-  {
-    type: "WMSTileLayer",
-    name: "USGS TNM Blank",
-    geotabId: "blank",
-    checked: false,
-    layers: "show%3A21",
-    f: "image",
-    imageSR: 102100,
-    bboxSR: 102100,
-    format: "png32",
-    transparent: true,
-    opacity: 1,
-    dpi: 96,
-    url: "https://basemap.nationalmap.gov/arcgis/rest/services/USGSTNMBlank/MapServer/export",
-    attribution:
-      'Map data &copy; <a href="https://basemap.nationalmap.gov/arcgis/rest/services/USGSTNMBlank/MapServer">USGS</a>',
-  },
   // The National Map services: https://apps.nationalmap.gov/services/
   makeTnmBaseMap('basemap', 'USGSHydroCached'),
   makeTnmBaseMap('basemap', 'USGSImageryTopo'),
