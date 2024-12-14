@@ -1,3 +1,25 @@
+// The National Map services: https://apps.nationalmap.gov/services/
+const makeTnmBaseMap = (domain: string, id: string, server: string = 'Map', exportSuffix: string = '') => {
+  const base = `https://${domain}.nationalmap.gov/arcgis/rest/services/${id}/${server}Server`;
+  return {
+    type: "WMSTileLayer",
+    name: id,
+    geotabId: id,
+    checked: false,
+    layers: "show%3A0",
+    f: "image",
+    imageSR: 102100,
+    bboxSR: 102100,
+    format: "png32",
+    transparent: true,
+    opacity: 1,
+    dpi: 96,
+    url: `${base}/export${exportSuffix}`,
+    attribution:
+      `Map data &copy; <a href="${base}">USGS</a>`,
+  }
+};
+
 const baseLayers = [
   {
     type: "TileLayer",
@@ -8,6 +30,18 @@ const baseLayers = [
     tileSize: 512,
     zoomOffset: -1,
     url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    attribution:
+      '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+  },
+  {
+    type: "TileLayer",
+    name: "CyclOSM",
+    geotabId: "cyclosm",
+    checked: false,
+    maxZoom: 18,
+    tileSize: 512,
+    zoomOffset: -1,
+    url: "https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png",
     attribution:
       '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
   },
@@ -50,42 +84,109 @@ const baseLayers = [
       'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
   },
   {
-    type: "WMSTileLayer",
-    name: "USGS Topo",
-    geotabId: "ustopo",
+    type: "TileLayer",
+    name: "Mapbox Satellite",
+    geotabId: "mbsat",
     checked: false,
-    layers: "show%3A0",
-    f: "image",
-    imageSR: 102100,
-    bboxSR: 102100,
-    format: "png32",
-    transparent: true,
-    opacity: 1,
-    dpi: 96,
-    url: "https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/export",
+    maxZoom: 18,
+    tileSize: 512,
+    zoomOffset: -1,
+    id: "mapbox/satellite-v9",
+    url: "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoidGphc3oiLCJhIjoiY2wxcDQ4eG1pMHZxNDNjcGM3djJ4eGphMCJ9.aH-D5oeZHZVzcWQZeeRviQ",
     attribution:
-      'Map data &copy; <a href="https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer">USGS</a>',
+      'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
   },
   {
-    type: "WMSTileLayer",
-    name: "USGS TNM Blank",
-    geotabId: "blank",
+    type: "TileLayer",
+    name: "Mapbox Light",
+    geotabId: "mblight",
     checked: false,
-    layers: "show%3A21",
+    maxZoom: 18,
+    tileSize: 512,
+    zoomOffset: -1,
+    id: "mapbox/light-v11",
+    url: "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoidGphc3oiLCJhIjoiY2wxcDQ4eG1pMHZxNDNjcGM3djJ4eGphMCJ9.aH-D5oeZHZVzcWQZeeRviQ",
+    attribution:
+      'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+  },
+  {
+    type: "TileLayer",
+    name: "Mapbox Dark",
+    geotabId: "mbdark",
+    checked: false,
+    maxZoom: 18,
+    tileSize: 512,
+    zoomOffset: -1,
+    id: "mapbox/dark-v11",
+    url: "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoidGphc3oiLCJhIjoiY2wxcDQ4eG1pMHZxNDNjcGM3djJ4eGphMCJ9.aH-D5oeZHZVzcWQZeeRviQ",
+    attribution:
+      'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+  },
+  makeTnmBaseMap('basemap', 'USGSTopo'),
+  // The National Map services: https://apps.nationalmap.gov/services/
+  makeTnmBaseMap('basemap', 'USGSHydroCached'),
+  makeTnmBaseMap('basemap', 'USGSImageryTopo'),
+  makeTnmBaseMap('basemap', 'USGSImageryOnly'),
+  makeTnmBaseMap('basemap', 'USGSShadedReliefOnly'),
+  makeTnmBaseMap('elevation', '3DEPElevation', 'Image', 'Image'),
+  makeTnmBaseMap('imagery', 'USGSNAIPPlus', 'Image', 'Image'),
+  makeTnmBaseMap('imagery', 'USGSNAIPImagery', 'Image', 'Image'),
+  {
+    type: "WMSTileLayer",
+    name: "USA Topo",
+    geotabId: "usatopo",
+    checked: false,
+    layers: "show%3A2",
     f: "image",
     imageSR: 102100,
     bboxSR: 102100,
     format: "png32",
     transparent: true,
-    opacity: 1,
+    opacity: 0.6,
     dpi: 96,
-    url: "https://basemap.nationalmap.gov/arcgis/rest/services/USGSTNMBlank/MapServer/export",
+    url: "https://services.arcgisonline.com/arcgis/rest/services/USA_Topo_Maps/MapServer/export",
     attribution:
-      'Map data &copy; <a href="https://basemap.nationalmap.gov/arcgis/rest/services/USGSTNMBlank/MapServer">USGS</a>',
+      'Map data &copy; <a href="https://services.arcgisonline.com/arcgis/rest/services/USA_Topo_Maps/MapServer">US Government</a>',
   },
 ];
 
 const overlays = [
+  {
+    type: "TileLayer",
+    name: "CyclOSM Lite",
+    geotabId: "cyclosm-lite",
+    checked: false,
+    maxZoom: 18,
+    tileSize: 512,
+    zoomOffset: -1,
+    url: "https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm-lite/{z}/{x}/{y}.png",
+    attribution:
+      '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+  },
+  {
+    type: "TileLayer",
+    name: "Hiking Routes",
+    geotabId: "hiking",
+    checked: false,
+    maxZoom: 18,
+    tileSize: 512,
+    zoomOffset: -1,
+    url: "https://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png",
+    attribution:
+      '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+  },
+  {
+    type: "TileLayer",
+    name: "Cycling Routes",
+    geotabId: "cycling",
+    checked: false,
+    maxZoom: 18,
+    tileSize: 512,
+    zoomOffset: -1,
+    url: "https://tile.waymarkedtrails.org/cycling/{z}/{x}/{y}.png",
+    attribution:
+      '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+  },
   {
     type: "WMSTileLayer",
     name: "NOAA Snow Depth",
@@ -120,6 +221,30 @@ const overlays = [
     attribution:
       'Map data &copy; <a href="https://basemap.nationalmap.gov/arcgis/rest/services/USGSShadedReliefOnly/MapServer">USGS</a>',
   },
+  {
+    type: "WMSTileLayer",
+    name: "GAP Land Cover",
+    geotabId: "lc",
+    checked: false,
+    layers: "show%3A2",
+    f: "image",
+    imageSR: 102100,
+    bboxSR: 102100,
+    format: "png32",
+    transparent: true,
+    opacity: 0.3,
+    dpi: 96,
+    url: "https://gis1.usgs.gov/arcgis/rest/services/gap/GAP_Land_Cover_NVC_Formation_Landuse/MapServer/export",
+    attribution:
+      'Map data &copy; <a href="https://gis1.usgs.gov/arcgis/rest/services/gap/GAP_Land_Cover_NVC_Formation_Landuse/MapServer">USGS</a>',
+  },
+  makeTnmBaseMap('carto', 'contours'),
+  makeTnmBaseMap('carto', 'geonames'),
+  makeTnmBaseMap('carto', 'govunits'),
+  makeTnmBaseMap('carto', 'map_indices'),
+  makeTnmBaseMap('carto', 'transportation'),
+  makeTnmBaseMap('hydro', 'NHDPlus_HR'),
+  makeTnmBaseMap('partnerships', 'USGSTrails'),
 ];
 
 export const mapLayers = {
