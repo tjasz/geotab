@@ -245,6 +245,23 @@ const overlays = [
   makeTnmBaseMap('carto', 'transportation'),
   makeTnmBaseMap('hydro', 'NHDPlus_HR'),
   makeTnmBaseMap('partnerships', 'USGSTrails'),
+  {
+    type: "WMSTileLayer",
+    name: "Public Lands",
+    geotabId: "sma",
+    checked: false,
+    layers: "show%3A22",
+    f: "image",
+    imageSR: 102100,
+    bboxSR: 102100,
+    format: "png32",
+    transparent: true,
+    opacity: 0.3,
+    dpi: 96,
+    url: "https://gis.blm.gov/arcgis/rest/services/lands/BLM_Natl_SMA_Cached_with_PriUnk/MapServer/export",
+    attribution:
+      'Map data &copy; <a href="https://gis.blm.gov/arcgis/rest/services/lands/BLM_Natl_SMA_Cached_with_PriUnk/MapServer">BLM</a>',
+  },
 ];
 
 export const mapLayers = {
