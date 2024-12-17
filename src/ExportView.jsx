@@ -148,7 +148,9 @@ export function ExportView() {
               "marker-color": color,
               "marker-symbol": markerSymbol,
             }
-          }
+          };
+        default:
+          return f;
       }
     });
 
