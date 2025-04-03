@@ -160,14 +160,16 @@ function PopupBody({ feature, columns }) {
     <div style={{ height: "200px", overflow: "auto" }}>
       <table>
         <tbody>
-          {Object.entries(feature.properties).map(([key, value]) => (
-            <tr key={key}>
-              <th>{key}</th>
-              <td>
-                <DataCellValue value={value} column={columns.filter(col => col.name === key)[0]} />
-              </td>
-            </tr>
-          ))}
+          {
+            columns.filter(col => col.visible).map(col =>
+              <tr key={col.name}>
+                <th>{col.name}</th>
+                <td>
+                  <DataCellValue value={feature.properties[col.name]} column={col} />
+                </td>
+              </tr>
+            )
+          }
         </tbody>
       </table>
     </div>
