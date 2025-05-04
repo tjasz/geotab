@@ -1,4 +1,4 @@
-import React, { useRef, useContext, useState } from "react";
+import React, { useRef, useContext, useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import ReactDOMServer from "react-dom/server";
 import { v4 as uuidv4 } from "uuid";
@@ -7,7 +7,7 @@ import "leaflet.locatecontrol";
 import "leaflet.locatecontrol/dist/L.Control.Locate.min.css";
 import { createControlComponent } from '@react-leaflet/core'
 import { Button } from "@mui/material";
-import { AddLocation, ContentCopy } from "@mui/icons-material";
+import { AddLocation, ContentCopy, Timeline } from "@mui/icons-material";
 import {
   MapContainer,
   TileLayer,
@@ -32,6 +32,7 @@ import DataCellValue from "./table/DataCellValue"
 import FormatPaintControl from "./symbology/FormatPaintControl"
 import { distance } from "@turf/turf";
 import ElevationProfile from "./ElevationProfile";
+import ElevationProfileDialog from "./ElevationProfileDialog";
 
 function MapView(props) {
   const context = useContext(DataContext);
@@ -55,7 +56,28 @@ function MapView(props) {
       );
     }
   };
+
   const mapRef = useRef();
+
+  // Add event listener for elevation profile buttons in popups
+  useEffect(() => {
+    const handleElevationButtonClick = (event) => {
+      if (event.target.closest('.elevation-profile-button')) {
+        const button = event.target.closest('.elevation-profile-button');
+        const featureId = button.getAttribute('data-feature-id');
+        if (featureId && window.showElevationProfile) {
+          window.showElevationProfile(featureId);
+        }
+      }
+    };
+
+    document.addEventListener('click', handleElevationButtonClick);
+
+    return () => {
+      document.removeEventListener('click', handleElevationButtonClick);
+    };
+  }, []);
+
   if (!context.filteredData) return null;
   const features = context.filteredData;
   return (
@@ -142,6 +164,7 @@ function MapView(props) {
             );
           }}
         />
+        <ElevationProfileControl />
       </MapContainer>
     </div>
   );
@@ -162,6 +185,20 @@ function PopupBody({ feature, columns }) {
   const isLineFeature = feature?.geometry?.type === GeometryType.LineString ||
     feature?.geometry?.type === GeometryType.MultiLineString;
 
+  // Check if the line feature has elevation data
+  const hasElevationData = () => {
+    if (!isLineFeature) return false;
+
+    let coordinates = [];
+    if (feature.geometry.type === GeometryType.LineString) {
+      coordinates = feature.geometry.coordinates;
+    } else if (feature.geometry.type === GeometryType.MultiLineString) {
+      coordinates = feature.geometry.coordinates.flat();
+    }
+
+    return coordinates.length > 0 && coordinates[0].length >= 3;
+  };
+
   return (
     <div style={{ height: "200px", overflow: "auto", width: "250px" }}>
       <table>
@@ -178,7 +215,28 @@ function PopupBody({ feature, columns }) {
           }
         </tbody>
       </table>
-      <ElevationProfile geometry={feature.geometry} />
+
+      {isLineFeature && hasElevationData() && (
+        <div className="elevation-button-container" style={{ marginTop: "10px" }}>
+          <button
+            className="elevation-profile-button"
+            data-feature-id={feature.id}
+            style={{
+              width: "100%",
+              padding: "5px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer"
+            }}
+          >
+            <svg style={{ marginRight: "5px" }} width="16" height="16" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M3 16h18v2H3v-2zm0-5h18v2H3v-2zm0-5h18v2H3V6z" />
+            </svg>
+            Show Elevation Profile
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -439,5 +497,63 @@ function MyOverlayControl(props) {
 const LocateControl = createControlComponent(
   props => new L.Control.Locate(props)
 )
+
+function ElevationProfileControl() {
+  const [selectedFeature, setSelectedFeature] = useState(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const map = useMap();
+
+  // Create a global function to open the elevation profile dialog
+  useEffect(() => {
+    // Set up custom event handler for showing elevation profile
+    window.showElevationProfile = (featureId) => {
+      const feature = findFeatureById(featureId);
+      if (feature) {
+        setSelectedFeature(feature);
+        setDialogOpen(true);
+      }
+    };
+
+    return () => {
+      // Clean up
+      delete window.showElevationProfile;
+    };
+  }, []);
+
+  // Helper function to find a feature by ID
+  const findFeatureById = (featureId) => {
+    let foundFeature = null;
+    map.eachLayer((layer) => {
+      if (layer.feature && layer.feature.id === featureId) {
+        foundFeature = layer.feature;
+      }
+    });
+    return foundFeature;
+  };
+
+  return (
+    <>
+      {selectedFeature && (
+        <ElevationProfileDialog
+          open={dialogOpen}
+          onClose={() => setDialogOpen(false)}
+          geometry={selectedFeature.geometry}
+          featureName={getFeatureName(selectedFeature)}
+        />
+      )}
+    </>
+  );
+}
+
+// Helper function to get a display name for a feature from its properties
+function getFeatureName(feature) {
+  const nameKeys = ['name', 'Name', 'title', 'Title'];
+  for (const key of nameKeys) {
+    if (feature.properties && feature.properties[key]) {
+      return feature.properties[key];
+    }
+  }
+  return undefined;
+}
 
 export default MapView;
