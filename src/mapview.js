@@ -8,6 +8,7 @@ import "leaflet.locatecontrol/dist/L.Control.Locate.min.css";
 import { createControlComponent } from '@react-leaflet/core'
 import { Button } from "@mui/material";
 import { AddLocation, ContentCopy } from "@mui/icons-material";
+import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import {
   MapContainer,
   TileLayer,
@@ -186,40 +187,59 @@ function PopupBody({ feature, columns }) {
       for (let i = 1; i < coordinates.length; i++) {
         const prevCoord = coordinates[i - 1];
         const currCoord = coordinates[i];
-        const segDistance = distance(prevCoord, currCoord, { units: 'meters' });
+        // Use the imported distance function from turf.js
+        const segDistance = distance(
+          [prevCoord[0], prevCoord[1]],
+          [currCoord[0], currCoord[1]],
+          { units: 'kilometers' }
+        );
         totalDistance += segDistance;
         cumulativeDistances.push(totalDistance);
       }
 
-      // Normalize distances to fit SVG width
-      const normalizedDistances = cumulativeDistances.map(d => (d / totalDistance) * 190);
-
-      // Create SVG path for elevation profile
-      const svgHeight = 100;
-      const elevationRange = maxElevation - minElevation;
-      const pathPoints = coordinates.map((coord, i) => {
-        const x = normalizedDistances[i];
-        // Invert y-axis for SVG (0 is top)
-        const y = svgHeight - ((coord[2] - minElevation) / elevationRange) * 70 - 10;
-        return `${i === 0 ? 'M' : 'L'}${x},${y}`;
-      }).join(' ');
+      // Create data for the chart
+      const chartData = coordinates.map((coord, i) => ({
+        distance: cumulativeDistances[i].toFixed(2),
+        elevation: coord[2]
+      }));
 
       return (
         <div className="elevation-profile">
           <h4>Elevation Profile</h4>
-          <svg width="100%" height={svgHeight} viewBox={`0 0 200 ${svgHeight}`} preserveAspectRatio="none">
-            <path
-              d={pathPoints}
-              stroke="#007bff"
-              strokeWidth="2"
-              fill="none"
+          {/* Use fixed size chart instead of ResponsiveContainer since we're using ReactDOMServer.renderToString */}
+          <LineChart
+            width={220}
+            height={100}
+            data={chartData}
+            margin={{ top: 5, right: 5, left: 5, bottom: 15 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis
+              dataKey="distance"
+              label={{ value: 'Distance (km)', position: 'bottom', offset: 0, fontSize: 10 }}
+              tick={{ fontSize: 9 }}
             />
-            <text x="5" y="15" fontSize="10">{Math.round(maxElevation)}m</text>
-            <text x="5" y={svgHeight - 5} fontSize="10">{Math.round(minElevation)}m</text>
-            <text x="160" y={svgHeight - 5} fontSize="10">
-              {(totalDistance / 1000).toFixed(1)}km
-            </text>
-          </svg>
+            <YAxis
+              domain={[minElevation - 50, maxElevation + 50]}
+              tick={{ fontSize: 9 }}
+              tickFormatter={(value) => `${Math.round(value)}m`}
+            />
+            <Tooltip
+              formatter={(value) => [`${value}m`, 'Elevation']}
+              labelFormatter={(label) => `Distance: ${label}km`}
+            />
+            <Line
+              type="monotone"
+              dataKey="elevation"
+              stroke="#007bff"
+              strokeWidth={2}
+              dot={false}
+              animationDuration={500}
+            />
+          </LineChart>
+          <div style={{ fontSize: '10px', textAlign: 'right' }}>
+            Total Distance: {totalDistance.toFixed(2)}km | Elevation Gain: {(maxElevation - minElevation).toFixed(0)}m
+          </div>
         </div>
       );
     }
@@ -228,7 +248,7 @@ function PopupBody({ feature, columns }) {
   };
 
   return (
-    <div style={{ height: "200px", overflow: "auto" }}>
+    <div style={{ height: "200px", overflow: "auto", width: "250px" }}>
       <table>
         <tbody>
           {
