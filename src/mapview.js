@@ -8,7 +8,6 @@ import "leaflet.locatecontrol/dist/L.Control.Locate.min.css";
 import { createControlComponent } from '@react-leaflet/core'
 import { Button } from "@mui/material";
 import { AddLocation, ContentCopy } from "@mui/icons-material";
-import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import {
   MapContainer,
   TileLayer,
@@ -32,6 +31,7 @@ import { SvgPatternRenderer } from "./PatternRenderer/SvgPatternRenderer"
 import DataCellValue from "./table/DataCellValue"
 import FormatPaintControl from "./symbology/FormatPaintControl"
 import { distance } from "@turf/turf";
+import ElevationProfile from "./ElevationProfile";
 
 function MapView(props) {
   const context = useContext(DataContext);
@@ -162,91 +162,6 @@ function PopupBody({ feature, columns }) {
   const isLineFeature = feature?.geometry?.type === GeometryType.LineString ||
     feature?.geometry?.type === GeometryType.MultiLineString;
 
-  // Extract elevation data if available in the coordinates
-  const getElevationProfile = () => {
-    if (!isLineFeature) return null;
-
-    let coordinates = [];
-    if (feature.geometry.type === GeometryType.LineString) {
-      coordinates = feature.geometry.coordinates;
-    } else if (feature.geometry.type === GeometryType.MultiLineString) {
-      // Flatten MultiLineString coordinates
-      coordinates = feature.geometry.coordinates.flat();
-    }
-
-    // Check if coordinates have elevation data (z value)
-    if (coordinates.length > 0 && coordinates[0].length >= 3) {
-      const elevations = coordinates.map(coord => coord[2]);
-      const minElevation = Math.min(...elevations);
-      const maxElevation = Math.max(...elevations);
-
-      // Calculate cumulative distances
-      let cumulativeDistances = [0];
-      let totalDistance = 0;
-
-      for (let i = 1; i < coordinates.length; i++) {
-        const prevCoord = coordinates[i - 1];
-        const currCoord = coordinates[i];
-        // Use the imported distance function from turf.js
-        const segDistance = distance(
-          [prevCoord[0], prevCoord[1]],
-          [currCoord[0], currCoord[1]],
-          { units: 'kilometers' }
-        );
-        totalDistance += segDistance;
-        cumulativeDistances.push(totalDistance);
-      }
-
-      // Create data for the chart
-      const chartData = coordinates.map((coord, i) => ({
-        distance: cumulativeDistances[i].toFixed(2),
-        elevation: coord[2]
-      }));
-
-      return (
-        <div className="elevation-profile">
-          <h4>Elevation Profile</h4>
-          {/* Use fixed size chart instead of ResponsiveContainer since we're using ReactDOMServer.renderToString */}
-          <LineChart
-            width={220}
-            height={100}
-            data={chartData}
-            margin={{ top: 5, right: 5, left: 5, bottom: 15 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="distance"
-              label={{ value: 'Distance (km)', position: 'bottom', offset: 0, fontSize: 10 }}
-              tick={{ fontSize: 9 }}
-            />
-            <YAxis
-              domain={[minElevation - 50, maxElevation + 50]}
-              tick={{ fontSize: 9 }}
-              tickFormatter={(value) => `${Math.round(value)}m`}
-            />
-            <Tooltip
-              formatter={(value) => [`${value}m`, 'Elevation']}
-              labelFormatter={(label) => `Distance: ${label}km`}
-            />
-            <Line
-              type="monotone"
-              dataKey="elevation"
-              stroke="#007bff"
-              strokeWidth={2}
-              dot={false}
-              animationDuration={500}
-            />
-          </LineChart>
-          <div style={{ fontSize: '10px', textAlign: 'right' }}>
-            Total Distance: {totalDistance.toFixed(2)}km | Elevation Gain: {(maxElevation - minElevation).toFixed(0)}m
-          </div>
-        </div>
-      );
-    }
-
-    return null;
-  };
-
   return (
     <div style={{ height: "200px", overflow: "auto", width: "250px" }}>
       <table>
@@ -263,8 +178,7 @@ function PopupBody({ feature, columns }) {
           }
         </tbody>
       </table>
-
-      {isLineFeature && getElevationProfile()}
+      <ElevationProfile geometry={feature.geometry} />
     </div>
   );
 }
