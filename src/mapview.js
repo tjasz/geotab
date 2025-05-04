@@ -30,6 +30,7 @@ import { LeafletButton } from "./LeafletButton"
 import { SvgPatternRenderer } from "./PatternRenderer/SvgPatternRenderer"
 import DataCellValue from "./table/DataCellValue"
 import FormatPaintControl from "./symbology/FormatPaintControl"
+import { distance } from "@turf/turf";
 
 function MapView(props) {
   const context = useContext(DataContext);
@@ -157,6 +158,75 @@ function ActivePopup(props) {
 }
 
 function PopupBody({ feature, columns }) {
+  const isLineFeature = feature?.geometry?.type === GeometryType.LineString ||
+    feature?.geometry?.type === GeometryType.MultiLineString;
+
+  // Extract elevation data if available in the coordinates
+  const getElevationProfile = () => {
+    if (!isLineFeature) return null;
+
+    let coordinates = [];
+    if (feature.geometry.type === GeometryType.LineString) {
+      coordinates = feature.geometry.coordinates;
+    } else if (feature.geometry.type === GeometryType.MultiLineString) {
+      // Flatten MultiLineString coordinates
+      coordinates = feature.geometry.coordinates.flat();
+    }
+
+    // Check if coordinates have elevation data (z value)
+    if (coordinates.length > 0 && coordinates[0].length >= 3) {
+      const elevations = coordinates.map(coord => coord[2]);
+      const minElevation = Math.min(...elevations);
+      const maxElevation = Math.max(...elevations);
+
+      // Calculate cumulative distances
+      let cumulativeDistances = [0];
+      let totalDistance = 0;
+
+      for (let i = 1; i < coordinates.length; i++) {
+        const prevCoord = coordinates[i - 1];
+        const currCoord = coordinates[i];
+        const segDistance = distance(prevCoord, currCoord, { units: 'meters' });
+        totalDistance += segDistance;
+        cumulativeDistances.push(totalDistance);
+      }
+
+      // Normalize distances to fit SVG width
+      const normalizedDistances = cumulativeDistances.map(d => (d / totalDistance) * 190);
+
+      // Create SVG path for elevation profile
+      const svgHeight = 100;
+      const elevationRange = maxElevation - minElevation;
+      const pathPoints = coordinates.map((coord, i) => {
+        const x = normalizedDistances[i];
+        // Invert y-axis for SVG (0 is top)
+        const y = svgHeight - ((coord[2] - minElevation) / elevationRange) * 70 - 10;
+        return `${i === 0 ? 'M' : 'L'}${x},${y}`;
+      }).join(' ');
+
+      return (
+        <div className="elevation-profile">
+          <h4>Elevation Profile</h4>
+          <svg width="100%" height={svgHeight} viewBox={`0 0 200 ${svgHeight}`} preserveAspectRatio="none">
+            <path
+              d={pathPoints}
+              stroke="#007bff"
+              strokeWidth="2"
+              fill="none"
+            />
+            <text x="5" y="15" fontSize="10">{Math.round(maxElevation)}m</text>
+            <text x="5" y={svgHeight - 5} fontSize="10">{Math.round(minElevation)}m</text>
+            <text x="160" y={svgHeight - 5} fontSize="10">
+              {(totalDistance / 1000).toFixed(1)}km
+            </text>
+          </svg>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
   return (
     <div style={{ height: "200px", overflow: "auto" }}>
       <table>
@@ -173,6 +243,8 @@ function PopupBody({ feature, columns }) {
           }
         </tbody>
       </table>
+
+      {isLineFeature && getElevationProfile()}
     </div>
   );
 }
