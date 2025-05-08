@@ -38,7 +38,7 @@ const ElevationProfileDialog: React.FC<ElevationProfileDialogProps> = ({
       </DialogTitle>
       <DialogContent>
         <div style={{ width: '100%' }}>
-          <ElevationProfile geometry={geometry} useResponsiveContainer={true} height={250} />
+          <ElevationProfile geometry={geometry} useResponsiveContainer={true} height={400} />
         </div>
       </DialogContent>
     </Dialog>
