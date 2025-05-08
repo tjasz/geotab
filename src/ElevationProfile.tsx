@@ -19,7 +19,8 @@ interface ChartDataPoint {
   coordinate: number[];
   distance: number;
   elevation: number;
-  cumulativeGain: number; // Added cumulative elevation gain
+  cumulativeGain: number;
+  cumulativeLoss: number;
 }
 
 const ElevationProfile: React.FC<ElevationProfileProps> = ({
@@ -54,43 +55,42 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
   const minElevation = Math.min(...elevations);
   const maxElevation = Math.max(...elevations);
 
-  // Calculate cumulative distances
-  let cumulativeDistances = [0];
-  let totalDistance = 0;
-
-  for (let i = 1; i < coordinates.length; i++) {
-    const prevCoord = coordinates[i - 1];
-    const currCoord = coordinates[i];
-    // Use the imported distance function from turf.js
-    const segDistance = distance(
-      [prevCoord[0], prevCoord[1]],
-      [currCoord[0], currCoord[1]],
-      { units: 'kilometers' }
-    );
-    totalDistance += segDistance;
-    cumulativeDistances.push(totalDistance);
-  }
-
   // Create data for the chart, including cumulative elevation gain
   const chartData: ChartDataPoint[] = [];
+  let totalDistance = 0;
   let cumulativeGain = 0;
+  let cumulativeLoss = 0;
 
   for (let i = 0; i < coordinates.length; i++) {
-    // Calculate elevation gain (only uphill portions)
+    const currCoord = coordinates[i];
+
+    // Calculate distance from the previous point, cumulative gain and loss
     if (i > 0) {
-      const elevationDifference = coordinates[i][2] - coordinates[i - 1][2];
+      const prevCoord = coordinates[i - 1];
+
+      const segDistance = distance(
+        [prevCoord[0], prevCoord[1]],
+        [currCoord[0], currCoord[1]],
+        { units: 'kilometers' }
+      );
+      totalDistance += segDistance;
+
+      const elevationDifference = currCoord[2] - prevCoord[2];
       if (elevationDifference > 0) {
         cumulativeGain += elevationDifference;
+      } else {
+        cumulativeLoss += elevationDifference;
       }
     }
 
     // Add point to chart data with distance, elevation, and cumulative gain
     chartData.push({
       index: i,
-      coordinate: coordinates[i],
-      distance: cumulativeDistances[i],
-      elevation: coordinates[i][2],
-      cumulativeGain: cumulativeGain
+      coordinate: currCoord,
+      elevation: currCoord[2],
+      distance: totalDistance,
+      cumulativeGain,
+      cumulativeLoss,
     });
   }
 
@@ -101,7 +101,6 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
   const selectedElevations = elevations.slice(selectedStartIndex, selectedEndIndex + 1);
   const selectedMinElevation = Math.min(...selectedElevations);
   const selectedMaxElevation = Math.max(...selectedElevations);
-  const selectedElevationGain = selectedMaxElevation - selectedMinElevation;
 
   const selectedStartDistance = chartData[selectedStartIndex].distance;
   const selectedEndDistance = chartData[selectedEndIndex].distance;
@@ -109,7 +108,9 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
 
   // Get cumulative elevation gain for the selection using pre-computed values
   const selectedCumulativeGain = chartData[selectedEndIndex].cumulativeGain -
-    (selectedStartIndex > 0 ? chartData[selectedStartIndex - 1].cumulativeGain : 0);
+    (selectedStartIndex > 0 ? chartData[selectedStartIndex].cumulativeGain : 0);
+  const selectedCumulativeLoss = chartData[selectedEndIndex].cumulativeLoss -
+    (selectedStartIndex > 0 ? chartData[selectedStartIndex].cumulativeLoss : 0);
 
   // Handle slider change
   const handleSliderChange = (event: Event, newValue: number | number[]) => {
@@ -201,9 +202,36 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
         />
       </div>
       <div style={{ fontSize: '10px', textAlign: 'right' }}>
-        Total Distance: {totalDistance.toFixed(2)}km | Elevation Gain: {(maxElevation - minElevation).toFixed(0)}m
-        <br />
-        Selection: {selectedDistance.toFixed(2)}km | Elevation Gain: {selectedElevationGain.toFixed(0)}m | Cumulative Gain: {selectedCumulativeGain.toFixed(0)}m
+        <table>
+          <thead>
+            <tr>
+              <th></th>
+              <th>Distance</th>
+              <th>Min</th>
+              <th>Max</th>
+              <th>Gain</th>
+              <th>Loss</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th>Total</th>
+              <td>{totalDistance.toFixed(2)}km</td>
+              <td>{minElevation.toFixed(0)}m</td>
+              <td>{maxElevation.toFixed(0)}m</td>
+              <td>{cumulativeGain.toFixed(0)}m</td>
+              <td>{Math.abs(cumulativeLoss).toFixed(0)}m</td>
+            </tr>
+            <tr>
+              <th>Selection</th>
+              <td>{selectedDistance.toFixed(2)}km</td>
+              <td>{selectedMinElevation.toFixed(0)}m</td>
+              <td>{selectedMaxElevation.toFixed(0)}m</td>
+              <td>{selectedCumulativeGain.toFixed(0)}m</td>
+              <td>{Math.abs(selectedCumulativeLoss).toFixed(0)}m</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   );
