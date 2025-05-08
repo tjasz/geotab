@@ -3,6 +3,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { GeometryType } from './geojson-types';
 import { distance } from '@turf/turf';
 import { Slider } from '@mui/material';
+import { CategoricalChartState } from 'recharts/types/chart/types';
 
 interface ElevationProfileProps {
   geometry: {
@@ -40,6 +41,7 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
 
   // Add slider state
   const [sliderValues, setSliderValues] = useState<number[]>([0, coordinates.length - 1]);
+  const [potentialSliderStart, setPotentialSliderStart] = useState<number>(0);
 
   const isLineFeature = geometry?.type === GeometryType.LineString ||
     geometry?.type === GeometryType.MultiLineString;
@@ -117,6 +119,12 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
     setSliderValues(newValue as number[]);
   };
 
+  const setSliderValuesFromEvent = (data: CategoricalChartState) => {
+    const newIndex = data.activePayload?.[0].payload.index ?? 0 as number;
+    const indices = [potentialSliderStart, newIndex].sort()
+    setSliderValues(indices);
+  }
+
   // The chart component to render
   const elevationChart = (
     <LineChart
@@ -125,17 +133,18 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
       data={chartData}
       margin={{ top: 5, right: 5, left: 5, bottom: 15 }}
       onMouseDown={(data, event) => {
-        event.preventDefault();
-        console.log({ data, event })
-        setSliderValues([data.activePayload?.[0].payload.index ?? 0, 0] as number[]); // Set slider to clicked point
+        event.preventDefault && event.preventDefault();
+        setPotentialSliderStart(data.activePayload?.[0].payload.index ?? 0 as number);
       }}
       onMouseUp={(data, event) => {
-        event.preventDefault();
-        console.log({ data, event })
-        setSliderValues([sliderValues[0], data.activePayload?.[0].payload.index ?? 0] as number[]); // Set slider to clicked point
+        event.preventDefault && event.preventDefault();
+        setSliderValuesFromEvent(data);
       }}
       onMouseMove={(data, event) => {
-        event.stopPropagation();
+        event.preventDefault && event.preventDefault();
+        if (event.buttons || event.force) {
+          setSliderValuesFromEvent(data);
+        }
       }}
     >
       <CartesianGrid strokeDasharray="3 3" />
