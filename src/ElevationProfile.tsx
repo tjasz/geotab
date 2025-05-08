@@ -246,9 +246,9 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
             <ReferenceArea
               x1={segment.from.distance}
               x2={segment.to.distance}
-              y1={Math.min(segment.from.elevation, segment.to.elevation) - 10}
-              y2={Math.max(segment.from.elevation, segment.to.elevation) + 10}
-              fill={inflectionColors[index % inflectionColors.length]}
+              y1={Math.min(segment.from.elevation, segment.to.elevation)}
+              y2={Math.max(segment.from.elevation, segment.to.elevation)}
+              fill={inflectionColors[segment.elevationDifference > 0 ? 0 : 1]}
               fillOpacity={0.5}
               strokeOpacity={1}
               stroke="black"
