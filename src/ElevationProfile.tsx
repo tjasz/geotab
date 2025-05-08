@@ -137,7 +137,7 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
     }
     return lineSeg;
   }
-  const smoothedChartData = douglasPeucker(chartData, 1.5 * cumulativeGain / 100);
+  const smoothedChartData = douglasPeucker(chartData, Math.max(10, 1.5 * cumulativeGain / 100));
   // identify peaks and valleys from the smoothed data
   let segments: Segment[] = [];
   for (let i = 1; i < smoothedChartData.length; i++) {
@@ -145,9 +145,10 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
     const currPoint = smoothedChartData[i];
     const distance = currPoint.distance - prevPoint.distance;
     const elevationDifference = currPoint.elevation - prevPoint.elevation;
-    const grade = elevationDifference / distance;
+    const grade = Math.abs(elevationDifference) / distance;
     segments.push({ from: prevPoint, to: currPoint, distance, elevationDifference, grade });
   }
+  segments.sort((a, b) => b.grade - a.grade)
 
   // Generate alternating colors for the inflection sections
   const inflectionColors = ['rgba(255, 200, 100, 0.2)', 'rgba(100, 200, 255, 0.2)'];
@@ -237,7 +238,7 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
       </defs>
 
       {/* Create reference areas between inflection points */}
-      {segments.map((segment, index) => {
+      {segments.slice(0, 10).map((segment, index) => {
         const elevationChangeSign = segment.elevationDifference > 0 ? '+' : '';
 
         return (
