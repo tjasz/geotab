@@ -1,7 +1,8 @@
-import React from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import React, { useState } from 'react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { GeometryType } from './geojson-types';
 import { distance } from '@turf/turf';
+import { Slider } from '@mui/material';
 
 interface ElevationProfileProps {
   geometry: {
@@ -14,8 +15,11 @@ interface ElevationProfileProps {
 }
 
 interface ChartDataPoint {
-  distance: string;
+  index: number;
+  coordinate: number[];
+  distance: number;
   elevation: number;
+  cumulativeGain: number; // Added cumulative elevation gain
 }
 
 const ElevationProfile: React.FC<ElevationProfileProps> = ({
@@ -24,11 +28,6 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
   width = 220,
   height = 100
 }) => {
-  const isLineFeature = geometry?.type === GeometryType.LineString ||
-    geometry?.type === GeometryType.MultiLineString;
-
-  if (!isLineFeature) return null;
-
   // Extract coordinates based on geometry type
   let coordinates: number[][] = [];
   if (geometry.type === GeometryType.LineString) {
@@ -37,6 +36,14 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
     // Flatten MultiLineString coordinates
     coordinates = (geometry.coordinates as number[][][]).flat();
   }
+
+  // Add slider state
+  const [sliderValues, setSliderValues] = useState<number[]>([0, coordinates.length - 1]);
+
+  const isLineFeature = geometry?.type === GeometryType.LineString ||
+    geometry?.type === GeometryType.MultiLineString;
+
+  if (!isLineFeature) return null;
 
   // Check if coordinates have elevation data (z value)
   if (coordinates.length === 0 || coordinates[0].length < 3) {
@@ -64,11 +71,50 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
     cumulativeDistances.push(totalDistance);
   }
 
-  // Create data for the chart
-  const chartData: ChartDataPoint[] = coordinates.map((coord, i) => ({
-    distance: cumulativeDistances[i].toFixed(2),
-    elevation: coord[2]
-  }));
+  // Create data for the chart, including cumulative elevation gain
+  const chartData: ChartDataPoint[] = [];
+  let cumulativeGain = 0;
+
+  for (let i = 0; i < coordinates.length; i++) {
+    // Calculate elevation gain (only uphill portions)
+    if (i > 0) {
+      const elevationDifference = coordinates[i][2] - coordinates[i - 1][2];
+      if (elevationDifference > 0) {
+        cumulativeGain += elevationDifference;
+      }
+    }
+
+    // Add point to chart data with distance, elevation, and cumulative gain
+    chartData.push({
+      index: i,
+      coordinate: coordinates[i],
+      distance: cumulativeDistances[i],
+      elevation: coordinates[i][2],
+      cumulativeGain: cumulativeGain
+    });
+  }
+
+  // Calculate selected range metrics
+  const selectedStartIndex = sliderValues[0];
+  const selectedEndIndex = sliderValues[1];
+
+  const selectedElevations = elevations.slice(selectedStartIndex, selectedEndIndex + 1);
+  const selectedMinElevation = Math.min(...selectedElevations);
+  const selectedMaxElevation = Math.max(...selectedElevations);
+  const selectedElevationGain = selectedMaxElevation - selectedMinElevation;
+
+  const selectedStartDistance = chartData[selectedStartIndex].distance;
+  const selectedEndDistance = chartData[selectedEndIndex].distance;
+  const selectedDistance = selectedEndDistance - selectedStartDistance;
+
+  // Get cumulative elevation gain for the selection using pre-computed values
+  const selectedCumulativeGain = chartData[selectedEndIndex].cumulativeGain -
+    (selectedStartIndex > 0 ? chartData[selectedStartIndex - 1].cumulativeGain : 0);
+
+  // Handle slider change
+  const handleSliderChange = (event: Event, newValue: number | number[]) => {
+    setSliderValues(newValue as number[]);
+  };
 
   // The chart component to render
   const elevationChart = (
@@ -77,12 +123,29 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
       height={height}
       data={chartData}
       margin={{ top: 5, right: 5, left: 5, bottom: 15 }}
+      onMouseDown={(data, event) => {
+        event.preventDefault();
+        console.log({ data, event })
+        setSliderValues([data.activePayload?.[0].payload.index ?? 0, 0] as number[]); // Set slider to clicked point
+      }}
+      onMouseUp={(data, event) => {
+        event.preventDefault();
+        console.log({ data, event })
+        setSliderValues([sliderValues[0], data.activePayload?.[0].payload.index ?? 0] as number[]); // Set slider to clicked point
+      }}
+      onMouseMove={(data, event) => {
+        event.stopPropagation();
+      }}
     >
       <CartesianGrid strokeDasharray="3 3" />
       <XAxis
         dataKey="distance"
         label={{ value: 'Distance (km)', position: 'bottom', offset: 0, fontSize: 10 }}
         tick={{ fontSize: 9 }}
+        tickFormatter={(value) => `${value.toFixed(2)}km`}
+        domain={[0, totalDistance]}
+        scale="linear"
+        type="number"
       />
       <YAxis
         domain={[minElevation - 50, maxElevation + 50]}
@@ -90,13 +153,26 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
         tickFormatter={(value) => `${Math.round(value)}m`}
       />
       <Tooltip
-        formatter={(value: number) => [`${value}m`, 'Elevation']}
-        labelFormatter={(label: string) => `Distance: ${label}km`}
+        formatter={(value: number, name: string) => {
+          if (name === 'elevation') return [`${value.toFixed(0)}m`, 'Elevation'];
+          return [value, name];
+        }}
+        labelFormatter={(label: number) => `Distance: ${label.toFixed(2)}km`}
       />
+      <defs>
+        <linearGradient id="gradient" x1="0%" y1="0" x2="100%" y2="0">
+          <stop offset="0%" stopColor="#f80" />
+          <stop offset={`${selectedStartDistance / totalDistance * 100}%`} stopColor="#f80" />
+          <stop offset={`${selectedStartDistance / totalDistance * 100}%`} stopColor="#08f" />
+          <stop offset={`${selectedEndDistance / totalDistance * 100}%`} stopColor="#08f" />
+          <stop offset={`${selectedEndDistance / totalDistance * 100}%`} stopColor="#f80" />
+          <stop offset={`${100}%`} stopColor="#f80" />
+        </linearGradient>
+      </defs>
       <Line
         type="monotone"
         dataKey="elevation"
-        stroke="#007bff"
+        stroke="url(#gradient)"
         strokeWidth={2}
         dot={false}
         animationDuration={500}
@@ -114,8 +190,20 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
       ) : (
         elevationChart
       )}
+      <div style={{ padding: '15px 10px 5px 10px' }}>
+        <Slider
+          value={sliderValues}
+          onChange={handleSliderChange}
+          valueLabelDisplay="auto"
+          min={0}
+          max={coordinates.length - 1}
+          valueLabelFormat={(index) => `${chartData[index].distance}km`}
+        />
+      </div>
       <div style={{ fontSize: '10px', textAlign: 'right' }}>
         Total Distance: {totalDistance.toFixed(2)}km | Elevation Gain: {(maxElevation - minElevation).toFixed(0)}m
+        <br />
+        Selection: {selectedDistance.toFixed(2)}km | Elevation Gain: {selectedElevationGain.toFixed(0)}m | Cumulative Gain: {selectedCumulativeGain.toFixed(0)}m
       </div>
     </div>
   );
