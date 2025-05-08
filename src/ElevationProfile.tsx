@@ -24,6 +24,14 @@ interface ChartDataPoint {
   cumulativeLoss: number;
 }
 
+interface Segment {
+  from: ChartDataPoint;
+  to: ChartDataPoint;
+  distance: number;
+  elevationDifference: number;
+  grade: number;
+}
+
 const ElevationProfile: React.FC<ElevationProfileProps> = ({
   geometry,
   useResponsiveContainer = false,
@@ -131,13 +139,15 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
   }
   const smoothedChartData = douglasPeucker(chartData, 1.5 * cumulativeGain / 100);
   // identify peaks and valleys from the smoothed data
-  const diffs = smoothedChartData.map((point, i) => {
-    if (i === 0 || i === smoothedChartData.length - 1) return 0;
+  let segments: Segment[] = [];
+  for (let i = 1; i < smoothedChartData.length; i++) {
     const prevPoint = smoothedChartData[i - 1];
-    const nextPoint = smoothedChartData[i + 1];
-    return (point.elevation - prevPoint.elevation) * (point.elevation - nextPoint.elevation);
-  });
-  const inflections = smoothedChartData.filter((point, i) => diffs[i] >= 0);
+    const currPoint = smoothedChartData[i];
+    const distance = currPoint.distance - prevPoint.distance;
+    const elevationDifference = currPoint.elevation - prevPoint.elevation;
+    const grade = elevationDifference / distance;
+    segments.push({ from: prevPoint, to: currPoint, distance, elevationDifference, grade });
+  }
 
   // Generate alternating colors for the inflection sections
   const inflectionColors = ['rgba(255, 200, 100, 0.2)', 'rgba(100, 200, 255, 0.2)'];
@@ -227,35 +237,28 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
       </defs>
 
       {/* Create reference areas between inflection points */}
-      {inflections.map((point, index) => {
-        if (index === 0) return null; // Skip first point as we need pairs
-        const prevPoint = inflections[index - 1];
-        const sectionDistance = (point.distance - prevPoint.distance).toFixed(1);
-        const elevationDiff = point.elevation - prevPoint.elevation;
-        const elevationChange = elevationDiff.toFixed(0);
-        const elevationChangeSign = elevationDiff > 0 ? '+' : '';
-        const labelX = (prevPoint.distance + point.distance) / 2;
-        const labelY = (prevPoint.elevation + point.elevation) / 2;
+      {segments.map((segment, index) => {
+        const elevationChangeSign = segment.elevationDifference > 0 ? '+' : '';
 
         return (
           <React.Fragment key={`inflection-${index}`}>
             <ReferenceArea
-              x1={prevPoint.distance}
-              x2={point.distance}
-              y1={Math.min(prevPoint.elevation, point.elevation) - 10}
-              y2={Math.max(prevPoint.elevation, point.elevation) + 10}
+              x1={segment.from.distance}
+              x2={segment.to.distance}
+              y1={Math.min(segment.from.elevation, segment.to.elevation) - 10}
+              y2={Math.max(segment.from.elevation, segment.to.elevation) + 10}
               fill={inflectionColors[index % inflectionColors.length]}
               fillOpacity={0.5}
               strokeOpacity={1}
               stroke="black"
             >
               <Label
-                value={`${sectionDistance}km`}
+                value={`${segment.distance.toFixed(1)}km`}
                 position="insideTop"
                 style={{ fontSize: 9, fill: '#333', fontWeight: 'bold' }}
               />
               <Label
-                value={`${elevationChangeSign}${elevationChange}m`}
+                value={`${elevationChangeSign}${segment.elevationDifference.toFixed(0)}m`}
                 position="insideRight"
                 style={{ fontSize: 9, fill: '#333', fontWeight: 'bold' }}
               />
