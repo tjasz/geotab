@@ -22,7 +22,7 @@ const ElevationProfileDialog: React.FC<ElevationProfileDialogProps> = ({
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth="md"
+      maxWidth="xl"
       fullWidth
       aria-labelledby="elevation-profile-dialog-title"
     >
@@ -37,7 +37,7 @@ const ElevationProfileDialog: React.FC<ElevationProfileDialogProps> = ({
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        <div style={{ width: '100%', height: '300px' }}>
+        <div style={{ width: '100%' }}>
           <ElevationProfile geometry={geometry} useResponsiveContainer={true} height={250} />
         </div>
       </DialogContent>
