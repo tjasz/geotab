@@ -139,6 +139,9 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
   });
   const inflections = smoothedChartData.filter((point, i) => diffs[i] >= 0);
 
+  // Generate alternating colors for the inflection sections
+  const inflectionColors = ['rgba(255, 200, 100, 0.2)', 'rgba(100, 200, 255, 0.2)'];
+
   // Calculate selected range metrics
   const selectedStartIndex = sliderValues[0];
   const selectedEndIndex = sliderValues[1];
@@ -222,6 +225,45 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
           <stop offset={`${100}%`} stopColor="#f80" />
         </linearGradient>
       </defs>
+
+      {/* Create reference areas between inflection points */}
+      {inflections.map((point, index) => {
+        if (index === 0) return null; // Skip first point as we need pairs
+        const prevPoint = inflections[index - 1];
+        const sectionDistance = (point.distance - prevPoint.distance).toFixed(1);
+        const elevationDiff = point.elevation - prevPoint.elevation;
+        const elevationChange = elevationDiff.toFixed(0);
+        const elevationChangeSign = elevationDiff > 0 ? '+' : '';
+        const labelX = (prevPoint.distance + point.distance) / 2;
+        const labelY = (prevPoint.elevation + point.elevation) / 2;
+
+        return (
+          <React.Fragment key={`inflection-${index}`}>
+            <ReferenceArea
+              x1={prevPoint.distance}
+              x2={point.distance}
+              y1={Math.min(prevPoint.elevation, point.elevation) - 10}
+              y2={Math.max(prevPoint.elevation, point.elevation) + 10}
+              fill={inflectionColors[index % inflectionColors.length]}
+              fillOpacity={0.5}
+              strokeOpacity={1}
+              stroke="black"
+            >
+              <Label
+                value={`${sectionDistance}km`}
+                position="insideTop"
+                style={{ fontSize: 9, fill: '#333', fontWeight: 'bold' }}
+              />
+              <Label
+                value={`${elevationChangeSign}${elevationChange}m`}
+                position="insideRight"
+                style={{ fontSize: 9, fill: '#333', fontWeight: 'bold' }}
+              />
+            </ReferenceArea>
+          </React.Fragment>
+        );
+      })}
+
       <Line
         type="monotone"
         dataKey="elevation"
@@ -239,27 +281,6 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
         isFront={true}
         strokeWidth={0}
       />
-      {inflections.map((point, index) => (
-        <ReferenceDot
-          key={index}
-          x={point.distance}
-          y={point.elevation}
-          stroke="green"
-          fill="green"
-          r={4}
-          isFront={true}
-          strokeWidth={2}
-          label={{
-            value: point.elevation.toFixed(0),
-            position: 'top',
-            fontSize: 10,
-            fill: 'green',
-            offset: 5,
-            fontWeight: 'bold',
-            fontFamily: 'Arial',
-          }}
-        />
-      ))}
     </LineChart>
   );
 
