@@ -48,57 +48,64 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
   }
 
   // Add slider state
-  const [sliderValues, setSliderValues] = useState<number[]>([0, coordinates.length - 1]);
   const [potentialSliderStart, setPotentialSliderStart] = useState<number>(0);
   const [sensitivity, setSensitivity] = useState<number>(10);
 
   // Create data for the chart, including cumulative elevation gain
-  const chartData: ChartDataPoint[] = [];
-  let totalDistance = 0;
-  let cumulativeGain = 0;
-  let cumulativeLoss = 0;
-  let minElevation = Infinity;
-  let maxElevation = -Infinity;
+  const { chartData, totalDistance, cumulativeGain, cumulativeLoss, minElevation, maxElevation } = useMemo(() => {
+    const chartData: ChartDataPoint[] = [];
+    let totalDistance = 0;
+    let cumulativeGain = 0;
+    let cumulativeLoss = 0;
+    let minElevation = Infinity;
+    let maxElevation = -Infinity;
 
-  for (let i = 0; i < coordinates.length; i++) {
-    const currCoord = coordinates[i];
+    for (let i = 0; i < coordinates.length; i++) {
+      const currCoord = coordinates[i];
 
-    // Calculate distance from the previous point, cumulative gain and loss
-    if (i > 0) {
-      const prevCoord = coordinates[i - 1];
+      // Calculate distance from the previous point, cumulative gain and loss
+      if (i > 0) {
+        const prevCoord = coordinates[i - 1];
 
-      const segDistance = distance(
-        [prevCoord[0], prevCoord[1]],
-        [currCoord[0], currCoord[1]],
-        { units: 'kilometers' }
-      );
-      totalDistance += segDistance;
+        const segDistance = distance(
+          [prevCoord[0], prevCoord[1]],
+          [currCoord[0], currCoord[1]],
+          { units: 'kilometers' }
+        );
+        totalDistance += segDistance;
 
-      const elevationDifference = currCoord[2] - prevCoord[2];
-      if (elevationDifference > 0) {
-        cumulativeGain += elevationDifference;
-      } else {
-        cumulativeLoss += elevationDifference;
+        const elevationDifference = currCoord[2] - prevCoord[2];
+        if (elevationDifference > 0) {
+          cumulativeGain += elevationDifference;
+        } else {
+          cumulativeLoss += elevationDifference;
+        }
+
+        if (currCoord[2] < minElevation) {
+          minElevation = currCoord[2];
+        }
+        if (currCoord[2] > maxElevation) {
+          maxElevation = currCoord[2];
+        }
       }
 
-      if (currCoord[2] < minElevation) {
-        minElevation = currCoord[2];
-      }
-      if (currCoord[2] > maxElevation) {
-        maxElevation = currCoord[2];
-      }
+      // Add point to chart data with distance, elevation, and cumulative gain
+      chartData.push({
+        index: i,
+        coordinate: currCoord,
+        elevation: currCoord[2],
+        distance: totalDistance,
+        cumulativeGain,
+        cumulativeLoss,
+      });
     }
 
-    // Add point to chart data with distance, elevation, and cumulative gain
-    chartData.push({
-      index: i,
-      coordinate: currCoord,
-      elevation: currCoord[2],
-      distance: totalDistance,
-      cumulativeGain,
-      cumulativeLoss,
-    });
-  }
+    const simplifiedChartData = douglasPeucker(chartData, 1).map((p, i) => ({ ...p, index: i }));
+
+    return { chartData: simplifiedChartData, totalDistance, cumulativeGain, cumulativeLoss, minElevation, maxElevation };
+  }, [coordinates]);
+
+  const [sliderValues, setSliderValues] = useState<number[]>([0, chartData.length - 1]);
 
   // Calculate precision based on the sensitivity slider value
   // Lower sensitivity = higher precision value = fewer points in the simplified curve
@@ -292,7 +299,7 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
           onChange={handleSliderChange}
           valueLabelDisplay="auto"
           min={0}
-          max={coordinates.length - 1}
+          max={chartData.length - 1}
           valueLabelFormat={(index) => `${chartData[index].distance}km`}
         />
       </div>
