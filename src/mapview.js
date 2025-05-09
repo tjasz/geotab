@@ -356,7 +356,7 @@ function ChangeView() {
         }}
       />
       <LocateControl />
-      <FormatPaintControl position="topleft" />
+      <FormatPaintControl />
       {validFeatureListBounds && <LeafletButton
         position="topleft"
         className="leaflet-control-fitbounds"

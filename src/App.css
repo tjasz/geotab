@@ -514,18 +514,24 @@ button:active {
   color: black;
 }
 
-.format-paint-control a {
+.format-paint-control {
+  width: 44px;
+  height: 44px;
+  border-radius: 5px;
+}
+
+.format-paint-control a.leaflet-bar-part-single {
   display: flex !important;
   align-items: center;
   justify-content: center;
+  width: 44px;
+  height: 44px;
 }
 
 .format-paint-control svg {
-  width: 16px;
-  height: 16px;
-  fill: #333;
-}
-
-.format-paint-control a:hover svg {
-  fill: #000;
+  width: 44px;
+  height: 44px;
+  fill: #00000020;
+  stroke: #000a;
+  stroke-width: 1px;
 }
