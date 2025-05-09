@@ -170,19 +170,19 @@ export function PanelView({
 
       if (isDraggingLeft && containerRef.current) {
         const containerRect = containerRef.current.getBoundingClientRect();
-        const newWidth = Math.max(100, clientX - containerRect.left);
+        const newWidth = Math.max(0, clientX - containerRect.left);
         setCurrentLeftWidth(newWidth);
       }
 
       if (isDraggingRight && containerRef.current) {
         const containerRect = containerRef.current.getBoundingClientRect();
-        const newWidth = Math.max(100, containerRect.right - clientX);
+        const newWidth = Math.max(0, containerRect.right - clientX);
         setCurrentRightWidth(newWidth);
       }
 
       if (isDraggingBottom && containerRef.current) {
         const containerRect = containerRef.current.getBoundingClientRect();
-        const newHeight = Math.max(100, containerRect.bottom - clientY);
+        const newHeight = Math.max(0, containerRect.bottom - clientY);
         setCurrentBottomHeight(newHeight);
       }
     };
