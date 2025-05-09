@@ -453,7 +453,7 @@ button:active {
   background-color: #336799;
   color: white;
   cursor: pointer;
-  z-index: 10000;
+  z-index: 1001;
   transition: background-color 0.3s;
   font-size: 6pt;
 }
