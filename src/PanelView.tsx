@@ -1,4 +1,4 @@
-import React, { useState, ReactNode } from 'react';
+import React, { useState, ReactNode, useEffect, useRef } from 'react';
 import { ArrowRight, ArrowLeft } from '@mui/icons-material';
 
 type PanelViewProps = {
@@ -35,6 +35,11 @@ export function PanelView({
 }: PanelViewProps) {
   const [leftPanelExpanded, setLeftPanelExpanded] = useState(true);
   const [rightPanelExpanded, setRightPanelExpanded] = useState(true);
+  const [currentLeftWidth, setCurrentLeftWidth] = useState(leftPanelWidth);
+  const [currentRightWidth, setCurrentRightWidth] = useState(rightPanelWidth);
+  const [isDraggingLeft, setIsDraggingLeft] = useState(false);
+  const [isDraggingRight, setIsDraggingRight] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const toggleLeftPanel = () => {
     setLeftPanelExpanded(!leftPanelExpanded);
@@ -44,14 +49,71 @@ export function PanelView({
     setRightPanelExpanded(!rightPanelExpanded);
   };
 
+  // Handle mouse down on resize dividers
+  const handleLeftDragStart = (e: React.MouseEvent) => {
+    if (leftPanelExpanded) {
+      e.preventDefault();
+      setIsDraggingLeft(true);
+    }
+  };
+
+  const handleRightDragStart = (e: React.MouseEvent) => {
+    if (rightPanelExpanded) {
+      e.preventDefault();
+      setIsDraggingRight(true);
+    }
+  };
+
+  // Handle mouse move for resizing
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isDraggingLeft && containerRef.current) {
+        const containerRect = containerRef.current.getBoundingClientRect();
+        const newWidth = Math.max(100, e.clientX - containerRect.left);
+        setCurrentLeftWidth(newWidth);
+      }
+
+      if (isDraggingRight && containerRef.current) {
+        const containerRect = containerRef.current.getBoundingClientRect();
+        const newWidth = Math.max(100, containerRect.right - e.clientX);
+        setCurrentRightWidth(newWidth);
+      }
+    };
+
+    const handleMouseUp = (e: MouseEvent) => {
+      e.preventDefault();
+      setIsDraggingLeft(false);
+      setIsDraggingRight(false);
+    };
+
+    if (isDraggingLeft || isDraggingRight) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+
+      // Set cursor style on body during drag
+      document.body.style.cursor = 'ew-resize';
+      document.body.style.userSelect = 'none';
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+
+      // Reset cursor style
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, [isDraggingLeft, isDraggingRight]);
+
   return (
-    <div className="panel-view-container" style={style}>
+    <div className="panel-view-container" style={style} ref={containerRef}>
       {/* Left panel */}
       {leftPanel && (
         <div
           className="panel left-panel"
           style={{
-            width: leftPanelExpanded ? leftPanelWidth : 0,
+            width: leftPanelExpanded ? currentLeftWidth : 0,
+            transition: isDraggingLeft ? 'none' : 'width 0.3s ease'
           }}
         >
           <div className="panel-header">
@@ -68,8 +130,13 @@ export function PanelView({
         <div
           className="panel-toggle left-panel-toggle"
           onClick={toggleLeftPanel}
+          onMouseDown={handleLeftDragStart}
           title={leftPanelExpanded ? "Hide left panel" : "Show left panel"}
-          style={{ marginLeft: leftPanelExpanded ? leftPanelWidth : 0 }}
+          style={{
+            marginLeft: leftPanelExpanded ? currentLeftWidth : 0,
+            cursor: leftPanelExpanded ? 'ew-resize' : 'pointer',
+            transition: isDraggingLeft ? 'none' : 'margin-left 0.3s ease'
+          }}
         >
           {leftPanelExpanded ? <ArrowLeft /> : <ArrowRight />}
         </div>
@@ -85,8 +152,13 @@ export function PanelView({
         <div
           className="panel-toggle right-panel-toggle"
           onClick={toggleRightPanel}
+          onMouseDown={handleRightDragStart}
           title={rightPanelExpanded ? "Hide right panel" : "Show right panel"}
-          style={{ marginRight: rightPanelExpanded ? rightPanelWidth : 0 }}
+          style={{
+            marginRight: rightPanelExpanded ? currentRightWidth : 0,
+            cursor: rightPanelExpanded ? 'ew-resize' : 'pointer',
+            transition: isDraggingRight ? 'none' : 'margin-right 0.3s ease'
+          }}
         >
           {rightPanelExpanded ? <ArrowRight /> : <ArrowLeft />}
         </div>
@@ -97,7 +169,8 @@ export function PanelView({
         <div
           className="panel right-panel"
           style={{
-            width: rightPanelExpanded ? rightPanelWidth : 0,
+            width: rightPanelExpanded ? currentRightWidth : 0,
+            transition: isDraggingRight ? 'none' : 'width 0.3s ease'
           }}
         >
           <div className="panel-header">
