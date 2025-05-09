@@ -213,10 +213,15 @@ function AppBody() {
         rightPanel={
           <TableView style={{}} />
         }
+        bottomPanel={
+          <SymbologyView />
+        }
         leftPanelTitle="Data"
         rightPanelTitle="Table"
+        bottomPanelTitle="Symbology"
         leftPanelWidth={300}
         rightPanelWidth={300}
+        bottomPanelHeight={300}
       >
         <MapView style={{ width: "100%" }} />
       </PanelView>
