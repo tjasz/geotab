@@ -254,7 +254,7 @@ export function PanelView({
             onClick={handleLeftPanelClick}
             onMouseDown={handleLeftDragStart}
             onTouchStart={handleLeftDragStart}
-            title={leftPanelExpanded ? "Hide left panel" : "Show left panel"}
+            title={`${leftPanelExpanded ? "Hide/resize" : "Show"} bottom panel '${leftPanelTitle}'`}
             style={{
               marginLeft: Math.min(leftToggleMargin, containerWidth - 12),
               cursor: leftPanelExpanded ? 'ew-resize' : 'pointer',
@@ -262,6 +262,7 @@ export function PanelView({
             }}
           >
             {leftPanelExpanded ? <ArrowLeft /> : <ArrowRight />}
+            {leftPanelExpanded || leftPanelTitle}
           </div>
         )}
 
@@ -277,7 +278,7 @@ export function PanelView({
             onClick={handleRightPanelClick}
             onMouseDown={handleRightDragStart}
             onTouchStart={handleRightDragStart}
-            title={rightPanelExpanded ? "Hide right panel" : "Show right panel"}
+            title={`${rightPanelExpanded ? "Hide/resize" : "Show"} bottom panel '${rightPanelTitle}'`}
             style={{
               marginRight: Math.min(rightToggleMargin, containerWidth - 12),
               cursor: rightPanelExpanded ? 'ew-resize' : 'pointer',
@@ -285,6 +286,7 @@ export function PanelView({
             }}
           >
             {rightPanelExpanded ? <ArrowRight /> : <ArrowLeft />}
+            {rightPanelExpanded || rightPanelTitle}
           </div>
         )}
 
@@ -314,7 +316,7 @@ export function PanelView({
           onClick={handleBottomPanelClick}
           onMouseDown={handleBottomDragStart}
           onTouchStart={handleBottomDragStart}
-          title={bottomPanelExpanded ? "Hide bottom panel" : "Show bottom panel"}
+          title={`${bottomPanelExpanded ? "Hide/resize" : "Show"} bottom panel '${bottomPanelTitle}'`}
           style={{
             marginBottom: Math.min(bottomToggleMargin, containerHeight - 12),
             cursor: bottomPanelExpanded ? 'ns-resize' : 'pointer',
@@ -322,6 +324,7 @@ export function PanelView({
           }}
         >
           {bottomPanelExpanded ? <ArrowDropDown /> : <ArrowDropUp />}
+          {bottomPanelExpanded || bottomPanelTitle}
         </div>
       )}
 

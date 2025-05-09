@@ -497,6 +497,7 @@ button:active {
   cursor: pointer;
   z-index: 10000;
   transition: background-color 0.3s;
+  font-size: 6pt;
 }
 
 .panel-toggle:hover {
@@ -506,13 +507,14 @@ button:active {
 .left-panel-toggle,
 .right-panel-toggle {
   width: 12px;
-  height: 60px;
+  min-height: 60px;
   top: 50%;
   transform: translateY(-50%);
+  writing-mode: vertical-rl;
 }
 
 .bottom-panel-toggle {
-  width: 60px;
+  min-width: 60px;
   height: 12px;
   left: 50%;
   transform: translateX(-50%);
