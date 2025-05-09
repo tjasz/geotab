@@ -89,33 +89,30 @@ export function PanelView({
 
   // Handle mouse down on resize dividers
   const handleLeftDragStart = (e: React.MouseEvent | React.TouchEvent) => {
-    if (leftPanelExpanded) {
-      e.preventDefault();
-      setIsDraggingLeft(true);
-      const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
-      dragStartXRef.current = clientX;
-      setDragDistance(0);
-    }
+    e.preventDefault();
+    setLeftPanelExpanded(true);
+    setIsDraggingLeft(true);
+    const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
+    dragStartXRef.current = clientX;
+    setDragDistance(0);
   };
 
   const handleRightDragStart = (e: React.MouseEvent | React.TouchEvent) => {
-    if (rightPanelExpanded) {
-      e.preventDefault();
-      setIsDraggingRight(true);
-      const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
-      dragStartXRef.current = clientX;
-      setDragDistance(0);
-    }
+    e.preventDefault();
+    setRightPanelExpanded(true);
+    setIsDraggingRight(true);
+    const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
+    dragStartXRef.current = clientX;
+    setDragDistance(0);
   };
 
   const handleBottomDragStart = (e: React.MouseEvent | React.TouchEvent) => {
-    if (bottomPanelExpanded) {
-      e.preventDefault();
-      setIsDraggingBottom(true);
-      const clientY = 'touches' in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
-      dragStartYRef.current = clientY;
-      setDragDistance(0);
-    }
+    e.preventDefault();
+    setBottomPanelExpanded(true);
+    setIsDraggingBottom(true);
+    const clientY = 'touches' in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
+    dragStartYRef.current = clientY;
+    setDragDistance(0);
   };
 
   // Handle click events, only toggle if no significant drag occurred
