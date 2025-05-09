@@ -1,5 +1,5 @@
 import React, { useState, ReactNode, useEffect, useRef } from 'react';
-import { ArrowRight, ArrowLeft, ArrowUpward, ArrowDownward } from '@mui/icons-material';
+import { ArrowRight, ArrowLeft, ArrowDropUp, ArrowDropDown } from '@mui/icons-material';
 
 type PanelViewProps = {
   leftPanel?: ReactNode;
@@ -321,7 +321,7 @@ export function PanelView({
             transition: isDraggingBottom ? 'none' : 'margin-bottom 0.3s ease'
           }}
         >
-          {bottomPanelExpanded ? <ArrowDownward /> : <ArrowUpward />}
+          {bottomPanelExpanded ? <ArrowDropDown /> : <ArrowDropUp />}
         </div>
       )}
 

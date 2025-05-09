@@ -183,7 +183,7 @@ button:active {
 
 #mapview {
   float: left;
-  height: 89vh;
+  height: 100%;
 }
 
 #map {
