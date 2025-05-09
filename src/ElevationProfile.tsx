@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Label, ReferenceDot, ReferenceArea } from 'recharts';
 import { GeometryType } from './geojson-types';
 import { distance } from '@turf/turf';
@@ -52,25 +52,13 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
   const [potentialSliderStart, setPotentialSliderStart] = useState<number>(0);
   const [sensitivity, setSensitivity] = useState<number>(10);
 
-  const isLineFeature = geometry?.type === GeometryType.LineString ||
-    geometry?.type === GeometryType.MultiLineString;
-
-  if (!isLineFeature) return null;
-
-  // Check if coordinates have elevation data (z value)
-  if (coordinates.length === 0 || coordinates[0].length < 3) {
-    return null;
-  }
-
-  const elevations = coordinates.map(coord => coord[2]);
-  const minElevation = Math.min(...elevations);
-  const maxElevation = Math.max(...elevations);
-
   // Create data for the chart, including cumulative elevation gain
   const chartData: ChartDataPoint[] = [];
   let totalDistance = 0;
   let cumulativeGain = 0;
   let cumulativeLoss = 0;
+  let minElevation = Infinity;
+  let maxElevation = -Infinity;
 
   for (let i = 0; i < coordinates.length; i++) {
     const currCoord = coordinates[i];
@@ -92,6 +80,13 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
       } else {
         cumulativeLoss += elevationDifference;
       }
+
+      if (currCoord[2] < minElevation) {
+        minElevation = currCoord[2];
+      }
+      if (currCoord[2] > maxElevation) {
+        maxElevation = currCoord[2];
+      }
     }
 
     // Add point to chart data with distance, elevation, and cumulative gain
@@ -105,59 +100,29 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
     });
   }
 
-  // Create a smoothed copy of the elevation chart using the douglas-peucker algorithm
-  // where X is distance and Y is elevation
-  // Keep only points that are necessary to represent the shape of the line
-  const douglasPeucker = (
-    coords: ChartDataPoint[],
-    precisionMeters: number,
-  ): ChartDataPoint[] => {
-    if (coords.length < 2) return coords.slice();
-    // find the point that is farthest from the line segment defined by the endpoints
-    const lineSeg: [ChartDataPoint, ChartDataPoint] = [
-      coords[0],
-      coords[coords.length - 1],
-    ];
-    let maxDist = 0;
-    let maxIndex = 0;
-    for (let i: number = 0; i < coords.length; i++) {
-      const slope = (lineSeg[1].elevation - lineSeg[0].elevation) / (lineSeg[1].distance - lineSeg[0].distance);
-      const interpolation = lineSeg[0].elevation + slope * (coords[i].distance - lineSeg[0].distance);
-      const dist = Math.abs(coords[i].elevation - interpolation);
-      if (dist > maxDist) {
-        maxDist = dist;
-        maxIndex = i;
-      }
-    }
-    // if the farthest point is beyond the threshold, add it and recurse
-    if (maxDist > precisionMeters) {
-      return [
-        ...douglasPeucker(coords.slice(0, maxIndex + 1), precisionMeters),
-        ...douglasPeucker(coords.slice(maxIndex), precisionMeters).slice(1),
-      ];
-    }
-    return lineSeg;
-  }
-
   // Calculate precision based on the sensitivity slider value
   // Lower sensitivity = higher precision value = fewer points in the simplified curve
   // Higher sensitivity = lower precision value = more points in the simplified curve
   const elevationRange = maxElevation - minElevation;
   const precisionValue = (elevationRange * (1 / sensitivity));
 
-  const smoothedChartData = douglasPeucker(chartData, precisionValue);
+  const segments = useMemo(() => {
+    // Update the chart data when sensitivity changes
+    const smoothedChartData = douglasPeucker(chartData, precisionValue);
 
-  // identify peaks and valleys from the smoothed data
-  let segments: Segment[] = [];
-  for (let i = 1; i < smoothedChartData.length; i++) {
-    const prevPoint = smoothedChartData[i - 1];
-    const currPoint = smoothedChartData[i];
-    const distance = currPoint.distance - prevPoint.distance;
-    const elevationDifference = currPoint.elevation - prevPoint.elevation;
-    const grade = Math.abs(elevationDifference) / distance / 1000;
-    segments.push({ from: prevPoint, to: currPoint, distance, elevationDifference, grade });
-  }
-  segments.sort((a, b) => b.grade - a.grade)
+    // identify peaks and valleys from the smoothed data
+    let segments: Segment[] = [];
+    for (let i = 1; i < smoothedChartData.length; i++) {
+      const prevPoint = smoothedChartData[i - 1];
+      const currPoint = smoothedChartData[i];
+      const distance = currPoint.distance - prevPoint.distance;
+      const elevationDifference = currPoint.elevation - prevPoint.elevation;
+      const grade = Math.abs(elevationDifference) / distance / 1000;
+      segments.push({ from: prevPoint, to: currPoint, distance, elevationDifference, grade });
+    }
+    segments.sort((a, b) => b.grade - a.grade)
+    return segments;
+  }, [chartData, precisionValue]);
 
   // Generate alternating colors for the inflection sections
   const inflectionColors = ['rgba(255, 200, 100, 0.2)', 'rgba(100, 200, 255, 0.2)'];
@@ -166,9 +131,17 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
   const selectedStartIndex = sliderValues[0];
   const selectedEndIndex = sliderValues[1];
 
-  const selectedElevations = elevations.slice(selectedStartIndex, selectedEndIndex + 1);
-  const selectedMinElevation = Math.min(...selectedElevations);
-  const selectedMaxElevation = Math.max(...selectedElevations);
+  let selectedMinElevation = Infinity;
+  let selectedMaxElevation = -Infinity;
+  for (let i = selectedStartIndex; i <= selectedEndIndex; i++) {
+    const elevation = chartData[i].elevation;
+    if (elevation < selectedMinElevation) {
+      selectedMinElevation = elevation;
+    }
+    if (elevation > selectedMaxElevation) {
+      selectedMaxElevation = elevation;
+    }
+  }
 
   const selectedStartDistance = chartData[selectedStartIndex].distance;
   const selectedEndDistance = chartData[selectedEndIndex].distance;
@@ -292,8 +265,8 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
         animationDuration={500}
       />
       <ReferenceArea
-        x1={chartData[selectedStartIndex].distance}
-        x2={chartData[selectedEndIndex].distance}
+        x1={selectedStartDistance}
+        x2={selectedEndDistance}
         strokeOpacity={0.3}
         fill="#08f"
         fillOpacity={0.3}
@@ -398,6 +371,40 @@ const StatisticsTable: React.FC<StatisticsTableProps> = ({
       </tr>
     </tbody>
   </table>
+}
+
+// Create a smoothed copy of the elevation chart using the douglas-peucker algorithm
+// where X is distance and Y is elevation
+// Keep only points that are necessary to represent the shape of the line
+const douglasPeucker = (
+  coords: ChartDataPoint[],
+  precisionMeters: number,
+): ChartDataPoint[] => {
+  if (coords.length < 2) return coords.slice();
+  // find the point that is farthest from the line segment defined by the endpoints
+  const lineSeg: [ChartDataPoint, ChartDataPoint] = [
+    coords[0],
+    coords[coords.length - 1],
+  ];
+  let maxDist = 0;
+  let maxIndex = 0;
+  for (let i: number = 0; i < coords.length; i++) {
+    const slope = (lineSeg[1].elevation - lineSeg[0].elevation) / (lineSeg[1].distance - lineSeg[0].distance);
+    const interpolation = lineSeg[0].elevation + slope * (coords[i].distance - lineSeg[0].distance);
+    const dist = Math.abs(coords[i].elevation - interpolation);
+    if (dist > maxDist) {
+      maxDist = dist;
+      maxIndex = i;
+    }
+  }
+  // if the farthest point is beyond the threshold, add it and recurse
+  if (maxDist > precisionMeters) {
+    return [
+      ...douglasPeucker(coords.slice(0, maxIndex + 1), precisionMeters),
+      ...douglasPeucker(coords.slice(maxIndex), precisionMeters).slice(1),
+    ];
+  }
+  return lineSeg;
 }
 
 export default ElevationProfile;
