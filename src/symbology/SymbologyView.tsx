@@ -6,8 +6,12 @@ import { linePatternOptions } from "./linePatternOptions"
 import { SymbologyPropertyView } from "./SymbologyPropertyView"
 import { NumericSymbologyPropertyView } from "./NumericSymbologyPropertyView"
 import { markersLibrary } from "./iconlib";
+import React from "react";
 
-export function SymbologyView(props) {
+interface SymbologyViewProps {
+}
+
+const SymbologyView: React.FC<SymbologyViewProps> = ({ }) => {
   const context = useContext(DataContext);
   const onSave = (draft) => {
     context?.setSymbology(draft);
@@ -18,7 +22,7 @@ export function SymbologyView(props) {
   }
 
   return (
-    <div id="symbologyview" style={props.style}>
+    <div id="symbologyview">
       <h2 onContextMenu={() => console.log(context.symbology)}>Symbology</h2>
       <SymbologyDefinition symbology={context.symbology} onSave={onSave} />
     </div>
