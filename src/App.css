@@ -202,8 +202,8 @@ button:active {
 
 #tableview {
   float: left;
-  height: 89vh;
-  overflow: scroll;
+  height: 84.5vh;
+  overflow: hidden;
 }
 
 #data-table {
@@ -295,7 +295,7 @@ button:active {
 
 #dataview {
   float: left;
-  height: 85.5vh;
+  height: 84.5vh;
   padding: 0.5em 0;
   overflow: scroll;
 }
