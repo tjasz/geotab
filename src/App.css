@@ -139,48 +139,6 @@ button:active {
   height: 89vh;
 }
 
-#tabview {}
-
-.tabs {
-  height: 2.5vh;
-  margin: 0;
-  padding: 0;
-  text-align: left;
-}
-
-.tabs p {
-  height: calc(2.5vh - 3px);
-  display: inline-block;
-  width: auto;
-  background-color: #336799;
-  color: white;
-  border: 2px solid black;
-  border-width: 2px 2px 0 2px;
-  border-radius: 10px 10px 0 0;
-  margin: 1px 1px 0 0;
-  padding: 0 1em;
-  cursor: pointer;
-}
-
-.tabs p:hover {
-  background-color: #5387b9;
-  color: white;
-}
-
-.tabs p.active {
-  background-color: #73a7d9;
-  color: black;
-}
-
-.tabs p.active:hover {
-  background-color: #5387b9;
-  color: white;
-}
-
-.tabBodies {
-  height: 86.5vh;
-}
-
 #mapview {
   float: left;
   height: 100%;
