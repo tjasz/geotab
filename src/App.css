@@ -202,7 +202,6 @@ button:active {
 
 #tableview {
   float: left;
-  height: 84.5vh;
   overflow: hidden;
 }
 
@@ -295,9 +294,8 @@ button:active {
 
 #dataview {
   float: left;
-  height: 84.5vh;
   padding: 0.5em 0;
-  overflow: scroll;
+  overflow: auto;
 }
 
 #importView {
@@ -366,9 +364,8 @@ button:active {
 
 #symbologyview {
   float: left;
-  height: 88vh;
   padding: 0.5em 0;
-  overflow: scroll;
+  overflow: auto;
 }
 
 #symbology-definition {
