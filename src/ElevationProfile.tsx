@@ -46,6 +46,7 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
     // Flatten MultiLineString coordinates
     coordinates = (geometry.coordinates as number[][][]).flat();
   }
+  coordinates = coordinates.filter(c => c.length >= 3); // Filter out points without elevation data
 
   // Add slider state
   const [potentialSliderStart, setPotentialSliderStart] = useState<number>(0);

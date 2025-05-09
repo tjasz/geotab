@@ -193,7 +193,7 @@ function PopupBody({ feature, columns }) {
       coordinates = feature.geometry.coordinates.flat();
     }
 
-    return coordinates.length > 0 && coordinates[0].length >= 3;
+    return coordinates.length > 0 && coordinates.some(c => c.length >= 3);
   };
 
   return (

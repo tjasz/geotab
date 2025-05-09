@@ -24,7 +24,7 @@ const ElevationProfilePanel: React.FC<ElevationProfilePanelProps> = ({
   if (!isLineFeature) return null;
 
   // Check if coordinates have elevation data (z value)
-  if (geometry.coordinates.length === 0 || geometry.coordinates[0].length < 3) {
+  if (geometry.coordinates.length === 0 || !geometry.coordinates.some(c => c.length >= 3)) {
     return null;
   }
 
