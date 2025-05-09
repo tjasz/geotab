@@ -260,7 +260,7 @@ export function PanelView({
             onClick={handleLeftPanelClick}
             onMouseDown={handleLeftDragStart}
             onTouchStart={handleLeftDragStart}
-            title={`${leftPanelExpanded ? "Hide/resize" : "Show"} bottom panel '${leftPanelTitle}'`}
+            title={`${leftPanelExpanded ? "Hide/resize" : "Show"} left panel '${leftPanelTitle}'`}
             style={{
               marginLeft: Math.min(leftToggleMargin, containerWidth - 12),
               cursor: leftPanelExpanded ? 'ew-resize' : 'pointer',
@@ -284,7 +284,7 @@ export function PanelView({
             onClick={handleRightPanelClick}
             onMouseDown={handleRightDragStart}
             onTouchStart={handleRightDragStart}
-            title={`${rightPanelExpanded ? "Hide/resize" : "Show"} bottom panel '${rightPanelTitle}'`}
+            title={`${rightPanelExpanded ? "Hide/resize" : "Show"} right panel '${rightPanelTitle}'`}
             style={{
               marginRight: Math.min(rightToggleMargin, containerWidth - 12),
               cursor: rightPanelExpanded ? 'ew-resize' : 'pointer',

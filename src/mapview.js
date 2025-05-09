@@ -29,6 +29,7 @@ import { FeatureType, GeometryType } from "./geojson-types";
 import { LeafletButton } from "./LeafletButton"
 import { SvgPatternRenderer } from "./PatternRenderer/SvgPatternRenderer"
 import DataCellValue from "./table/DataCellValue"
+import FormatPaintControl from "./symbology/FormatPaintControl"
 
 function MapView(props) {
   const context = useContext(DataContext);
@@ -355,6 +356,7 @@ function ChangeView() {
         }}
       />
       <LocateControl />
+      <FormatPaintControl />
       {validFeatureListBounds && <LeafletButton
         position="topleft"
         className="leaflet-control-fitbounds"

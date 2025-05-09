@@ -320,15 +320,12 @@ button:active {
   cursor: not-allowed;
 }
 
-#symbologyview {
-  float: left;
-  padding: 0.5em 0;
-  overflow: auto;
-}
+#symbologyview {}
 
 #symbology-definition {
-  text-align: left;
-  padding: 0 1em;
+  max-height: 50vh;
+  overflow: auto;
+  padding: 2em;
 }
 
 .pickerTable {
@@ -453,7 +450,7 @@ button:active {
   background-color: #336799;
   color: white;
   cursor: pointer;
-  z-index: 10000;
+  z-index: 1001;
   transition: background-color 0.3s;
   font-size: 6pt;
 }
@@ -512,4 +509,26 @@ button:active {
 .panel-view-container .panel button:active {
   background-color: #73a7d9;
   color: black;
+}
+
+.format-paint-control {
+  width: 44px;
+  height: 44px;
+  border-radius: 5px;
+}
+
+.format-paint-control a.leaflet-bar-part-single {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+}
+
+.format-paint-control svg {
+  width: 44px;
+  height: 44px;
+  fill: #00000020;
+  stroke: #000a;
+  stroke-width: 1px;
 }

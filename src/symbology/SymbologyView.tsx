@@ -1,38 +1,32 @@
-import { useContext, useState } from "react";
-import { DataContext } from "../dataContext";
+import { useState } from "react";
 import ColoredText from "./ColoredText";
 import { SvgPathPreview, SvgPatternPreview, SvgSelect } from "./SvgSelectorDialog"
 import { linePatternOptions } from "./linePatternOptions"
 import { SymbologyPropertyView } from "./SymbologyPropertyView"
 import { NumericSymbologyPropertyView } from "./NumericSymbologyPropertyView"
 import { markersLibrary } from "./iconlib";
+import React from "react";
+import { Symbology } from "./painter";
 
-export function SymbologyView(props) {
-  const context = useContext(DataContext);
-  const onSave = (draft) => {
-    context?.setSymbology(draft);
-  };
+interface SymbologyDefinitionProps {
+  symbology?: Symbology | null;
+  onSave: (draft: Symbology) => void;
+}
 
-  if (!context) {
+const SymbologyDefinition: React.FC<SymbologyDefinitionProps> = ({ symbology, onSave }) => {
+  const [draft, setDraft] = useState(symbology ?? {});
+
+  if (!symbology) {
     return <p>No symbology defined.</p>;
   }
 
-  return (
-    <div id="symbologyview" style={props.style}>
-      <h2 onContextMenu={() => console.log(context.symbology)}>Symbology</h2>
-      <SymbologyDefinition symbology={context.symbology} onSave={onSave} />
-    </div>
-  );
-}
-
-function SymbologyDefinition({ symbology, onSave }) {
-  const [draft, setDraft] = useState(symbology);
   const saveDraft = () => {
     onSave(draft);
   };
   const updateDraft = (newDraft) => {
     setDraft(newDraft);
   };
+
   return (
     <div id="symbology-definition">
       <NumericSymbologyPropertyView
@@ -161,15 +155,8 @@ function SymbologyDefinition({ symbology, onSave }) {
           />
         }}
       />
-      <button
-        id="save-symbology-draft"
-        onClick={saveDraft}
-        onContextMenu={() => console.log(draft)}
-      >
-        Save
-      </button>
     </div>
   );
 }
 
-export default SymbologyView;
+export default SymbologyDefinition;
