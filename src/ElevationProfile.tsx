@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Label, ReferenceDot, ReferenceArea } from 'recharts';
 import { GeometryType } from './geojson-types';
 import { distance } from '@turf/turf';
-import { Slider } from '@mui/material';
+import { Slider, Typography } from '@mui/material';
 import { CategoricalChartState } from 'recharts/types/chart/types';
 
 interface ElevationProfileProps {
@@ -50,6 +50,7 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
   // Add slider state
   const [sliderValues, setSliderValues] = useState<number[]>([0, coordinates.length - 1]);
   const [potentialSliderStart, setPotentialSliderStart] = useState<number>(0);
+  const [sensitivity, setSensitivity] = useState<number>(10);
 
   const isLineFeature = geometry?.type === GeometryType.LineString ||
     geometry?.type === GeometryType.MultiLineString;
@@ -137,7 +138,15 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
     }
     return lineSeg;
   }
-  const smoothedChartData = douglasPeucker(chartData, Math.max(10, 1.5 * cumulativeGain / 100));
+
+  // Calculate precision based on the sensitivity slider value
+  // Lower sensitivity = higher precision value = fewer points in the simplified curve
+  // Higher sensitivity = lower precision value = more points in the simplified curve
+  const elevationRange = maxElevation - minElevation;
+  const precisionValue = (elevationRange * (1 / sensitivity));
+
+  const smoothedChartData = douglasPeucker(chartData, precisionValue);
+
   // identify peaks and valleys from the smoothed data
   let segments: Segment[] = [];
   for (let i = 1; i < smoothedChartData.length; i++) {
@@ -238,7 +247,7 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
       </defs>
 
       {/* Create reference areas between inflection points */}
-      {segments.slice(0, 10).map((segment, index) => {
+      {segments.map((segment, index) => {
         const elevationChangeSign = segment.elevationDifference > 0 ? '+' : '';
 
         return (
@@ -312,6 +321,16 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
           min={0}
           max={coordinates.length - 1}
           valueLabelFormat={(index) => `${chartData[index].distance}km`}
+        />
+      </div>
+      <div style={{ padding: '15px 10px 5px 10px' }}>
+        <Typography variant="caption">Sensitivity</Typography>
+        <Slider
+          value={sensitivity}
+          onChange={(event, newValue) => setSensitivity(newValue as number)}
+          valueLabelDisplay="auto"
+          min={1}
+          max={20}
         />
       </div>
       <div style={{ fontSize: '10px', textAlign: 'right' }}>
