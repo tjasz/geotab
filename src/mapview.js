@@ -2,7 +2,7 @@ import React, { useRef, useContext, useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import ReactDOMServer from "react-dom/server";
 import { v4 as uuidv4 } from "uuid";
-import L, { marker } from "leaflet";
+import L from "leaflet";
 import "leaflet.locatecontrol";
 import "leaflet.locatecontrol/dist/L.Control.Locate.min.css";
 import { createControlComponent } from '@react-leaflet/core'
@@ -19,7 +19,6 @@ import {
   useMap,
   useMapEvents,
 } from "react-leaflet";
-import AbridgedUrlLink from "./common/AbridgedUrlLink";
 import { DataContext } from "./dataContext";
 import { getCentralCoord, hashCode, getFeatureListBounds } from "./algorithm";
 import mapLayers from "./maplayers";
@@ -30,9 +29,7 @@ import { LeafletButton } from "./LeafletButton"
 import { SvgPatternRenderer } from "./PatternRenderer/SvgPatternRenderer"
 import DataCellValue from "./table/DataCellValue"
 import FormatPaintControl from "./symbology/FormatPaintControl"
-import { distance } from "@turf/turf";
-import ElevationProfile from "./ElevationProfile";
-import ElevationProfileDialog from "./ElevationProfileDialog";
+import ElevationProfilePanel from "./ElevationProfilePanel";
 
 function MapView(props) {
   const context = useContext(DataContext);
@@ -500,17 +497,17 @@ const LocateControl = createControlComponent(
 
 function ElevationProfileControl() {
   const [selectedFeature, setSelectedFeature] = useState(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(false);
   const map = useMap();
 
-  // Create a global function to open the elevation profile dialog
+  // Create a global function to open the elevation profile panel
   useEffect(() => {
     // Set up custom event handler for showing elevation profile
     window.showElevationProfile = (featureId) => {
       const feature = findFeatureById(featureId);
       if (feature) {
         setSelectedFeature(feature);
-        setDialogOpen(true);
+        setPanelOpen(true);
       }
     };
 
@@ -534,9 +531,9 @@ function ElevationProfileControl() {
   return (
     <>
       {selectedFeature && (
-        <ElevationProfileDialog
-          open={dialogOpen}
-          onClose={() => setDialogOpen(false)}
+        <ElevationProfilePanel
+          open={panelOpen}
+          onClose={() => setPanelOpen(false)}
           geometry={selectedFeature.geometry}
           featureName={getFeatureName(selectedFeature)}
         />
