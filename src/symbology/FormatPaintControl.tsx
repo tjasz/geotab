@@ -82,7 +82,7 @@ export function FormatPaintControl(props: L.ControlOptions): JSX.Element {
   return (
     <>
       <Control position={props.position || 'topright'} />
-      <SymbologyDialog open={isDialogOpen} onClose={handleCloseDialog} />
+      {isDialogOpen && <SymbologyDialog open={isDialogOpen} onClose={handleCloseDialog} />}
     </>
   );
 }

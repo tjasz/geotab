@@ -9,31 +9,22 @@ import React from "react";
 import { Symbology } from "./painter";
 
 interface SymbologyDefinitionProps {
-  symbology?: Symbology | null;
-  onSave: (draft: Symbology) => void;
+  symbology: Symbology;
+  onUpdate: (draft: Symbology) => void;
 }
 
-const SymbologyDefinition: React.FC<SymbologyDefinitionProps> = ({ symbology, onSave }) => {
-  const [draft, setDraft] = useState(symbology ?? {});
-
-  if (!symbology) {
-    return <p>No symbology defined.</p>;
-  }
-
-  const saveDraft = () => {
-    onSave(draft);
-  };
+const SymbologyDefinition: React.FC<SymbologyDefinitionProps> = ({ symbology, onUpdate }) => {
   const updateDraft = (newDraft) => {
-    setDraft(newDraft);
+    onUpdate(newDraft);
   };
 
   return (
     <div id="symbology-definition">
       <NumericSymbologyPropertyView
         name="hue"
-        definition={draft?.hue}
+        definition={symbology?.hue}
         onEdit={(hueDef) => {
-          updateDraft({ ...draft, hue: hueDef });
+          updateDraft({ ...symbology, hue: hueDef });
         }}
         minValue={0}
         maxValue={360}
@@ -45,9 +36,9 @@ const SymbologyDefinition: React.FC<SymbologyDefinitionProps> = ({ symbology, on
       />
       <NumericSymbologyPropertyView
         name="saturation"
-        definition={draft?.saturation}
+        definition={symbology?.saturation}
         onEdit={(saturationDef) => {
-          updateDraft({ ...draft, saturation: saturationDef });
+          updateDraft({ ...symbology, saturation: saturationDef });
         }}
         minValue={0}
         maxValue={100}
@@ -59,9 +50,9 @@ const SymbologyDefinition: React.FC<SymbologyDefinitionProps> = ({ symbology, on
       />
       <NumericSymbologyPropertyView
         name="lightness"
-        definition={draft?.lightness}
+        definition={symbology?.lightness}
         onEdit={(lightnessDef) => {
-          updateDraft({ ...draft, lightness: lightnessDef });
+          updateDraft({ ...symbology, lightness: lightnessDef });
         }}
         minValue={0}
         maxValue={100}
@@ -71,9 +62,9 @@ const SymbologyDefinition: React.FC<SymbologyDefinitionProps> = ({ symbology, on
       />
       <NumericSymbologyPropertyView
         name="opacity"
-        definition={draft?.opacity}
+        definition={symbology?.opacity}
         onEdit={(opacityDef) => {
-          updateDraft({ ...draft, opacity: opacityDef });
+          updateDraft({ ...symbology, opacity: opacityDef });
         }}
         minValue={0}
         maxValue={1}
@@ -83,27 +74,27 @@ const SymbologyDefinition: React.FC<SymbologyDefinitionProps> = ({ symbology, on
       />
       <NumericSymbologyPropertyView
         name="size"
-        definition={draft?.size}
+        definition={symbology?.size}
         onEdit={(sizeDef) => {
-          updateDraft({ ...draft, size: sizeDef });
+          updateDraft({ ...symbology, size: sizeDef });
         }}
         minValue={1}
         maxValue={20}
       />
       <NumericSymbologyPropertyView
         name="shape"
-        definition={draft?.shape}
+        definition={symbology?.shape}
         onEdit={(shapeDef) => {
-          updateDraft({ ...draft, shape: shapeDef });
+          updateDraft({ ...symbology, shape: shapeDef });
         }}
         minValue={3}
         maxValue={20}
       />
       <SymbologyPropertyView
         name="line pattern"
-        definition={draft?.linePattern}
+        definition={symbology?.linePattern}
         onEdit={(linePatternDef) => {
-          updateDraft({ ...draft, linePattern: linePatternDef });
+          updateDraft({ ...symbology, linePattern: linePatternDef });
         }}
         placeholderValue={linePatternOptions.Basic[0]}
         onRenderSelector={(value, onChange, key) => {
@@ -126,9 +117,9 @@ const SymbologyDefinition: React.FC<SymbologyDefinitionProps> = ({ symbology, on
       />
       <SymbologyPropertyView
         name="marker symbol"
-        definition={draft?.markerSymbol}
+        definition={symbology?.markerSymbol}
         onEdit={(markerSymbolDef) => {
-          updateDraft({ ...draft, markerSymbol: markerSymbolDef });
+          updateDraft({ ...symbology, markerSymbol: markerSymbolDef });
         }}
         placeholderValue={markersLibrary.Points[0]}
         onRenderSelector={(value, onChange, key) => {
