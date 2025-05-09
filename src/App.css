@@ -433,11 +433,11 @@ button:active {
 }
 
 .left-panel {
-  border-right: 2px solid #336799;
+  border-right: 1px solid #336799;
 }
 
 .right-panel {
-  border-left: 2px solid #336799;
+  border-left: 1px solid #336799;
 }
 
 .panel-header {
@@ -455,7 +455,7 @@ button:active {
 .panel-content {
   flex: 1;
   overflow: auto;
-  padding: 10px;
+  padding: 0;
 }
 
 .main-content {
@@ -470,14 +470,14 @@ button:active {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
+  width: 12px;
   height: 60px;
   background-color: #336799;
   color: white;
   cursor: pointer;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 10;
+  z-index: 10000;
   border-radius: 0 4px 4px 0;
   transition: background-color 0.3s;
 }

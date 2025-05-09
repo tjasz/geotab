@@ -52,7 +52,7 @@ export function PanelView({
           className="panel left-panel"
           style={{
             width: leftPanelExpanded ? leftPanelWidth : 0,
-            marginLeft: leftPanelExpanded ? 0 : -leftPanelWidth
+            marginLeft: 0
           }}
         >
           <div className="panel-header">
@@ -97,7 +97,7 @@ export function PanelView({
           className="panel right-panel"
           style={{
             width: rightPanelExpanded ? rightPanelWidth : 0,
-            marginRight: rightPanelExpanded ? 0 : -rightPanelWidth
+            marginRight: 0
           }}
         >
           <div className="panel-header">
