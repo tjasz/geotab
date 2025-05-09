@@ -513,3 +513,19 @@ button:active {
   background-color: #73a7d9;
   color: black;
 }
+
+.format-paint-control a {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+.format-paint-control svg {
+  width: 16px;
+  height: 16px;
+  fill: #333;
+}
+
+.format-paint-control a:hover svg {
+  fill: #000;
+}
