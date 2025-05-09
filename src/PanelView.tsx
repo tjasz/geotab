@@ -148,7 +148,7 @@ export function PanelView({
   return (
     <div className="panel-view-container" style={style} ref={containerRef}>
       {/* Left panel */}
-      {leftPanel && (
+      {leftPanel && leftPanelExpanded && (
         <div
           className="panel left-panel"
           style={{
@@ -207,7 +207,7 @@ export function PanelView({
       )}
 
       {/* Right panel */}
-      {rightPanel && (
+      {rightPanel && rightPanelExpanded && (
         <div
           className="panel right-panel"
           style={{
