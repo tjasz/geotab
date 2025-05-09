@@ -52,59 +52,63 @@ export function PanelView({
   };
 
   // Handle mouse down on resize dividers
-  const handleLeftDragStart = (e: React.MouseEvent) => {
+  const handleLeftDragStart = (e: React.MouseEvent | React.TouchEvent) => {
     if (leftPanelExpanded) {
       e.preventDefault();
       setIsDraggingLeft(true);
-      dragStartXRef.current = e.clientX;
+      const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
+      dragStartXRef.current = clientX;
       setDragDistance(0);
     }
   };
 
-  const handleRightDragStart = (e: React.MouseEvent) => {
+  const handleRightDragStart = (e: React.MouseEvent | React.TouchEvent) => {
     if (rightPanelExpanded) {
       e.preventDefault();
       setIsDraggingRight(true);
-      dragStartXRef.current = e.clientX;
+      const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
+      dragStartXRef.current = clientX;
       setDragDistance(0);
     }
   };
 
   // Handle click events, only toggle if no significant drag occurred
-  const handleLeftPanelClick = (e: React.MouseEvent) => {
+  const handleLeftPanelClick = (e: React.MouseEvent | React.TouchEvent) => {
     if (Math.abs(dragDistance) < 5) {
       toggleLeftPanel();
     }
   };
 
-  const handleRightPanelClick = (e: React.MouseEvent) => {
+  const handleRightPanelClick = (e: React.MouseEvent | React.TouchEvent) => {
     if (Math.abs(dragDistance) < 5) {
       toggleRightPanel();
     }
   };
 
-  // Handle mouse move for resizing
+  // Handle mouse/touch move for resizing
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
+    const handlePointerMove = (e: MouseEvent | TouchEvent) => {
+      const clientX = 'touches' in e ? e.touches[0].clientX : (e as MouseEvent).clientX;
+
       if (dragStartXRef.current !== null) {
-        const currentDragDistance = e.clientX - dragStartXRef.current;
+        const currentDragDistance = clientX - dragStartXRef.current;
         setDragDistance(currentDragDistance);
       }
 
       if (isDraggingLeft && containerRef.current) {
         const containerRect = containerRef.current.getBoundingClientRect();
-        const newWidth = Math.max(100, e.clientX - containerRect.left);
+        const newWidth = Math.max(100, clientX - containerRect.left);
         setCurrentLeftWidth(newWidth);
       }
 
       if (isDraggingRight && containerRef.current) {
         const containerRect = containerRef.current.getBoundingClientRect();
-        const newWidth = Math.max(100, containerRect.right - e.clientX);
+        const newWidth = Math.max(100, containerRect.right - clientX);
         setCurrentRightWidth(newWidth);
       }
     };
 
-    const handleMouseUp = () => {
+    const handlePointerUp = () => {
       setIsDraggingLeft(false);
       setIsDraggingRight(false);
       // Keep dragDistance for a short time to let the click handler check it
@@ -115,21 +119,29 @@ export function PanelView({
     };
 
     if (isDraggingLeft || isDraggingRight) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
+      // Add both mouse and touch event listeners
+      document.addEventListener('mousemove', handlePointerMove);
+      document.addEventListener('touchmove', handlePointerMove, { passive: false });
+      document.addEventListener('mouseup', handlePointerUp);
+      document.addEventListener('touchend', handlePointerUp);
 
       // Set cursor style on body during drag
       document.body.style.cursor = 'ew-resize';
       document.body.style.userSelect = 'none';
+      document.body.style.touchAction = 'none'; // Prevent scrolling on touch devices
     }
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      // Remove both mouse and touch event listeners
+      document.removeEventListener('mousemove', handlePointerMove);
+      document.removeEventListener('touchmove', handlePointerMove);
+      document.removeEventListener('mouseup', handlePointerUp);
+      document.removeEventListener('touchend', handlePointerUp);
 
-      // Reset cursor style
+      // Reset styles
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
+      document.body.style.touchAction = '';
     };
   }, [isDraggingLeft, isDraggingRight]);
 
@@ -159,6 +171,7 @@ export function PanelView({
           className="panel-toggle left-panel-toggle"
           onClick={handleLeftPanelClick}
           onMouseDown={handleLeftDragStart}
+          onTouchStart={handleLeftDragStart}
           title={leftPanelExpanded ? "Hide left panel" : "Show left panel"}
           style={{
             marginLeft: leftPanelExpanded ? currentLeftWidth : 0,
@@ -181,6 +194,7 @@ export function PanelView({
           className="panel-toggle right-panel-toggle"
           onClick={handleRightPanelClick}
           onMouseDown={handleRightDragStart}
+          onTouchStart={handleRightDragStart}
           title={rightPanelExpanded ? "Hide right panel" : "Show right panel"}
           style={{
             marginRight: rightPanelExpanded ? currentRightWidth : 0,
