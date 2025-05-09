@@ -266,9 +266,9 @@ export function PanelView({
         )}
 
         {/* Main content */}
-        <div className="main-content">
+        {!(rightPanel && rightPanelExpanded && leftPanel && leftPanelExpanded && currentLeftWidth + currentRightWidth >= containerWidth) && <div className="main-content">
           {children}
-        </div>
+        </div>}
 
         {/* Right panel toggle button */}
         {rightPanel && (
