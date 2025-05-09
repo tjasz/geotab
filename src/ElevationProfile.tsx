@@ -333,40 +333,71 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
           max={20}
         />
       </div>
-      <div style={{ fontSize: '10px', textAlign: 'right' }}>
-        <table>
-          <thead>
-            <tr>
-              <th></th>
-              <th>Distance</th>
-              <th>Min</th>
-              <th>Max</th>
-              <th>Gain</th>
-              <th>Loss</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th>Total</th>
-              <td>{totalDistance.toFixed(2)}km</td>
-              <td>{minElevation.toFixed(0)}m</td>
-              <td>{maxElevation.toFixed(0)}m</td>
-              <td>{cumulativeGain.toFixed(0)}m</td>
-              <td>{Math.abs(cumulativeLoss).toFixed(0)}m</td>
-            </tr>
-            <tr>
-              <th>Selection</th>
-              <td>{selectedDistance.toFixed(2)}km</td>
-              <td>{selectedMinElevation.toFixed(0)}m</td>
-              <td>{selectedMaxElevation.toFixed(0)}m</td>
-              <td>{selectedCumulativeGain.toFixed(0)}m</td>
-              <td>{Math.abs(selectedCumulativeLoss).toFixed(0)}m</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <StatisticsTable
+        totalDistance={totalDistance}
+        minElevation={minElevation}
+        maxElevation={maxElevation}
+        cumulativeGain={cumulativeGain}
+        cumulativeLoss={cumulativeLoss}
+        selectedDistance={selectedDistance}
+        selectedMinElevation={selectedMinElevation}
+        selectedMaxElevation={selectedMaxElevation}
+        selectedCumulativeGain={selectedCumulativeGain}
+        selectedCumulativeLoss={selectedCumulativeLoss}
+      />
     </div>
   );
 };
+
+interface StatisticsTableProps {
+  totalDistance: number;
+  minElevation: number;
+  maxElevation: number;
+  cumulativeGain: number;
+  cumulativeLoss: number;
+  selectedDistance: number;
+  selectedMinElevation: number;
+  selectedMaxElevation: number;
+  selectedCumulativeGain: number;
+  selectedCumulativeLoss: number;
+}
+
+const StatisticsTable: React.FC<StatisticsTableProps> = ({
+  totalDistance, minElevation, maxElevation,
+  cumulativeGain, cumulativeLoss,
+  selectedDistance, selectedMinElevation, selectedMaxElevation,
+  selectedCumulativeGain, selectedCumulativeLoss
+}) => {
+  return <table className="elevation-profile-table">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Distance</th>
+        <th>Min</th>
+        <th>Max</th>
+        <th>Gain</th>
+        <th>Loss</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th>Total</th>
+        <td>{totalDistance.toFixed(2)}km</td>
+        <td>{minElevation.toFixed(0)}m</td>
+        <td>{maxElevation.toFixed(0)}m</td>
+        <td>{cumulativeGain.toFixed(0)}m</td>
+        <td>{Math.abs(cumulativeLoss).toFixed(0)}m</td>
+      </tr>
+      <tr>
+        <th>Selection</th>
+        <td>{selectedDistance.toFixed(2)}km</td>
+        <td>{selectedMinElevation.toFixed(0)}m</td>
+        <td>{selectedMaxElevation.toFixed(0)}m</td>
+        <td>{selectedCumulativeGain.toFixed(0)}m</td>
+        <td>{Math.abs(selectedCumulativeLoss).toFixed(0)}m</td>
+      </tr>
+    </tbody>
+  </table>
+}
 
 export default ElevationProfile;

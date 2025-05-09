@@ -379,7 +379,10 @@ button:active {
   border: 1px solid #ddd;
   border-radius: 3px;
 }
-.panel-view-container {
+
+.elevation-profile-table {
+  text-align: right;
+}.panel-view-container {
   display: flex;
   flex-direction: column;
   width: 100%;
