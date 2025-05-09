@@ -39,7 +39,9 @@ export function PanelView({
   const [currentRightWidth, setCurrentRightWidth] = useState(rightPanelWidth);
   const [isDraggingLeft, setIsDraggingLeft] = useState(false);
   const [isDraggingRight, setIsDraggingRight] = useState(false);
+  const [dragDistance, setDragDistance] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const dragStartXRef = useRef<number | null>(null);
 
   const toggleLeftPanel = () => {
     setLeftPanelExpanded(!leftPanelExpanded);
@@ -54,6 +56,8 @@ export function PanelView({
     if (leftPanelExpanded) {
       e.preventDefault();
       setIsDraggingLeft(true);
+      dragStartXRef.current = e.clientX;
+      setDragDistance(0);
     }
   };
 
@@ -61,12 +65,32 @@ export function PanelView({
     if (rightPanelExpanded) {
       e.preventDefault();
       setIsDraggingRight(true);
+      dragStartXRef.current = e.clientX;
+      setDragDistance(0);
+    }
+  };
+
+  // Handle click events, only toggle if no significant drag occurred
+  const handleLeftPanelClick = (e: React.MouseEvent) => {
+    if (Math.abs(dragDistance) < 5) {
+      toggleLeftPanel();
+    }
+  };
+
+  const handleRightPanelClick = (e: React.MouseEvent) => {
+    if (Math.abs(dragDistance) < 5) {
+      toggleRightPanel();
     }
   };
 
   // Handle mouse move for resizing
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
+      if (dragStartXRef.current !== null) {
+        const currentDragDistance = e.clientX - dragStartXRef.current;
+        setDragDistance(currentDragDistance);
+      }
+
       if (isDraggingLeft && containerRef.current) {
         const containerRect = containerRef.current.getBoundingClientRect();
         const newWidth = Math.max(100, e.clientX - containerRect.left);
@@ -80,10 +104,14 @@ export function PanelView({
       }
     };
 
-    const handleMouseUp = (e: MouseEvent) => {
-      e.preventDefault();
+    const handleMouseUp = () => {
       setIsDraggingLeft(false);
       setIsDraggingRight(false);
+      // Keep dragDistance for a short time to let the click handler check it
+      setTimeout(() => {
+        dragStartXRef.current = null;
+        setDragDistance(0);
+      }, 100);
     };
 
     if (isDraggingLeft || isDraggingRight) {
@@ -129,7 +157,7 @@ export function PanelView({
       {leftPanel && (
         <div
           className="panel-toggle left-panel-toggle"
-          onClick={toggleLeftPanel}
+          onClick={handleLeftPanelClick}
           onMouseDown={handleLeftDragStart}
           title={leftPanelExpanded ? "Hide left panel" : "Show left panel"}
           style={{
@@ -151,7 +179,7 @@ export function PanelView({
       {rightPanel && (
         <div
           className="panel-toggle right-panel-toggle"
-          onClick={toggleRightPanel}
+          onClick={handleRightPanelClick}
           onMouseDown={handleRightDragStart}
           title={rightPanelExpanded ? "Hide right panel" : "Show right panel"}
           style={{
