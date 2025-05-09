@@ -219,9 +219,8 @@ function AppBody() {
         leftPanelTitle="Data"
         rightPanelTitle="Table"
         bottomPanelTitle="Symbology"
-        leftPanelWidth={300}
-        rightPanelWidth={0}
-        bottomPanelHeight={0}
+        rightPanelExpandedInitially={false}
+        bottomPanelExpandedInitially={false}
       >
         <MapView style={{ width: "100%" }} />
       </PanelView>

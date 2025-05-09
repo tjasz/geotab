@@ -5,6 +5,9 @@ type PanelViewProps = {
   leftPanel?: ReactNode;
   rightPanel?: ReactNode;
   bottomPanel?: ReactNode;
+  leftPanelExpandedInitially?: boolean;
+  rightPanelExpandedInitially?: boolean;
+  bottomPanelExpandedInitially?: boolean;
   children: ReactNode;
   leftPanelWidth?: number;
   rightPanelWidth?: number;
@@ -20,6 +23,9 @@ type PanelViewProps = {
  * @param leftPanel - Content for the left panel
  * @param rightPanel - Content for the right panel
  * @param bottomPanel - Content for the bottom panel
+ * @param leftPanelExpandedInitially - Initial state of the left panel (default: true)
+ * @param rightPanelExpandedInitially - Initial state of the right panel (default: true)
+ * @param bottomPanelExpandedInitially - Initial state of the bottom panel (default: true)
  * @param children - Content for the main area
  * @param leftPanelWidth - Default width of left panel in pixels (default: 300)
  * @param rightPanelWidth - Default width of right panel in pixels (default: 300)
@@ -33,6 +39,9 @@ export function PanelView({
   leftPanel,
   rightPanel,
   bottomPanel,
+  leftPanelExpandedInitially = true,
+  rightPanelExpandedInitially = true,
+  bottomPanelExpandedInitially = true,
   children,
   leftPanelWidth = 300,
   rightPanelWidth = 300,
@@ -42,9 +51,9 @@ export function PanelView({
   bottomPanelTitle = 'Bottom Panel',
   style
 }: PanelViewProps) {
-  const [leftPanelExpanded, setLeftPanelExpanded] = useState(leftPanelWidth > 0);
-  const [rightPanelExpanded, setRightPanelExpanded] = useState(rightPanelWidth > 0);
-  const [bottomPanelExpanded, setBottomPanelExpanded] = useState(bottomPanelHeight > 0);
+  const [leftPanelExpanded, setLeftPanelExpanded] = useState(leftPanelExpandedInitially == true);
+  const [rightPanelExpanded, setRightPanelExpanded] = useState(rightPanelExpandedInitially == true);
+  const [bottomPanelExpanded, setBottomPanelExpanded] = useState(bottomPanelExpandedInitially == true);
   const [currentLeftWidth, setCurrentLeftWidth] = useState(leftPanelWidth);
   const [currentRightWidth, setCurrentRightWidth] = useState(rightPanelWidth);
   const [currentBottomHeight, setCurrentBottomHeight] = useState(bottomPanelHeight);
