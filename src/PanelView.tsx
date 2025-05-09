@@ -40,8 +40,25 @@ export function PanelView({
   const [isDraggingLeft, setIsDraggingLeft] = useState(false);
   const [isDraggingRight, setIsDraggingRight] = useState(false);
   const [dragDistance, setDragDistance] = useState(0);
+  const [containerWidth, setContainerWidth] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const dragStartXRef = useRef<number | null>(null);
+
+  // Update container width on mount and window resize
+  useEffect(() => {
+    const updateContainerWidth = () => {
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.clientWidth);
+      }
+    };
+
+    updateContainerWidth();
+    window.addEventListener('resize', updateContainerWidth);
+
+    return () => {
+      window.removeEventListener('resize', updateContainerWidth);
+    };
+  }, []);
 
   const toggleLeftPanel = () => {
     setLeftPanelExpanded(!leftPanelExpanded);
@@ -84,6 +101,17 @@ export function PanelView({
       toggleRightPanel();
     }
   };
+
+  // Determine if toggle buttons should be positioned inside the panels
+  const isLeftPanelNearlyFullWidth = containerWidth > 0 && (currentLeftWidth > containerWidth - 24);
+  const isRightPanelNearlyFullWidth = containerWidth > 0 && (currentRightWidth > containerWidth - 24);
+
+  // Calculate positions for toggle buttons
+  const leftToggleMargin = leftPanelExpanded ?
+    (isLeftPanelNearlyFullWidth ? currentLeftWidth - 12 : currentLeftWidth) : 0;
+
+  const rightToggleMargin = rightPanelExpanded ?
+    (isRightPanelNearlyFullWidth ? currentRightWidth - 12 : currentRightWidth) : 0;
 
   // Handle mouse/touch move for resizing
   useEffect(() => {
@@ -174,7 +202,7 @@ export function PanelView({
           onTouchStart={handleLeftDragStart}
           title={leftPanelExpanded ? "Hide left panel" : "Show left panel"}
           style={{
-            marginLeft: leftPanelExpanded ? currentLeftWidth : 0,
+            marginLeft: Math.min(leftToggleMargin, containerWidth - 12),
             cursor: leftPanelExpanded ? 'ew-resize' : 'pointer',
             transition: isDraggingLeft ? 'none' : 'margin-left 0.3s ease'
           }}
@@ -197,7 +225,7 @@ export function PanelView({
           onTouchStart={handleRightDragStart}
           title={rightPanelExpanded ? "Hide right panel" : "Show right panel"}
           style={{
-            marginRight: rightPanelExpanded ? currentRightWidth : 0,
+            marginRight: Math.min(rightToggleMargin, containerWidth - 12),
             cursor: rightPanelExpanded ? 'ew-resize' : 'pointer',
             transition: isDraggingRight ? 'none' : 'margin-right 0.3s ease'
           }}
