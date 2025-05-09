@@ -42,9 +42,9 @@ export function PanelView({
   bottomPanelTitle = 'Bottom Panel',
   style
 }: PanelViewProps) {
-  const [leftPanelExpanded, setLeftPanelExpanded] = useState(true);
-  const [rightPanelExpanded, setRightPanelExpanded] = useState(true);
-  const [bottomPanelExpanded, setBottomPanelExpanded] = useState(true);
+  const [leftPanelExpanded, setLeftPanelExpanded] = useState(leftPanelWidth > 0);
+  const [rightPanelExpanded, setRightPanelExpanded] = useState(rightPanelWidth > 0);
+  const [bottomPanelExpanded, setBottomPanelExpanded] = useState(bottomPanelHeight > 0);
   const [currentLeftWidth, setCurrentLeftWidth] = useState(leftPanelWidth);
   const [currentRightWidth, setCurrentRightWidth] = useState(rightPanelWidth);
   const [currentBottomHeight, setCurrentBottomHeight] = useState(bottomPanelHeight);
