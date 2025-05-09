@@ -52,7 +52,6 @@ export function PanelView({
           className="panel left-panel"
           style={{
             width: leftPanelExpanded ? leftPanelWidth : 0,
-            marginLeft: 0
           }}
         >
           <div className="panel-header">
@@ -70,6 +69,7 @@ export function PanelView({
           className="panel-toggle left-panel-toggle"
           onClick={toggleLeftPanel}
           title={leftPanelExpanded ? "Hide left panel" : "Show left panel"}
+          style={{ marginLeft: leftPanelExpanded ? leftPanelWidth : 0 }}
         >
           {leftPanelExpanded ? <ArrowLeft /> : <ArrowRight />}
         </div>
@@ -86,6 +86,7 @@ export function PanelView({
           className="panel-toggle right-panel-toggle"
           onClick={toggleRightPanel}
           title={rightPanelExpanded ? "Hide right panel" : "Show right panel"}
+          style={{ marginRight: rightPanelExpanded ? rightPanelWidth : 0 }}
         >
           {rightPanelExpanded ? <ArrowRight /> : <ArrowLeft />}
         </div>
@@ -97,7 +98,6 @@ export function PanelView({
           className="panel right-panel"
           style={{
             width: rightPanelExpanded ? rightPanelWidth : 0,
-            marginRight: 0
           }}
         >
           <div className="panel-header">
