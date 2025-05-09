@@ -145,7 +145,7 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
     const currPoint = smoothedChartData[i];
     const distance = currPoint.distance - prevPoint.distance;
     const elevationDifference = currPoint.elevation - prevPoint.elevation;
-    const grade = Math.abs(elevationDifference) / distance;
+    const grade = Math.abs(elevationDifference) / distance / 1000;
     segments.push({ from: prevPoint, to: currPoint, distance, elevationDifference, grade });
   }
   segments.sort((a, b) => b.grade - a.grade)
@@ -261,6 +261,12 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
               <Label
                 value={`${elevationChangeSign}${segment.elevationDifference.toFixed(0)}m`}
                 position="insideRight"
+                angle={90}
+                style={{ fontSize: 9, fill: '#333', fontWeight: 'bold' }}
+              />
+              <Label
+                value={`${(segment.grade * 100).toFixed(0)}%`}
+                position="insideBottom"
                 style={{ fontSize: 9, fill: '#333', fontWeight: 'bold' }}
               />
             </ReferenceArea>
