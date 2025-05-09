@@ -2,7 +2,6 @@ import React, { useContext } from "react";
 import { BrowserRouter } from "react-router-dom";
 import * as GeoJson from "./geojson-types";
 import "./App.css";
-import TabView from "./tabview";
 import {
   DataContextType,
   DataContext,
@@ -19,6 +18,11 @@ import { FieldTypeDescription } from "./fieldtype";
 import { Column } from "./column";
 import { Symbology } from "./symbology/painter";
 import { add_operations } from "./json-logic/root";
+import PanelView from "./PanelView";
+import DataView from "./dataview";
+import MapView from "./mapview";
+import TableView from "./table/tableview";
+import SymbologyView from "./symbology/SymbologyView";
 
 interface IAppProps { }
 
@@ -202,7 +206,20 @@ function AppFooter() {
 function AppBody() {
   return (
     <div id="App-body">
-      <TabView />
+      <PanelView
+        leftPanel={
+          <DataView />
+        }
+        rightPanel={
+          <TableView style={{}} />
+        }
+        leftPanelTitle="Data"
+        rightPanelTitle="Table"
+        leftPanelWidth={300}
+        rightPanelWidth={300}
+      >
+        <MapView style={{ width: "100%" }} />
+      </PanelView>
     </div>
   );
 }
