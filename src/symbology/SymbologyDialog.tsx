@@ -19,13 +19,9 @@ export function SymbologyDialog({ open, onClose }: SymbologyDialogProps) {
       maxWidth="md"
       fullWidth
     >
-      <DialogTitle>Map Symbology</DialogTitle>
       <DialogContent>
-        <SymbologyView />
+        <SymbologyView onSave={onClose} />
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Close</Button>
-      </DialogActions>
     </Dialog>
   );
 }

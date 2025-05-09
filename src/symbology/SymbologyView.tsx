@@ -9,12 +9,14 @@ import { markersLibrary } from "./iconlib";
 import React from "react";
 
 interface SymbologyViewProps {
+  onSave: () => void;
 }
 
-const SymbologyView: React.FC<SymbologyViewProps> = ({ }) => {
+const SymbologyView: React.FC<SymbologyViewProps> = ({ onSave }) => {
   const context = useContext(DataContext);
-  const onSave = (draft) => {
+  const handleSave = (draft) => {
     context?.setSymbology(draft);
+    onSave();
   };
 
   if (!context) {
@@ -24,7 +26,7 @@ const SymbologyView: React.FC<SymbologyViewProps> = ({ }) => {
   return (
     <div id="symbologyview">
       <h2 onContextMenu={() => console.log(context.symbology)}>Symbology</h2>
-      <SymbologyDefinition symbology={context.symbology} onSave={onSave} />
+      <SymbologyDefinition symbology={context.symbology} onSave={handleSave} />
     </div>
   );
 }

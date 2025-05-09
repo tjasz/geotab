@@ -320,16 +320,9 @@ button:active {
   cursor: not-allowed;
 }
 
-#symbologyview {
-  float: left;
-  padding: 0.5em 0;
-  overflow: auto;
-}
+#symbologyview {}
 
-#symbology-definition {
-  text-align: left;
-  padding: 0 1em;
-}
+#symbology-definition {}
 
 .pickerTable {
   text-align: left;
