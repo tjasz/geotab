@@ -1,5 +1,4 @@
-import { useContext, useState } from "react";
-import { DataContext } from "../dataContext";
+import { useState } from "react";
 import ColoredText from "./ColoredText";
 import { SvgPathPreview, SvgPatternPreview, SvgSelect } from "./SvgSelectorDialog"
 import { linePatternOptions } from "./linePatternOptions"
@@ -7,38 +6,27 @@ import { SymbologyPropertyView } from "./SymbologyPropertyView"
 import { NumericSymbologyPropertyView } from "./NumericSymbologyPropertyView"
 import { markersLibrary } from "./iconlib";
 import React from "react";
+import { Symbology } from "./painter";
 
-interface SymbologyViewProps {
-  onSave: () => void;
+interface SymbologyDefinitionProps {
+  symbology?: Symbology | null;
+  onSave: (draft: Symbology) => void;
 }
 
-const SymbologyView: React.FC<SymbologyViewProps> = ({ onSave }) => {
-  const context = useContext(DataContext);
-  const handleSave = (draft) => {
-    context?.setSymbology(draft);
-    onSave();
-  };
+const SymbologyDefinition: React.FC<SymbologyDefinitionProps> = ({ symbology, onSave }) => {
+  const [draft, setDraft] = useState(symbology ?? {});
 
-  if (!context) {
+  if (!symbology) {
     return <p>No symbology defined.</p>;
   }
 
-  return (
-    <div id="symbologyview">
-      <h2 onContextMenu={() => console.log(context.symbology)}>Symbology</h2>
-      <SymbologyDefinition symbology={context.symbology} onSave={handleSave} />
-    </div>
-  );
-}
-
-function SymbologyDefinition({ symbology, onSave }) {
-  const [draft, setDraft] = useState(symbology);
   const saveDraft = () => {
     onSave(draft);
   };
   const updateDraft = (newDraft) => {
     setDraft(newDraft);
   };
+
   return (
     <div id="symbology-definition">
       <NumericSymbologyPropertyView
@@ -167,15 +155,8 @@ function SymbologyDefinition({ symbology, onSave }) {
           />
         }}
       />
-      <button
-        id="save-symbology-draft"
-        onClick={saveDraft}
-        onContextMenu={() => console.log(draft)}
-      >
-        Save
-      </button>
     </div>
   );
 }
 
-export default SymbologyView;
+export default SymbologyDefinition;

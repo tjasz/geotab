@@ -322,7 +322,11 @@ button:active {
 
 #symbologyview {}
 
-#symbology-definition {}
+#symbology-definition {
+  max-height: 50vh;
+  overflow: auto;
+  padding: 2em;
+}
 
 .pickerTable {
   text-align: left;
