@@ -362,6 +362,10 @@ button:active {
   background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill="none" stroke="black" stroke-width="20" d="M60 10 H90 V40 M90 60 V90 H60 M40 90 H10 V60 M10 40 V10 H40"/></svg>')
 }
 
+.elevation-profile-table {
+  text-align: right;
+}
+
 .panel-view-container {
   display: flex;
   flex-direction: column;

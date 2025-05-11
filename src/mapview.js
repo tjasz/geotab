@@ -1,8 +1,8 @@
-import React, { useRef, useContext, useState } from "react";
+import React, { useRef, useContext, useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import ReactDOMServer from "react-dom/server";
 import { v4 as uuidv4 } from "uuid";
-import L, { marker } from "leaflet";
+import L from "leaflet";
 import "leaflet.locatecontrol";
 import "leaflet.locatecontrol/dist/L.Control.Locate.min.css";
 import { createControlComponent } from '@react-leaflet/core'
@@ -18,8 +18,8 @@ import {
   Popup,
   useMap,
   useMapEvents,
+  Marker,
 } from "react-leaflet";
-import AbridgedUrlLink from "./common/AbridgedUrlLink";
 import { DataContext } from "./dataContext";
 import { getCentralCoord, hashCode, getFeatureListBounds } from "./algorithm";
 import mapLayers from "./maplayers";
@@ -53,7 +53,27 @@ function MapView(props) {
       );
     }
   };
+
   const mapRef = useRef();
+
+  // Add event listener for elevation profile buttons in popups
+  useEffect(() => {
+    const handleElevationButtonClick = (event) => {
+      if (event.target.closest('.elevation-profile-button')) {
+        const button = event.target.closest('.elevation-profile-button');
+        const featureId = button.getAttribute('data-feature-id');
+        const feature = context.data.find(f => f.id === featureId);
+        context.setDetailFeature({ feature });
+      }
+    };
+
+    document.addEventListener('click', handleElevationButtonClick);
+
+    return () => {
+      document.removeEventListener('click', handleElevationButtonClick);
+    };
+  }, [context.setDetailFeature, context.data]);
+
   if (!context.filteredData) return null;
   const features = context.filteredData;
   return (
@@ -66,6 +86,11 @@ function MapView(props) {
       >
         <ChangeView />
         <ScaleControl position="bottomleft" />
+        {context.detailFeature?.cursor &&
+          <Marker position={{
+            lng: context.detailFeature?.cursor[0],
+            lat: context.detailFeature?.cursor[1],
+          }} />}
         <GeoJSON
           data={features}
           key={hashCode(JSON.stringify(features))}
@@ -157,8 +182,26 @@ function ActivePopup(props) {
 }
 
 function PopupBody({ feature, columns }) {
+  const context = useContext(DataContext);
+  const isLineFeature = feature?.geometry?.type === GeometryType.LineString ||
+    feature?.geometry?.type === GeometryType.MultiLineString;
+
+  // Check if the line feature has elevation data
+  const hasElevationData = () => {
+    if (!isLineFeature) return false;
+
+    let coordinates = [];
+    if (feature.geometry.type === GeometryType.LineString) {
+      coordinates = feature.geometry.coordinates;
+    } else if (feature.geometry.type === GeometryType.MultiLineString) {
+      coordinates = feature.geometry.coordinates.flat();
+    }
+
+    return coordinates.length > 0 && coordinates.some(c => c.length >= 3);
+  };
+
   return (
-    <div style={{ height: "200px", overflow: "auto" }}>
+    <div style={{ height: "200px", overflow: "auto", width: "250px" }}>
       <table>
         <tbody>
           {
@@ -173,6 +216,28 @@ function PopupBody({ feature, columns }) {
           }
         </tbody>
       </table>
+
+      {isLineFeature && hasElevationData() && (
+        <div className="elevation-button-container" style={{ marginTop: "10px" }}>
+          <button
+            className="elevation-profile-button"
+            data-feature-id={feature.id}
+            style={{
+              width: "100%",
+              padding: "5px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer"
+            }}
+          >
+            <svg style={{ marginRight: "5px" }} width="16" height="16" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M3 16h18v2H3v-2zm0-5h18v2H3v-2zm0-5h18v2H3V6z" />
+            </svg>
+            Show Elevation Profile
+          </button>
+        </div>
+      )}
     </div>
   );
 }

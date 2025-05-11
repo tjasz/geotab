@@ -219,6 +219,17 @@ function fitToGeoJSON(fit): GeoJson.FeatureCollection {
     }
     if (
       record.position_lat !== undefined &&
+      record.position_long !== undefined &&
+      record.altitude !== undefined
+    ) {
+      track.geometry.coordinates.push([
+        record.position_long,
+        record.position_lat,
+        record.altitude,
+      ]);
+    }
+    else if (
+      record.position_lat !== undefined &&
       record.position_long !== undefined
     ) {
       track.geometry.coordinates.push([
