@@ -125,7 +125,6 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
       const grade = Math.abs(elevationDifference) / distance / 1000;
       segments.push({ from: prevPoint, to: currPoint, distance, elevationDifference, grade });
     }
-    segments.sort((a, b) => b.grade - a.grade)
     return segments;
   }, [chartData, precisionValue]);
 
@@ -322,7 +321,47 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
         selectedCumulativeGain={selectedCumulativeGain}
         selectedCumulativeLoss={selectedCumulativeLoss}
       />
+      <SegmentsTable segments={segments} />
     </div>
+  );
+};
+
+interface SegmentsTableProps {
+  segments: Segment[];
+}
+
+const SegmentsTable: React.FC<SegmentsTableProps> = ({ segments }) => {
+  return (
+    <table className="elevation-profile-table">
+      <thead>
+        <tr>
+          <th>Segment</th>
+          <th>From</th>
+          <th>To</th>
+          <th>Distance</th>
+          <th>Starting Elevation</th>
+          <th>Ending Elevation</th>
+          <th>Net Gain</th>
+          <th>Grade</th>
+          <th>Gross Gain</th>
+        </tr>
+      </thead>
+      <tbody>
+        {segments.map((segment, index) => (
+          <tr key={index}>
+            <td>{index + 1}</td>
+            <td>{segment.from.distance.toFixed(2)}km</td>
+            <td>{segment.to.distance.toFixed(2)}km</td>
+            <td>{segment.distance.toFixed(2)}km</td>
+            <td>{segment.from.elevation.toFixed(0)}m</td>
+            <td>{segment.to.elevation.toFixed(0)}m</td>
+            <td>{segment.elevationDifference.toFixed(0)}m</td>
+            <td>{(segment.grade * 100).toFixed(0)}%</td>
+            <td>{(segment.to.cumulativeGain - segment.from.cumulativeGain).toFixed(0)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 };
 
