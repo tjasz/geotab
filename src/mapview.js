@@ -29,7 +29,6 @@ import { LeafletButton } from "./LeafletButton"
 import { SvgPatternRenderer } from "./PatternRenderer/SvgPatternRenderer"
 import DataCellValue from "./table/DataCellValue"
 import FormatPaintControl from "./symbology/FormatPaintControl"
-import ElevationProfilePanel from "./ElevationProfilePanel";
 
 function MapView(props) {
   const context = useContext(DataContext);
@@ -62,9 +61,8 @@ function MapView(props) {
       if (event.target.closest('.elevation-profile-button')) {
         const button = event.target.closest('.elevation-profile-button');
         const featureId = button.getAttribute('data-feature-id');
-        if (featureId && window.showElevationProfile) {
-          window.showElevationProfile(featureId);
-        }
+        const feature = context.data.find(f => f.id === featureId);
+        context.setDetailFeature({ feature });
       }
     };
 
@@ -73,7 +71,7 @@ function MapView(props) {
     return () => {
       document.removeEventListener('click', handleElevationButtonClick);
     };
-  }, []);
+  }, [context.setDetailFeature, context.data]);
 
   if (!context.filteredData) return null;
   const features = context.filteredData;
@@ -161,7 +159,6 @@ function MapView(props) {
             );
           }}
         />
-        <ElevationProfileControl />
       </MapContainer>
     </div>
   );
@@ -179,6 +176,7 @@ function ActivePopup(props) {
 }
 
 function PopupBody({ feature, columns }) {
+  const context = useContext(DataContext);
   const isLineFeature = feature?.geometry?.type === GeometryType.LineString ||
     feature?.geometry?.type === GeometryType.MultiLineString;
 
@@ -494,63 +492,5 @@ function MyOverlayControl(props) {
 const LocateControl = createControlComponent(
   props => new L.Control.Locate(props)
 )
-
-function ElevationProfileControl() {
-  const [selectedFeature, setSelectedFeature] = useState(null);
-  const [panelOpen, setPanelOpen] = useState(false);
-  const map = useMap();
-
-  // Create a global function to open the elevation profile panel
-  useEffect(() => {
-    // Set up custom event handler for showing elevation profile
-    window.showElevationProfile = (featureId) => {
-      const feature = findFeatureById(featureId);
-      if (feature) {
-        setSelectedFeature(feature);
-        setPanelOpen(true);
-      }
-    };
-
-    return () => {
-      // Clean up
-      delete window.showElevationProfile;
-    };
-  }, []);
-
-  // Helper function to find a feature by ID
-  const findFeatureById = (featureId) => {
-    let foundFeature = null;
-    map.eachLayer((layer) => {
-      if (layer.feature && layer.feature.id === featureId) {
-        foundFeature = layer.feature;
-      }
-    });
-    return foundFeature;
-  };
-
-  return (
-    <>
-      {selectedFeature && (
-        <ElevationProfilePanel
-          open={panelOpen}
-          onClose={() => setPanelOpen(false)}
-          geometry={selectedFeature.geometry}
-          featureName={getFeatureName(selectedFeature)}
-        />
-      )}
-    </>
-  );
-}
-
-// Helper function to get a display name for a feature from its properties
-function getFeatureName(feature) {
-  const nameKeys = ['name', 'Name', 'title', 'Title'];
-  for (const key of nameKeys) {
-    if (feature.properties && feature.properties[key]) {
-      return feature.properties[key];
-    }
-  }
-  return undefined;
-}
 
 export default MapView;

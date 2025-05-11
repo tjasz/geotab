@@ -1,15 +1,12 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Label, ReferenceDot, ReferenceArea } from 'recharts';
-import { GeometryType } from './geojson-types';
+import * as GeoJson from "./geojson-types";
 import { distance } from '@turf/turf';
 import { Slider, Typography } from '@mui/material';
 import { CategoricalChartState } from 'recharts/types/chart/types';
 
 interface ElevationProfileProps {
-  geometry: {
-    type: string;
-    coordinates: number[][] | number[][][];
-  };
+  geometry: GeoJson.Geometry | GeoJson.GeometryCollection;
   useResponsiveContainer?: boolean;
   width?: number;
   height?: number;
@@ -40,9 +37,9 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
 }) => {
   // Extract coordinates based on geometry type
   let coordinates: number[][] = [];
-  if (geometry.type === GeometryType.LineString) {
+  if (geometry.type === GeoJson.GeometryType.LineString) {
     coordinates = geometry.coordinates as number[][];
-  } else if (geometry.type === GeometryType.MultiLineString) {
+  } else if (geometry.type === GeoJson.GeometryType.MultiLineString) {
     // Flatten MultiLineString coordinates
     coordinates = (geometry.coordinates as number[][][]).flat();
   }

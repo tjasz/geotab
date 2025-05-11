@@ -9,6 +9,7 @@ import {
   getValueFromUpdaterOrValue,
   GeotabMetadata,
   FeatureListener,
+  DetailFeature,
 } from "./dataContext";
 import { ConditionGroup, evaluateFilter } from "./filter";
 import { GeotabLogo } from "./icon/GeotabLogo";
@@ -23,6 +24,7 @@ import DataView from "./dataview";
 import MapView from "./mapview";
 import TableView from "./table/tableview";
 import SymbologyView from "./symbology/SymbologyView";
+import ElevationProfile from "./ElevationProfile";
 
 interface IAppProps { }
 
@@ -38,12 +40,14 @@ class App extends React.Component<IAppProps, IState> {
       filteredData: [],
       columns: [],
       symbology: null,
+      detailFeature: {},
       featureListeners: { table: {}, map: {} },
       setData: this.setData.bind(this),
       setFilter: this.setFilter.bind(this),
       setDataAndFilter: this.setDataAndFilter.bind(this),
       setColumns: this.setColumns.bind(this),
       setSymbology: this.setSymbology.bind(this),
+      setDetailFeature: this.setDetailFeature.bind(this),
       setFeatureListener: this.setListener.bind(this),
       setFromJson: this.setFromJson.bind(this),
     };
@@ -107,6 +111,13 @@ class App extends React.Component<IAppProps, IState> {
     );
     this.setState({ symbology: newSymbology });
   }
+  setDetailFeature(newDetailFeatureOrUpdater: UpdaterOrValue<DetailFeature>) {
+    const newDetailFeature = getValueFromUpdaterOrValue(
+      newDetailFeatureOrUpdater,
+      this.state?.detailFeature,
+    );
+    this.setState({ detailFeature: newDetailFeature });
+  }
   setListener(view: "table" | "map", id: string, f: FeatureListener) {
     if (this.state === null) return;
     this.state.featureListeners[view][id] = f;
@@ -164,7 +175,7 @@ class App extends React.Component<IAppProps, IState> {
         <DataContext.Provider value={this.state}>
           <AppHeader />
           <BrowserRouter>
-            <AppBody />
+            <AppBody geometry={this.state?.detailFeature?.feature?.geometry} />
           </BrowserRouter>
           <AppFooter />
         </DataContext.Provider>
@@ -203,19 +214,23 @@ function AppFooter() {
   );
 }
 
-function AppBody() {
+const AppBody: React.FC<{ geometry?: GeoJson.Geometry | GeoJson.GeometryCollection }> = ({ geometry }) => {
   return (
     <div id="App-body">
       <PanelView
         leftPanel={
           <DataView />
         }
+        leftPanelTitle="Data"
         rightPanel={
           <TableView style={{}} />
         }
-        leftPanelTitle="Data"
         rightPanelTitle="Table"
         rightPanelExpandedInitially={false}
+        bottomPanel={
+          geometry && <ElevationProfile geometry={geometry} height={200} useResponsiveContainer />
+        }
+        bottomPanelTitle="Elevation Profile"
       >
         <MapView style={{ width: "100%" }} />
       </PanelView>

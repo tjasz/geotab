@@ -27,6 +27,13 @@ export function getValueFromUpdaterOrValue<T>(
   }
 }
 
+export interface DetailFeature {
+  feature?: GeoJson.Feature;
+  start?: GeoJson.Coordinate;
+  end?: GeoJson.Coordinate;
+  cursor?: GeoJson.Coordinate;
+}
+
 export type FeatureListener = (feature: GeoJson.Feature) => void;
 export type FeatureListenerMap = { [id: string]: FeatureListener | undefined };
 export type FeatureListenerTable = {
@@ -40,6 +47,7 @@ export type DataContextType = {
   filteredData: GeoJson.Feature[];
   columns: Column[];
   symbology: Symbology | null;
+  detailFeature?: DetailFeature;
   featureListeners: FeatureListenerTable;
   setData: { (updaterOrValue: UpdaterOrValue<GeoJson.Feature[]>): void };
   setFilter: { (newFilter: UpdaterOrValue<ConditionGroup | undefined>): void };
@@ -51,6 +59,7 @@ export type DataContextType = {
   };
   setColumns: { (newColumns: UpdaterOrValue<Column[]>): void };
   setSymbology: { (newSymbology: UpdaterOrValue<Symbology | null>): void };
+  setDetailFeature: { (newDetailFeature: UpdaterOrValue<DetailFeature>): void };
   setFeatureListener: {
     (view: "table" | "map", id: string, f: FeatureListener);
   };
