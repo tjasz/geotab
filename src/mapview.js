@@ -2,12 +2,12 @@ import React, { useRef, useContext, useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import ReactDOMServer from "react-dom/server";
 import { v4 as uuidv4 } from "uuid";
-import L, { Point } from "leaflet";
+import L from "leaflet";
 import "leaflet.locatecontrol";
 import "leaflet.locatecontrol/dist/L.Control.Locate.min.css";
 import { createControlComponent } from '@react-leaflet/core'
 import { Button } from "@mui/material";
-import { AddLocation, ContentCopy, Timeline } from "@mui/icons-material";
+import { AddLocation, ContentCopy } from "@mui/icons-material";
 import {
   MapContainer,
   TileLayer,
