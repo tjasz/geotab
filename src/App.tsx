@@ -209,7 +209,14 @@ function AppHeader() {
 function AppFooter() {
   return (
     <footer id="App-footer">
-      <p>&copy; 2023 Tyler Jaszkowiak</p>
+      <p>
+        <span>
+          &copy; 2023 Tyler Jaszkowiak
+        </span>
+        <span>
+          <a href="https://github.com/tjasz/geotab" target="_blank">Github</a>
+        </span>
+      </p>
     </footer>
   );
 }

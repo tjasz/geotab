@@ -135,6 +135,16 @@ button:active {
   margin: 0.2em;
 }
 
+#App-footer span+span::before {
+  content: " | ";
+}
+
+#App-footer a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+}
+
 #App-body {
   height: 89vh;
 }
