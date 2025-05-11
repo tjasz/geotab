@@ -175,7 +175,7 @@ class App extends React.Component<IAppProps, IState> {
         <DataContext.Provider value={this.state}>
           <AppHeader />
           <BrowserRouter>
-            <AppBody geometry={this.state?.detailFeature?.feature?.geometry} />
+            <AppBody detailFeature={this.state?.detailFeature?.feature} />
           </BrowserRouter>
           <AppFooter />
         </DataContext.Provider>
@@ -214,7 +214,7 @@ function AppFooter() {
   );
 }
 
-const AppBody: React.FC<{ geometry?: GeoJson.Geometry | GeoJson.GeometryCollection }> = ({ geometry }) => {
+const AppBody: React.FC<{ detailFeature?: GeoJson.Feature }> = ({ detailFeature }) => {
   return (
     <div id="App-body">
       <PanelView
@@ -228,14 +228,22 @@ const AppBody: React.FC<{ geometry?: GeoJson.Geometry | GeoJson.GeometryCollecti
         rightPanelTitle="Table"
         rightPanelExpandedInitially={false}
         bottomPanel={
-          geometry && <ElevationProfile geometry={geometry} height={200} useResponsiveContainer />
+          detailFeature && <ElevationProfile geometry={detailFeature.geometry} height={200} useResponsiveContainer />
         }
-        bottomPanelTitle="Elevation Profile"
+        bottomPanelTitle={`Elevation Profile - ${getFeatureName(detailFeature)}`}
       >
         <MapView style={{ width: "100%" }} />
       </PanelView>
     </div>
   );
+}
+
+function getFeatureName(feature: GeoJson.Feature | undefined) {
+  return feature?.properties?.name
+    ?? feature?.properties?.Name
+    ?? feature?.properties?.title
+    ?? feature?.properties?.Title
+    ?? "Feature";
 }
 
 function withSelectionStatus(columns: Column[]) {
