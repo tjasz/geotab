@@ -2,7 +2,7 @@ import React, { useRef, useContext, useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import ReactDOMServer from "react-dom/server";
 import { v4 as uuidv4 } from "uuid";
-import L from "leaflet";
+import L, { Point } from "leaflet";
 import "leaflet.locatecontrol";
 import "leaflet.locatecontrol/dist/L.Control.Locate.min.css";
 import { createControlComponent } from '@react-leaflet/core'
@@ -18,6 +18,7 @@ import {
   Popup,
   useMap,
   useMapEvents,
+  Marker,
 } from "react-leaflet";
 import { DataContext } from "./dataContext";
 import { getCentralCoord, hashCode, getFeatureListBounds } from "./algorithm";
@@ -85,6 +86,11 @@ function MapView(props) {
       >
         <ChangeView />
         <ScaleControl position="bottomleft" />
+        {context.detailFeature?.cursor &&
+          <Marker position={{
+            lng: context.detailFeature?.cursor[0],
+            lat: context.detailFeature?.cursor[1],
+          }} />}
         <GeoJSON
           data={features}
           key={hashCode(JSON.stringify(features))}

@@ -1,9 +1,10 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useContext } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Label, ReferenceDot, ReferenceArea } from 'recharts';
 import * as GeoJson from "./geojson-types";
 import { distance } from '@turf/turf';
 import { Slider, Typography } from '@mui/material';
 import { CategoricalChartState } from 'recharts/types/chart/types';
+import { DataContext } from './dataContext';
 
 interface ElevationProfileProps {
   geometry: GeoJson.Geometry | GeoJson.GeometryCollection;
@@ -35,6 +36,8 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
   width = 220,
   height = 100
 }) => {
+  const context = useContext(DataContext);
+
   // Extract coordinates based on geometry type
   let coordinates: number[][] = [];
   if (geometry.type === GeoJson.GeometryType.LineString) {
@@ -185,9 +188,19 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
       }}
       onMouseMove={(data, event) => {
         event.preventDefault && event.preventDefault();
+        context?.setDetailFeature({
+          feature: context?.detailFeature?.feature,
+          cursor: data.activePayload?.[0].payload.coordinate,
+        })
         if (event.buttons || event.force) {
           setSliderValuesFromEvent(data);
         }
+      }}
+      onMouseLeave={() => {
+        context?.setDetailFeature({
+          feature: context?.detailFeature?.feature,
+          cursor: undefined,
+        });
       }}
     >
       <CartesianGrid strokeDasharray="3 3" />
