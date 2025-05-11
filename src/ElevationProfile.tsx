@@ -283,7 +283,6 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
 
   return (
     <div className="elevation-profile">
-      <h4>Elevation Profile</h4>
       {useResponsiveContainer ? (
         <ResponsiveContainer width="100%" height={height}>
           {elevationChart}
