@@ -477,6 +477,23 @@ function PopupBody({ feature, columns }) {
   return (
     <div style={{ height: "200px", overflow: "auto", width: "250px" }}>
       <ul>
+        {/*edit button*/}
+        <li>
+          <a
+            onClick={() => {
+              const layers = map._layers;
+              for (let id in layers) {
+                const layer = layers[id];
+                if (layer._featureId === feature.id) {
+                  layer.enableEdit();
+                  break;
+                }
+              }
+            }}
+          >
+            Edit
+          </a>
+        </li>
         <li>
           <a
             onClick={() => {
