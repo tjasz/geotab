@@ -8,7 +8,7 @@ import "leaflet.locatecontrol/dist/L.Control.Locate.min.css";
 import "leaflet-editable"; // Import Leaflet.Editable
 import { createControlComponent } from '@react-leaflet/core'
 import { Button } from "@mui/material";
-import { AddLocation, ContentCopy, Edit, Polyline, Timeline } from "@mui/icons-material";
+import { AddLocation, ContentCopy, Done, Edit, Polyline, Timeline } from "@mui/icons-material";
 import {
   MapContainer,
   TileLayer,
@@ -204,22 +204,17 @@ function EditControl({ position = "topleft" }) {
   useEffect(() => {
     if (!map || !map.editTools) return;
 
-    // Map events for feature creation
-    map.on('editable:created', e => {
-      createFeature(e.layer);
-    });
-
-    // Map events for feature editing
-    map.on('editable:editing', e => {
+    map.on('editable:disable', e => {
       if (e.layer._featureId) {
         updateFeature(e.layer._featureId, e.layer);
+      } else {
+        createFeature(e.layer);
       }
-    });
+    })
 
     return () => {
       // Cleanup event listeners
-      map.off('editable:created');
-      map.off('editable:editing');
+      map.off('editable:disable');
     };
   }, [map, context]);
 
@@ -227,6 +222,30 @@ function EditControl({ position = "topleft" }) {
   return (
     <div className="leaflet-control-edit leaflet-control" style={{ marginBottom: '10px' }}>
       <div className="leaflet-bar">
+        <button
+          onClick={() => {
+            map.editTools.commitDrawing();
+            // disable editing on all layers in the map
+            const layers = map._layers;
+            for (let id in layers) {
+              const layer = layers[id];
+              // disable editing on the sub-layers in layer._layers
+              if (layer._layers) {
+                for (let subId in layer._layers) {
+                  const subLayer = layer._layers[subId];
+                  if (subLayer.disableEdit) {
+                    subLayer.disableEdit();
+                  }
+                }
+                layer.disableEdit();
+              }
+            }
+          }}
+          className="leaflet-control-edit-clear"
+          title="Commit"
+        >
+          <Done fontSize="small" />
+        </button>
         <button
           onClick={() => {
             // Toggle editing mode for map
