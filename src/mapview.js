@@ -62,33 +62,32 @@ function EditControl({ position = "topleft" }) {
       }
     } else if (layer instanceof L.Polygon) {
       const coords = layer.getLatLngs();
-      if (Array.isArray(coords[0]) && Array.isArray(coords[0][0])) {
-        // MultiPolygon or Polygon with holes
-        if (Array.isArray(coords[0][0][0])) {
-          // MultiPolygon
-          return {
-            type: GeometryType.MultiPolygon,
-            coordinates: coords.map(polyCoords =>
-              polyCoords.map(ringCoords =>
+      console.log(coords);
+      if (Array.isArray(coords)) {
+        if (Array.isArray(coords[0])) {
+          if (Array.isArray(coords[0][0])) {
+            return {
+              type: GeometryType.MultiPolygon,
+              coordinates: coords.map(polyCoords =>
+                polyCoords.map(ringCoords =>
+                  ringCoords.map(latlng => [latlng.lng, latlng.lat])
+                )
+              )
+            };
+          } else {
+            return {
+              type: GeometryType.Polygon,
+              coordinates: coords.map(ringCoords =>
                 ringCoords.map(latlng => [latlng.lng, latlng.lat])
               )
-            )
-          };
+            };
+          }
         } else {
-          // Polygon with holes
           return {
             type: GeometryType.Polygon,
-            coordinates: coords.map(ringCoords =>
-              ringCoords.map(latlng => [latlng.lng, latlng.lat])
-            )
+            coordinates: [coords.map(latlng => [latlng.lng, latlng.lat])]
           };
         }
-      } else {
-        // Simple Polygon
-        return {
-          type: GeometryType.Polygon,
-          coordinates: [coords.map(latlng => [latlng.lng, latlng.lat])]
-        };
       }
     }
     return null;
@@ -106,6 +105,7 @@ function EditControl({ position = "topleft" }) {
       },
       geometry: getGeometry(layer)
     };
+    console.log(newFeature)
 
     // Add the new feature to the DataContext
     context.setData([...context.data, newFeature]);
@@ -123,6 +123,7 @@ function EditControl({ position = "topleft" }) {
 
           // Update geometry based on layer type
           updatedFeature.geometry = getGeometry(layer);
+          console.log(updatedFeature)
 
           return updatedFeature;
         }
