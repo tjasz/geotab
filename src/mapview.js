@@ -475,6 +475,17 @@ function PopupBody({ feature, columns }) {
 
   return (
     <div style={{ height: "200px", overflow: "auto", width: "250px" }}>
+      <ul>
+        {isLineFeature && hasElevationData() && (<li>
+          <a
+            onClick={() => {
+              context.setDetailFeature({ feature });
+            }}
+          >
+            Elevation Profile
+          </a>
+        </li>)}
+      </ul>
       <table>
         <tbody>
           {
@@ -489,31 +500,6 @@ function PopupBody({ feature, columns }) {
           }
         </tbody>
       </table>
-
-      {isLineFeature && hasElevationData() && (
-        <div className="elevation-button-container" style={{ marginTop: "10px" }}>
-          <button
-            className="elevation-profile-button"
-            data-feature-id={feature.id}
-            style={{
-              width: "100%",
-              padding: "5px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor: "pointer"
-            }}
-            onClick={() => {
-              context.setDetailFeature({ feature });
-            }}
-          >
-            <svg style={{ marginRight: "5px" }} width="16" height="16" viewBox="0 0 24 24">
-              <path fill="currentColor" d="M3 16h18v2H3v-2zm0-5h18v2H3v-2zm0-5h18v2H3V6z" />
-            </svg>
-            Show Elevation Profile
-          </button>
-        </div>
-      )}
     </div>
   );
 }
