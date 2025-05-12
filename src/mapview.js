@@ -180,6 +180,25 @@ function EditControl({ position = "topleft" }) {
     });
   };
 
+  const handleCommit = () => {
+    map.editTools.commitDrawing();
+    // disable editing on all layers in the map
+    const layers = map._layers;
+    for (let id in layers) {
+      const layer = layers[id];
+      // disable editing on the sub-layers in layer._layers
+      if (layer._layers) {
+        for (let subId in layer._layers) {
+          const subLayer = layer._layers[subId];
+          if (subLayer.disableEdit) {
+            subLayer.disableEdit();
+          }
+        }
+        layer.disableEdit();
+      }
+    }
+  }
+
   // Setup event listeners when component mounts
   useEffect(() => {
     if (!map || !map.editTools) return;
@@ -191,10 +210,17 @@ function EditControl({ position = "topleft" }) {
         createFeature(e.layer);
       }
     })
+    map.on('keydown', e => {
+      if (e.originalEvent.key === 'Escape' || e.originalEvent.key === 'Enter') {
+        handleCommit();
+      }
+    }
+    );
 
     return () => {
       // Cleanup event listeners
       map.off('editable:disable');
+      map.off('keydown');
     };
   }, [map, context]);
 
@@ -204,22 +230,7 @@ function EditControl({ position = "topleft" }) {
       <div className="leaflet-bar">
         <button
           onClick={() => {
-            map.editTools.commitDrawing();
-            // disable editing on all layers in the map
-            const layers = map._layers;
-            for (let id in layers) {
-              const layer = layers[id];
-              // disable editing on the sub-layers in layer._layers
-              if (layer._layers) {
-                for (let subId in layer._layers) {
-                  const subLayer = layer._layers[subId];
-                  if (subLayer.disableEdit) {
-                    subLayer.disableEdit();
-                  }
-                }
-                layer.disableEdit();
-              }
-            }
+            handleCommit();
           }}
           className="leaflet-control-edit-clear"
           title="Commit"
