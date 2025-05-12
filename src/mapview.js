@@ -5,9 +5,10 @@ import { v4 as uuidv4 } from "uuid";
 import L from "leaflet";
 import "leaflet.locatecontrol";
 import "leaflet.locatecontrol/dist/L.Control.Locate.min.css";
+import "leaflet-editable"; // Import Leaflet.Editable
 import { createControlComponent } from '@react-leaflet/core'
 import { Button } from "@mui/material";
-import { AddLocation, ContentCopy } from "@mui/icons-material";
+import { AddLocation, ContentCopy, Edit, Polyline, Timeline } from "@mui/icons-material";
 import {
   MapContainer,
   TileLayer,
@@ -30,6 +31,260 @@ import { LeafletButton } from "./LeafletButton"
 import { SvgPatternRenderer } from "./PatternRenderer/SvgPatternRenderer"
 import DataCellValue from "./table/DataCellValue"
 import FormatPaintControl from "./symbology/FormatPaintControl"
+
+// Component to initialize the map with editable capabilities
+function InitializeEditTools() {
+  const map = useMap();
+
+  useEffect(() => {
+    if (map && !map.editTools) {
+      // If map.editTools doesn't exist yet, initialize it
+      map.editable = true;
+
+      // Listen for click events on features to enable editing for selected features
+      map.on('click', function (e) {
+        // This will be triggered when clicking on the map but not on features
+        // We handle feature clicks separately in the GeoJSON onEachFeature function
+      });
+    }
+  }, [map]);
+
+  return null;
+}
+
+function EditControl({ position = "topleft" }) {
+  const context = useContext(DataContext);
+  const map = useMap();
+
+  // Create a new feature and add it to the DataContext
+  const createFeature = (layer) => {
+    // Generate a new feature with UUID
+    const newFeature = {
+      id: uuidv4(),
+      type: FeatureType.Feature,
+      properties: {
+        "geotab:selectionStatus": "inactive",
+        name: "New Feature"
+      },
+      geometry: null
+    };
+
+    // Extract geometry based on layer type
+    if (layer instanceof L.Marker) {
+      newFeature.geometry = {
+        type: GeometryType.Point,
+        coordinates: [layer.getLatLng().lng, layer.getLatLng().lat]
+      };
+    } else if (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) {
+      const coords = layer.getLatLngs();
+      if (Array.isArray(coords[0]) && Array.isArray(coords[0][0])) {
+        // MultiLineString
+        newFeature.geometry = {
+          type: GeometryType.MultiLineString,
+          coordinates: coords.map(lineCoords =>
+            lineCoords.map(latlng => [latlng.lng, latlng.lat])
+          )
+        };
+      } else {
+        // LineString
+        newFeature.geometry = {
+          type: GeometryType.LineString,
+          coordinates: coords.map(latlng => [latlng.lng, latlng.lat])
+        };
+      }
+    } else if (layer instanceof L.Polygon) {
+      const coords = layer.getLatLngs();
+      if (Array.isArray(coords[0]) && Array.isArray(coords[0][0])) {
+        // MultiPolygon or Polygon with holes
+        if (Array.isArray(coords[0][0][0])) {
+          // MultiPolygon
+          newFeature.geometry = {
+            type: GeometryType.MultiPolygon,
+            coordinates: coords.map(polyCoords =>
+              polyCoords.map(ringCoords =>
+                ringCoords.map(latlng => [latlng.lng, latlng.lat])
+              )
+            )
+          };
+        } else {
+          // Polygon with holes
+          newFeature.geometry = {
+            type: GeometryType.Polygon,
+            coordinates: coords.map(ringCoords =>
+              ringCoords.map(latlng => [latlng.lng, latlng.lat])
+            )
+          };
+        }
+      } else {
+        // Simple Polygon
+        newFeature.geometry = {
+          type: GeometryType.Polygon,
+          coordinates: [coords.map(latlng => [latlng.lng, latlng.lat])]
+        };
+      }
+    }
+
+    // Add the new feature to the DataContext
+    context.setData([...context.data, newFeature]);
+
+    // Return the feature id for reference
+    return newFeature.id;
+  };
+
+  // Update an existing feature in the DataContext
+  const updateFeature = (featureId, layer) => {
+    context.setData(prevData => {
+      return prevData.map(feature => {
+        if (feature.id === featureId) {
+          const updatedFeature = { ...feature };
+
+          // Update geometry based on layer type
+          if (layer instanceof L.Marker) {
+            updatedFeature.geometry = {
+              type: GeometryType.Point,
+              coordinates: [layer.getLatLng().lng, layer.getLatLng().lat]
+            };
+          } else if (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) {
+            const coords = layer.getLatLngs();
+            if (Array.isArray(coords[0]) && Array.isArray(coords[0][0])) {
+              // MultiLineString
+              updatedFeature.geometry = {
+                type: GeometryType.MultiLineString,
+                coordinates: coords.map(lineCoords =>
+                  lineCoords.map(latlng => [latlng.lng, latlng.lat])
+                )
+              };
+            } else {
+              // LineString
+              updatedFeature.geometry = {
+                type: GeometryType.LineString,
+                coordinates: coords.map(latlng => [latlng.lng, latlng.lat])
+              };
+            }
+          } else if (layer instanceof L.Polygon) {
+            const coords = layer.getLatLngs();
+            if (Array.isArray(coords[0]) && Array.isArray(coords[0][0])) {
+              // MultiPolygon or Polygon with holes
+              if (Array.isArray(coords[0][0][0])) {
+                // MultiPolygon
+                updatedFeature.geometry = {
+                  type: GeometryType.MultiPolygon,
+                  coordinates: coords.map(polyCoords =>
+                    polyCoords.map(ringCoords =>
+                      ringCoords.map(latlng => [latlng.lng, latlng.lat])
+                    )
+                  )
+                };
+              } else {
+                // Polygon with holes
+                updatedFeature.geometry = {
+                  type: GeometryType.Polygon,
+                  coordinates: coords.map(ringCoords =>
+                    ringCoords.map(latlng => [latlng.lng, latlng.lat])
+                  )
+                };
+              }
+            } else {
+              // Simple Polygon
+              updatedFeature.geometry = {
+                type: GeometryType.Polygon,
+                coordinates: [coords.map(latlng => [latlng.lng, latlng.lat])]
+              };
+            }
+          }
+
+          return updatedFeature;
+        }
+        return feature;
+      });
+    });
+  };
+
+  // Setup event listeners when component mounts
+  useEffect(() => {
+    if (!map || !map.editTools) return;
+
+    // Map events for feature creation
+    map.on('editable:created', e => {
+      createFeature(e.layer);
+    });
+
+    // Map events for feature editing
+    map.on('editable:editing', e => {
+      if (e.layer._featureId) {
+        updateFeature(e.layer._featureId, e.layer);
+      }
+    });
+
+    return () => {
+      // Cleanup event listeners
+      map.off('editable:created');
+      map.off('editable:editing');
+    };
+  }, [map, context]);
+
+  // Create toolbar buttons
+  return (
+    <div className="leaflet-control-edit leaflet-control" style={{ marginBottom: '10px' }}>
+      <div className="leaflet-bar">
+        <button
+          onClick={() => {
+            // Toggle editing mode for map
+            if (map.editTools.drawing()) {
+              map.editTools.stopDrawing();
+            } else {
+              const selectedFeatures = context.data.filter(f =>
+                f.properties && f.properties["geotab:selectionStatus"] === "active"
+              );
+              if (selectedFeatures.length > 0) {
+                // Enable editing for the selected feature
+                selectedFeatures.forEach(feature => {
+                  const layers = map._layers;
+                  for (let id in layers) {
+                    const layer = layers[id];
+                    if (layer.feature && layer.feature.id === feature.id) {
+                      layer._featureId = feature.id;
+                      layer.enableEdit();
+                      break;
+                    }
+                  }
+                });
+              }
+            }
+          }}
+          className="leaflet-control-edit-toggle"
+          title="Toggle Edit Mode"
+        >
+          <Edit fontSize="small" />
+        </button>
+
+        <button
+          onClick={() => map.editTools.startMarker()}
+          className="leaflet-control-draw-marker"
+          title="Draw a marker"
+        >
+          <AddLocation fontSize="small" />
+        </button>
+
+        <button
+          onClick={() => map.editTools.startPolyline()}
+          className="leaflet-control-draw-polyline"
+          title="Draw a polyline"
+        >
+          <Timeline fontSize="small" />
+        </button>
+
+        <button
+          onClick={() => map.editTools.startPolygon()}
+          className="leaflet-control-draw-polygon"
+          title="Draw a polygon"
+        >
+          <Polyline fontSize="small" />
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function MapView(props) {
   const context = useContext(DataContext);
@@ -83,7 +338,9 @@ function MapView(props) {
         ref={mapRef}
         whenReady={() => resizeMap(mapRef)}
         renderer={new SvgPatternRenderer()}
+        editable={true} // Make the map editable
       >
+        <InitializeEditTools />
         <ChangeView />
         <ScaleControl position="bottomleft" />
         {context.detailFeature?.cursor &&
@@ -106,6 +363,8 @@ function MapView(props) {
               feature.id,
               restyleLayer.bind(null, layer),
             );
+            // Store the feature ID on the layer for editing operations
+            layer._featureId = feature.id;
             layer.once({
               mouseover: (e) => {
                 feature.properties["geotab:selectionStatus"] = addHover(
@@ -165,6 +424,7 @@ function MapView(props) {
             );
           }}
         />
+        <EditControl />
       </MapContainer>
     </div>
   );
