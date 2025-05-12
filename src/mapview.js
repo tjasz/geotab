@@ -22,7 +22,7 @@ import {
   Marker,
 } from "react-leaflet";
 import { DataContext } from "./dataContext";
-import { getCentralCoord, hashCode, getFeatureListBounds } from "./algorithm";
+import { getCentralCoord, hashCode, getFeatureListBounds, getFeatureBounds } from "./algorithm";
 import mapLayers from "./maplayers";
 import { painter, markerStyleToMarker } from "./symbology/painter";
 import { addHover, removeHover, toggleActive } from "./selection";
@@ -455,6 +455,7 @@ function ActivePopup(props) {
 }
 
 function PopupBody({ feature, columns }) {
+  const map = useMap();
   const context = useContext(DataContext);
   const isLineFeature = feature?.geometry?.type === GeometryType.LineString ||
     feature?.geometry?.type === GeometryType.MultiLineString;
@@ -476,6 +477,16 @@ function PopupBody({ feature, columns }) {
   return (
     <div style={{ height: "200px", overflow: "auto", width: "250px" }}>
       <ul>
+        <li>
+          <a
+            onClick={() => {
+              map.fitBounds(getFeatureBounds(feature));
+            }
+            }
+          >
+            Zoom to Fit
+          </a>
+        </li>
         {isLineFeature && hasElevationData() && (<li>
           <a
             onClick={() => {
