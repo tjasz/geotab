@@ -32,26 +32,6 @@ import { SvgPatternRenderer } from "./PatternRenderer/SvgPatternRenderer"
 import DataCellValue from "./table/DataCellValue"
 import FormatPaintControl from "./symbology/FormatPaintControl"
 
-// Component to initialize the map with editable capabilities
-function InitializeEditTools() {
-  const map = useMap();
-
-  useEffect(() => {
-    if (map && !map.editTools) {
-      // If map.editTools doesn't exist yet, initialize it
-      map.editable = true;
-
-      // Listen for click events on features to enable editing for selected features
-      map.on('click', function (e) {
-        // This will be triggered when clicking on the map but not on features
-        // We handle feature clicks separately in the GeoJSON onEachFeature function
-      });
-    }
-  }, [map]);
-
-  return null;
-}
-
 function EditControl({ position = "topleft" }) {
   const context = useContext(DataContext);
   const map = useMap();
@@ -344,7 +324,6 @@ function MapView(props) {
         renderer={new SvgPatternRenderer()}
         editable={true} // Make the map editable
       >
-        <InitializeEditTools />
         <ChangeView />
         <ScaleControl position="bottomleft" />
         {context.detailFeature?.cursor &&
