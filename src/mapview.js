@@ -348,6 +348,9 @@ function MapView(props) {
     };
   }, [context.setDetailFeature, context.data]);
 
+  const [clickedFeature, setClickedFeature] = useState(null);
+  const [clickedLatLng, setClickedLatLng] = useState(null);
+
   if (!context.filteredData) return null;
   const features = context.filteredData;
   return (
@@ -400,6 +403,8 @@ function MapView(props) {
             });
             layer.on({
               click: (e) => {
+                setClickedFeature(feature);
+                setClickedLatLng(e.latlng);
                 feature.properties["geotab:selectionStatus"] = toggleActive(
                   feature.properties["geotab:selectionStatus"],
                 );
@@ -438,11 +443,18 @@ function MapView(props) {
                 }
               },
             });
-            layer.bindPopup(
-              ReactDOMServer.renderToString(<PopupBody feature={feature} columns={context.columns} />),
-            );
           }}
         />
+        {clickedFeature && clickedLatLng && (
+          <ActivePopup
+            feature={clickedFeature}
+            latlng={clickedLatLng}
+            columns={context.columns}
+            onClose={() => {
+              setClickedFeature(null);
+              setClickedLatLng(null);
+            }}
+          />)}
         <EditControl />
       </MapContainer>
     </div>
@@ -454,7 +466,7 @@ function ActivePopup(props) {
     props.feature &&
     props.feature.geometry && (
       <Popup position={props.latlng ?? getCentralCoord(props.feature)}>
-        <PopupBody feature={props.feature} />
+        <PopupBody feature={props.feature} columns={props.columns} />
       </Popup>
     )
   );
