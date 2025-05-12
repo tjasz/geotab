@@ -445,6 +445,7 @@ function PopupBody({ feature, columns }) {
 }
 
 function ContextPopup({ latlng, zoom, onClose }) {
+  const map = useMap();
   const context = useContext(DataContext);
 
   const latlng5 = `${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}`;
@@ -515,6 +516,15 @@ function ContextPopup({ latlng, zoom, onClose }) {
           }}
         >
           Add Point
+        </Button>
+        <Button
+          startIcon={<Polyline />}
+          onClick={() => {
+            map.editTools.startPolyline(latlng);
+            onClose();
+          }}
+        >
+          Start Line
         </Button>
       </div>
     </Popup>
