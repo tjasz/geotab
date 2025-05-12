@@ -201,23 +201,45 @@ button:active {
 }
 
 #data-table th a {
-  color: #b3e7ff;
-}
-
-#data-table th a:link {
-  color: #b3e7ff;
-}
-
-#data-table th a:visited {
-  color: #b3e7ff;
-}
-
-#data-table th a:hover {
   color: #93c7df;
 }
 
-#data-table th a:active {
+#data-table th a:link {
+  color: #93c7df;
+}
+
+#data-table th a:visited {
+  color: #93c7df;
+}
+
+#data-table th a:hover {
   color: #73a7bf;
+}
+
+#data-table th a:active {
+  color: #53879f;
+}
+
+.leaflet-container ul a {
+  color: #93c7df;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.leaflet-container ul a:link {
+  color: #93c7df;
+}
+
+.leaflet-container ul a:visited {
+  color: #93c7df;
+}
+
+.leaflet-container ul a:hover {
+  color: #73a7bf;
+}
+
+.leaflet-container ul a:active {
+  color: #53879f;
 }
 
 #data-table tr.active {
