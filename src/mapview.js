@@ -226,7 +226,7 @@ function EditControl({ position = "topleft" }) {
 
   // Create toolbar buttons
   return (
-    <div className="leaflet-control-edit leaflet-control" style={{ marginBottom: '10px' }}>
+    <div className="leaflet-control-edit leaflet-control" style={{ marginBottom: '10px', marginLeft: '50%' }}>
       <div className="leaflet-bar">
         <button
           onClick={() => {
@@ -236,36 +236,6 @@ function EditControl({ position = "topleft" }) {
           title="Commit"
         >
           <Done fontSize="small" />
-        </button>
-        <button
-          onClick={() => {
-            // Toggle editing mode for map
-            if (map.editTools.drawing()) {
-              map.editTools.stopDrawing();
-            } else {
-              const selectedFeatures = context.data.filter(f =>
-                f.properties && f.properties["geotab:selectionStatus"] === "active"
-              );
-              if (selectedFeatures.length > 0) {
-                // Enable editing for the selected feature
-                selectedFeatures.forEach(feature => {
-                  const layers = map._layers;
-                  for (let id in layers) {
-                    const layer = layers[id];
-                    if (layer.feature && layer.feature.id === feature.id) {
-                      layer._featureId = feature.id;
-                      layer.enableEdit();
-                      break;
-                    }
-                  }
-                });
-              }
-            }
-          }}
-          className="leaflet-control-edit-toggle"
-          title="Toggle Edit Mode"
-        >
-          <Edit fontSize="small" />
         </button>
 
         <button
