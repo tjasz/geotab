@@ -330,24 +330,6 @@ function MapView(props) {
 
   const mapRef = useRef();
 
-  // Add event listener for elevation profile buttons in popups
-  useEffect(() => {
-    const handleElevationButtonClick = (event) => {
-      if (event.target.closest('.elevation-profile-button')) {
-        const button = event.target.closest('.elevation-profile-button');
-        const featureId = button.getAttribute('data-feature-id');
-        const feature = context.data.find(f => f.id === featureId);
-        context.setDetailFeature({ feature });
-      }
-    };
-
-    document.addEventListener('click', handleElevationButtonClick);
-
-    return () => {
-      document.removeEventListener('click', handleElevationButtonClick);
-    };
-  }, [context.setDetailFeature, context.data]);
-
   const [clickedFeature, setClickedFeature] = useState(null);
   const [clickedLatLng, setClickedLatLng] = useState(null);
 
@@ -520,6 +502,9 @@ function PopupBody({ feature, columns }) {
               alignItems: "center",
               justifyContent: "center",
               cursor: "pointer"
+            }}
+            onClick={() => {
+              context.setDetailFeature({ feature });
             }}
           >
             <svg style={{ marginRight: "5px" }} width="16" height="16" viewBox="0 0 24 24">
