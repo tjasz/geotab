@@ -36,22 +36,10 @@ function EditControl({ position = "topleft" }) {
   const context = useContext(DataContext);
   const map = useMap();
 
-  // Create a new feature and add it to the DataContext
-  const createFeature = (layer) => {
-    // Generate a new feature with UUID
-    const newFeature = {
-      id: uuidv4(),
-      type: FeatureType.Feature,
-      properties: {
-        "geotab:selectionStatus": "inactive",
-        name: "New Feature"
-      },
-      geometry: null
-    };
-
+  const getGeometry = (layer) => {
     // Extract geometry based on layer type
     if (layer instanceof L.Marker) {
-      newFeature.geometry = {
+      return {
         type: GeometryType.Point,
         coordinates: [layer.getLatLng().lng, layer.getLatLng().lat]
       };
@@ -59,7 +47,7 @@ function EditControl({ position = "topleft" }) {
       const coords = layer.getLatLngs();
       if (Array.isArray(coords[0]) && Array.isArray(coords[0][0])) {
         // MultiLineString
-        newFeature.geometry = {
+        return {
           type: GeometryType.MultiLineString,
           coordinates: coords.map(lineCoords =>
             lineCoords.map(latlng => [latlng.lng, latlng.lat])
@@ -67,7 +55,7 @@ function EditControl({ position = "topleft" }) {
         };
       } else {
         // LineString
-        newFeature.geometry = {
+        return {
           type: GeometryType.LineString,
           coordinates: coords.map(latlng => [latlng.lng, latlng.lat])
         };
@@ -78,7 +66,7 @@ function EditControl({ position = "topleft" }) {
         // MultiPolygon or Polygon with holes
         if (Array.isArray(coords[0][0][0])) {
           // MultiPolygon
-          newFeature.geometry = {
+          return {
             type: GeometryType.MultiPolygon,
             coordinates: coords.map(polyCoords =>
               polyCoords.map(ringCoords =>
@@ -88,7 +76,7 @@ function EditControl({ position = "topleft" }) {
           };
         } else {
           // Polygon with holes
-          newFeature.geometry = {
+          return {
             type: GeometryType.Polygon,
             coordinates: coords.map(ringCoords =>
               ringCoords.map(latlng => [latlng.lng, latlng.lat])
@@ -97,12 +85,27 @@ function EditControl({ position = "topleft" }) {
         }
       } else {
         // Simple Polygon
-        newFeature.geometry = {
+        return {
           type: GeometryType.Polygon,
           coordinates: [coords.map(latlng => [latlng.lng, latlng.lat])]
         };
       }
     }
+    return null;
+  }
+
+  // Create a new feature and add it to the DataContext
+  const createFeature = (layer) => {
+    // Generate a new feature with UUID
+    const newFeature = {
+      id: uuidv4(),
+      type: FeatureType.Feature,
+      properties: {
+        "geotab:selectionStatus": "inactive",
+        name: "New Feature"
+      },
+      geometry: getGeometry(layer)
+    };
 
     // Add the new feature to the DataContext
     context.setData([...context.data, newFeature]);
@@ -119,59 +122,7 @@ function EditControl({ position = "topleft" }) {
           const updatedFeature = { ...feature };
 
           // Update geometry based on layer type
-          if (layer instanceof L.Marker) {
-            updatedFeature.geometry = {
-              type: GeometryType.Point,
-              coordinates: [layer.getLatLng().lng, layer.getLatLng().lat]
-            };
-          } else if (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) {
-            const coords = layer.getLatLngs();
-            if (Array.isArray(coords[0]) && Array.isArray(coords[0][0])) {
-              // MultiLineString
-              updatedFeature.geometry = {
-                type: GeometryType.MultiLineString,
-                coordinates: coords.map(lineCoords =>
-                  lineCoords.map(latlng => [latlng.lng, latlng.lat])
-                )
-              };
-            } else {
-              // LineString
-              updatedFeature.geometry = {
-                type: GeometryType.LineString,
-                coordinates: coords.map(latlng => [latlng.lng, latlng.lat])
-              };
-            }
-          } else if (layer instanceof L.Polygon) {
-            const coords = layer.getLatLngs();
-            if (Array.isArray(coords[0]) && Array.isArray(coords[0][0])) {
-              // MultiPolygon or Polygon with holes
-              if (Array.isArray(coords[0][0][0])) {
-                // MultiPolygon
-                updatedFeature.geometry = {
-                  type: GeometryType.MultiPolygon,
-                  coordinates: coords.map(polyCoords =>
-                    polyCoords.map(ringCoords =>
-                      ringCoords.map(latlng => [latlng.lng, latlng.lat])
-                    )
-                  )
-                };
-              } else {
-                // Polygon with holes
-                updatedFeature.geometry = {
-                  type: GeometryType.Polygon,
-                  coordinates: coords.map(ringCoords =>
-                    ringCoords.map(latlng => [latlng.lng, latlng.lat])
-                  )
-                };
-              }
-            } else {
-              // Simple Polygon
-              updatedFeature.geometry = {
-                type: GeometryType.Polygon,
-                coordinates: [coords.map(latlng => [latlng.lng, latlng.lat])]
-              };
-            }
-          }
+          updatedFeature.geometry = getGeometry(layer);
 
           return updatedFeature;
         }
