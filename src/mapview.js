@@ -5,9 +5,10 @@ import { v4 as uuidv4 } from "uuid";
 import L from "leaflet";
 import "leaflet.locatecontrol";
 import "leaflet.locatecontrol/dist/L.Control.Locate.min.css";
+import "leaflet-editable"; // Import Leaflet.Editable
 import { createControlComponent } from '@react-leaflet/core'
 import { Button } from "@mui/material";
-import { AddLocation, ContentCopy } from "@mui/icons-material";
+import { AddLocation, ContentCopy, Done, Edit, Polyline, Timeline } from "@mui/icons-material";
 import {
   MapContainer,
   TileLayer,
@@ -20,8 +21,9 @@ import {
   useMapEvents,
   Marker,
 } from "react-leaflet";
+import Control from 'react-leaflet-custom-control'
 import { DataContext } from "./dataContext";
-import { getCentralCoord, hashCode, getFeatureListBounds } from "./algorithm";
+import { getCentralCoord, hashCode, getFeatureListBounds, getFeatureBounds } from "./algorithm";
 import mapLayers from "./maplayers";
 import { painter, markerStyleToMarker } from "./symbology/painter";
 import { addHover, removeHover, toggleActive } from "./selection";
@@ -30,6 +32,201 @@ import { LeafletButton } from "./LeafletButton"
 import { SvgPatternRenderer } from "./PatternRenderer/SvgPatternRenderer"
 import DataCellValue from "./table/DataCellValue"
 import FormatPaintControl from "./symbology/FormatPaintControl"
+
+function EditControl({ position = "topleft" }) {
+  const context = useContext(DataContext);
+  const map = useMap();
+  const [drawing, setDrawing] = useState(false);
+
+  const getGeometry = (layer) => {
+    // Extract geometry based on layer type
+    if (layer instanceof L.Marker) {
+      return {
+        type: GeometryType.Point,
+        coordinates: [layer.getLatLng().lng, layer.getLatLng().lat]
+      };
+    } else if (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) {
+      const coords = layer.getLatLngs();
+      if (Array.isArray(coords[0]) && Array.isArray(coords[0][0])) {
+        // MultiLineString
+        return {
+          type: GeometryType.MultiLineString,
+          coordinates: coords.map(lineCoords =>
+            lineCoords.map(latlng => [latlng.lng, latlng.lat])
+          )
+        };
+      } else {
+        // LineString
+        return {
+          type: GeometryType.LineString,
+          coordinates: coords.map(latlng => [latlng.lng, latlng.lat])
+        };
+      }
+    } else if (layer instanceof L.Polygon) {
+      const coords = layer.getLatLngs();
+      if (Array.isArray(coords)) {
+        if (Array.isArray(coords[0])) {
+          if (Array.isArray(coords[0][0])) {
+            return {
+              type: GeometryType.MultiPolygon,
+              coordinates: coords.map(polyCoords =>
+                polyCoords.map(ringCoords =>
+                  ringCoords.map(latlng => [latlng.lng, latlng.lat])
+                )
+              )
+            };
+          } else {
+            return {
+              type: GeometryType.Polygon,
+              coordinates: coords.map(ringCoords =>
+                ringCoords.map(latlng => [latlng.lng, latlng.lat])
+              )
+            };
+          }
+        } else {
+          return {
+            type: GeometryType.Polygon,
+            coordinates: [coords.map(latlng => [latlng.lng, latlng.lat])]
+          };
+        }
+      }
+    }
+    return null;
+  }
+
+  // Create a new feature and add it to the DataContext
+  const createFeature = (layer) => {
+    // Generate a new feature with UUID
+    const newFeature = {
+      id: uuidv4(),
+      type: FeatureType.Feature,
+      properties: {
+        "geotab:selectionStatus": "inactive",
+        name: "New Feature"
+      },
+      geometry: getGeometry(layer)
+    };
+
+    // Add the new feature to the DataContext
+    context.setData([...context.data, newFeature]);
+
+    // Return the feature id for reference
+    return newFeature.id;
+  };
+
+  // Update an existing feature in the DataContext
+  const updateFeature = (featureId, layer) => {
+    context.setData(prevData => {
+      return prevData.map(feature => {
+        if (feature.id === featureId) {
+          const updatedFeature = { ...feature };
+
+          // Update geometry based on layer type
+          updatedFeature.geometry = getGeometry(layer);
+
+          return updatedFeature;
+        }
+        return feature;
+      });
+    });
+  };
+
+  const handleCommit = () => {
+    setDrawing(false);
+    map.editTools.commitDrawing();
+    map.editTools.featuresLayer.clearLayers();
+    // disable editing on all layers in the map
+    const layers = map._layers;
+    for (let id in layers) {
+      const layer = layers[id];
+      // disable editing on the sub-layers in layer._layers
+      if (layer._layers) {
+        for (let subId in layer._layers) {
+          const subLayer = layer._layers[subId];
+          if (subLayer.disableEdit) {
+            subLayer.disableEdit();
+          }
+        }
+      }
+    }
+  }
+
+  // Setup event listeners when component mounts
+  useEffect(() => {
+    if (!map || !map.editTools) return;
+
+    map.on('editable:enable', e => {
+      setDrawing(true);
+    })
+    map.on('editable:drawing:start', e => {
+      setDrawing(true);
+    })
+    map.on('editable:disable', e => {
+      if (e.layer._featureId) {
+        updateFeature(e.layer._featureId, e.layer);
+      } else {
+        createFeature(e.layer);
+      }
+    })
+    map.on('keydown', e => {
+      if (e.originalEvent.key === 'Escape' || e.originalEvent.key === 'Enter') {
+        handleCommit();
+      }
+    }
+    );
+
+    return () => {
+      // Cleanup event listeners
+      map.off('editable:enable');
+      map.off('editable:drawing:start');
+      map.off('editable:disable');
+      map.off('keydown');
+    };
+  }, [map, context]);
+
+  // Create toolbar buttons
+  return (
+    <Control prepend position={position}>
+      <div className="leaflet-bar leaflet-bar-horizontal">
+        {drawing && (<a
+          onClick={() => {
+            handleCommit();
+          }}
+          className="leaflet-control-edit-commit"
+          title="Commit"
+        >
+          <Done fontSize="small" />
+        </a>)}
+
+        {!drawing && (<>
+          <a
+            onClick={() => map.editTools.startMarker()}
+            className="leaflet-control-draw-marker"
+            title="Draw a marker"
+          >
+            <AddLocation fontSize="small" />
+          </a>
+
+          <a
+            onClick={() => map.editTools.startPolyline()}
+            className="leaflet-control-draw-polyline"
+            title="Draw a polyline"
+          >
+            <Timeline fontSize="small" />
+          </a>
+
+          <a
+            onClick={() => map.editTools.startPolygon()}
+            className="leaflet-control-draw-polygon"
+            title="Draw a polygon"
+          >
+            <Polyline fontSize="small" />
+          </a>
+        </>)}
+      </div>
+    </Control>
+  );
+}
 
 function MapView(props) {
   const context = useContext(DataContext);
@@ -56,23 +253,8 @@ function MapView(props) {
 
   const mapRef = useRef();
 
-  // Add event listener for elevation profile buttons in popups
-  useEffect(() => {
-    const handleElevationButtonClick = (event) => {
-      if (event.target.closest('.elevation-profile-button')) {
-        const button = event.target.closest('.elevation-profile-button');
-        const featureId = button.getAttribute('data-feature-id');
-        const feature = context.data.find(f => f.id === featureId);
-        context.setDetailFeature({ feature });
-      }
-    };
-
-    document.addEventListener('click', handleElevationButtonClick);
-
-    return () => {
-      document.removeEventListener('click', handleElevationButtonClick);
-    };
-  }, [context.setDetailFeature, context.data]);
+  const [clickedFeature, setClickedFeature] = useState(null);
+  const [clickedLatLng, setClickedLatLng] = useState(null);
 
   if (!context.filteredData) return null;
   const features = context.filteredData;
@@ -83,6 +265,7 @@ function MapView(props) {
         ref={mapRef}
         whenReady={() => resizeMap(mapRef)}
         renderer={new SvgPatternRenderer()}
+        editable={true} // Make the map editable
       >
         <ChangeView />
         <ScaleControl position="bottomleft" />
@@ -106,6 +289,8 @@ function MapView(props) {
               feature.id,
               restyleLayer.bind(null, layer),
             );
+            // Store the feature ID on the layer for editing operations
+            layer._featureId = feature.id;
             layer.once({
               mouseover: (e) => {
                 feature.properties["geotab:selectionStatus"] = addHover(
@@ -122,6 +307,8 @@ function MapView(props) {
             });
             layer.on({
               click: (e) => {
+                setClickedFeature(feature);
+                setClickedLatLng(e.latlng);
                 feature.properties["geotab:selectionStatus"] = toggleActive(
                   feature.properties["geotab:selectionStatus"],
                 );
@@ -160,11 +347,19 @@ function MapView(props) {
                 }
               },
             });
-            layer.bindPopup(
-              ReactDOMServer.renderToString(<PopupBody feature={feature} columns={context.columns} />),
-            );
           }}
         />
+        {clickedFeature && clickedLatLng && (
+          <ActivePopup
+            feature={clickedFeature}
+            latlng={clickedLatLng}
+            columns={context.columns}
+            onClose={() => {
+              setClickedFeature(null);
+              setClickedLatLng(null);
+            }}
+          />)}
+        <EditControl />
       </MapContainer>
     </div>
   );
@@ -175,13 +370,14 @@ function ActivePopup(props) {
     props.feature &&
     props.feature.geometry && (
       <Popup position={props.latlng ?? getCentralCoord(props.feature)}>
-        <PopupBody feature={props.feature} />
+        <PopupBody feature={props.feature} columns={props.columns} />
       </Popup>
     )
   );
 }
 
 function PopupBody({ feature, columns }) {
+  const map = useMap();
   const context = useContext(DataContext);
   const isLineFeature = feature?.geometry?.type === GeometryType.LineString ||
     feature?.geometry?.type === GeometryType.MultiLineString;
@@ -202,6 +398,44 @@ function PopupBody({ feature, columns }) {
 
   return (
     <div style={{ height: "200px", overflow: "auto", width: "250px" }}>
+      <ul>
+        {/*edit button*/}
+        <li>
+          <a
+            onClick={() => {
+              const layers = map._layers;
+              for (let id in layers) {
+                const layer = layers[id];
+                if (layer._featureId === feature.id) {
+                  layer.enableEdit();
+                  break;
+                }
+              }
+            }}
+          >
+            Edit
+          </a>
+        </li>
+        <li>
+          <a
+            onClick={() => {
+              map.fitBounds(getFeatureBounds(feature));
+            }
+            }
+          >
+            Zoom to Fit
+          </a>
+        </li>
+        {isLineFeature && hasElevationData() && (<li>
+          <a
+            onClick={() => {
+              context.setDetailFeature({ feature });
+            }}
+          >
+            Elevation Profile
+          </a>
+        </li>)}
+      </ul>
       <table>
         <tbody>
           {
@@ -216,33 +450,12 @@ function PopupBody({ feature, columns }) {
           }
         </tbody>
       </table>
-
-      {isLineFeature && hasElevationData() && (
-        <div className="elevation-button-container" style={{ marginTop: "10px" }}>
-          <button
-            className="elevation-profile-button"
-            data-feature-id={feature.id}
-            style={{
-              width: "100%",
-              padding: "5px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor: "pointer"
-            }}
-          >
-            <svg style={{ marginRight: "5px" }} width="16" height="16" viewBox="0 0 24 24">
-              <path fill="currentColor" d="M3 16h18v2H3v-2zm0-5h18v2H3v-2zm0-5h18v2H3V6z" />
-            </svg>
-            Show Elevation Profile
-          </button>
-        </div>
-      )}
     </div>
   );
 }
 
 function ContextPopup({ latlng, zoom, onClose }) {
+  const map = useMap();
   const context = useContext(DataContext);
 
   const latlng5 = `${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}`;
@@ -313,6 +526,15 @@ function ContextPopup({ latlng, zoom, onClose }) {
           }}
         >
           Add Point
+        </Button>
+        <Button
+          startIcon={<Polyline />}
+          onClick={() => {
+            map.editTools.startPolyline(latlng);
+            onClose();
+          }}
+        >
+          Start Line
         </Button>
       </div>
     </Popup>

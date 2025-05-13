@@ -201,23 +201,45 @@ button:active {
 }
 
 #data-table th a {
-  color: #b3e7ff;
-}
-
-#data-table th a:link {
-  color: #b3e7ff;
-}
-
-#data-table th a:visited {
-  color: #b3e7ff;
-}
-
-#data-table th a:hover {
   color: #93c7df;
 }
 
-#data-table th a:active {
+#data-table th a:link {
+  color: #93c7df;
+}
+
+#data-table th a:visited {
+  color: #93c7df;
+}
+
+#data-table th a:hover {
   color: #73a7bf;
+}
+
+#data-table th a:active {
+  color: #53879f;
+}
+
+.leaflet-container ul a {
+  color: #93c7df;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.leaflet-container ul a:link {
+  color: #93c7df;
+}
+
+.leaflet-container ul a:visited {
+  color: #93c7df;
+}
+
+.leaflet-container ul a:hover {
+  color: #73a7bf;
+}
+
+.leaflet-container ul a:active {
+  color: #53879f;
 }
 
 #data-table tr.active {
@@ -370,6 +392,34 @@ button:active {
   height: 16px;
   margin: 7px;
   background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill="none" stroke="black" stroke-width="20" d="M60 10 H90 V40 M90 60 V90 H60 M40 90 H10 V60 M10 40 V10 H40"/></svg>')
+}
+
+.leaflet-bar-horizontal {
+  height: 30px;
+}
+
+.leaflet-bar-horizontal a {
+  float: left;
+  display: inline;
+  clear: none;
+  border-right: 1px solid #ccc;
+  border-bottom: none !important;
+  color: white;
+  background-color: #336799;
+  vertical-align: middle;
+}
+
+.leaflet-bar-horizontal a:first-child {
+  border-radius: 4px 0 0 4px !important;
+}
+
+.leaflet-bar-horizontal a:last-child {
+  border-radius: 0 4px 4px 0 !important;
+  border-right: none;
+}
+
+.leaflet-bar-horizontal svg {
+  vertical-align: middle;
 }
 
 .elevation-profile-table {

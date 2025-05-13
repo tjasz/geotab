@@ -12,8 +12,8 @@ type PatternPart = {
 }
 export type Pattern = "solid" | PatternPart[];
 
-export function parsePattern(s: string): Pattern {
-  if (s === "solid") {
+export function parsePattern(s: string | undefined | null): Pattern {
+  if (s === "solid" || s === undefined || s === null) {
     return "solid";
   }
 
