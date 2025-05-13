@@ -64,7 +64,6 @@ function EditControl({ position = "topleft" }) {
       }
     } else if (layer instanceof L.Polygon) {
       const coords = layer.getLatLngs();
-      console.log(coords);
       if (Array.isArray(coords)) {
         if (Array.isArray(coords[0])) {
           if (Array.isArray(coords[0][0])) {
@@ -107,7 +106,6 @@ function EditControl({ position = "topleft" }) {
       },
       geometry: getGeometry(layer)
     };
-    console.log(newFeature)
 
     // Add the new feature to the DataContext
     context.setData([...context.data, newFeature]);
@@ -125,7 +123,6 @@ function EditControl({ position = "topleft" }) {
 
           // Update geometry based on layer type
           updatedFeature.geometry = getGeometry(layer);
-          console.log(updatedFeature)
 
           return updatedFeature;
         }
@@ -137,6 +134,7 @@ function EditControl({ position = "topleft" }) {
   const handleCommit = () => {
     setDrawing(false);
     map.editTools.commitDrawing();
+    map.editTools.featuresLayer.clearLayers();
     // disable editing on all layers in the map
     const layers = map._layers;
     for (let id in layers) {
@@ -149,7 +147,6 @@ function EditControl({ position = "topleft" }) {
             subLayer.disableEdit();
           }
         }
-        layer.disableEdit();
       }
     }
   }
