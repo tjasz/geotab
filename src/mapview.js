@@ -36,6 +36,7 @@ import FormatPaintControl from "./symbology/FormatPaintControl"
 function EditControl({ position = "topleft" }) {
   const context = useContext(DataContext);
   const map = useMap();
+  const [drawing, setDrawing] = useState(false);
 
   const getGeometry = (layer) => {
     // Extract geometry based on layer type
@@ -134,6 +135,7 @@ function EditControl({ position = "topleft" }) {
   };
 
   const handleCommit = () => {
+    setDrawing(false);
     map.editTools.commitDrawing();
     // disable editing on all layers in the map
     const layers = map._layers;
@@ -156,6 +158,9 @@ function EditControl({ position = "topleft" }) {
   useEffect(() => {
     if (!map || !map.editTools) return;
 
+    map.on('editable:drawing:start', e => {
+      setDrawing(true);
+    })
     map.on('editable:disable', e => {
       if (e.layer._featureId) {
         updateFeature(e.layer._featureId, e.layer);
@@ -181,7 +186,7 @@ function EditControl({ position = "topleft" }) {
   return (
     <Control prepend position={position}>
       <div className="leaflet-bar">
-        <a
+        {drawing && (<a
           onClick={() => {
             handleCommit();
           }}
@@ -189,7 +194,7 @@ function EditControl({ position = "topleft" }) {
           title="Commit"
         >
           <Done fontSize="small" />
-        </a>
+        </a>)}
 
         <a
           onClick={() => map.editTools.startMarker()}
