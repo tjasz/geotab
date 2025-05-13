@@ -21,6 +21,7 @@ import {
   useMapEvents,
   Marker,
 } from "react-leaflet";
+import Control from 'react-leaflet-custom-control'
 import { DataContext } from "./dataContext";
 import { getCentralCoord, hashCode, getFeatureListBounds, getFeatureBounds } from "./algorithm";
 import mapLayers from "./maplayers";
@@ -178,7 +179,7 @@ function EditControl({ position = "topleft" }) {
 
   // Create toolbar buttons
   return (
-    <div className="leaflet-control-edit leaflet-control" style={{ marginBottom: '10px', marginLeft: '50%' }}>
+    <Control prepend position={position}>
       <div className="leaflet-bar">
         <button
           onClick={() => {
@@ -214,7 +215,7 @@ function EditControl({ position = "topleft" }) {
           <Polyline fontSize="small" />
         </button>
       </div>
-    </div>
+    </Control>
   );
 }
 
