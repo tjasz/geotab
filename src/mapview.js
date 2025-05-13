@@ -158,6 +158,9 @@ function EditControl({ position = "topleft" }) {
   useEffect(() => {
     if (!map || !map.editTools) return;
 
+    map.on('editable:enable', e => {
+      setDrawing(true);
+    })
     map.on('editable:drawing:start', e => {
       setDrawing(true);
     })
@@ -177,6 +180,8 @@ function EditControl({ position = "topleft" }) {
 
     return () => {
       // Cleanup event listeners
+      map.off('editable:enable');
+      map.off('editable:drawing:start');
       map.off('editable:disable');
       map.off('keydown');
     };
@@ -196,29 +201,31 @@ function EditControl({ position = "topleft" }) {
           <Done fontSize="small" />
         </a>)}
 
-        <a
-          onClick={() => map.editTools.startMarker()}
-          className="leaflet-control-draw-marker"
-          title="Draw a marker"
-        >
-          <AddLocation fontSize="small" />
-        </a>
+        {!drawing && (<>
+          <a
+            onClick={() => map.editTools.startMarker()}
+            className="leaflet-control-draw-marker"
+            title="Draw a marker"
+          >
+            <AddLocation fontSize="small" />
+          </a>
 
-        <a
-          onClick={() => map.editTools.startPolyline()}
-          className="leaflet-control-draw-polyline"
-          title="Draw a polyline"
-        >
-          <Timeline fontSize="small" />
-        </a>
+          <a
+            onClick={() => map.editTools.startPolyline()}
+            className="leaflet-control-draw-polyline"
+            title="Draw a polyline"
+          >
+            <Timeline fontSize="small" />
+          </a>
 
-        <a
-          onClick={() => map.editTools.startPolygon()}
-          className="leaflet-control-draw-polygon"
-          title="Draw a polygon"
-        >
-          <Polyline fontSize="small" />
-        </a>
+          <a
+            onClick={() => map.editTools.startPolygon()}
+            className="leaflet-control-draw-polygon"
+            title="Draw a polygon"
+          >
+            <Polyline fontSize="small" />
+          </a>
+        </>)}
       </div>
     </Control>
   );
