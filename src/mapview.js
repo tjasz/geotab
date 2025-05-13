@@ -190,7 +190,7 @@ function EditControl({ position = "topleft" }) {
   // Create toolbar buttons
   return (
     <Control prepend position={position}>
-      <div className="leaflet-bar">
+      <div className="leaflet-bar leaflet-bar-horizontal">
         {drawing && (<a
           onClick={() => {
             handleCommit();
