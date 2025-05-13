@@ -181,39 +181,39 @@ function EditControl({ position = "topleft" }) {
   return (
     <Control prepend position={position}>
       <div className="leaflet-bar">
-        <button
+        <a
           onClick={() => {
             handleCommit();
           }}
-          className="leaflet-control-edit-clear"
+          className="leaflet-control-edit-commit"
           title="Commit"
         >
           <Done fontSize="small" />
-        </button>
+        </a>
 
-        <button
+        <a
           onClick={() => map.editTools.startMarker()}
           className="leaflet-control-draw-marker"
           title="Draw a marker"
         >
           <AddLocation fontSize="small" />
-        </button>
+        </a>
 
-        <button
+        <a
           onClick={() => map.editTools.startPolyline()}
           className="leaflet-control-draw-polyline"
           title="Draw a polyline"
         >
           <Timeline fontSize="small" />
-        </button>
+        </a>
 
-        <button
+        <a
           onClick={() => map.editTools.startPolygon()}
           className="leaflet-control-draw-polygon"
           title="Draw a polygon"
         >
           <Polyline fontSize="small" />
-        </button>
+        </a>
       </div>
     </Control>
   );
