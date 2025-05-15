@@ -9,9 +9,9 @@ export const makiCompatibility = [
   // TODO a:2 arrow - Svg.toString(Svg.translate(Svg.rotate(Svg.parse(makiPaths.arrow), -Math.PI / 2), 0, 15))
   // TODO a:3 arrow
   // TODO a:4 arrow
-  // TODO pin
+  { compatible: "pin", maki: "custom-marker-pushpin", },
   { compatible: "placemark2", maki: "temaki-pin", },
-  // TODO flag-1
+  { compatible: "flag-1", maki: "custom-flag", },
   // TODO flag-2
   // TODO any two characters inside a circle: "t:!", "T:00", etc.
   // some characters like ! go in a black circle. Most go in a white circle
