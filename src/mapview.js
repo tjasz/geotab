@@ -217,7 +217,7 @@ class MapboxRouteEditor {
 
       // Make the API request
       const response = await fetch(
-        `https://api.mapbox.com/directions/v5/mapbox/walking/${coordinates}?geometries=geojson&access_token=${apiKey}`
+        `https://api.mapbox.com/directions/v5/mapbox/walking/${coordinates}?geometries=geojson&overview=full&access_token=${apiKey}`
       );
 
       if (!response.ok) {
