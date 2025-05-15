@@ -217,7 +217,7 @@ class MapboxRouteEditor {
 
       // Make the API request
       const response = await fetch(
-        `https://api.mapbox.com/directions/v5/mapbox/walking/${coordinates}?geometries=geojson&overview=full&access_token=${apiKey}`
+        `https://api.mapbox.com/directions/v5/mapbox/walking/${coordinates}?geometries=geojson&overview=full&annotations=distance&access_token=${apiKey}`
       );
 
       if (!response.ok) {
@@ -231,7 +231,7 @@ class MapboxRouteEditor {
         const route = data.routes[0];
 
         // Update the polyline with the route geometry
-        this.updateRoute(route.geometry.coordinates);
+        this.updateRoute(route);
       } else {
         console.error('No route found:', data);
 
@@ -256,9 +256,9 @@ class MapboxRouteEditor {
     }
   }
 
-  updateRoute(coordinates) {
+  updateRoute(route) {
     // Convert GeoJSON coordinates to LatLng objects
-    const latLngs = coordinates.map(coord => L.latLng(coord[1], coord[0]));
+    const latLngs = route.geometry.coordinates.map(coord => L.latLng(coord[1], coord[0]));
 
     // Update the polyline
     this.polyline.setLatLngs(latLngs);
@@ -269,7 +269,8 @@ class MapboxRouteEditor {
     });
 
     // Store the route coordinates for the feature
-    this.routeCoordinates = coordinates;
+    this.routeCoordinates = route.geometry.coordinates;
+    this.routeDistance = route.distance;
   }
 
   // Get the current route as GeoJSON
@@ -384,7 +385,8 @@ function EditControl({ position = "topleft" }) {
       type: FeatureType.Feature,
       properties: {
         "geotab:selectionStatus": "inactive",
-        name: "Mapbox Route"
+        name: "Mapbox Route",
+        distance: routeEditor.routeDistance,
       },
       geometry: geometry
     };
