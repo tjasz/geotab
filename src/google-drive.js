@@ -22,7 +22,7 @@ import { GoogleDriveFileInfoDialog } from "./GoogleDriveFileInfoDialog";
 // Client ID and API key from the Developer Console
 const CLIENT_ID =
   "717055595652-4n93oosqls3l4q3oa0jik4s154qbk149.apps.googleusercontent.com";
-const API_KEY = "AIzaSyBCJBiyP5g5JLzk9so8I6ujWd583t63lL8";
+const API_KEY = process.env.REACT_APP_GOOGLE_API_KEY;
 
 // Array of API discovery doc URLs for APIs
 const DISCOVERY_DOCS = [
