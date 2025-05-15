@@ -8,7 +8,7 @@ export const makiCompatibility = [
   // TODO a:1 arrow
   // TODO a:2 arrow - Svg.toString(Svg.translate(Svg.rotate(Svg.parse(makiPaths.arrow), -Math.PI / 2), 0, 15))
   // TODO a:3 arrow
-  // TODO a:4 arrow
+  { compatible: "a:4", maki: "custom-arrow-head", },
   { compatible: "pin", maki: "custom-marker-pushpin", },
   { compatible: "placemark2", maki: "temaki-pin", },
   { compatible: "flag-1", maki: "custom-flag", },
