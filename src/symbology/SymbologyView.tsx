@@ -4,7 +4,7 @@ import { SvgPathPreview, SvgPatternPreview, SvgSelect } from "./SvgSelectorDialo
 import { linePatternOptions } from "./linePatternOptions"
 import { SymbologyPropertyView } from "./SymbologyPropertyView"
 import { NumericSymbologyPropertyView } from "./NumericSymbologyPropertyView"
-import { markersLibrary } from "./iconlib";
+import { DefaultMarker, markersLibrary } from "./iconlib";
 import React from "react";
 import { Symbology } from "./painter";
 
@@ -121,7 +121,7 @@ const SymbologyDefinition: React.FC<SymbologyDefinitionProps> = ({ symbology, on
         onEdit={(markerSymbolDef) => {
           updateDraft({ ...symbology, markerSymbol: markerSymbolDef });
         }}
-        placeholderValue={markersLibrary.Points[0]}
+        placeholderValue={DefaultMarker}
         onRenderSelector={(value, onChange, key) => {
           return <SvgSelect
             key={key}

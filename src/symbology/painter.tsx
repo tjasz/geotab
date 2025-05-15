@@ -2,7 +2,7 @@
 import Color from "colorjs.io"
 import { toType, FieldTypeDescription } from "../fieldtype";
 import * as GeoJson from "../geojson-types";
-import { getPathForMarker, markersLibrary, StarMarker, SvgPathMarker } from "./iconlib";
+import { DefaultMarker, getPathForMarker, markersLibrary, StarMarker, SvgPathMarker } from "./iconlib";
 import { mergeStyles, readSimpleStyle, readGeoJsonCss, PathCss, MarkerStyle } from "./PathCss";
 
 export enum SymbologyMode {
@@ -201,7 +201,7 @@ export function painter(symbology) {
 
     if (feature.geometry?.type === "Point") {
       const defaultMarkerStyle: MarkerStyle = {
-        symbol: markersLibrary.Points[0].label,
+        symbol: DefaultMarker.label,
         color: "#336899",
         size: 1,
         rotation: 0,
@@ -289,8 +289,8 @@ export function painter(symbology) {
 
 export function markerStyleToMarker(latlng: L.LatLngExpression, markerStyle: MarkerStyle) {
   // TODO handle URL in "marker-symbol"?
-  const markerPath = getPathForMarker(markerStyle.symbol) ?? markersLibrary.Points[0].pattern;
+  const markerPath = getPathForMarker(markerStyle.symbol) ?? DefaultMarker.pattern;
 
   // TODO handle marker rotation
-  return SvgPathMarker(latlng, markerPath, markerStyle.color, undefined, markerStyle.size! * 15, markerStyle.size! * 15);
+  return SvgPathMarker(latlng, markerPath, markerStyle.color, undefined, undefined, markerStyle.size! * 15, markerStyle.size! * 15);
 }

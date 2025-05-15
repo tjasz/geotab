@@ -2,7 +2,7 @@ import L from "leaflet";
 import math from "../math";
 import Svg from "../PatternRenderer/Svg";
 import { makiCompatibility } from "../maki-compatibility";
-import { makiPaths, temakiPaths } from "./iconPaths";
+import { customIconPaths, makiPaths, temakiPaths } from "./iconPaths";
 import { SvgOptions } from "./SvgOptions";
 
 export function svgMarker(
@@ -110,11 +110,12 @@ export function StarMarker(
 function svgPath(
   path: string,
   stroke?: string,
+  strokeWidth?: number,
   fill?: string,
   width?: number,
   height?: number,
 ) {
-  const strokeFill = `stroke="${stroke ?? "#336799"}" fill="${fill ?? stroke ?? "#336799"}"`;
+  const strokeFill = `stroke-width="${strokeWidth ?? 0}" stroke="${stroke ?? "#336799"}" fill="${fill ?? stroke ?? "#336799"}"`;
   return `<svg
     version="1.1"
     xmlns="http://www.w3.org/2000/svg"
@@ -130,11 +131,12 @@ export function SvgPathMarker(
   latlng: L.LatLngExpression,
   path: string,
   stroke?: string,
+  strokeWidth?: number,
   fill?: string,
   width?: number,
   height?: number,
 ) {
-  const svgString = svgPath(path, stroke, fill, width, height);
+  const svgString = svgPath(path, stroke, strokeWidth, fill, width, height);
   return svgMarker(latlng, svgString);
 }
 
@@ -184,25 +186,26 @@ function fromSvgArray(svgArray: string[]) {
 // const makiPaths = fromSvgArray(svgArray)
 // const temakiPaths = fromSvgArray(temakiSvgArray)
 
+export const DefaultMarker = { label: "circle", pattern: makiPaths.circle };
 export const markersLibrary: SvgOptions = {
-  Points: [
-    { label: "circle", pattern: makiPaths.circle },
-    { label: "circle-stroked", pattern: makiPaths["circle-stroked"] },
-    { label: "temaki-pin", pattern: temakiPaths["temaki-pin"] },
-  ],
+  Compatible: makiCompatibility.map(i => ({
+    label: i.compatible,
+    pattern: makiPaths[i.maki] ?? temakiPaths[i.maki] ?? customIconPaths[i.maki],
+  })),
   Maki: Object.entries(makiPaths).map(([key, value]) => ({ label: key, pattern: value })),
   Temaki: Object.entries(temakiPaths).map(([key, value]) => ({ label: key, pattern: value })),
+  Other: Object.entries(customIconPaths).map(([key, value]) => ({ label: key, pattern: value })),
 };
 
 export function getPathForMarker(markerName: string | undefined): string | undefined {
   if (!markerName?.length) {
     return undefined;
   }
-  if (markerName !== undefined && !(markerName in makiPaths || markerName in temakiPaths)) {
+  if (markerName !== undefined && !(markerName in makiPaths || markerName in temakiPaths || markerName in customIconPaths)) {
     markerName = makiCompatibility.find(i => i.compatible === markerName)?.maki;
   }
   if (!markerName?.length) {
     return undefined;
   }
-  return makiPaths[markerName] ?? temakiPaths[markerName];
+  return makiPaths[markerName] ?? temakiPaths[markerName] ?? customIconPaths[markerName];
 }
