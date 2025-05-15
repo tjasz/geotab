@@ -426,7 +426,7 @@ function PopupBody({ feature, columns }) {
             Zoom to Fit
           </a>
         </li>
-        {isLineFeature && hasElevationData() && (<li>
+        {isLineFeature && (<li>
           <a
             onClick={() => {
               context.setDetailFeature({ feature });

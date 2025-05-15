@@ -5,6 +5,7 @@ import { distance } from '@turf/turf';
 import { Slider, Typography } from '@mui/material';
 import { CategoricalChartState } from 'recharts/types/chart/types';
 import { DataContext } from './dataContext';
+import { simplifyLineString } from './geojson-calc';
 
 interface ElevationProfileProps {
   geometry: GeoJson.Geometry | GeoJson.GeometryCollection;
@@ -39,14 +40,14 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
   const context = useContext(DataContext);
 
   // Extract coordinates based on geometry type
-  let coordinates: number[][] = [];
+  let rawCoordinates: number[][] = [];
   if (geometry.type === GeoJson.GeometryType.LineString) {
-    coordinates = geometry.coordinates as number[][];
+    rawCoordinates = geometry.coordinates as number[][];
   } else if (geometry.type === GeoJson.GeometryType.MultiLineString) {
     // Flatten MultiLineString coordinates
-    coordinates = (geometry.coordinates as number[][][]).flat();
+    rawCoordinates = (geometry.coordinates as number[][][]).flat();
   }
-  coordinates = coordinates.filter(c => c.length >= 3); // Filter out points without elevation data
+  const coordinates = rawCoordinates.filter(c => c.length >= 3); // Filter out points without elevation data
 
   // Add slider state
   const [potentialSliderStart, setPotentialSliderStart] = useState<number>(0);
@@ -148,6 +149,19 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
     if (elevation > selectedMaxElevation) {
       selectedMaxElevation = elevation;
     }
+  }
+
+  if (chartData.length === 0) {
+    // first simplify the geometry
+    let simplifiedCoordinates: number[][] = [];
+    if (geometry.type === GeoJson.GeometryType.LineString) {
+      simplifiedCoordinates = simplifyLineString(geometry as GeoJson.LineString, 10).coordinates;
+    } else if (geometry.type === GeoJson.GeometryType.MultiLineString) {
+      // Flatten MultiLineString coordinates
+      simplifiedCoordinates = (geometry as GeoJson.MultiLineString).coordinates.flat();
+    }
+    // return a button to load data from the Google elevation API
+
   }
 
   const selectedStartDistance = chartData[selectedStartIndex].distance;
