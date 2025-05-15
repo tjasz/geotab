@@ -186,17 +186,12 @@ function fromSvgArray(svgArray: string[]) {
 // const makiPaths = fromSvgArray(svgArray)
 // const temakiPaths = fromSvgArray(temakiSvgArray)
 
+export const DefaultMarker = { label: "circle", pattern: makiPaths.circle };
 export const markersLibrary: SvgOptions = {
-  Points: [
-    { label: "circle", pattern: makiPaths.circle },
-    { label: "circle-stroked", pattern: makiPaths["circle-stroked"] },
-    { label: "custom-circle-target", pattern: customIconPaths["custom-circle-target"] },
-    { label: "custom-circle-target-crosshairs", pattern: customIconPaths["custom-circle-target-crosshairs"] },
-    { label: "custom-circle-target-radar", pattern: customIconPaths["custom-circle-target-radar"] },
-    { label: "custom-marker-pushpin", pattern: customIconPaths["custom-marker-pushpin"] },
-    { label: "temaki-pin", pattern: temakiPaths["temaki-pin"] },
-    { label: "custom-flag", pattern: customIconPaths["custom-flag"] },
-  ],
+  Compatible: makiCompatibility.map(i => ({
+    label: i.compatible,
+    pattern: makiPaths[i.maki] ?? temakiPaths[i.maki] ?? customIconPaths[i.maki],
+  })),
   Maki: Object.entries(makiPaths).map(([key, value]) => ({ label: key, pattern: value })),
   Temaki: Object.entries(temakiPaths).map(([key, value]) => ({ label: key, pattern: value })),
   Other: Object.entries(customIconPaths).map(([key, value]) => ({ label: key, pattern: value })),
