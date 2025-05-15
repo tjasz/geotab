@@ -393,6 +393,16 @@ function EditControl({ position = "topleft" }) {
 
     // Add the new feature to the DataContext
     context.setData([...context.data, newFeature]);
+    if (!context.columns.some(col => col.name === "distance")) {
+      context.setColumns(prevColumns => {
+        const newColumns = [...prevColumns, {
+          name: "distance",
+          type: "number",
+          visible: true,
+        }];
+        return newColumns;
+      });
+    }
 
     // Clean up
     routeEditor.removeMarkers();
