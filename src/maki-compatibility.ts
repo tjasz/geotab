@@ -1,9 +1,9 @@
 export const makiCompatibility = [
   { compatible: "point", maki: "circle", },
   { compatible: "c:ring", maki: "circle-stroked", },
-  // TODO c:target1 - makiPaths["circle-stroked"] + "M6.5 7.5A1 1 0 0 0 8.5 7.5A1 1 0 0 0 6.5 7.5"
-  // TODO c:target2
-  // TODO c:target3 - "M 1 7 A 6 6 0 0 1 7 1 H 8 A 6 6 0 0 1 14 7 V 8 A 6 6 0 0 1 8 14 H 7 A 6 6 0 0 1 1 8 V 7 Z M 7 2 a 5 5 0 0 0 -5 5 h 3 a 2 2 0 0 1 2 -2 z M 2 8 a 5 5 0 0 0 5 5 v -3 a 2 2 0 0 1 -2 -2 z M 8 13 a 5 5 0 0 0 5 -5 h -3 a 2 2 0 0 1 -2 2 z M 13 7 a 5 5 0 0 0 -5 -5 v 3 a 2 2 0 0 1 2 2 z M 7 6 a 1 1 0 0 0 -1 1 h 1 z M 6 8 a 1 1 0 0 0 1 1 v -1 z M 8 9 a 1 1 0 0 0 1 -1 h -1 z M 9 7 a 1 1 0 0 0 -1 -1 v 1 z"
+  { compatible: "c:target1", maki: "custom-circle-target", },
+  { compatible: "c:target2", maki: "custom-circle-target-crosshairs", },
+  { compatible: "c:target3", maki: "custom-circle-target-radar", },
   // TODO a:0 arrow
   // TODO a:1 arrow
   // TODO a:2 arrow - Svg.toString(Svg.translate(Svg.rotate(Svg.parse(makiPaths.arrow), -Math.PI / 2), 0, 15))
@@ -97,7 +97,7 @@ export const makiCompatibility = [
   // TODO { label: "dogs-onleash", pattern: "" },
   // TODO { label: "dogs-no", pattern: "" },
   { compatible: "horses-riding", maki: "horse-riding", },
-  // TODO { label: "horses-no", pattern: "" },
+  { compatible: "horses-no", maki: "custom-no-horses", },
   { compatible: "electric-hookup", maki: "temaki-electronic", },
   { compatible: "electric-charging", maki: "charging-station", },
   { compatible: "foodservice", maki: "restaurant", },
