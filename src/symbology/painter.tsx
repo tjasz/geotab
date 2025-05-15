@@ -292,5 +292,5 @@ export function markerStyleToMarker(latlng: L.LatLngExpression, markerStyle: Mar
   const markerPath = getPathForMarker(markerStyle.symbol) ?? markersLibrary.Points[0].pattern;
 
   // TODO handle marker rotation
-  return SvgPathMarker(latlng, markerPath, markerStyle.color, undefined, markerStyle.size! * 15, markerStyle.size! * 15);
+  return SvgPathMarker(latlng, markerPath, markerStyle.color, undefined, undefined, markerStyle.size! * 15, markerStyle.size! * 15);
 }

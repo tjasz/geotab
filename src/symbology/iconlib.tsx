@@ -110,11 +110,12 @@ export function StarMarker(
 function svgPath(
   path: string,
   stroke?: string,
+  strokeWidth?: number,
   fill?: string,
   width?: number,
   height?: number,
 ) {
-  const strokeFill = `stroke="${stroke ?? "#336799"}" fill="${fill ?? stroke ?? "#336799"}"`;
+  const strokeFill = `stroke-width="${strokeWidth ?? 0}" stroke="${stroke ?? "#336799"}" fill="${fill ?? stroke ?? "#336799"}"`;
   return `<svg
     version="1.1"
     xmlns="http://www.w3.org/2000/svg"
@@ -130,11 +131,12 @@ export function SvgPathMarker(
   latlng: L.LatLngExpression,
   path: string,
   stroke?: string,
+  strokeWidth?: number,
   fill?: string,
   width?: number,
   height?: number,
 ) {
-  const svgString = svgPath(path, stroke, fill, width, height);
+  const svgString = svgPath(path, stroke, strokeWidth, fill, width, height);
   return svgMarker(latlng, svgString);
 }
 
