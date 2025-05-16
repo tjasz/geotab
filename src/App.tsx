@@ -23,7 +23,6 @@ import PanelView from "./PanelView";
 import DataView from "./dataview";
 import MapView from "./mapview";
 import TableView from "./table/tableview";
-import SymbologyView from "./symbology/SymbologyView";
 import ElevationProfile from "./ElevationProfile";
 
 interface IAppProps { }
@@ -38,7 +37,11 @@ class App extends React.Component<IAppProps, IState> {
       data: [],
       filter: null,
       filteredData: [],
-      columns: [],
+      columns: [{
+        name: "geotab:selectionStatus",
+        visible: false,
+        type: FieldTypeDescription.String,
+      }],
       symbology: null,
       detailFeature: {},
       featureListeners: { table: {}, map: {} },
