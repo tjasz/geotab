@@ -47,11 +47,11 @@ export const ElevationProfileWrapper: React.FC<ElevationProfileProps> = ({
     setErrorMessage(null);
 
     try {
-      // Construct API URL
-      const apiUrl = `http://localhost:7071/api/elevation`;
+      if (!process.env.REACT_APP_ELEVATION_API_URL) {
+        throw new Error("Elevation API URL is not defined");
+      }
 
-      // Fetch elevation data
-      const response = await fetch(apiUrl,
+      const response = await fetch(process.env.REACT_APP_ELEVATION_API_URL,
         {
           method: 'POST',
           body: JSON.stringify(feature),
