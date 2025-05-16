@@ -42,21 +42,24 @@ export const ElevationProfileWrapper: React.FC<ElevationProfileProps> = ({
   const [updatedFeature, setUpdatedFeature] = useState<GeoJson.Feature | null>(null);
 
   // Function to fetch elevation data from Google Elevation API
-  const fetchElevationData = async (coordinates: number[][]) => {
+  const fetchElevationData = async (feature: GeoJson.Feature) => {
     setIsLoading(true);
     setErrorMessage(null);
 
     try {
-      // Build the locations parameter for the API
-      const locationsParam = coordinates
-        .map(coord => `${coord[1]},${coord[0]}`) // API expects lat,lng
-        .join('|');
-
       // Construct API URL
-      const apiUrl = `http://localhost:7071/api/elevation?locations=${encodeURIComponent(locationsParam)}`;
+      const apiUrl = `http://localhost:7071/api/elevation`;
 
       // Fetch elevation data
-      const response = await fetch(apiUrl);
+      const response = await fetch(apiUrl,
+        {
+          method: 'POST',
+          body: JSON.stringify(feature),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
       const data: GeoJson.Feature = await response.json();
       console.log(data);
       setUpdatedFeature(data);
@@ -86,7 +89,7 @@ export const ElevationProfileWrapper: React.FC<ElevationProfileProps> = ({
   if (!updatedFeature) {
     const coordinates = feature.geometry.type === GeoJson.GeometryType.LineString ? feature.geometry.coordinates : feature.geometry.coordinates.flat() as number[][];
     if (coordinates.some(coord => coord.length < 3)) {
-      fetchElevationData(coordinates);
+      fetchElevationData(feature);
     }
   }
 
