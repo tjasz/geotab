@@ -1,14 +1,14 @@
 import React, { useEffect, useState, useMemo, useContext } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Label, ReferenceDot, ReferenceArea } from 'recharts';
 import * as GeoJson from "./geojson-types";
-import { distance } from '@turf/turf';
-import { Slider, Typography } from '@mui/material';
+import { distance, Feature } from '@turf/turf';
+import { Slider, Typography, Button, CircularProgress } from '@mui/material';
 import { CategoricalChartState } from 'recharts/types/chart/types';
 import { DataContext } from './dataContext';
 import { simplifyLineString } from './geojson-calc';
 
 interface ElevationProfileProps {
-  geometry: GeoJson.Geometry | GeoJson.GeometryCollection;
+  feature: GeoJson.Feature;
   useResponsiveContainer?: boolean;
   width?: number;
   height?: number;
@@ -31,8 +31,70 @@ interface Segment {
   grade: number;
 }
 
+export const ElevationProfileWrapper: React.FC<ElevationProfileProps> = ({
+  feature,
+  useResponsiveContainer = false,
+  width = 220,
+  height = 100
+}) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [updatedFeature, setUpdatedFeature] = useState<GeoJson.Feature | null>(null);
+
+  // Function to fetch elevation data from Google Elevation API
+  const fetchElevationData = async (coordinates: number[][]) => {
+    setIsLoading(true);
+    setErrorMessage(null);
+
+    try {
+      // Build the locations parameter for the API
+      const locationsParam = coordinates
+        .map(coord => `${coord[1]},${coord[0]}`) // API expects lat,lng
+        .join('|');
+
+      // Construct API URL
+      const apiUrl = `http://localhost:7071/api/elevation?locations=${encodeURIComponent(locationsParam)}`;
+
+      // Fetch elevation data
+      const response = await fetch(apiUrl);
+      const data: GeoJson.Feature = await response.json();
+      console.log(data);
+      setUpdatedFeature(data);
+    } catch (error) {
+      console.error("Failed to fetch elevation data:", error);
+      setErrorMessage(`Failed to fetch elevation data: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    return <div style={{ textAlign: 'center' }}><CircularProgress /></div>;
+  }
+
+  if (errorMessage) {
+    return <div style={{ textAlign: 'center', color: 'red' }}>{errorMessage}</div>;
+  }
+
+  if (!feature || !feature.geometry || !feature.geometry.coordinates || !feature.geometry.type
+    || (feature.geometry.type !== GeoJson.GeometryType.LineString && feature.geometry.type !== GeoJson.GeometryType.MultiLineString)
+    || !feature.geometry.coordinates.length
+  ) {
+    return <div>Invalid geometry</div>;
+  }
+
+  if (!updatedFeature) {
+    const coordinates = feature.geometry.type === GeoJson.GeometryType.LineString ? feature.geometry.coordinates : feature.geometry.coordinates.flat() as number[][];
+    if (coordinates.some(coord => coord.length < 3)) {
+      fetchElevationData(coordinates);
+    }
+  }
+
+  return <ElevationProfile feature={updatedFeature ?? feature} useResponsiveContainer={useResponsiveContainer} width={width} height={height} />;
+}
+
 const ElevationProfile: React.FC<ElevationProfileProps> = ({
-  geometry,
+  feature,
   useResponsiveContainer = false,
   width = 220,
   height = 100
@@ -40,6 +102,7 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
   const context = useContext(DataContext);
 
   // Extract coordinates based on geometry type
+  const geometry = feature.geometry;
   let rawCoordinates: number[][] = [];
   if (geometry.type === GeoJson.GeometryType.LineString) {
     rawCoordinates = geometry.coordinates as number[][];
@@ -149,19 +212,6 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
     if (elevation > selectedMaxElevation) {
       selectedMaxElevation = elevation;
     }
-  }
-
-  if (chartData.length === 0) {
-    // first simplify the geometry
-    let simplifiedCoordinates: number[][] = [];
-    if (geometry.type === GeoJson.GeometryType.LineString) {
-      simplifiedCoordinates = simplifyLineString(geometry as GeoJson.LineString, 10).coordinates;
-    } else if (geometry.type === GeoJson.GeometryType.MultiLineString) {
-      // Flatten MultiLineString coordinates
-      simplifiedCoordinates = (geometry as GeoJson.MultiLineString).coordinates.flat();
-    }
-    // return a button to load data from the Google elevation API
-
   }
 
   const selectedStartDistance = chartData[selectedStartIndex].distance;
