@@ -23,7 +23,7 @@ import PanelView from "./PanelView";
 import DataView from "./dataview";
 import MapView from "./mapview";
 import TableView from "./table/tableview";
-import ElevationProfile from "./ElevationProfile";
+import { ElevationProfileWrapper } from "./ElevationProfile";
 
 interface IAppProps { }
 
@@ -238,7 +238,7 @@ const AppBody: React.FC<{ detailFeature?: GeoJson.Feature }> = ({ detailFeature 
         rightPanelTitle="Table"
         rightPanelExpandedInitially={false}
         bottomPanel={
-          detailFeature && <ElevationProfile geometry={detailFeature.geometry} height={200} useResponsiveContainer />
+          detailFeature && <ElevationProfileWrapper feature={detailFeature} height={200} useResponsiveContainer />
         }
         bottomPanelTitle={`Elevation Profile - ${getFeatureName(detailFeature)}`}
       >
