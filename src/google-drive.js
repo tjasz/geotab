@@ -137,7 +137,7 @@ function GoogleSession(props) {
    *  Initializes the API client library and sets up sign-in state
    *  listeners.
    */
-  const initClient = (onSuccess, onError = () => {}) => {
+  const initClient = (onSuccess, onError = () => { }) => {
     setIsLoadingGoogleDriveApi(true);
     gapi.client
       .init({
@@ -308,13 +308,13 @@ function FileContextMenu(props) {
       setContextMenu(
         contextMenu === null
           ? {
-              mouseX: event.clientX + 2,
-              mouseY: event.clientY - 6,
-            }
+            mouseX: event.clientX + 2,
+            mouseY: event.clientY - 6,
+          }
           : // repeated contextmenu when it is already open closes it with Chrome 84 on Ubuntu
-            // Other native context menus might behave different.
-            // With this behavior we prevent contextmenu from the backdrop to re-locale existing context menus.
-            null,
+          // Other native context menus might behave different.
+          // With this behavior we prevent contextmenu from the backdrop to re-locale existing context menus.
+          null,
       );
     }
   };
