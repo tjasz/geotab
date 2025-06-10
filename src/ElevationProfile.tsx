@@ -29,6 +29,7 @@ interface Segment {
   distance: number;
   elevationDifference: number;
   grade: number;
+  metabolicFactor: number;
 }
 
 export const ElevationProfileWrapper: React.FC<ElevationProfileProps> = ({
@@ -192,8 +193,10 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
       const currPoint = smoothedChartData[i];
       const distance = currPoint.distance - prevPoint.distance;
       const elevationDifference = currPoint.elevation - prevPoint.elevation;
-      const grade = Math.abs(elevationDifference) / distance / 1000;
-      segments.push({ from: prevPoint, to: currPoint, distance, elevationDifference, grade });
+      const grade = elevationDifference / distance / 1000;
+      const clampedGrade = Math.max(-.45, Math.min(grade, .45)); // Clamp grade to -45% to 45%
+      const metabolicFactor = (155.4 * Math.pow(clampedGrade, 5) - 30.4 * Math.pow(clampedGrade, 4) - 43.3 * Math.pow(clampedGrade, 3) + 46.3 * Math.pow(clampedGrade, 2) + 19.5 * clampedGrade + 3.6) / 3.6
+      segments.push({ from: prevPoint, to: currPoint, distance, elevationDifference, grade, metabolicFactor });
     }
     return segments;
   }, [chartData, precisionValue]);
@@ -411,6 +414,9 @@ interface SegmentsTableProps {
 }
 
 const SegmentsTable: React.FC<SegmentsTableProps> = ({ segments }) => {
+  const totalDistance = segments.reduce((sum, seg) => sum + seg.distance, 0);
+  const totalCumulativeGain = segments.reduce((sum, seg) => sum + (seg.to.cumulativeGain - seg.from.cumulativeGain), 0);
+  const totalMetabolicDistance = segments.reduce((sum, seg) => sum + (seg.distance * 1000 * seg.metabolicFactor), 0);
   return (
     <table className="elevation-profile-table">
       <thead>
@@ -424,20 +430,37 @@ const SegmentsTable: React.FC<SegmentsTableProps> = ({ segments }) => {
           <th>Net Gain</th>
           <th>Grade</th>
           <th>Gross Gain</th>
+          <th>Metabolic Factor</th>
+          <th>Metabolic Distance (m)</th>
+        </tr>
+        <tr>
+          <th>All</th>
+          <th>0</th>
+          <th>{totalDistance.toFixed(3)}km</th>
+          <th>{totalDistance.toFixed(3)}km</th>
+          <th>{segments[0].from.elevation.toFixed(0)}m</th>
+          <th>{segments[segments.length - 1].to.elevation.toFixed(0)}m</th>
+          <th>{(segments[segments.length - 1].to.elevation - segments[0].from.elevation).toFixed(0)}m</th>
+          <th>N/A</th>
+          <th>{totalCumulativeGain.toFixed(0)}m</th>
+          <th>{(totalMetabolicDistance / totalDistance / 1000).toFixed(3)}</th>
+          <th>{totalMetabolicDistance.toFixed(0)}</th>
         </tr>
       </thead>
       <tbody>
         {segments.map((segment, index) => (
           <tr key={index}>
             <td>{index + 1}</td>
-            <td>{segment.from.distance.toFixed(2)}km</td>
-            <td>{segment.to.distance.toFixed(2)}km</td>
-            <td>{segment.distance.toFixed(2)}km</td>
+            <td>{segment.from.distance.toFixed(3)}km</td>
+            <td>{segment.to.distance.toFixed(3)}km</td>
+            <td>{segment.distance.toFixed(3)}km</td>
             <td>{segment.from.elevation.toFixed(0)}m</td>
             <td>{segment.to.elevation.toFixed(0)}m</td>
             <td>{segment.elevationDifference.toFixed(0)}m</td>
             <td>{(segment.grade * 100).toFixed(0)}%</td>
             <td>{(segment.to.cumulativeGain - segment.from.cumulativeGain).toFixed(0)}</td>
+            <td>{segment.metabolicFactor.toFixed(3)}</td>
+            <td>{(segment.distance * 1000 * segment.metabolicFactor).toFixed(0)}</td>
           </tr>
         ))}
       </tbody>
