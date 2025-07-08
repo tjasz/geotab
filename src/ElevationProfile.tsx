@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo, useContext } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Label, ReferenceDot, ReferenceArea } from 'recharts';
 import * as GeoJson from "./geojson-types";
 import { distance, Feature } from '@turf/turf';
-import { Slider, Typography, Button, CircularProgress } from '@mui/material';
+import { Slider, Typography, Button, CircularProgress, Switch, FormControlLabel } from '@mui/material';
 import { CategoricalChartState } from 'recharts/types/chart/types';
 import { DataContext } from './dataContext';
 import { simplifyLineString } from './geojson-calc';
@@ -13,6 +13,10 @@ interface ElevationProfileProps {
   width?: number;
   height?: number;
 }
+
+// Unit conversion utilities
+const metersToFeet = (meters: number): number => meters * 3.28084;
+const kilometersToMiles = (km: number): number => km * 0.621371;
 
 interface ChartDataPoint {
   index: number;
@@ -104,6 +108,8 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
   height = 100
 }) => {
   const context = useContext(DataContext);
+  // Add unit toggle state (true = metric, false = imperial)
+  const [useMetricUnits, setUseMetricUnits] = useState<boolean>(true);
 
   // Extract coordinates based on geometry type
   const geometry = feature.geometry;
@@ -273,12 +279,15 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
         });
       }}
     >
-      <CartesianGrid strokeDasharray="3 3" />
-      <XAxis
+      <CartesianGrid strokeDasharray="3 3" />      <XAxis
         dataKey="distance"
-        label={{ value: 'Distance (km)', position: 'bottom', offset: 0, fontSize: 10 }}
+        label={{ value: `Distance (${useMetricUnits ? 'km' : 'mi'})`, position: 'bottom', offset: 0, fontSize: 10 }}
         tick={{ fontSize: 9 }}
-        tickFormatter={(value) => `${value.toFixed(2)}km`}
+        tickFormatter={(value) =>
+          useMetricUnits
+            ? `${value.toFixed(2)}km`
+            : `${kilometersToMiles(value).toFixed(2)}mi`
+        }
         domain={[0, totalDistance]}
         scale="linear"
         type="number"
@@ -286,14 +295,26 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
       <YAxis
         domain={[minElevation - 50, maxElevation + 50]}
         tick={{ fontSize: 9 }}
-        tickFormatter={(value) => `${Math.round(value)}m`}
+        tickFormatter={(value) =>
+          useMetricUnits
+            ? `${Math.round(value)}m`
+            : `${Math.round(metersToFeet(value))}ft`
+        }
       />
       <Tooltip
         formatter={(value: number, name: string) => {
-          if (name === 'elevation') return [`${value.toFixed(0)}m`, 'Elevation'];
+          if (name === 'elevation') {
+            return useMetricUnits
+              ? [`${value.toFixed(0)}m`, 'Elevation']
+              : [`${metersToFeet(value).toFixed(0)}ft`, 'Elevation'];
+          }
           return [value, name];
         }}
-        labelFormatter={(label: number) => `Distance: ${label.toFixed(2)}km`}
+        labelFormatter={(label: number) =>
+          useMetricUnits
+            ? `Distance: ${label.toFixed(2)}km`
+            : `Distance: ${kilometersToMiles(label).toFixed(2)}mi`
+        }
       />
       <defs>
         <linearGradient id="gradient" x1="0%" y1="0" x2="100%" y2="0">
@@ -321,14 +342,17 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
               fillOpacity={0.5}
               strokeOpacity={1}
               stroke="black"
-            >
-              <Label
-                value={`${segment.distance.toFixed(1)}km`}
+            >              <Label
+                value={useMetricUnits
+                  ? `${segment.distance.toFixed(1)}km`
+                  : `${kilometersToMiles(segment.distance).toFixed(1)}mi`}
                 position="insideTop"
                 style={{ fontSize: 9, fill: '#333', fontWeight: 'bold' }}
               />
               <Label
-                value={`${elevationChangeSign}${segment.elevationDifference.toFixed(0)}m`}
+                value={useMetricUnits
+                  ? `${elevationChangeSign}${segment.elevationDifference.toFixed(0)}m`
+                  : `${elevationChangeSign}${metersToFeet(segment.elevationDifference).toFixed(0)}ft`}
                 position="insideRight"
                 angle={90}
                 style={{ fontSize: 9, fill: '#333', fontWeight: 'bold' }}
@@ -375,14 +399,14 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
       <div style={{ padding: '15px 10px 5px 10px' }}>
         <Slider
           value={sliderValues}
-          onChange={handleSliderChange}
-          valueLabelDisplay="auto"
+          onChange={handleSliderChange} valueLabelDisplay="auto"
           min={0}
           max={chartData.length - 1}
-          valueLabelFormat={(index) => `${chartData[index].distance}km`}
+          valueLabelFormat={(index) => useMetricUnits
+            ? `${chartData[index].distance}km`
+            : `${kilometersToMiles(chartData[index].distance).toFixed(2)}mi`}
         />
-      </div>
-      <div style={{ padding: '15px 10px 5px 10px' }}>
+      </div>      <div style={{ padding: '15px 10px 5px 10px' }}>
         <Typography variant="caption">Sensitivity</Typography>
         <Slider
           value={sensitivity}
@@ -392,7 +416,18 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
           max={20}
         />
       </div>
-      <StatisticsTable
+      <div style={{ padding: '5px 10px', display: 'flex', justifyContent: 'center' }}>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={useMetricUnits}
+              onChange={(e) => setUseMetricUnits(e.target.checked)}
+              color="primary"
+            />
+          }
+          label={useMetricUnits ? "Metric (km/m)" : "Imperial (mi/ft)"}
+        />
+      </div>      <StatisticsTable
         totalDistance={totalDistance}
         minElevation={minElevation}
         maxElevation={maxElevation}
@@ -403,20 +438,36 @@ const ElevationProfile: React.FC<ElevationProfileProps> = ({
         selectedMaxElevation={selectedMaxElevation}
         selectedCumulativeGain={selectedCumulativeGain}
         selectedCumulativeLoss={selectedCumulativeLoss}
+        useMetricUnits={useMetricUnits}
       />
-      <SegmentsTable segments={segments} />
+      <SegmentsTable segments={segments} useMetricUnits={useMetricUnits} />
     </div>
   );
 };
 
 interface SegmentsTableProps {
   segments: Segment[];
+  useMetricUnits: boolean;
 }
 
-const SegmentsTable: React.FC<SegmentsTableProps> = ({ segments }) => {
+const SegmentsTable: React.FC<SegmentsTableProps> = ({ segments, useMetricUnits }) => {
   const totalDistance = segments.reduce((sum, seg) => sum + seg.distance, 0);
   const totalCumulativeGain = segments.reduce((sum, seg) => sum + (seg.to.cumulativeGain - seg.from.cumulativeGain), 0);
   const totalMetabolicDistance = segments.reduce((sum, seg) => sum + (seg.distance * 1000 * seg.metabolicFactor), 0);
+
+  // Unit display helpers
+  const distUnit = useMetricUnits ? 'km' : 'mi';
+  const elevUnit = useMetricUnits ? 'm' : 'ft';
+
+  const displayDistance = (dist: number) =>
+    useMetricUnits ? dist.toFixed(3) : kilometersToMiles(dist).toFixed(3);
+
+  const displayElevation = (elev: number) =>
+    useMetricUnits ? elev.toFixed(0) : metersToFeet(elev).toFixed(0);
+
+  const displayMetabolicDistance = (dist: number) =>
+    useMetricUnits ? (dist / 1000).toFixed(3) : kilometersToMiles(dist / 1000).toFixed(3);
+
   return (
     <table className="elevation-profile-table">
       <thead>
@@ -431,36 +482,36 @@ const SegmentsTable: React.FC<SegmentsTableProps> = ({ segments }) => {
           <th>Grade</th>
           <th>Gross Gain</th>
           <th>Metabolic Factor</th>
-          <th>Metabolic Distance (m)</th>
+          <th>Metabolic Distance ({distUnit})</th>
         </tr>
         <tr>
           <th>All</th>
           <th>0</th>
-          <th>{totalDistance.toFixed(3)}km</th>
-          <th>{totalDistance.toFixed(3)}km</th>
-          <th>{segments[0].from.elevation.toFixed(0)}m</th>
-          <th>{segments[segments.length - 1].to.elevation.toFixed(0)}m</th>
-          <th>{(segments[segments.length - 1].to.elevation - segments[0].from.elevation).toFixed(0)}m</th>
+          <th>{displayDistance(totalDistance)}{distUnit}</th>
+          <th>{displayDistance(totalDistance)}{distUnit}</th>
+          <th>{displayElevation(segments[0].from.elevation)}{elevUnit}</th>
+          <th>{displayElevation(segments[segments.length - 1].to.elevation)}{elevUnit}</th>
+          <th>{displayElevation(segments[segments.length - 1].to.elevation - segments[0].from.elevation)}{elevUnit}</th>
           <th>N/A</th>
-          <th>{totalCumulativeGain.toFixed(0)}m</th>
+          <th>{displayElevation(totalCumulativeGain)}{elevUnit}</th>
           <th>{(totalMetabolicDistance / totalDistance / 1000).toFixed(3)}</th>
-          <th>{totalMetabolicDistance.toFixed(0)}</th>
+          <th>{displayMetabolicDistance(totalMetabolicDistance)}</th>
         </tr>
       </thead>
       <tbody>
         {segments.map((segment, index) => (
           <tr key={index}>
             <td>{index + 1}</td>
-            <td>{segment.from.distance.toFixed(3)}km</td>
-            <td>{segment.to.distance.toFixed(3)}km</td>
-            <td>{segment.distance.toFixed(3)}km</td>
-            <td>{segment.from.elevation.toFixed(0)}m</td>
-            <td>{segment.to.elevation.toFixed(0)}m</td>
-            <td>{segment.elevationDifference.toFixed(0)}m</td>
+            <td>{displayDistance(segment.from.distance)}{distUnit}</td>
+            <td>{displayDistance(segment.to.distance)}{distUnit}</td>
+            <td>{displayDistance(segment.distance)}{distUnit}</td>
+            <td>{displayElevation(segment.from.elevation)}{elevUnit}</td>
+            <td>{displayElevation(segment.to.elevation)}{elevUnit}</td>
+            <td>{displayElevation(segment.elevationDifference)}{elevUnit}</td>
             <td>{(segment.grade * 100).toFixed(0)}%</td>
-            <td>{(segment.to.cumulativeGain - segment.from.cumulativeGain).toFixed(0)}</td>
+            <td>{displayElevation(segment.to.cumulativeGain - segment.from.cumulativeGain)}{elevUnit}</td>
             <td>{segment.metabolicFactor.toFixed(3)}</td>
-            <td>{(segment.distance * 1000 * segment.metabolicFactor).toFixed(0)}</td>
+            <td>{displayMetabolicDistance(segment.distance * 1000 * segment.metabolicFactor)}</td>
           </tr>
         ))}
       </tbody>
@@ -481,12 +532,38 @@ interface StatisticsTableProps {
   selectedCumulativeLoss: number;
 }
 
+interface StatisticsTableProps {
+  totalDistance: number;
+  minElevation: number;
+  maxElevation: number;
+  cumulativeGain: number;
+  cumulativeLoss: number;
+  selectedDistance: number;
+  selectedMinElevation: number;
+  selectedMaxElevation: number;
+  selectedCumulativeGain: number;
+  selectedCumulativeLoss: number;
+  useMetricUnits: boolean;
+}
+
 const StatisticsTable: React.FC<StatisticsTableProps> = ({
   totalDistance, minElevation, maxElevation,
   cumulativeGain, cumulativeLoss,
   selectedDistance, selectedMinElevation, selectedMaxElevation,
-  selectedCumulativeGain, selectedCumulativeLoss
+  selectedCumulativeGain, selectedCumulativeLoss,
+  useMetricUnits
 }) => {
+  // Convert units if needed
+  const distUnit = useMetricUnits ? 'km' : 'mi';
+  const elevUnit = useMetricUnits ? 'm' : 'ft';
+
+  // Display values according to selected units
+  const displayDistance = (dist: number) =>
+    useMetricUnits ? dist.toFixed(2) : kilometersToMiles(dist).toFixed(2);
+
+  const displayElevation = (elev: number) =>
+    useMetricUnits ? elev.toFixed(0) : metersToFeet(elev).toFixed(0);
+
   return <table className="elevation-profile-table">
     <thead>
       <tr>
@@ -501,19 +578,19 @@ const StatisticsTable: React.FC<StatisticsTableProps> = ({
     <tbody>
       <tr>
         <th>Total</th>
-        <td>{totalDistance.toFixed(2)}km</td>
-        <td>{minElevation.toFixed(0)}m</td>
-        <td>{maxElevation.toFixed(0)}m</td>
-        <td>{cumulativeGain.toFixed(0)}m</td>
-        <td>{Math.abs(cumulativeLoss).toFixed(0)}m</td>
+        <td>{displayDistance(totalDistance)}{distUnit}</td>
+        <td>{displayElevation(minElevation)}{elevUnit}</td>
+        <td>{displayElevation(maxElevation)}{elevUnit}</td>
+        <td>{displayElevation(cumulativeGain)}{elevUnit}</td>
+        <td>{displayElevation(Math.abs(cumulativeLoss))}{elevUnit}</td>
       </tr>
       <tr>
         <th>Selection</th>
-        <td>{selectedDistance.toFixed(2)}km</td>
-        <td>{selectedMinElevation.toFixed(0)}m</td>
-        <td>{selectedMaxElevation.toFixed(0)}m</td>
-        <td>{selectedCumulativeGain.toFixed(0)}m</td>
-        <td>{Math.abs(selectedCumulativeLoss).toFixed(0)}m</td>
+        <td>{displayDistance(selectedDistance)}{distUnit}</td>
+        <td>{displayElevation(selectedMinElevation)}{elevUnit}</td>
+        <td>{displayElevation(selectedMaxElevation)}{elevUnit}</td>
+        <td>{displayElevation(selectedCumulativeGain)}{elevUnit}</td>
+        <td>{displayElevation(Math.abs(selectedCumulativeLoss))}{elevUnit}</td>
       </tr>
     </tbody>
   </table>
