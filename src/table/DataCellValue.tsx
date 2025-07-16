@@ -28,11 +28,19 @@ export default function DataCellValue(props) {
     default:
       switch (typeof props.value) {
         case "string":
-          return props.value.startsWith("http") ? (
-            <AbridgedUrlLink target="_blank" href={props.value} length={21} />
-          ) : (
-            props.value
-          );
+          // plain text http or https URL
+          if (props.value.startsWith("http")) {
+            return <AbridgedUrlLink target="_blank" href={props.value} length={21} />
+          }
+          // html links
+          if (props.value.startsWith("<a") && props.value.includes("href=")) {
+            const match = props.value.match(/<a\s+href="?([^"]+)"?>([^<]+)<\/a>/);
+            if (match) {
+              return <a target="_blank" href={match[1]}>{match[2]}</a>;
+            }
+          }
+          // otherwise return as plain text
+          return props.value;
         case "number":
           return props.value;
         default:
