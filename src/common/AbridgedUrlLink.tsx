@@ -4,6 +4,7 @@ export interface IAbridgedUrlProps {
   length: number;
   href: string;
   target?: React.HTMLAttributeAnchorTarget;
+  rel?: string;
 }
 
 export const AbridgedUrlLink: FC<IAbridgedUrlProps> = (props) => {
@@ -18,7 +19,7 @@ export const AbridgedUrlLink: FC<IAbridgedUrlProps> = (props) => {
       ? `${withoutProtocol.slice(0, firstHalfLength)}...${withoutProtocol.slice(-secondHalfLength)}`
       : withoutProtocol;
   return (
-    <a target={props.target} href={props.href}>
+    <a target={props.target} rel={props.rel} href={props.href}>
       {abridged}
     </a>
   );
