@@ -37,7 +37,7 @@ export default function DataCellValue(props) {
           }
           // html links
           if (props.value.startsWith("<a") && props.value.includes("href=")) {
-            const match = props.value.match(/<a\s+href="?([^"]+)"?>([^<]+)<\/a>/);
+            const match = props.value.match(/^<a\s+href="?([^">]+)"?>([^<]+)<\/a>$/);
             if (match) {
               return <a target="_blank" rel="noopener noreferrer" href={match[1]}>{match[2]}</a>;
             }
