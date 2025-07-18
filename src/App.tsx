@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter, useSearchParams } from "react-router-dom";
 import * as GeoJson from "./geojson-types";
 import "./App.css";
 import {
@@ -225,6 +225,10 @@ function AppFooter() {
 }
 
 const AppBody: React.FC<{ detailFeature?: GeoJson.Feature }> = ({ detailFeature }) => {
+
+  const [urlParams, setUrlParams] = useSearchParams();
+  const urlSrc = urlParams.get("src");
+
   return (
     <div id="App-body">
       <PanelView
@@ -236,7 +240,7 @@ const AppBody: React.FC<{ detailFeature?: GeoJson.Feature }> = ({ detailFeature 
           <TableView style={{}} />
         }
         rightPanelTitle="Table"
-        rightPanelExpandedInitially={false}
+        rightPanelExpandedInitially={!!urlSrc}
         bottomPanel={
           detailFeature && <ElevationProfile geometry={detailFeature.geometry} height={200} useResponsiveContainer />
         }
