@@ -27,7 +27,9 @@ export default function DataCellValue(props) {
       }
     case "link":
       // if the column has a default URL, append the value to it
-      return <a href={`${props.column?.default}${props.value}`} target="_blank" rel="noopener noreferrer">{props.value}</a>;
+      return <a href={`${props.column?.default}${props.value}`} target="_blank" rel="noopener noreferrer">
+        {props.value}
+      </a>
     default:
       switch (typeof props.value) {
         case "string":
