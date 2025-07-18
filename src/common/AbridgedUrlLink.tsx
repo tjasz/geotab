@@ -7,19 +7,19 @@ export interface IAbridgedUrlProps {
   rel?: string;
 }
 
-export const AbridgedUrlLink: FC<IAbridgedUrlProps> = (props) => {
+export const AbridgedUrlLink: FC<IAbridgedUrlProps> = ({ length, href, target = "_blank", rel = "noopener noreferrer" }) => {
   // determine how many characters can be on either side of the "..."
-  const firstHalfLength = Math.floor((props.length - 3) / 2);
+  const firstHalfLength = Math.floor((length - 3) / 2);
   const secondHalfLength =
-    props.length % 2 ? firstHalfLength : firstHalfLength + 1;
+    length % 2 ? firstHalfLength : firstHalfLength + 1;
   // create the abridged link by splitting off the protocol and replacing excessive characters with "..."
-  const withoutProtocol = props.href.split("//")[1];
+  const withoutProtocol = href.split("//")[1];
   const abridged =
-    withoutProtocol.length > props.length
+    withoutProtocol.length > length
       ? `${withoutProtocol.slice(0, firstHalfLength)}...${withoutProtocol.slice(-secondHalfLength)}`
       : withoutProtocol;
   return (
-    <a target={props.target} rel={props.rel} href={props.href}>
+    <a target={target} rel={rel} href={href}>
       {abridged}
     </a>
   );

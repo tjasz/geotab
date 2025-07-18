@@ -26,13 +26,14 @@ export default function DataCellValue(props) {
           : JSON.stringify(props.value);
       }
     case "link":
+      // if the column has a default URL, append the value to it
       return <a href={`${props.column?.default}${props.value}`} target="_blank" rel="noopener noreferrer">{props.value}</a>;
     default:
       switch (typeof props.value) {
         case "string":
           // plain text http or https URL
           if (props.value.startsWith("http")) {
-            return <AbridgedUrlLink target="_blank" rel="noopener noreferrer" href={props.value} length={21} />
+            return <AbridgedUrlLink href={props.value} length={21} />
           }
           // html links
           if (props.value.startsWith("<a") && props.value.includes("href=")) {
