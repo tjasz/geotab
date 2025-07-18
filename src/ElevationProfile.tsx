@@ -473,27 +473,27 @@ const SegmentsTable: React.FC<SegmentsTableProps> = ({ segments, useMetricUnits 
       <thead>
         <tr>
           <th>Segment</th>
-          <th>From</th>
-          <th>To</th>
-          <th>Distance</th>
-          <th>Starting Elevation</th>
-          <th>Ending Elevation</th>
-          <th>Net Gain</th>
+          <th>From ({distUnit})</th>
+          <th>To ({distUnit})</th>
+          <th>Distance ({distUnit})</th>
+          <th>Starting Elevation ({elevUnit})</th>
+          <th>Ending Elevation ({elevUnit})</th>
+          <th>Net Gain ({elevUnit})</th>
           <th>Grade</th>
-          <th>Gross Gain</th>
+          <th>Gross Gain ({elevUnit})</th>
           <th>Metabolic Factor</th>
           <th>Metabolic Distance ({distUnit})</th>
         </tr>
         <tr>
           <th>All</th>
           <th>0</th>
-          <th>{displayDistance(totalDistance)}{distUnit}</th>
-          <th>{displayDistance(totalDistance)}{distUnit}</th>
-          <th>{displayElevation(segments[0].from.elevation)}{elevUnit}</th>
-          <th>{displayElevation(segments[segments.length - 1].to.elevation)}{elevUnit}</th>
-          <th>{displayElevation(segments[segments.length - 1].to.elevation - segments[0].from.elevation)}{elevUnit}</th>
+          <th>{displayDistance(totalDistance)}</th>
+          <th>{displayDistance(totalDistance)}</th>
+          <th>{displayElevation(segments[0].from.elevation)}</th>
+          <th>{displayElevation(segments[segments.length - 1].to.elevation)}</th>
+          <th>{displayElevation(segments[segments.length - 1].to.elevation - segments[0].from.elevation)}</th>
           <th>N/A</th>
-          <th>{displayElevation(totalCumulativeGain)}{elevUnit}</th>
+          <th>{displayElevation(totalCumulativeGain)}</th>
           <th>{(totalMetabolicDistance / totalDistance / 1000).toFixed(3)}</th>
           <th>{displayMetabolicDistance(totalMetabolicDistance)}</th>
         </tr>
@@ -502,14 +502,14 @@ const SegmentsTable: React.FC<SegmentsTableProps> = ({ segments, useMetricUnits 
         {segments.map((segment, index) => (
           <tr key={index}>
             <td>{index + 1}</td>
-            <td>{displayDistance(segment.from.distance)}{distUnit}</td>
-            <td>{displayDistance(segment.to.distance)}{distUnit}</td>
-            <td>{displayDistance(segment.distance)}{distUnit}</td>
-            <td>{displayElevation(segment.from.elevation)}{elevUnit}</td>
-            <td>{displayElevation(segment.to.elevation)}{elevUnit}</td>
-            <td>{displayElevation(segment.elevationDifference)}{elevUnit}</td>
+            <td>{displayDistance(segment.from.distance)}</td>
+            <td>{displayDistance(segment.to.distance)}</td>
+            <td>{displayDistance(segment.distance)}</td>
+            <td>{displayElevation(segment.from.elevation)}</td>
+            <td>{displayElevation(segment.to.elevation)}</td>
+            <td>{displayElevation(segment.elevationDifference)}</td>
             <td>{(segment.grade * 100).toFixed(0)}%</td>
-            <td>{displayElevation(segment.to.cumulativeGain - segment.from.cumulativeGain)}{elevUnit}</td>
+            <td>{displayElevation(segment.to.cumulativeGain - segment.from.cumulativeGain)}</td>
             <td>{segment.metabolicFactor.toFixed(3)}</td>
             <td>{displayMetabolicDistance(segment.distance * 1000 * segment.metabolicFactor)}</td>
           </tr>
@@ -568,29 +568,29 @@ const StatisticsTable: React.FC<StatisticsTableProps> = ({
     <thead>
       <tr>
         <th></th>
-        <th>Distance</th>
-        <th>Min</th>
-        <th>Max</th>
-        <th>Gain</th>
-        <th>Loss</th>
+        <th>Distance ({distUnit})</th>
+        <th>Min ({elevUnit})</th>
+        <th>Max ({elevUnit})</th>
+        <th>Gain ({elevUnit})</th>
+        <th>Loss ({elevUnit})</th>
       </tr>
     </thead>
     <tbody>
       <tr>
         <th>Total</th>
-        <td>{displayDistance(totalDistance)}{distUnit}</td>
-        <td>{displayElevation(minElevation)}{elevUnit}</td>
-        <td>{displayElevation(maxElevation)}{elevUnit}</td>
-        <td>{displayElevation(cumulativeGain)}{elevUnit}</td>
-        <td>{displayElevation(Math.abs(cumulativeLoss))}{elevUnit}</td>
+        <td>{displayDistance(totalDistance)}</td>
+        <td>{displayElevation(minElevation)}</td>
+        <td>{displayElevation(maxElevation)}</td>
+        <td>{displayElevation(cumulativeGain)}</td>
+        <td>{displayElevation(Math.abs(cumulativeLoss))}</td>
       </tr>
       <tr>
         <th>Selection</th>
-        <td>{displayDistance(selectedDistance)}{distUnit}</td>
-        <td>{displayElevation(selectedMinElevation)}{elevUnit}</td>
-        <td>{displayElevation(selectedMaxElevation)}{elevUnit}</td>
-        <td>{displayElevation(selectedCumulativeGain)}{elevUnit}</td>
-        <td>{displayElevation(Math.abs(selectedCumulativeLoss))}{elevUnit}</td>
+        <td>{displayDistance(selectedDistance)}</td>
+        <td>{displayElevation(selectedMinElevation)}</td>
+        <td>{displayElevation(selectedMaxElevation)}</td>
+        <td>{displayElevation(selectedCumulativeGain)}</td>
+        <td>{displayElevation(Math.abs(selectedCumulativeLoss))}</td>
       </tr>
     </tbody>
   </table>
