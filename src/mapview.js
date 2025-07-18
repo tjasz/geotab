@@ -124,23 +124,24 @@ function EditControl({ position = "topleft" }) {
     const geometry = routeEditor.getRouteAsGeoJSON();
 
     // Generate a new feature with UUID
+    const distanceProperty = "distanceMeters";
     const newFeature = {
       id: uuidv4(),
       type: FeatureType.Feature,
       properties: {
         "geotab:selectionStatus": "inactive",
         name: "Mapbox Route",
-        distance: routeEditor.routeDistance,
+        [distanceProperty]: routeEditor.routeDistance,
       },
       geometry: geometry
     };
 
     // Add the new feature to the DataContext
     context.setData([...context.data, newFeature]);
-    if (!context.columns.some(col => col.name === "distance")) {
+    if (!context.columns.some(col => col.name === distanceProperty)) {
       context.setColumns(prevColumns => {
         const newColumns = [...prevColumns, {
-          name: "distance",
+          name: distanceProperty,
           type: "number",
           visible: true,
         }];
