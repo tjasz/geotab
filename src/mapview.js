@@ -8,7 +8,7 @@ import "leaflet.locatecontrol/dist/L.Control.Locate.min.css";
 import "leaflet-editable"; // Import Leaflet.Editable
 import { createControlComponent } from '@react-leaflet/core'
 import { Button } from "@mui/material";
-import { AddLocation, ContentCopy, Done, Edit, Polyline, Timeline } from "@mui/icons-material";
+import { AddLocation, ContentCopy, Done, Edit, Polyline, Timeline, Route } from "@mui/icons-material";
 import {
   MapContainer,
   TileLayer,
@@ -32,11 +32,13 @@ import { LeafletButton } from "./LeafletButton"
 import { SvgPatternRenderer } from "./PatternRenderer/SvgPatternRenderer"
 import DataCellValue from "./table/DataCellValue"
 import FormatPaintControl from "./symbology/FormatPaintControl"
+import MapboxRouteEditor from "./MapboxRouteEditor";
 
 function EditControl({ position = "topleft" }) {
   const context = useContext(DataContext);
   const map = useMap();
   const [drawing, setDrawing] = useState(false);
+  const [routeEditor, setRouteEditor] = useState(null);
 
   const getGeometry = (layer) => {
     // Extract geometry based on layer type
@@ -114,6 +116,52 @@ function EditControl({ position = "topleft" }) {
     return newFeature.id;
   };
 
+  // Create a new feature from the MapboxRouteEditor
+  const createRouteFeature = () => {
+    if (!routeEditor) return;
+
+    // Get the route geometry from the editor
+    const geometry = routeEditor.getRouteAsGeoJSON();
+
+    // Generate a new feature with UUID
+    const distanceProperty = "distanceMeters";
+    const newFeature = {
+      id: uuidv4(),
+      type: FeatureType.Feature,
+      properties: {
+        "geotab:selectionStatus": "inactive",
+        name: "Mapbox Route",
+        [distanceProperty]: routeEditor.routeDistance,
+      },
+      geometry: geometry
+    };
+
+    // Add the new feature to the DataContext
+    context.setData([...context.data, newFeature]);
+    if (!context.columns.some(col => col.name === distanceProperty)) {
+      context.setColumns(prevColumns => {
+        const newColumns = [...prevColumns, {
+          name: distanceProperty,
+          type: "number",
+          visible: true,
+        }];
+        return newColumns;
+      });
+    }
+
+    // Clean up
+    routeEditor.removeMarkers();
+    if (routeEditor.polyline) {
+      map.removeLayer(routeEditor.polyline);
+    }
+
+    // Reset state
+    setRouteEditor(null);
+    setDrawing(false);
+
+    return newFeature.id;
+  };
+
   // Update an existing feature in the DataContext
   const updateFeature = (featureId, layer) => {
     context.setData(prevData => {
@@ -132,19 +180,25 @@ function EditControl({ position = "topleft" }) {
   };
 
   const handleCommit = () => {
-    setDrawing(false);
-    map.editTools.commitDrawing();
-    map.editTools.featuresLayer.clearLayers();
-    // disable editing on all layers in the map
-    const layers = map._layers;
-    for (let id in layers) {
-      const layer = layers[id];
-      // disable editing on the sub-layers in layer._layers
-      if (layer._layers) {
-        for (let subId in layer._layers) {
-          const subLayer = layer._layers[subId];
-          if (subLayer.disableEdit) {
-            subLayer.disableEdit();
+    if (routeEditor) {
+      // Handle committing a MapboxRoute
+      createRouteFeature();
+    } else {
+      // Handle standard Leaflet.Editable commits
+      setDrawing(false);
+      map.editTools.commitDrawing();
+      map.editTools.featuresLayer.clearLayers();
+      // disable editing on all layers in the map
+      const layers = map._layers;
+      for (let id in layers) {
+        const layer = layers[id];
+        // disable editing on the sub-layers in layer._layers
+        if (layer._layers) {
+          for (let subId in layer._layers) {
+            const subLayer = layer._layers[subId];
+            if (subLayer.disableEdit) {
+              subLayer.disableEdit();
+            }
           }
         }
       }
@@ -169,7 +223,16 @@ function EditControl({ position = "topleft" }) {
       }
     })
     map.on('keydown', e => {
-      if (e.originalEvent.key === 'Escape' || e.originalEvent.key === 'Enter') {
+      if (e.originalEvent.key === 'Escape') {
+        // Cancel drawing
+        if (routeEditor) {
+          routeEditor.disable();
+          setRouteEditor(null);
+          setDrawing(false);
+        } else {
+          handleCommit();
+        }
+      } else if (e.originalEvent.key === 'Enter') {
         handleCommit();
       }
     }
@@ -182,7 +245,7 @@ function EditControl({ position = "topleft" }) {
       map.off('editable:disable');
       map.off('keydown');
     };
-  }, [map, context]);
+  }, [map, context, routeEditor]);
 
   // Create toolbar buttons
   return (
@@ -221,6 +284,20 @@ function EditControl({ position = "topleft" }) {
             title="Draw a polygon"
           >
             <Polyline fontSize="small" />
+          </a>
+
+          <a
+            onClick={() => {
+              // Create and start a new MapboxRouteEditor
+              const editor = new MapboxRouteEditor(map);
+              editor.startDrawing();
+              setRouteEditor(editor);
+              setDrawing(true);
+            }}
+            className="leaflet-control-mapbox-route"
+            title="Add Route"
+          >
+            <Route fontSize="small" />
           </a>
         </>)}
       </div>
