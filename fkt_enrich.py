@@ -23,6 +23,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import re
 import sys
 import xml.etree.ElementTree as ET
 from urllib.parse import urljoin
@@ -175,6 +176,34 @@ def _parse_fkt_row(row) -> dict | None:
     }
 
 
+def _count_key_segment(label: str) -> str:
+    """Turn a gender/style label into a PascalCase key segment.
+
+    e.g. "Self-Supported" -> "SelfSupported", "Mixed-Gender Team" ->
+    "MixedGenderTeam".
+    """
+    tokens = re.split(r"[^0-9A-Za-z]+", label)
+    return "".join(token[:1].upper() + token[1:] for token in tokens if token)
+
+
+def compute_fkt_counts(fkts: list[dict]) -> dict:
+    """Return the overall FKT count plus a count per gender/style product.
+
+    Keys are concatenated as ``fktsCount<Gender><Style>`` (e.g.
+    ``fktsCountMaleSupported``). Rows missing a gender or style are still
+    included in the overall ``fktsCount`` but not in any product key.
+    """
+    counts: dict[str, int] = {"fktsCount": len(fkts)}
+    for record in fkts:
+        gender = record.get("gender")
+        style = record.get("style")
+        if not gender or not style:
+            continue
+        key = "fktsCount" + _count_key_segment(gender) + _count_key_segment(style)
+        counts[key] = counts.get(key, 0) + 1
+    return counts
+
+
 def parse_page(html: str) -> dict:
     """Extract the scraped properties (and any GPX URL) from a route page."""
     soup = BeautifulSoup(html, "html.parser")
@@ -256,6 +285,9 @@ def process_feature(feature: dict, page, base_url: str) -> None:
     for key, value in scraped.items():
         props[key] = value
     props["source_url"] = url
+
+    for key, value in compute_fkt_counts(scraped.get("fkts") or []).items():
+        props[key] = value
 
     if gpx_url:
         props["gpx_url"] = gpx_url
