@@ -319,7 +319,7 @@ export default function DataTable() {
         </Button>
         <Typography>{selectedRows.size} Selected</Typography>
       </Toolbar>
-      <TableContainer style={{ maxHeight: "85%" }}>
+      <TableContainer style={{ flex: 1, minHeight: 0 }}>
         <Table stickyHeader>
           <TableHead>
             <DataTableHeader
