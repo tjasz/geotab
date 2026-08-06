@@ -92,10 +92,10 @@ export default function DataTableRow(props: TableRowProps) {
               : {}
       }
     >
-      <TableCell component="th" size="small" sx={{ padding: "2px"}}>
+      <TableCell component="th" size="small" className="stickyCol1" sx={{ padding: "2px"}}>
         <Checkbox checked={props.isRowSelected} />
       </TableCell>
-      <TableCell component="th" size="small" sx={{ padding: "2px"}}>{props.fidx}</TableCell>
+      <TableCell component="th" size="small" className="stickyCol2" sx={{ padding: "2px"}}>{props.fidx}</TableCell>
       {Array.from(props.columns)
         .filter((column) => column.visible)
         .map((column) => (

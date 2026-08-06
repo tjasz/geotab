@@ -19,7 +19,7 @@ type DataTableHeaderProps = {
 export default function DataTableHeader(props: DataTableHeaderProps) {
   return (
     <TableRow>
-      <TableCell className="tableCorner" size="small" sx={{ padding: "2px"}}>
+      <TableCell className="tableCorner stickyCol1" size="small" sx={{ padding: "2px"}}>
         <TableContextMenu
           disabled={props.disabled}
           setDisabled={props.setDisabled}
@@ -30,7 +30,7 @@ export default function DataTableHeader(props: DataTableHeaderProps) {
           <MenuIcon />
         </TableContextMenu>
       </TableCell>
-      <TableCell size="small" sx={{ padding: "2px"}}>#</TableCell>
+      <TableCell className="stickyCol2" size="small" sx={{ padding: "2px"}}>#</TableCell>
       {Array.from(props.columns)
         .map((column, idx) => {
           return { column, idx };
