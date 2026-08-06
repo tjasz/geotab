@@ -20,13 +20,13 @@ export default function DataTableCell(props: TableCellProps) {
 
   if (props.disabled) {
     return (
-      <TableCell>
+      <TableCell size="small" sx={{ padding: "2px"}}>
         <DataCellValue value={props.value} column={props.column} />
       </TableCell>
     );
   }
   return (
-    <TableCell>
+    <TableCell size="small" sx={{ padding: "2px"}}>
       <input
         ref={(el) => {
           if (props.cellRefs.current != null) {
