@@ -5,7 +5,8 @@ import { Column } from "./../column";
 import { Feature, FeatureProperties } from "./../geojson-types";
 import { toggleActive, addHover, removeHover } from "../selection";
 import { DataContext } from "../dataContext";
-import { TableCell, TableRow } from "@mui/material";
+import CompactTableCell from "./CompactTableCell";
+import { TableRow } from "@mui/material";
 
 type TableRowProps = {
   fidx: number;
@@ -92,10 +93,10 @@ export default function DataTableRow(props: TableRowProps) {
               : {}
       }
     >
-      <TableCell component="th" size="small" className="stickyCol1" sx={{ padding: "2px"}}>
+      <CompactTableCell component="th" className="stickyCol1">
         <Checkbox checked={props.isRowSelected} />
-      </TableCell>
-      <TableCell component="th" size="small" className="stickyCol2" sx={{ padding: "2px"}}>{props.fidx}</TableCell>
+      </CompactTableCell>
+      <CompactTableCell component="th" className="stickyCol2">{props.fidx}</CompactTableCell>
       {Array.from(props.columns)
         .filter((column) => column.visible)
         .map((column) => (
