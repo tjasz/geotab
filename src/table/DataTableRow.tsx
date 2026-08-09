@@ -94,7 +94,7 @@ export default function DataTableRow(props: TableRowProps) {
       }
     >
       <CompactTableCell component="th" className="stickyCol1">
-        <Checkbox checked={props.isRowSelected} />
+        <Checkbox checked={props.isRowSelected} sx={{ p: 0.25 }} />
       </CompactTableCell>
       <CompactTableCell component="th" className="stickyCol2">{props.fidx}</CompactTableCell>
       {Array.from(props.columns)
