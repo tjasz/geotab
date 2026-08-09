@@ -4,7 +4,8 @@ import TableContextMenu from "./TableContextMenu";
 import ColumnContextMenu from "./ColumnContextMenu";
 import { Sorting } from "./sorting";
 import { Column } from "../column";
-import { TableCell, TableRow } from "@mui/material";
+import CompactTableCell from "./CompactTableCell";
+import { TableRow } from "@mui/material";
 
 type DataTableHeaderProps = {
   disabled: boolean;
@@ -19,7 +20,7 @@ type DataTableHeaderProps = {
 export default function DataTableHeader(props: DataTableHeaderProps) {
   return (
     <TableRow>
-      <TableCell className="tableCorner">
+      <CompactTableCell className="tableCorner stickyCol1">
         <TableContextMenu
           disabled={props.disabled}
           setDisabled={props.setDisabled}
@@ -29,15 +30,15 @@ export default function DataTableHeader(props: DataTableHeaderProps) {
         >
           <MenuIcon />
         </TableContextMenu>
-      </TableCell>
-      <TableCell>#</TableCell>
+      </CompactTableCell>
+      <CompactTableCell className="stickyCol2">#</CompactTableCell>
       {Array.from(props.columns)
         .map((column, idx) => {
           return { column, idx };
         })
         .filter((info) => info.column.visible)
         .map((info) => (
-          <TableCell key={info.column.name}>
+          <CompactTableCell key={info.column.name}>
             <span
               onClick={() => {
                 props.setSorting({
@@ -62,7 +63,7 @@ export default function DataTableHeader(props: DataTableHeaderProps) {
             >
               <MoreVertIcon className="inlineIcon" />
             </ColumnContextMenu>
-          </TableCell>
+          </CompactTableCell>
         ))}
     </TableRow>
   );

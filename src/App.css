@@ -171,6 +171,45 @@ button:active {
 #tableview {
   float: left;
   overflow: hidden;
+  height: 100%;
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
+/* Freeze the checkbox and index columns while the rest scroll horizontally */
+#tableview tbody tr {
+  background-color: #fff;
+}
+
+#tableview .stickyCol1,
+#tableview .stickyCol2 {
+  position: sticky;
+  background-color: inherit;
+  z-index: 1;
+}
+
+#tableview .stickyCol1 {
+  left: 0;
+  width: 48px;
+  min-width: 48px;
+  max-width: 48px;
+  box-sizing: border-box;
+}
+
+#tableview .stickyCol2 {
+  left: 48px;
+  border-right: 2px solid rgba(0, 0, 0, 0.4);
+}
+
+#tableview thead .stickyCol1,
+#tableview thead .stickyCol2 {
+  top: 0;
+  z-index: 3;
+  background-color: #fff;
 }
 
 #data-table {
