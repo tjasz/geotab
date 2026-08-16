@@ -14,8 +14,11 @@ type TableCellProps = {
 };
 
 export default function DataTableCell(props: TableCellProps) {
+  const isObject = typeof props.value === "object" && props.value !== null;
+  const editText = isObject ? JSON.stringify(props.value) ?? "" : props.value ?? "";
+
   const handleBlur = (e: FocusEvent<HTMLInputElement>) => {
-    props.onChange(e.target.value, props.column);
+    props.onChange(isObject ? JSON.parse(e.target.value) ?? "" : e.target.value, props.column);
   };
 
   if (props.disabled) {
@@ -38,8 +41,8 @@ export default function DataTableCell(props: TableCellProps) {
         }}
         onKeyDown={(e) => props.handleKeyDown(e, props.fidx, props.column.name)}
         type="text"
-        defaultValue={props.value ?? ""}
-        size={props.value?.length ?? 17 + 3}
+        defaultValue={editText}
+        size={editText.length ?? 17 + 3}
         onBlur={handleBlur}
       />
     </CompactTableCell>
