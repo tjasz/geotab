@@ -49,6 +49,18 @@ export default function DataCellValue(props) {
         case "number":
           return props.value;
         default:
+          // link objects with an "href" property
+          if (props.value && typeof props.value === "object" && "href" in props.value) {
+            return <AbridgedUrlLink href={props.value.href} length={21} />
+          }
+          // list of objects with an "href" property
+          if (Array.isArray(props.value) && props.value.every(item => typeof item === "object" && "href" in item)) {
+            return props.value.map((item, index) => (
+              <div key={index}>
+                <AbridgedUrlLink href={item.href} length={21} />
+              </div>
+            ));
+          }
           return JSON.stringify(props.value);
       }
   }
