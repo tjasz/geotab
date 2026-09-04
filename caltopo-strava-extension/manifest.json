@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "CalTopo Strava Heatmap",
+  "version": "0.1.0",
+  "description": "Adds the Strava running heatmap as an overlay on CalTopo maps.",
+  "content_scripts": [
+    {
+      "matches": ["https://caltopo.com/*", "https://*.caltopo.com/*"],
+      "js": ["inject.js"],
+      "run_at": "document_idle",
+      "world": "MAIN"
+    }
+  ]
+}
