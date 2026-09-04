@@ -8,10 +8,11 @@ when a GPX track is available, the feature's Point geometry is upgraded to a
 LineString that follows the recorded track.
 
 Usage:
-    python fkt_enrich.py INPUT OUTPUT LAT LON RADIUS [--units {km,mi}]
+    python fkt_enrich.py INPUT OUTPUT [LAT LON RADIUS] [--units {km,mi}]
                          [--headed] [--limit N]
 
-Only the features that fall inside the radius are written to OUTPUT.
+Only the features that fall inside the radius are written to OUTPUT. If LAT,
+LON and RADIUS are omitted, every feature in the input is processed.
 
 Requires:
     pip install playwright beautifulsoup4
@@ -315,9 +316,19 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("input", help="Path to the input GeoJSON file")
     parser.add_argument("output", help="Path to write the enriched GeoJSON")
-    parser.add_argument("lat", type=float, help="Center latitude")
-    parser.add_argument("lon", type=float, help="Center longitude")
-    parser.add_argument("radius", type=float, help="Radius around the center")
+    parser.add_argument(
+        "lat", type=float, nargs="?", default=None, help="Center latitude"
+    )
+    parser.add_argument(
+        "lon", type=float, nargs="?", default=None, help="Center longitude"
+    )
+    parser.add_argument(
+        "radius",
+        type=float,
+        nargs="?",
+        default=None,
+        help="Radius around the center; omit to process all features worldwide",
+    )
     parser.add_argument(
         "--units",
         choices=("km", "mi"),
@@ -337,31 +348,44 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    radius_km = args.radius if args.units == "km" else args.radius * 1.609344
+    filter_by_radius = (
+        args.lat is not None and args.lon is not None and args.radius is not None
+    )
+    radius_km = None
+    if filter_by_radius:
+        radius_km = args.radius if args.units == "km" else args.radius * 1.609344
 
     with open(args.input, "r", encoding="utf-8") as fh:
         data = json.load(fh)
 
     features = data.get("features", [])
 
-    # Select features within the radius.
+    # Select all features, or only those within the radius when one is given.
     selected: list[dict] = []
     for feature in features:
         lonlat = feature_lonlat(feature)
         if lonlat is None:
             continue
-        lon, lat = lonlat
-        if haversine_km(args.lat, args.lon, lat, lon) <= radius_km:
-            selected.append(feature)
+        if filter_by_radius:
+            lon, lat = lonlat
+            if haversine_km(args.lat, args.lon, lat, lon) > radius_km:
+                continue
+        selected.append(feature)
 
     if args.limit is not None:
         selected = selected[: args.limit]
 
-    print(
-        f"{len(selected)} of {len(features)} features within "
-        f"{args.radius} {args.units}",
-        file=sys.stderr,
-    )
+    if filter_by_radius:
+        print(
+            f"{len(selected)} of {len(features)} features within "
+            f"{args.radius} {args.units}",
+            file=sys.stderr,
+        )
+    else:
+        print(
+            f"{len(selected)} of {len(features)} features (worldwide)",
+            file=sys.stderr,
+        )
 
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(headless=not args.headed)
