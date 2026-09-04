@@ -250,7 +250,7 @@ function simplifyMultiPoint(
     ),
   };
 }
-function simplifyLineString(
+export function simplifyLineString(
   p: gj.LineString,
   precisionMeters: number,
 ): gj.LineString {
@@ -264,7 +264,7 @@ function simplifyLineString(
     ),
   };
 }
-function simplifyMultiLineString(
+export function simplifyMultiLineString(
   p: gj.MultiLineString,
   precisionMeters: number,
 ): gj.MultiLineString {
