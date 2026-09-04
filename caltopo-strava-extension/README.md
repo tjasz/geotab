@@ -11,7 +11,7 @@ This unpacked Chrome/Edge extension adds the Strava heatmap to CalTopo's Google 
 
 For Edge, use `edge://extensions` and the same **Load unpacked** flow.
 
-The Strava `/identified/` endpoint still requires valid Strava CloudFront cookies. The extension does not obtain or modify authentication cookies.
+The Strava `/identified/` endpoint requires valid Strava CloudFront cookies. Before loading tiles, the extension changes `_strava_idcf`, `CloudFront-Key-Pair-Id`, `CloudFront-Policy`, and `CloudFront-Signature` cookies on Strava domains to `SameSite=None; Secure`. It preserves their values and other attributes. If Strava still responds to a heatmap tile request with HTTP 403, the extension displays a warning with a link to sign in to Strava.
 
 ## Console controls
 

@@ -1,6 +1,7 @@
 (() => {
   const OVERLAY_KEY = "__caltopoStravaOverlay";
   const RIBBON_ID = "caltopo-strava-ribbon";
+  const AUTH_DIALOG_ID = "caltopo-strava-auth-dialog";
   const RETRY_INTERVAL_MS = 500;
   const MAX_ATTEMPTS = 120;
   const ACTIVITIES = [
@@ -57,11 +58,107 @@
   let opacityInput;
   let opacityOutput;
 
+  function showAuthenticationWarning() {
+    if (document.getElementById(AUTH_DIALOG_ID)) return;
+
+    const backdrop = document.createElement("div");
+    backdrop.id = AUTH_DIALOG_ID;
+    backdrop.setAttribute("role", "presentation");
+    Object.assign(backdrop.style, {
+      position: "fixed",
+      inset: "0",
+      zIndex: "2147483647",
+      display: "grid",
+      placeItems: "center",
+      padding: "20px",
+      background: "rgba(0, 0, 0, 0.55)"
+    });
+
+    const dialog = document.createElement("div");
+    dialog.setAttribute("role", "alertdialog");
+    dialog.setAttribute("aria-modal", "true");
+    dialog.setAttribute("aria-labelledby", `${AUTH_DIALOG_ID}-title`);
+    dialog.setAttribute("aria-describedby", `${AUTH_DIALOG_ID}-message`);
+    Object.assign(dialog.style, {
+      width: "min(420px, 100%)",
+      boxSizing: "border-box",
+      padding: "20px",
+      color: "#242424",
+      background: "#ffffff",
+      border: "1px solid #b9b9b9",
+      borderRadius: "6px",
+      boxShadow: "0 16px 48px rgba(0, 0, 0, 0.35)",
+      font: "14px/1.45 sans-serif"
+    });
+
+    const title = document.createElement("h2");
+    title.id = `${AUTH_DIALOG_ID}-title`;
+    title.textContent = "Strava sign-in required";
+    Object.assign(title.style, {
+      margin: "0 0 8px",
+      fontSize: "20px",
+      lineHeight: "1.25"
+    });
+
+    const message = document.createElement("p");
+    message.id = `${AUTH_DIALOG_ID}-message`;
+    message.textContent = "Strava rejected the heatmap tile request. Sign in to Strava, then reload this CalTopo page.";
+    message.style.margin = "0 0 18px";
+
+    const actions = document.createElement("div");
+    Object.assign(actions.style, {
+      display: "flex",
+      justifyContent: "flex-end",
+      gap: "8px"
+    });
+
+    const dismissButton = document.createElement("button");
+    dismissButton.type = "button";
+    dismissButton.textContent = "Dismiss";
+
+    const signInLink = document.createElement("a");
+    signInLink.href = "https://www.strava.com/login";
+    signInLink.target = "_blank";
+    signInLink.rel = "noopener noreferrer";
+    signInLink.textContent = "Open Strava";
+    Object.assign(signInLink.style, {
+      padding: "6px 10px",
+      color: "#ffffff",
+      background: "#d84828",
+      borderRadius: "4px",
+      textDecoration: "none",
+      fontWeight: "600"
+    });
+
+    const close = () => backdrop.remove();
+    dismissButton.addEventListener("click", close);
+    backdrop.addEventListener("click", (event) => {
+      if (event.target === backdrop) close();
+    });
+    backdrop.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") close();
+    });
+
+    actions.append(dismissButton, signInLink);
+    dialog.append(title, message, actions);
+    backdrop.appendChild(dialog);
+    document.body.appendChild(backdrop);
+    dismissButton.focus();
+  }
+
+  window.addEventListener("caltopo-strava-http-error", (event) => {
+    if (event.detail?.status === 403) showAuthenticationWarning();
+  });
+
   function getGoogleMap() {
     const googleMap = window.map?.map?.map;
     return window.google?.maps && googleMap?.overlayMapTypes
       ? googleMap
       : null;
+  }
+
+  function cookiesAreReady() {
+    return document.documentElement.dataset.caltopoStravaCookiesReady === "true";
   }
 
   function detachOverlay() {
@@ -292,7 +389,7 @@
   let attempts = 0;
   const timer = window.setInterval(() => {
     attempts += 1;
-    if (!enabled || addOverlay() || attempts >= MAX_ATTEMPTS) {
+    if (!enabled || (cookiesAreReady() && addOverlay()) || attempts >= MAX_ATTEMPTS) {
       window.clearInterval(timer);
       if (attempts >= MAX_ATTEMPTS && !window[OVERLAY_KEY]) {
         console.warn("CalTopo Strava Heatmap: map was not found.");
