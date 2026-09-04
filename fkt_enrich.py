@@ -201,6 +201,8 @@ def compute_fkt_counts(fkts: list[dict]) -> dict:
             continue
         key = "fktsCount" + _count_key_segment(gender) + _count_key_segment(style)
         counts[key] = counts.get(key, 0) + 1
+        if counts[key] > counts.get("fktsCountMaxCategory", 0):
+            counts["fktsCountMaxCategory"] = counts[key]
     return counts
 
 
