@@ -138,6 +138,21 @@ const baseLayers = [
 ];
 
 const overlays = [
+  // Note: to use strava layer, set SameSite=None on the following strava cookies:
+  // _strava_idcf, CloudFront-Key-Pair-Id, CloudFront-Policy, CloudFront-Signature
+  {
+    type: "TileLayer",
+    name: "Strava Foot Orange",
+    geotabId: "strava-foot-orange",
+    checked: false,
+    maxZoom: 18,
+    maxNativeZoom: 16,
+    tileSize: 512,
+    zoomOffset: -1,
+    url: "https://content-a.strava.com/identified/globalheat/run/orange/{z}/{x}/{y}.png?v=19",
+    attribution:
+      '&copy; Strava',
+  },
   {
     type: "TileLayer",
     name: "CyclOSM Lite",
