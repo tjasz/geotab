@@ -1,6 +1,6 @@
 # CalTopo Strava Heatmap extension
 
-This unpacked Chrome/Edge extension adds the Strava running heatmap to CalTopo's Google map after the map finishes loading.
+This unpacked Chrome/Edge extension adds the Strava heatmap to CalTopo's Google map after the map finishes loading. A ribbon at the top of the page can show or hide the layer, choose an activity and color, and adjust its opacity.
 
 ## Install in Chrome
 
@@ -18,6 +18,9 @@ The Strava `/identified/` endpoint still requires valid Strava CloudFront cookie
 ```js
 caltopoStrava.remove()
 caltopoStrava.add()
+caltopoStrava.setOpacity(0.5)
+caltopoStrava.setActivity("sport_Hike")
+caltopoStrava.setColor("purple")
 ```
 
 After editing the extension, click its reload button on the extensions page and reload CalTopo.
