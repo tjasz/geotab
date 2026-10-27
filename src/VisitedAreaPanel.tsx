@@ -2,6 +2,13 @@ import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { DataContext } from "./dataContext";
 import { analyseVisitedArea, AnalysisProgress, AREA_ZOOMS } from "./visited-area";
 
+const PROGRESS_LABELS: Record<AnalysisProgress["phase"], string> = {
+  features: "",
+  clusters: "Finding clusters: ",
+  squares: "Finding squares: ",
+  yards: "Finding yards: ",
+};
+
 export default function VisitedAreaPanel() {
   const context = useContext(DataContext);
   const [progress, setProgress] = useState<AnalysisProgress>();
@@ -11,6 +18,7 @@ export default function VisitedAreaPanel() {
   const visitedArea = context?.visitedArea;
   const clusters = visitedArea?.clusters.get(visitedArea.zoom) ?? [];
   const squares = visitedArea?.squares.get(visitedArea.zoom) ?? [];
+  const yards = visitedArea?.yards.get(visitedArea.zoom) ?? [];
   const visitedTileCount = useMemo(() => {
     let count = 0;
     if (visitedArea) {
@@ -100,6 +108,24 @@ export default function VisitedAreaPanel() {
               ))}
             </ol>
           ) : <p>No visited squares.</p>}
+          <h3>Largest yards</h3>
+          {yards.length ? (
+            <ol aria-label="Largest yards">
+              {yards.slice(0, 5).map((yard, index) => (
+                <li key={index}>
+                  <a
+                    href="#mapview"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      setVisitedArea({ ...visitedArea, focusedArea: { bounds: yard.bounds } });
+                    }}
+                  >
+                    {yard.size.toLocaleString()} {yard.size === 1 ? "tile" : "tiles"}
+                  </a>
+                </li>
+              ))}
+            </ol>
+          ) : <p>No visited yards.</p>}
         </>
       ) : (
         <button type="button" disabled={progress !== undefined} onClick={analyse}>
@@ -109,7 +135,7 @@ export default function VisitedAreaPanel() {
       {progress && (
         <div role="status">
           <progress aria-label="Area analysis progress" value={progress.completed} max={Math.max(1, progress.total)} />
-          {" "}{progress.phase === "features" ? "" : progress.phase === "clusters" ? "Finding clusters: " : "Finding squares: "}
+          {" "}{PROGRESS_LABELS[progress.phase]}
           {progress.completed} / {progress.total} {progress.phase === "features" ? "features" : "zoom levels"}
         </div>
       )}

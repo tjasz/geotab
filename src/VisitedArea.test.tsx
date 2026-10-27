@@ -115,9 +115,34 @@ test("shows the top five non-overlapping squares with dimensions and counts for 
     .toEqual(Array(5).fill("1 x 1 (1 tile)"));
 });
 
+test("shows the five largest yards by interior tile count for the selected zoom", async () => {
+  const coordinates = [[0, 3], [4, 4], [9, 5], [15, 6], [22, 7], [30, 8], [39, 9]].flatMap(([startX, side]) =>
+    Array.from({ length: side }, (_, dx) =>
+      Array.from({ length: side }, (_, dy) => {
+        const bounds = areaTileBounds(startX + dx, 2 + dy, 6);
+        return [(bounds.west + bounds.east) / 2, (bounds.north + bounds.south) / 2];
+      }),
+    ).flat(),
+  );
+  render(<PanelHarness features={[{
+    ...data[0],
+    geometry: { type: GeometryType.MultiPoint, coordinates },
+  }]} />);
+  fireEvent.click(screen.getByRole("button"));
+  const zoom = await screen.findByRole("combobox");
+  fireEvent.change(zoom, { target: { value: "6" } });
+  expect(within(screen.getByRole("list", { name: "Largest yards" }))
+    .getAllByRole("link").map((link) => link.textContent))
+    .toEqual(["49 tiles", "36 tiles", "25 tiles", "16 tiles", "9 tiles"]);
+  fireEvent.change(zoom, { target: { value: "17" } });
+  expect(screen.queryByRole("list", { name: "Largest yards" })).not.toBeInTheDocument();
+  expect(screen.getByText("No visited yards.")).toBeInTheDocument();
+});
+
 test("counts all visited rows across columns for the selected zoom only", () => {
   const visitedArea: VisitedArea = {
     zoom: 2,
+    yards: new Map([[1, []], [2, []]]),
     squares: new Map([
       [1, [{ side: 1, bounds: areaTileBounds(0, 0, 1) }]],
       [2, [{ side: 1, bounds: areaTileBounds(0, 0, 2) }]],
@@ -151,6 +176,7 @@ test("shows zero coverage for an empty analysis", async () => {
   expect(await screen.findByText("Tiles visited: 0 / 4 (0%)")).toBeInTheDocument();
   expect(screen.getByText("No visited clusters.")).toBeInTheDocument();
   expect(screen.getByText("No visited squares.")).toBeInTheDocument();
+  expect(screen.getByText("No visited yards.")).toBeInTheDocument();
 });
 
 test("reports invalid data explicitly and allows retry", async () => {
@@ -189,6 +215,7 @@ describe("map mask", () => {
   const originalGetContext = Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype, "getContext")!;
   const area: VisitedArea = {
     zoom: 2,
+    yards: new Map([[2, []], [17, []]]),
     squares: new Map([[2, [{ side: 1, bounds: areaTileBounds(0, 1, 2) }]], [17, []]]),
     clusters: new Map([[2, [{ size: 1, bounds: areaTileBounds(0, 1, 2) }]], [17, []]]),
     tiles: new Map([
@@ -291,6 +318,27 @@ describe("map mask", () => {
     fireEvent.change(screen.getByRole("combobox"), { target: { value: "17" } });
     expect(fitBounds).toHaveBeenCalledTimes(2);
     expect(screen.getByText("No visited squares.")).toBeInTheDocument();
+  });
+
+  test("yard links fit the interior bounds, can refocus, and reset when changing zoom", () => {
+    const fitBounds = jest.spyOn(map, "fitBounds");
+    const yard = { size: 16, bounds: { west: -122, east: -121, north: 48, south: 47 } };
+    render(<PanelHarness initialArea={{
+      ...area,
+      yards: new Map([[2, [yard]], [17, []]]),
+    }} withMap />);
+    const link = within(screen.getByRole("list", { name: "Largest yards" }))
+      .getByRole("link", { name: "16 tiles" });
+    expect(link).toHaveAttribute("href", "#mapview");
+    expect(fitBounds).not.toHaveBeenCalled();
+    fireEvent.click(link);
+    expect(fitBounds).toHaveBeenLastCalledWith([[47, -122], [48, -121]], { padding: [16, 16] });
+    expect(map.getBounds().contains([[47, -122], [48, -121]])).toBe(true);
+    fireEvent.click(link);
+    expect(fitBounds).toHaveBeenCalledTimes(2);
+    fireEvent.change(screen.getByRole("combobox"), { target: { value: "17" } });
+    expect(fitBounds).toHaveBeenCalledTimes(2);
+    expect(screen.getByText("No visited yards.")).toBeInTheDocument();
   });
 
   test("updates the overlay on zoom changes, passes clicks through, and removes it on reset", () => {

@@ -33,7 +33,14 @@ each zoom. Squares are selected largest-first, excluding the tiles in each
 selected square before finding the next. Equal-size ties are resolved by
 westernmost, then northernmost position. The panel shows dimensions and tile
 counts (for example, `6 x 6 (36 tiles)`); click an entry to fit the map to it.
-The progress indicator remains visible through clustering and square analysis.
+Analysis also finds **yards**: four-connected groups of visited interior tiles
+whose four side-sharing neighbors are all visited. This removes one boundary
+layer before clustering; diagonal neighbors need not be visited. Buffer tiles
+are excluded from the yard's count and bounds. For example, a fully visited
+6 x 6 block has a 4 x 4 yard of 16 tiles. The panel links to the five largest
+yards at the selected zoom. Thin paths and tiles on the world boundary cannot
+form a yard without all four neighbors.
+The progress indicator remains visible through clustering, square, and yard analysis.
 The tiles use the standard Web Mercator XYZ grid, spanning -180 to 180 longitude
 and approximately -85.051129 to 85.051129 latitude (X increases eastward,
 Y southward). Latitude boundaries follow the Mercator projection, not equal

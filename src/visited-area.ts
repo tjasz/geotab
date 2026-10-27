@@ -12,9 +12,10 @@ export type VisitedAreaResults = {
   tiles: VisitedTiles;
   clusters: Map<number, VisitedCluster[]>;
   squares: Map<number, VisitedSquare[]>;
+  yards: Map<number, VisitedCluster[]>;
 };
 export type VisitedArea = VisitedAreaResults & { zoom: number; focusedArea?: VisitedRegion };
-export type AnalysisProgress = { phase: "features" | "clusters" | "squares"; completed: number; total: number };
+export type AnalysisProgress = { phase: "features" | "clusters" | "squares" | "yards"; completed: number; total: number };
 
 function checkCancelled(signal: AbortSignal) {
   if (signal.aborted) throw new DOMException("Analysis cancelled", "AbortError");
@@ -191,17 +192,37 @@ export async function analyseVisitedArea(
   }
   const clusters = await findTileClusters(tiles, onProgress, signal);
   const squares = await findTileSquares(tiles, onProgress, signal);
-  return { tiles, clusters, squares };
+  const yards = await findTileYards(tiles, onProgress, signal);
+  return { tiles, clusters, squares, yards };
 }
 
-export async function findTileClusters(
+export function findTileClusters(
   tiles: VisitedTiles,
   onProgress: (progress: AnalysisProgress) => void,
   signal: AbortSignal,
+) {
+  return findContiguousRegions(tiles, onProgress, signal, false);
+}
+
+export function findTileYards(
+  tiles: VisitedTiles,
+  onProgress: (progress: AnalysisProgress) => void,
+  signal: AbortSignal,
+) {
+  return findContiguousRegions(tiles, onProgress, signal, true);
+}
+
+async function findContiguousRegions(
+  tiles: VisitedTiles,
+  onProgress: (progress: AnalysisProgress) => void,
+  signal: AbortSignal,
+  requireBuffer: boolean,
 ): Promise<Map<number, VisitedCluster[]>> {
   checkCancelled(signal);
   const result = new Map<number, VisitedCluster[]>();
-  const progress = (completed: number) => onProgress({ phase: "clusters", completed, total: tiles.size });
+  const progress = (completed: number) => onProgress({
+    phase: requireBuffer ? "yards" : "clusters", completed, total: tiles.size,
+  });
   progress(0);
   await yieldToBrowser();
   let lastYield = performance.now();
@@ -210,10 +231,21 @@ export async function findTileClusters(
     const size = 2 ** zoom;
     const seen = new Set<number>();
     const clusters: VisitedCluster[] = [];
+    const included = (x: number, y: number) => columns.get(x)?.has(y) && (
+      !requireBuffer || (
+        columns.get(x - 1)?.has(y) && columns.get(x + 1)?.has(y) &&
+        columns.get(x)?.has(y - 1) && columns.get(x)?.has(y + 1)
+      )
+    );
     for (const [x, rows] of columns) {
       for (const y of rows.keys()) {
+        if (performance.now() - lastYield >= 8) {
+          await yieldToBrowser();
+          checkCancelled(signal);
+          lastYield = performance.now();
+        }
         const key = x * size + y;
-        if (seen.has(key)) continue;
+        if (seen.has(key) || !included(x, y)) continue;
         const queue = [key];
         seen.add(key);
         let minX = x;
@@ -233,7 +265,7 @@ export async function findTileClusters(
           ]) {
             if (nextX < 0 || nextX >= size || nextY < 0 || nextY >= size) continue;
             const nextKey = nextX * size + nextY;
-            if (!seen.has(nextKey) && columns.get(nextX)?.has(nextY)) {
+            if (!seen.has(nextKey) && included(nextX, nextY)) {
               seen.add(nextKey);
               queue.push(nextKey);
             }

@@ -1,5 +1,5 @@
 import L from "leaflet";
-import { analyseVisitedArea, areaTile, areaTileBounds, AREA_ZOOMS, findTileClusters, findTileSquares, MAX_MERCATOR_LATITUDE, VisitedSquare, VisitedTiles } from "./visited-area";
+import { analyseVisitedArea, areaTile, areaTileBounds, AREA_ZOOMS, findTileClusters, findTileSquares, findTileYards, MAX_MERCATOR_LATITUDE, VisitedSquare, VisitedTiles } from "./visited-area";
 import { Feature, FeatureType, Geometry, GeometryType } from "./geojson-types";
 
 const feature = (type: GeometryType, coordinates: Geometry["coordinates"]): Feature => ({
@@ -72,7 +72,7 @@ test.each([[NaN, 0], [0, Infinity], [181, 0], [0, -91], []])(
 
 test("creates maps at every zoom, deduplicates points, and reports progress", async () => {
   const progress = jest.fn();
-  const { tiles, clusters, squares } = await analyseVisitedArea(
+  const { tiles, clusters, squares, yards } = await analyseVisitedArea(
     [feature(GeometryType.Point, [-122, 47]), feature(GeometryType.Point, [-122, 47])],
     progress,
     new AbortController().signal,
@@ -83,6 +83,7 @@ test("creates maps at every zoom, deduplicates points, and reports progress", as
     expect(tiles.get(z)).toEqual(new Map([[x, new Map([[y, true]])]]));
     expect(clusters.get(z)?.map((cluster) => cluster.size)).toEqual([1]);
     expect(squares.get(z)).toEqual([{ side: 1, bounds: areaTileBounds(x, y, z) }]);
+    expect(yards.get(z)).toEqual([]);
   }
   expect(progress.mock.calls.slice(0, 3)).toEqual([
     [{ phase: "features", completed: 0, total: 2 }],
@@ -92,8 +93,11 @@ test("creates maps at every zoom, deduplicates points, and reports progress", as
   expect(progress.mock.calls.slice(3, 21)).toEqual(
     Array.from({ length: 18 }, (_, completed) => [{ phase: "clusters", completed, total: 17 }]),
   );
-  expect(progress.mock.calls.slice(21)).toEqual(
+  expect(progress.mock.calls.slice(21, 39)).toEqual(
     Array.from({ length: 18 }, (_, completed) => [{ phase: "squares", completed, total: 17 }]),
+  );
+  expect(progress.mock.calls.slice(39)).toEqual(
+    Array.from({ length: 18 }, (_, completed) => [{ phase: "yards", completed, total: 17 }]),
   );
 });
 
@@ -241,6 +245,91 @@ describe("contiguous tile clusters", () => {
         east: areaTileBounds(x + side - 1, y + side - 1, zoom).east,
         south: areaTileBounds(x + side - 1, y + side - 1, zoom).south,
       },
+    });
+
+    describe("buffered tile yards", () => {
+      const block = (x: number, y: number, width: number, height = width) =>
+        Array.from({ length: width }, (_, dx) =>
+          Array.from({ length: height }, (_, dy) => [x + dx, y + dy]),
+        ).flat();
+      const cross = (x: number, y: number) => [[x, y], [x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]];
+      const yards = (tiles: VisitedTiles) =>
+        findTileYards(tiles, () => {}, new AbortController().signal);
+
+      test("removes exactly one boundary layer and excludes buffer tiles from count and bounds", async () => {
+        const tiles = tilesAt(5, block(5, 7, 6));
+        const result = await yards(tiles);
+        expect(result.get(5)).toEqual([{
+          size: 16,
+          bounds: {
+            ...areaTileBounds(6, 8, 5),
+            east: areaTileBounds(9, 11, 5).east,
+            south: areaTileBounds(9, 11, 5).south,
+          },
+        }]);
+        expect([...tiles.get(5)!.values()].reduce((sum, rows) => sum + rows.size, 0)).toBe(36);
+      });
+
+      test("requires four side-sharing neighbors but does not require diagonals", async () => {
+        expect((await yards(tilesAt(17, cross(100, 100)))).get(17))
+          .toEqual([{ size: 1, bounds: areaTileBounds(100, 100, 17) }]);
+        for (let missing = 0; missing < 5; missing++) {
+          expect((await yards(tilesAt(17, cross(100, 100).filter((_, i) => i !== missing)))).get(17))
+            .toEqual([]);
+        }
+      });
+
+      test("does not connect diagonal yard interiors", async () => {
+        const result = await yards(tilesAt(4, [...cross(3, 3), ...cross(4, 4)]));
+        expect(result.get(4)).toEqual([
+          { size: 1, bounds: areaTileBounds(3, 3, 4) },
+          { size: 1, bounds: areaTileBounds(4, 4, 4) },
+        ]);
+      });
+
+      test("splits a visited cluster at thin connecting paths and ranks the resulting yards", async () => {
+        const tiles = tilesAt(4, [...block(1, 1, 3), [4, 2], ...block(5, 1, 4, 3)]);
+        const clusters = await findTileClusters(tiles, () => {}, new AbortController().signal);
+        expect(clusters.get(4)?.map((cluster) => cluster.size)).toEqual([22]);
+        const result = await yards(tiles);
+        expect(result.get(4)).toEqual([
+          {
+            size: 3,
+            bounds: { ...areaTileBounds(5, 2, 4), east: areaTileBounds(7, 2, 4).east },
+          },
+          {
+            size: 2,
+            bounds: { ...areaTileBounds(2, 2, 4), east: areaTileBounds(3, 2, 4).east },
+          },
+        ]);
+      });
+
+      test("does not use missing neighbors beyond world edges or count unvisited holes", async () => {
+        expect((await yards(tilesAt(1, block(0, 0, 2)))).get(1)).toEqual([]);
+        const ring = block(2, 2, 3).filter(([x, y]) => x !== 3 || y !== 3);
+        expect((await yards(tilesAt(4, ring))).get(4)).toEqual([]);
+      });
+
+      test("stores all zoom levels, including empty yard results, in feature analysis", async () => {
+        const points = block(100, 100, 3).map(([x, y]) => {
+          const bounds = areaTileBounds(x, y, 17);
+          return [(bounds.west + bounds.east) / 2, (bounds.north + bounds.south) / 2];
+        });
+        const { yards } = await analyseVisitedArea(
+          [feature(GeometryType.MultiPoint, points)], () => {}, new AbortController().signal,
+        );
+        expect([...yards.keys()]).toEqual(AREA_ZOOMS);
+        expect(yards.get(17)).toEqual([{ size: 1, bounds: areaTileBounds(101, 101, 17) }]);
+        expect(yards.get(1)).toEqual([]);
+      });
+
+      test("supports cancellation during the yards phase", async () => {
+        const controller = new AbortController();
+        const progress = jest.fn(() => controller.abort());
+        await expect(findTileYards(tilesAt(3, cross(3, 3)), progress, controller.signal))
+          .rejects.toMatchObject({ name: "AbortError" });
+        expect(progress).toHaveBeenCalledWith({ phase: "yards", completed: 0, total: 1 });
+      });
     });
     const squares = (tiles: VisitedTiles) =>
       findTileSquares(tiles, () => {}, new AbortController().signal);
