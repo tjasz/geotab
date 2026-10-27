@@ -47,6 +47,10 @@ Y southward). Latitude boundaries follow the Mercator projection, not equal
 latitude steps. Coordinates closer to the poles are clamped to this latitude range.
 Tiles containing simplified vertices or the added segment samples are visited;
 polygon interiors are not filled. Unvisited tiles are shaded `#00000080`.
+The overlay draws solid black 1px tile borders, 3px dashed (`6 6`) outlines
+around the five largest squares, and 3px dotted (`3 3`) outlines following
+the actual tile edges of the five largest yards, including holes and concavities.
+All borders use `#000000ff` and leave map interactions unobstructed.
 Results and the selected zoom remain in the data context while inspecting
 features; changing the loaded data clears the analysis. Filtering does not
 change the analysis scope.

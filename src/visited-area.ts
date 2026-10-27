@@ -8,11 +8,13 @@ export type VisitedTiles = Map<number, Map<number, Map<number, true>>>;
 export type VisitedRegion = { bounds: ReturnType<typeof areaTileBounds> };
 export type VisitedCluster = VisitedRegion & { size: number };
 export type VisitedSquare = VisitedRegion & { side: number };
+export type TileEdge = [number, number, number, number];
+export type VisitedYard = VisitedCluster & { outline: TileEdge[] };
 export type VisitedAreaResults = {
   tiles: VisitedTiles;
   clusters: Map<number, VisitedCluster[]>;
   squares: Map<number, VisitedSquare[]>;
-  yards: Map<number, VisitedCluster[]>;
+  yards: Map<number, VisitedYard[]>;
 };
 export type VisitedArea = VisitedAreaResults & { zoom: number; focusedArea?: VisitedRegion };
 export type AnalysisProgress = { phase: "features" | "clusters" | "squares" | "yards"; completed: number; total: number };
@@ -212,6 +214,18 @@ export function findTileYards(
   return findContiguousRegions(tiles, onProgress, signal, true);
 }
 
+function findContiguousRegions(
+  tiles: VisitedTiles,
+  onProgress: (progress: AnalysisProgress) => void,
+  signal: AbortSignal,
+  requireBuffer: true,
+): Promise<Map<number, VisitedYard[]>>;
+function findContiguousRegions(
+  tiles: VisitedTiles,
+  onProgress: (progress: AnalysisProgress) => void,
+  signal: AbortSignal,
+  requireBuffer: false,
+): Promise<Map<number, VisitedCluster[]>>;
 async function findContiguousRegions(
   tiles: VisitedTiles,
   onProgress: (progress: AnalysisProgress) => void,
@@ -252,6 +266,7 @@ async function findContiguousRegions(
         let maxX = x;
         let minY = y;
         let maxY = y;
+        const outline: TileEdge[] = [];
         for (let head = 0; head < queue.length; head++) {
           const currentX = Math.floor(queue[head] / size);
           const currentY = queue[head] % size;
@@ -265,7 +280,17 @@ async function findContiguousRegions(
           ]) {
             if (nextX < 0 || nextX >= size || nextY < 0 || nextY >= size) continue;
             const nextKey = nextX * size + nextY;
-            if (!seen.has(nextKey) && included(nextX, nextY)) {
+            const neighborIncluded = included(nextX, nextY);
+            if (requireBuffer && !neighborIncluded) {
+              if (nextX !== currentX) {
+                const edgeX = Math.max(currentX, nextX);
+                outline.push([edgeX, currentY, edgeX, currentY + 1]);
+              } else {
+                const edgeY = Math.max(currentY, nextY);
+                outline.push([currentX, edgeY, currentX + 1, edgeY]);
+              }
+            }
+            if (!seen.has(nextKey) && neighborIncluded) {
               seen.add(nextKey);
               queue.push(nextKey);
             }
@@ -279,6 +304,7 @@ async function findContiguousRegions(
         clusters.push({
           size: queue.length,
           bounds: tileRectangleBounds(minX, minY, maxX, maxY, zoom),
+          ...(requireBuffer ? { outline } : {}),
         });
       }
     }

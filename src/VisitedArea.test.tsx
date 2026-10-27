@@ -6,7 +6,7 @@ import { DataContext, DataContextType } from "./dataContext";
 import { Feature, FeatureType, GeometryType } from "./geojson-types";
 import VisitedAreaPanel from "./VisitedAreaPanel";
 import VisitedAreaOverlay, { VisitedAreaLayer } from "./VisitedAreaOverlay";
-import { VisitedArea, areaTileBounds } from "./visited-area";
+import { VisitedArea, VisitedYard, areaTileBounds } from "./visited-area";
 
 jest.mock("react-leaflet", () => ({ useMap: jest.fn() }));
 
@@ -211,7 +211,13 @@ test("cancels work on data change or panel unmount", async () => {
 
 describe("map mask", () => {
   let map: L.Map;
-  const canvasContext = { fillStyle: "", fillRect: jest.fn(), clearRect: jest.fn() };
+  type Command = ["M" | "L", number, number];
+  const strokes: { color: string; width: number; dash: number[]; path: Command[]; rectangle?: number[] }[] = [];
+  const canvasContext = {
+    fillStyle: "", strokeStyle: "", lineWidth: 0,
+    fillRect: jest.fn(), clearRect: jest.fn(), strokeRect: jest.fn(),
+    setLineDash: jest.fn(), beginPath: jest.fn(), moveTo: jest.fn(), lineTo: jest.fn(), stroke: jest.fn(),
+  };
   const originalGetContext = Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype, "getContext")!;
   const area: VisitedArea = {
     zoom: 2,
@@ -225,6 +231,20 @@ describe("map mask", () => {
   };
 
   beforeEach(() => {
+    jest.clearAllMocks();
+    strokes.length = 0;
+    let dash: number[] = [];
+    let path: Command[] = [];
+    canvasContext.setLineDash.mockImplementation((value: number[]) => { dash = value.slice(); });
+    canvasContext.beginPath.mockImplementation(() => { path = []; });
+    canvasContext.moveTo.mockImplementation((x: number, y: number) => { path.push(["M", x, y]); });
+    canvasContext.lineTo.mockImplementation((x: number, y: number) => { path.push(["L", x, y]); });
+    canvasContext.stroke.mockImplementation(() => {
+      strokes.push({ color: canvasContext.strokeStyle, width: canvasContext.lineWidth, dash, path: path.slice() });
+    });
+    canvasContext.strokeRect.mockImplementation((...rectangle: number[]) => {
+      strokes.push({ color: canvasContext.strokeStyle, width: canvasContext.lineWidth, dash, path: [], rectangle });
+    });
     const container = document.createElement("div");
     Object.defineProperties(container, {
       clientWidth: { value: 1024 },
@@ -261,6 +281,95 @@ describe("map mask", () => {
     canvasContext.clearRect.mockClear();
     layer.createTile(Object.assign(L.point(1, 1), { z: 1 }));
     expect(canvasContext.clearRect).not.toHaveBeenCalled();
+  });
+
+  test("draws an opaque black 1px solid grid aligned to analysis tile boundaries", () => {
+    new VisitedAreaLayer(area, map).createTile(Object.assign(L.point(0, 0), { z: 1 }));
+    expect(strokes[0]).toEqual({
+      color: "#000000ff", width: 1, dash: [],
+      path: [
+        ["M", 0.5, 0], ["L", 0.5, 256],
+        ["M", 128.5, 0], ["L", 128.5, 256],
+        ["M", 0, 0.5], ["L", 256, 0.5],
+        ["M", 0, 128.5], ["L", 256, 128.5],
+      ],
+    });
+  });
+
+  test("draws square outlines in opaque black with 3px width and a 6 6 dash array", () => {
+    new VisitedAreaLayer(area, map).createTile(Object.assign(L.point(0, 0), { z: 1 }));
+    const squareStroke = strokes.find((stroke) => stroke.rectangle);
+    expect(squareStroke).toMatchObject({ color: "#000000ff", width: 3, dash: [6, 6] });
+    expect(squareStroke?.rectangle?.[0]).toBeCloseTo(0);
+    expect(squareStroke?.rectangle?.[1]).toBeCloseTo(128);
+    expect(squareStroke?.rectangle?.[2]).toBeCloseTo(128);
+    expect(squareStroke?.rectangle?.[3]).toBeCloseTo(128);
+  });
+
+  test("draws actual concave yard edges in opaque black with 3px width and a 3 3 dash array", () => {
+    const yard: VisitedYard = {
+      size: 3,
+      bounds: {
+        ...areaTileBounds(5, 5, 4),
+        east: areaTileBounds(6, 6, 4).east,
+        south: areaTileBounds(6, 6, 4).south,
+      },
+      outline: [
+        [5, 5, 5, 6], [5, 5, 6, 5],
+        [7, 5, 7, 6], [6, 5, 7, 5], [6, 6, 7, 6],
+        [5, 6, 5, 7], [6, 6, 6, 7], [5, 7, 6, 7],
+      ],
+    };
+    new VisitedAreaLayer({
+      ...area, zoom: 4, yards: new Map([[4, [yard]]]),
+    }, map).createTile(Object.assign(L.point(0, 0), { z: 1 }));
+    const yardStroke = strokes.find((stroke) => stroke.dash.join() === "3,3");
+    expect(yardStroke).toMatchObject({ color: "#000000ff", width: 3, dash: [3, 3] });
+    expect(yardStroke?.path).toHaveLength(16);
+    expect(yardStroke?.path).toEqual(expect.arrayContaining([
+      ["M", 192, 192], ["L", 224, 192], ["M", 192, 192], ["L", 192, 224],
+    ]));
+    expect(yardStroke?.path).not.toContainEqual(["L", 224, 224]);
+  });
+
+  test("only outlines the top five squares and yards", () => {
+    const yard: VisitedYard = {
+      size: 1, bounds: areaTileBounds(0, 1, 2), outline: [[0, 1, 1, 1]],
+    };
+    new VisitedAreaLayer({
+      ...area,
+      squares: new Map([[2, Array.from({ length: 6 }, () => ({ side: 1, bounds: areaTileBounds(0, 1, 2) }))]]),
+      yards: new Map([[2, Array.from({ length: 6 }, () => yard)]]),
+    }, map).createTile(Object.assign(L.point(0, 0), { z: 1 }));
+    expect(strokes.filter((stroke) => stroke.rectangle)).toHaveLength(5);
+    expect(strokes.find((stroke) => stroke.dash.join() === "3,3")?.path).toHaveLength(10);
+  });
+
+  test("renders subpixel-spaced 1px tile borders without iterating over invisible lines", () => {
+    new VisitedAreaLayer({ ...area, zoom: 17 }, map)
+      .createTile(Object.assign(L.point(0, 0), { z: 1 }));
+    expect(canvasContext.fillStyle).toBe("#000000ff");
+    expect(canvasContext.fillRect).toHaveBeenCalledTimes(2);
+    expect(canvasContext.fillRect).toHaveBeenLastCalledWith(0, 0, 256, 256);
+    expect(strokes.filter((stroke) => stroke.width === 1)).toHaveLength(0);
+  });
+
+  test("refreshes outlines when analysis results change without changing tiles or zoom", () => {
+    const view = render(
+      <DataContext.Provider value={{ ...context, visitedArea: area }}>
+        <VisitedAreaOverlay />
+      </DataContext.Provider>,
+    );
+    const removeLayer = jest.spyOn(map, "removeLayer");
+    view.rerender(
+      <DataContext.Provider value={{
+        ...context,
+        visitedArea: { ...area, squares: new Map([[2, []]]) },
+      }}>
+        <VisitedAreaOverlay />
+      </DataContext.Provider>,
+    );
+    expect(removeLayer).toHaveBeenCalledTimes(1);
   });
 
   test("cluster links fit the correct bounds, can be clicked repeatedly, and preserve the overlay", () => {
@@ -322,7 +431,7 @@ describe("map mask", () => {
 
   test("yard links fit the interior bounds, can refocus, and reset when changing zoom", () => {
     const fitBounds = jest.spyOn(map, "fitBounds");
-    const yard = { size: 16, bounds: { west: -122, east: -121, north: 48, south: 47 } };
+    const yard = { size: 16, bounds: { west: -122, east: -121, north: 48, south: 47 }, outline: [] };
     render(<PanelHarness initialArea={{
       ...area,
       yards: new Map([[2, [yard]], [17, []]]),

@@ -253,8 +253,12 @@ describe("contiguous tile clusters", () => {
           Array.from({ length: height }, (_, dy) => [x + dx, y + dy]),
         ).flat();
       const cross = (x: number, y: number) => [[x, y], [x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]];
-      const yards = (tiles: VisitedTiles) =>
-        findTileYards(tiles, () => {}, new AbortController().signal);
+      const yards = async (tiles: VisitedTiles) => {
+        const result = await findTileYards(tiles, () => {}, new AbortController().signal);
+        return new Map([...result].map(([zoom, entries]) => [
+          zoom, entries.map(({ size, bounds }) => ({ size, bounds })),
+        ]));
+      };
 
       test("removes exactly one boundary layer and excludes buffer tiles from count and bounds", async () => {
         const tiles = tilesAt(5, block(5, 7, 6));
@@ -319,7 +323,7 @@ describe("contiguous tile clusters", () => {
           [feature(GeometryType.MultiPoint, points)], () => {}, new AbortController().signal,
         );
         expect([...yards.keys()]).toEqual(AREA_ZOOMS);
-        expect(yards.get(17)).toEqual([{ size: 1, bounds: areaTileBounds(101, 101, 17) }]);
+        expect(yards.get(17)).toEqual([expect.objectContaining({ size: 1, bounds: areaTileBounds(101, 101, 17) })]);
         expect(yards.get(1)).toEqual([]);
       });
 
@@ -329,6 +333,32 @@ describe("contiguous tile clusters", () => {
         await expect(findTileYards(tilesAt(3, cross(3, 3)), progress, controller.signal))
           .rejects.toMatchObject({ name: "AbortError" });
         expect(progress).toHaveBeenCalledWith({ phase: "yards", completed: 0, total: 1 });
+      });
+
+      test("retains the actual concave yard outline without edges between interior tiles", async () => {
+        const points = [...cross(5, 5), ...cross(6, 5), ...cross(5, 6)];
+        const result = await findTileYards(tilesAt(4, points), () => {}, new AbortController().signal);
+        const yard = result.get(4)![0];
+        expect(yard.size).toBe(3);
+        expect(yard.outline).toHaveLength(8);
+        expect(yard.outline).toEqual(expect.arrayContaining([
+          [5, 5, 5, 6], [5, 5, 6, 5],
+          [7, 5, 7, 6], [6, 5, 7, 5], [6, 6, 7, 6],
+          [5, 6, 5, 7], [6, 6, 6, 7], [5, 7, 6, 7],
+        ]));
+        expect(yard.outline).not.toContainEqual([6, 5, 6, 6]);
+        expect(yard.outline).not.toContainEqual([5, 6, 6, 6]);
+      });
+
+      test("retains inner hole edges as part of the yard outline", async () => {
+        const points = block(2, 2, 7).filter(([x, y]) => x !== 5 || y !== 5);
+        const result = await findTileYards(tilesAt(4, points), () => {}, new AbortController().signal);
+        const yard = result.get(4)![0];
+        expect(yard.size).toBe(20);
+        expect(yard.outline).toHaveLength(32);
+        expect(yard.outline).toEqual(expect.arrayContaining([
+          [5, 4, 6, 4], [4, 5, 4, 6], [7, 5, 7, 6], [5, 7, 6, 7],
+        ]));
       });
     });
     const squares = (tiles: VisitedTiles) =>
