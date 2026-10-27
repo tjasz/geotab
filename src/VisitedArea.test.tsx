@@ -55,18 +55,18 @@ test("shows progress, stores analysis, and preserves zoom across panel remounts"
   expect(screen.getByRole("button")).toBeDisabled();
   const zoom = await screen.findByRole("combobox", { name: "Area zoom" });
   expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
-  expect(screen.getAllByRole("option")).toHaveLength(17);
+  expect(screen.getAllByRole("option")).toHaveLength(18);
   expect(within(screen.getByRole("list", { name: "Largest contiguous clusters" })).getAllByRole("listitem"))
     .toHaveLength(1);
   expect(screen.getByText("1 tile")).toBeInTheDocument();
   expect(screen.getByText("Tiles visited: 1 / 4 (25%)")).toBeInTheDocument();
-  fireEvent.change(zoom, { target: { value: "17" } });
-  expect(screen.getByText("Tiles visited: 1 / 17,179,869,184 (0.00000000582%)")).toBeInTheDocument();
+  fireEvent.change(zoom, { target: { value: "18" } });
+  expect(screen.getByText("Tiles visited: 1 / 68,719,476,736 (0.00000000146%)")).toBeInTheDocument();
   expect(screen.getByRole("switch", { name: "Show map overlay" })).toBeChecked();
   fireEvent.click(screen.getByRole("switch", { name: "Show map overlay" }));
   view.rerender(<PanelHarness show={false} />);
   view.rerender(<PanelHarness />);
-  expect(screen.getByRole("combobox")).toHaveValue("17");
+  expect(screen.getByRole("combobox")).toHaveValue("18");
   expect(screen.getByText("1 tile")).toBeInTheDocument();
   expect(screen.getByRole("switch", { name: "Show map overlay" })).not.toBeChecked();
 });
@@ -320,6 +320,24 @@ describe("map mask", () => {
         ["M", 0, 0.5], ["L", 256, 0.5],
         ["M", 0, 128.5], ["L", 256, 128.5],
       ],
+    });
+  });
+
+  test("aligns the grid and visited tile clearing at z=18", () => {
+    new VisitedAreaLayer({
+      ...area,
+      zoom: 18,
+      tiles: new Map([[18, new Map([[150000, new Map<number, true>([[100000, true]])]])]]),
+    }, map).createTile(Object.assign(L.point(150000, 100000), { z: 18 }));
+    expect(canvasContext.clearRect).toHaveBeenCalledTimes(1);
+    const cleared = canvasContext.clearRect.mock.calls[0];
+    expect(cleared[0]).toBeCloseTo(0);
+    expect(cleared[1]).toBeCloseTo(0);
+    expect(cleared[2]).toBeCloseTo(256);
+    expect(cleared[3]).toBeCloseTo(256);
+    expect(strokes[0]).toEqual({
+      color: "#000000ff", width: 1, dash: [],
+      path: [["M", 0.5, 0], ["L", 0.5, 256], ["M", 0, 0.5], ["L", 256, 0.5]],
     });
   });
 

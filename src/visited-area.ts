@@ -1,7 +1,7 @@
 import * as gj from "./geojson-types";
 import { douglasPeucker } from "./geojson-calc";
 
-const MAX_AREA_ZOOM = 17;
+const MAX_AREA_ZOOM = 18;
 export const AREA_ZOOMS = Array.from({ length: MAX_AREA_ZOOM }, (_, i) => i + 1);
 export const MAX_MERCATOR_LATITUDE = Math.atan(Math.sinh(Math.PI)) * 180 / Math.PI;
 export type VisitedTiles = Map<number, Map<number, Map<number, true>>>;

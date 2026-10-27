@@ -130,6 +130,7 @@ test("uses Web Mercator XYZ tiles with north-to-south Y and clamps world edges",
   expect(areaTile([0, 60], 2)).toEqual({ x: 2, y: 1 });
   expect(areaTile([0, -60], 2)).toEqual({ x: 2, y: 2 });
   expect(areaTile([180, -90], 17)).toEqual({ x: 131071, y: 131071 });
+  expect(areaTile([180, -90], 18)).toEqual({ x: 262143, y: 262143 });
   const bounds = areaTileBounds(2, 0, 2);
   expect(bounds.west).toBe(0);
   expect(bounds.east).toBe(90);
@@ -186,23 +187,39 @@ test("creates maps at every zoom, deduplicates points, and reports progress", as
     expect(yards.get(z)).toEqual([]);
     expect(rectangles.get(z)).toEqual([]);
   }
-  expect(progress.mock.calls.slice(0, 3)).toEqual([
+  expect(progress.mock.calls).toEqual([
     [{ phase: "features", completed: 0, total: 2 }],
     [{ phase: "features", completed: 1, total: 2 }],
     [{ phase: "features", completed: 2, total: 2 }],
+    ...(["clusters", "squares", "yards", "rectangles"] as const).flatMap((phase) =>
+      Array.from({ length: AREA_ZOOMS.length + 1 }, (_, completed) => [
+        { phase, completed, total: AREA_ZOOMS.length },
+      ]),
+    ),
   ]);
-  expect(progress.mock.calls.slice(3, 21)).toEqual(
-    Array.from({ length: 18 }, (_, completed) => [{ phase: "clusters", completed, total: 17 }]),
+});
+
+test("computes all statistics at z=18 using tile indices beyond the z=17 range", async () => {
+  const points = Array.from({ length: 3 }, (_, dx) =>
+    Array.from({ length: 4 }, (_, dy) => {
+      const bounds = areaTileBounds(150000 + dx, 100000 + dy, 18);
+      return [(bounds.west + bounds.east) / 2, (bounds.north + bounds.south) / 2];
+    }),
+  ).flat();
+  const result = await analyseVisitedArea(
+    [feature(GeometryType.MultiPoint, points)], () => {}, new AbortController().signal,
   );
-  expect(progress.mock.calls.slice(21, 39)).toEqual(
-    Array.from({ length: 18 }, (_, completed) => [{ phase: "squares", completed, total: 17 }]),
-  );
-  expect(progress.mock.calls.slice(39, 57)).toEqual(
-    Array.from({ length: 18 }, (_, completed) => [{ phase: "yards", completed, total: 17 }]),
-  );
-  expect(progress.mock.calls.slice(57)).toEqual(
-    Array.from({ length: 18 }, (_, completed) => [{ phase: "rectangles", completed, total: 17 }]),
-  );
+  expect(result.tiles.get(18)?.size).toBe(3);
+  expect(result.clusters.get(18)?.map((cluster) => cluster.size)).toEqual([12]);
+  expect(result.squares.get(18)?.map((square) => square.side)).toEqual([3]);
+  expect(result.rectangles.get(18)?.map(({ width, height }) => [width, height])).toEqual([[3, 4]]);
+  expect(result.yards.get(18)).toEqual([expect.objectContaining({
+    size: 2,
+    bounds: {
+      ...areaTileBounds(150001, 100001, 18),
+      south: areaTileBounds(150001, 100002, 18).south,
+    },
+  })]);
 });
 
 test.each([
@@ -261,29 +278,33 @@ test.each([1, -1])("visits every tile along north-south tracks near 85 degrees (
   const points = [[0, 84.999], [0, 85.001]];
   if (direction < 0) points.reverse();
   const tiles = await analyse([feature(GeometryType.LineString, points)]);
-  const first = areaTile(points[0], 17);
-  const last = areaTile(points[1], 17);
-  const rows = tiles.get(17)?.get(first.x);
-  for (let y = Math.min(first.y, last.y); y <= Math.max(first.y, last.y); y++) {
-    expect(rows?.has(y)).toBe(true);
+  for (const zoom of [17, 18]) {
+    const first = areaTile(points[0], zoom);
+    const last = areaTile(points[1], zoom);
+    const rows = tiles.get(zoom)?.get(first.x);
+    for (let y = Math.min(first.y, last.y); y <= Math.max(first.y, last.y); y++) {
+      expect(rows?.has(y)).toBe(true);
+    }
+    expect(rows?.size).toBe(Math.abs(first.y - last.y) + 1);
   }
-  expect(rows?.size).toBe(Math.abs(first.y - last.y) + 1);
 });
 
-test.each([false, true])("covers tiny diagonal corner crossings without gaps (reversed %p)", async (reversed) => {
+test.each<[number, boolean]>([[17, false], [17, true], [18, false], [18, true]])(
+  "covers tiny diagonal corner crossings at z=%p (reversed %p)", async (zoom, reversed) => {
   const coordinate = (x: number, y: number) => {
-    const point = L.CRS.EPSG3857.pointToLatLng(L.point(x * 256, y * 256), 17);
+    const point = L.CRS.EPSG3857.pointToLatLng(L.point(x * 256, y * 256), zoom);
     return [point.lng, point.lat];
   };
   const points = [coordinate(100.1, 100.1001), coordinate(102.9, 102.9001)];
   if (reversed) points.reverse();
   const tiles = await analyse([feature(GeometryType.LineString, points)]);
-  expect(tiles.get(17)).toEqual(new Map([
+  expect(tiles.get(zoom)).toEqual(new Map([
     [100, new Map([[100, true], [101, true]])],
     [101, new Map([[101, true], [102, true]])],
     [102, new Map([[102, true]])],
   ]));
-});
+  },
+);
 
 test("does not connect independent lines or polygon rings during sampling", async () => {
   const left = [[-0.02, 47], [-0.01, 47]];
@@ -305,16 +326,18 @@ test("does not connect independent lines or polygon rings during sampling", asyn
 test("samples repeated coordinates and world-edge segments without leaving the grid", async () => {
   const points = [[180, 90], [180, 90], [179.99, 90]];
   const tiles = await analyse([feature(GeometryType.LineString, points)]);
-  const first = areaTile(points[2], 17);
-  expect(tiles.get(17)?.size).toBe(131072 - first.x);
-  for (const rows of tiles.get(17)!.values()) {
-    expect([...rows.keys()]).toEqual([0]);
+  for (const zoom of [17, 18]) {
+    const first = areaTile(points[2], zoom);
+    expect(tiles.get(zoom)?.size).toBe(2 ** zoom - first.x);
+    for (const rows of tiles.get(zoom)!.values()) {
+      expect([...rows.keys()]).toEqual([0]);
+    }
   }
 });
 
 test("initializes empty results and supports cancellation", async () => {
   const tiles = await analyse([]);
-  expect(tiles.size).toBe(17);
+  expect(tiles.size).toBe(18);
   expect([...tiles.values()].every((columns) => columns.size === 0)).toBe(true);
   const controller = new AbortController();
   controller.abort();
