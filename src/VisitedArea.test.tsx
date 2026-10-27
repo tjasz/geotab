@@ -113,9 +113,9 @@ test("shows the top five non-overlapping squares with dimensions and counts for 
     .getAllByRole("link").map((link) => link.textContent))
     .toEqual(["6 x 6 (36 tiles)", "5 x 5 (25 tiles)", "4 x 4 (16 tiles)", "3 x 3 (9 tiles)", "2 x 2 (4 tiles)"]);
   fireEvent.change(zoom, { target: { value: "17" } });
-  expect(within(screen.getByRole("list", { name: "Largest non-overlapping squares" }))
-    .getAllByRole("link").map((link) => link.textContent))
-    .toEqual(Array(5).fill("1 x 1 (1 tile)"));
+  expect(screen.queryByRole("list", { name: "Largest non-overlapping squares" })).not.toBeInTheDocument();
+  expect(screen.getByText("No visited squares.")).toBeInTheDocument();
+  expect(screen.queryByRole("link", { name: "1 x 1 (1 tile)" })).not.toBeInTheDocument();
 });
 
 test("shows the five largest yards by interior tile count for the selected zoom", async () => {
@@ -146,10 +146,7 @@ test("counts all visited rows across columns for the selected zoom only", () => 
   const visitedArea: VisitedArea = {
     zoom: 2,
     yards: new Map([[1, []], [2, []]]),
-    squares: new Map([
-      [1, [{ side: 1, bounds: areaTileBounds(0, 0, 1) }]],
-      [2, [{ side: 1, bounds: areaTileBounds(0, 0, 2) }]],
-    ]),
+    squares: new Map([[1, []], [2, []]]),
     clusters: new Map([
       [1, [{ size: 1, bounds: areaTileBounds(0, 0, 1) }]],
       [2, [{
@@ -225,7 +222,7 @@ describe("map mask", () => {
   const area: VisitedArea = {
     zoom: 2,
     yards: new Map([[2, []], [17, []]]),
-    squares: new Map([[2, [{ side: 1, bounds: areaTileBounds(0, 1, 2) }]], [17, []]]),
+    squares: new Map([[2, []], [17, []]]),
     clusters: new Map([[2, [{ size: 1, bounds: areaTileBounds(0, 1, 2) }]], [17, []]]),
     tiles: new Map([
       [2, new Map([[0, new Map([[1, true]])]])],
@@ -300,13 +297,24 @@ describe("map mask", () => {
   });
 
   test("draws square outlines in opaque black with 3px width and a 6 6 dash array", () => {
-    new VisitedAreaLayer(area, map).createTile(Object.assign(L.point(0, 0), { z: 1 }));
+    new VisitedAreaLayer({
+      ...area,
+      squares: new Map([[2, [{
+        side: 2,
+        bounds: { ...areaTileBounds(0, 0, 2), east: 0, south: 0 },
+      }]]]),
+    }, map).createTile(Object.assign(L.point(0, 0), { z: 1 }));
     const squareStroke = strokes.find((stroke) => stroke.rectangle);
     expect(squareStroke).toMatchObject({ color: "#000000ff", width: 3, dash: [6, 6] });
     expect(squareStroke?.rectangle?.[0]).toBeCloseTo(0);
-    expect(squareStroke?.rectangle?.[1]).toBeCloseTo(128);
-    expect(squareStroke?.rectangle?.[2]).toBeCloseTo(128);
-    expect(squareStroke?.rectangle?.[3]).toBeCloseTo(128);
+    expect(squareStroke?.rectangle?.[1]).toBeCloseTo(0);
+    expect(squareStroke?.rectangle?.[2]).toBeCloseTo(256);
+    expect(squareStroke?.rectangle?.[3]).toBeCloseTo(256);
+  });
+
+  test("does not draw square outlines when no squares qualify", () => {
+    new VisitedAreaLayer(area, map).createTile(Object.assign(L.point(0, 0), { z: 1 }));
+    expect(strokes.filter((stroke) => stroke.rectangle)).toHaveLength(0);
   });
 
   test("draws actual concave yard edges in opaque black with 3px width and a 3 3 dash array", () => {
@@ -341,7 +349,9 @@ describe("map mask", () => {
     };
     new VisitedAreaLayer({
       ...area,
-      squares: new Map([[2, Array.from({ length: 6 }, () => ({ side: 1, bounds: areaTileBounds(0, 1, 2) }))]]),
+      squares: new Map([[2, Array.from({ length: 6 }, () => ({
+        side: 2, bounds: { ...areaTileBounds(0, 0, 2), east: 0, south: 0 },
+      }))]]),
       yards: new Map([[2, Array.from({ length: 6 }, () => yard)]]),
     }, map).createTile(Object.assign(L.point(0, 0), { z: 1 }));
     expect(strokes.filter((stroke) => stroke.rectangle)).toHaveLength(5);
@@ -367,7 +377,12 @@ describe("map mask", () => {
     view.rerender(
       <DataContext.Provider value={{
         ...context,
-        visitedArea: { ...area, squares: new Map([[2, []]]) },
+        visitedArea: {
+          ...area,
+          squares: new Map([[2, [{
+            side: 2, bounds: { ...areaTileBounds(0, 0, 2), east: 0, south: 0 },
+          }]]]),
+        },
       }}>
         <VisitedAreaOverlay />
       </DataContext.Provider>,
@@ -512,6 +527,6 @@ describe("map mask", () => {
     expect(screen.getByRole("combobox")).toHaveValue("17");
     fireEvent.change(screen.getByRole("combobox"), { target: { value: "2" } });
     expect(screen.getByText("Tiles visited: 1 / 16 (6.25%)")).toBeInTheDocument();
-    expect(screen.getByRole("list", { name: "Largest non-overlapping squares" })).toBeInTheDocument();
+    expect(screen.getByText("No visited squares.")).toBeInTheDocument();
   });
 });

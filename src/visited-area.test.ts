@@ -82,7 +82,7 @@ test("creates maps at every zoom, deduplicates points, and reports progress", as
     const { x, y } = areaTile([-122, 47], z);
     expect(tiles.get(z)).toEqual(new Map([[x, new Map([[y, true]])]]));
     expect(clusters.get(z)?.map((cluster) => cluster.size)).toEqual([1]);
-    expect(squares.get(z)).toEqual([{ side: 1, bounds: areaTileBounds(x, y, z) }]);
+    expect(squares.get(z)).toEqual([]);
     expect(yards.get(z)).toEqual([]);
   }
   expect(progress.mock.calls.slice(0, 3)).toEqual([
@@ -388,9 +388,13 @@ describe("contiguous tile clusters", () => {
 
     test("does not bridge missing rows, columns, diagonal gaps, or world edges", async () => {
       const points = [[0, 0], [1, 0], [0, 2], [1, 2], [3, 3], [131071, 131071]];
-      expect((await squares(tilesAt(17, points))).get(17)).toEqual(
-        [[0, 0], [0, 2], [1, 0], [1, 2], [3, 3]].map(([x, y]) => expectedSquare(x, y, 1, 17)),
-      );
+      expect((await squares(tilesAt(17, points))).get(17)).toEqual([]);
+    });
+
+    test("keeps a qualifying 2 x 2 square without filling the remaining rankings with single tiles", async () => {
+      const points = [...squarePoints(0, 0, 2), [4, 4], [6, 6]];
+      expect((await squares(tilesAt(4, points))).get(4))
+        .toEqual([expectedSquare(0, 0, 2, 4)]);
     });
 
     test("matches an exhaustive largest-first search on small grids with holes", async () => {
@@ -400,7 +404,7 @@ describe("contiguous tile clusters", () => {
         const expected: VisitedSquare[] = [];
         while (expected.length < 5 && remaining.size) {
           let best: { x: number; y: number; side: number } | undefined;
-          for (let side = 5; side >= 1 && !best; side--) {
+          for (let side = 5; side >= 2 && !best; side--) {
             for (let x = 0; x <= 5 - side && !best; x++) {
               for (let y = 0; y <= 5 - side && !best; y++) {
                 if (squarePoints(x, y, side).every(([px, py]) => remaining.has(`${px},${py}`))) {
@@ -409,7 +413,7 @@ describe("contiguous tile clusters", () => {
               }
             }
           }
-          if (!best) throw new Error("Exhaustive search failed to find a remaining tile.");
+          if (!best) break;
           expected.push(expectedSquare(best.x, best.y, best.side, 3));
           for (const [x, y] of squarePoints(best.x, best.y, best.side)) remaining.delete(`${x},${y}`);
         }

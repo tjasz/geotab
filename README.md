@@ -29,7 +29,9 @@ clusters connected horizontally or vertically (not diagonally). The panel lists
 the five largest clusters at the selected zoom, ranked by tile count.
 Click a cluster's tile count to fit the map to the full extent of that cluster.
 Analysis also finds up to five fully visited, non-overlapping tile squares at
-each zoom. Squares are selected largest-first, excluding the tiles in each
+each zoom. Only squares of at least 2 x 2 tiles qualify; 1 x 1 squares are
+excluded from the rankings, links, and outlines.
+Squares are selected largest-first, excluding the tiles in each
 selected square before finding the next. Equal-size ties are resolved by
 westernmost, then northernmost position. The panel shows dimensions and tile
 counts (for example, `6 x 6 (36 tiles)`); click an entry to fit the map to it.

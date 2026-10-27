@@ -362,7 +362,7 @@ export async function findTileSquares(
         previous = current;
         previousX = x;
       }
-      if (!largest) break;
+      if (!largest || largest.side < 2) break;
       selected.push(largest);
     }
     result.set(zoom, selected.map(({ x, y, side }) => ({
