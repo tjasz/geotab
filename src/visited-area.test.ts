@@ -1,4 +1,5 @@
-import { analyseVisitedArea, areaTile, areaTileBounds, AREA_ZOOMS } from "./visited-area";
+import L from "leaflet";
+import { analyseVisitedArea, areaTile, areaTileBounds, AREA_ZOOMS, MAX_MERCATOR_LATITUDE } from "./visited-area";
 import { Feature, FeatureType, Geometry, GeometryType } from "./geojson-types";
 
 const feature = (type: GeometryType, coordinates: Geometry["coordinates"]): Feature => ({
@@ -9,13 +10,46 @@ const feature = (type: GeometryType, coordinates: Geometry["coordinates"]): Feat
 const analyse = (features: Feature[]) =>
   analyseVisitedArea(features, () => {}, new AbortController().signal);
 
-test("uses equal latitude quadrants with north-to-south Y and clamps world edges", () => {
+test("uses Web Mercator XYZ tiles with north-to-south Y and clamps world edges", () => {
   expect(areaTile([-180, 90], 1)).toEqual({ x: 0, y: 0 });
   expect(areaTile([180, -90], 1)).toEqual({ x: 1, y: 1 });
   expect(areaTile([0, 0], 1)).toEqual({ x: 1, y: 1 });
-  expect(areaTile([0, 60], 2)).toEqual({ x: 2, y: 0 });
+  expect(areaTile([0, 60], 2)).toEqual({ x: 2, y: 1 });
+  expect(areaTile([0, -60], 2)).toEqual({ x: 2, y: 2 });
   expect(areaTile([180, -90], 17)).toEqual({ x: 131071, y: 131071 });
-  expect(areaTileBounds(2, 0, 2)).toEqual({ west: 0, east: 90, north: 90, south: 45 });
+  const bounds = areaTileBounds(2, 0, 2);
+  expect(bounds.west).toBe(0);
+  expect(bounds.east).toBe(90);
+  expect(bounds.north).toBeCloseTo(85.0511287798066, 10);
+  expect(bounds.south).toBeCloseTo(66.51326044311186, 10);
+});
+
+test("clamps polar coordinates to the Web Mercator limits at every zoom", () => {
+  for (const z of AREA_ZOOMS) {
+    for (const latitude of [MAX_MERCATOR_LATITUDE, 86, 90]) {
+      expect(areaTile([0, latitude], z).y).toBe(0);
+      expect(areaTile([0, -latitude], z).y).toBe(2 ** z - 1);
+    }
+    expect(areaTileBounds(0, 0, z).north).toBeCloseTo(MAX_MERCATOR_LATITUDE, 10);
+    expect(areaTileBounds(0, 2 ** z - 1, z).south).toBeCloseTo(-MAX_MERCATOR_LATITUDE, 10);
+  }
+});
+
+test("matches Leaflet's Web Mercator projection and tile bounds at every zoom", () => {
+  for (const z of AREA_ZOOMS) {
+    for (const [longitude, latitude] of [[-122, 47], [12, 80], [140, -70], [-170, -10]]) {
+      const pixels = L.CRS.EPSG3857.latLngToPoint(L.latLng(latitude, longitude), z);
+      const tile = areaTile([longitude, latitude], z);
+      expect(tile).toEqual({ x: Math.floor(pixels.x / 256), y: Math.floor(pixels.y / 256) });
+      const bounds = areaTileBounds(tile.x, tile.y, z);
+      const northwest = L.CRS.EPSG3857.latLngToPoint(L.latLng(bounds.north, bounds.west), z);
+      const southeast = L.CRS.EPSG3857.latLngToPoint(L.latLng(bounds.south, bounds.east), z);
+      expect(northwest.x / 256).toBeCloseTo(tile.x, 7);
+      expect(northwest.y / 256).toBeCloseTo(tile.y, 7);
+      expect(southeast.x / 256).toBeCloseTo(tile.x + 1, 7);
+      expect(southeast.y / 256).toBeCloseTo(tile.y + 1, 7);
+    }
+  }
 });
 
 test.each([[NaN, 0], [0, Infinity], [181, 0], [0, -91], []])(

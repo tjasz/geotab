@@ -21,9 +21,10 @@ Lines and polygon rings are simplified on a copy using Douglas-Peucker with a
 After analysis, select an **Area zoom** from 1 through 17. Each level quarters
 the grid, and the summary below the dropdown shows the visited tile count,
 the total `4**z` tiles, and the percentage visited at the selected zoom.
-The tiles partition
-the longitude/latitude grid spanning -180 to 180 longitude and -90 to 90 latitude
-(X increases eastward, Y southward). This is not the Web Mercator tile grid.
+The tiles use the standard Web Mercator XYZ grid, spanning -180 to 180 longitude
+and approximately -85.051129 to 85.051129 latitude (X increases eastward,
+Y southward). Latitude boundaries follow the Mercator projection, not equal
+latitude steps. Coordinates closer to the poles are clamped to this latitude range.
 Tiles containing simplified vertices are visited; segments between vertices
 and polygon interiors are not filled. Unvisited tiles are shaded `#00000080`.
 Results and the selected zoom remain in the data context while inspecting

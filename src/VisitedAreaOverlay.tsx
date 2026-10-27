@@ -23,7 +23,6 @@ export class VisitedAreaLayer extends L.GridLayer {
     const southeast = this.map.unproject(origin.add(size), coords.z);
     const columns = this.area.tiles.get(this.area.zoom);
 
-    // Analysis tiles use equal latitude steps, not Web Mercator tile boundaries.
     for (const [x, rows] of columns ?? []) {
       const column = areaTileBounds(x, 0, this.area.zoom);
       if (column.east <= northwest.lng || column.west >= southeast.lng) continue;

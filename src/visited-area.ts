@@ -2,6 +2,7 @@ import * as gj from "./geojson-types";
 import { douglasPeucker } from "./geojson-calc";
 
 export const AREA_ZOOMS = Array.from({ length: 17 }, (_, i) => i + 1);
+export const MAX_MERCATOR_LATITUDE = Math.atan(Math.sinh(Math.PI)) * 180 / Math.PI;
 export type VisitedTiles = Map<number, Map<number, Map<number, true>>>;
 export type VisitedArea = { tiles: VisitedTiles; zoom: number };
 
@@ -13,19 +14,23 @@ export function areaTile([longitude, latitude]: gj.Coordinate, zoom: number) {
     throw new Error("Area analysis requires coordinates within longitude -180 to 180 and latitude -90 to 90.");
   }
   const size = 2 ** zoom;
+  const clampedLatitude = Math.max(-MAX_MERCATOR_LATITUDE, Math.min(MAX_MERCATOR_LATITUDE, latitude));
+  const radians = clampedLatitude * Math.PI / 180;
+  const projectedY = (1 - Math.asinh(Math.tan(radians)) / Math.PI) / 2;
   return {
     x: Math.min(size - 1, Math.floor(((longitude + 180) / 360) * size)),
-    y: Math.min(size - 1, Math.floor(((90 - latitude) / 180) * size)),
+    y: Math.max(0, Math.min(size - 1, Math.floor(projectedY * size))),
   };
 }
 
 export function areaTileBounds(x: number, y: number, zoom: number) {
   const size = 2 ** zoom;
+  const latitude = (row: number) => Math.atan(Math.sinh(Math.PI * (1 - 2 * row / size))) * 180 / Math.PI;
   return {
     west: (x / size) * 360 - 180,
     east: ((x + 1) / size) * 360 - 180,
-    north: 90 - (y / size) * 180,
-    south: 90 - ((y + 1) / size) * 180,
+    north: latitude(y),
+    south: latitude(y + 1),
   };
 }
 
