@@ -84,80 +84,94 @@ export default function VisitedAreaPanel() {
             Tiles visited: {visitedTileCount.toLocaleString()} / {(4 ** visitedArea.zoom).toLocaleString()}
             {" "}({(100 * visitedTileCount / 4 ** visitedArea.zoom).toLocaleString(undefined, { maximumSignificantDigits: 3 })}%)
           </p>
-          <h3>Largest contiguous clusters</h3>
-          {clusters.length ? (
-            <ol aria-label="Largest contiguous clusters">
-              {clusters.slice(0, 5).map((cluster, index) => (
-                <li key={index}>
-                  <a
-                    href="#mapview"
-                    onClick={(event) => {
-                      event.preventDefault();
-                      setVisitedArea({ ...visitedArea, focusedArea: { bounds: cluster.bounds } });
-                    }}
-                  >
-                    {cluster.size.toLocaleString()} {cluster.size === 1 ? "tile" : "tiles"}
-                  </a>
-                </li>
-              ))}
-            </ol>
-          ) : <p>No visited clusters.</p>}
-          <h3>Largest non-overlapping squares</h3>
-          {squares.length ? (
-            <ol aria-label="Largest non-overlapping squares">
-              {squares.map((square, index) => (
-                <li key={index}>
-                  <a
-                    href="#mapview"
-                    onClick={(event) => {
-                      event.preventDefault();
-                      setVisitedArea({ ...visitedArea, focusedArea: { bounds: square.bounds } });
-                    }}
-                  >
-                    {square.side.toLocaleString()} x {square.side.toLocaleString()}
-                    {" "}({(square.side ** 2).toLocaleString()} {square.side === 1 ? "tile" : "tiles"})
-                  </a>
-                </li>
-              ))}
-            </ol>
-          ) : <p>No visited squares.</p>}
-          <h3>Largest non-overlapping rectangles</h3>
-          {rectangles.length ? (
-            <ol aria-label="Largest non-overlapping rectangles">
-              {rectangles.map((rectangle, index) => (
-                <li key={index}>
-                  <a
-                    href="#mapview"
-                    onClick={(event) => {
-                      event.preventDefault();
-                      setVisitedArea({ ...visitedArea, focusedArea: { bounds: rectangle.bounds } });
-                    }}
-                  >
-                    {rectangle.width.toLocaleString()} x {rectangle.height.toLocaleString()}
-                    {" "}({(rectangle.width * rectangle.height).toLocaleString()} tiles)
-                  </a>
-                </li>
-              ))}
-            </ol>
-          ) : <p>No visited rectangles.</p>}
-          <h3>Largest yards</h3>
-          {yards.length ? (
-            <ol aria-label="Largest yards">
-              {yards.slice(0, 5).map((yard, index) => (
-                <li key={index}>
-                  <a
-                    href="#mapview"
-                    onClick={(event) => {
-                      event.preventDefault();
-                      setVisitedArea({ ...visitedArea, focusedArea: { bounds: yard.bounds } });
-                    }}
-                  >
-                    {yard.size.toLocaleString()} {yard.size === 1 ? "tile" : "tiles"}
-                  </a>
-                </li>
-              ))}
-            </ol>
-          ) : <p>No visited yards.</p>}
+          <div
+            role="group"
+            aria-label="Visited area statistics"
+            style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", columnGap: 24 }}
+          >
+            <section aria-label="Largest contiguous clusters">
+              <h3>Largest contiguous clusters</h3>
+              {clusters.length ? (
+                <ol aria-label="Largest contiguous clusters">
+                  {clusters.slice(0, 5).map((cluster, index) => (
+                    <li key={index}>
+                      <a
+                        href="#mapview"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          setVisitedArea({ ...visitedArea, focusedArea: { bounds: cluster.bounds } });
+                        }}
+                      >
+                        {cluster.size.toLocaleString()} {cluster.size === 1 ? "tile" : "tiles"}
+                      </a>
+                    </li>
+                  ))}
+                </ol>
+              ) : <p>No visited clusters.</p>}
+            </section>
+            <section aria-label="Largest non-overlapping squares">
+              <h3>Largest non-overlapping squares</h3>
+              {squares.length ? (
+                <ol aria-label="Largest non-overlapping squares">
+                  {squares.map((square, index) => (
+                    <li key={index}>
+                      <a
+                        href="#mapview"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          setVisitedArea({ ...visitedArea, focusedArea: { bounds: square.bounds } });
+                        }}
+                      >
+                        {square.side.toLocaleString()} x {square.side.toLocaleString()}
+                        {" "}({(square.side ** 2).toLocaleString()} {square.side === 1 ? "tile" : "tiles"})
+                      </a>
+                    </li>
+                  ))}
+                </ol>
+              ) : <p>No visited squares.</p>}
+            </section>
+            <section aria-label="Largest yards">
+              <h3>Largest yards</h3>
+              {yards.length ? (
+                <ol aria-label="Largest yards">
+                  {yards.slice(0, 5).map((yard, index) => (
+                    <li key={index}>
+                      <a
+                        href="#mapview"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          setVisitedArea({ ...visitedArea, focusedArea: { bounds: yard.bounds } });
+                        }}
+                      >
+                        {yard.size.toLocaleString()} {yard.size === 1 ? "tile" : "tiles"}
+                      </a>
+                    </li>
+                  ))}
+                </ol>
+              ) : <p>No visited yards.</p>}
+            </section>
+            <section aria-label="Largest non-overlapping rectangles">
+              <h3>Largest non-overlapping rectangles</h3>
+              {rectangles.length ? (
+                <ol aria-label="Largest non-overlapping rectangles">
+                  {rectangles.map((rectangle, index) => (
+                    <li key={index}>
+                      <a
+                        href="#mapview"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          setVisitedArea({ ...visitedArea, focusedArea: { bounds: rectangle.bounds } });
+                        }}
+                      >
+                        {rectangle.width.toLocaleString()} x {rectangle.height.toLocaleString()}
+                        {" "}({(rectangle.width * rectangle.height).toLocaleString()} tiles)
+                      </a>
+                    </li>
+                  ))}
+                </ol>
+              ) : <p>No visited rectangles.</p>}
+            </section>
+          </div>
         </>
       ) : (
         <button type="button" disabled={progress !== undefined} onClick={analyse}>

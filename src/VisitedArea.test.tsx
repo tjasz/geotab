@@ -71,6 +71,25 @@ test("shows progress, stores analysis, and preserves zoom across panel remounts"
   expect(screen.getByRole("switch", { name: "Show map overlay" })).not.toBeChecked();
 });
 
+test("arranges statistics in a two-column grid with clusters and squares above yards and rectangles", async () => {
+  render(<PanelHarness />);
+  fireEvent.click(screen.getByRole("button", { name: "Analyse" }));
+  await screen.findByRole("combobox", { name: "Area zoom" });
+  const grid = screen.getByRole("group", { name: "Visited area statistics" });
+  const sections = within(grid).getAllByRole("region");
+  expect(sections.map((section) => within(section).getByRole("heading").textContent)).toEqual([
+    "Largest contiguous clusters",
+    "Largest non-overlapping squares",
+    "Largest yards",
+    "Largest non-overlapping rectangles",
+  ]);
+  expect(grid).toHaveStyle({ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))" });
+  expect(within(sections[0]).getByRole("link", { name: "1 tile" })).toBeInTheDocument();
+  expect(within(sections[1]).getByText("No visited squares.")).toBeInTheDocument();
+  expect(within(sections[2]).getByText("No visited yards.")).toBeInTheDocument();
+  expect(within(sections[3]).getByText("No visited rectangles.")).toBeInTheDocument();
+});
+
 test("shows only the five largest clusters and updates them for the selected zoom", async () => {
   const coordinates = [1, 6, 2, 5, 3, 7, 4].flatMap((size, row) =>
     Array.from({ length: size }, (_, x) => {

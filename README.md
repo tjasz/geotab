@@ -24,6 +24,8 @@ Point and multipoint locations are retained without connecting them.
 After analysis, select an **Area zoom** from 1 through 18. Each level quarters
 the grid, and the summary below the dropdown shows the visited tile count,
 the total `4**z` tiles, and the percentage visited at the selected zoom.
+Region statistics appear in a 2 x 2 grid: clusters and squares on the top row,
+yards and rectangles on the bottom row.
 After collecting tiles, analysis uses breadth-first search at each zoom to find
 clusters connected horizontally or vertically (not diagonally). The panel lists
 the five largest clusters at the selected zoom, ranked by tile count.
