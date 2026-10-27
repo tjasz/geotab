@@ -118,6 +118,30 @@ test("shows the top five non-overlapping squares with dimensions and counts for 
   expect(screen.queryByRole("link", { name: "1 x 1 (1 tile)" })).not.toBeInTheDocument();
 });
 
+test("shows the top five rectangles by area and updates them for the selected zoom", async () => {
+  const blocks = [[0, 8, 2], [10, 6, 3], [18, 5, 3], [25, 4, 2], [31, 3, 2], [36, 2, 1], [40, 1, 1]];
+  const coordinates = blocks.flatMap(([startX, width, height]) =>
+    Array.from({ length: width }, (_, dx) =>
+      Array.from({ length: height }, (_, dy) => {
+        const bounds = areaTileBounds(startX + dx, 2 + dy, 6);
+        return [(bounds.west + bounds.east) / 2, (bounds.north + bounds.south) / 2];
+      }),
+    ).flat(),
+  );
+  render(<PanelHarness features={[{
+    ...data[0], geometry: { type: GeometryType.MultiPoint, coordinates },
+  }]} />);
+  fireEvent.click(screen.getByRole("button"));
+  const zoom = await screen.findByRole("combobox");
+  fireEvent.change(zoom, { target: { value: "6" } });
+  expect(within(screen.getByRole("list", { name: "Largest non-overlapping rectangles" }))
+    .getAllByRole("link").map((link) => link.textContent))
+    .toEqual(["6 x 3 (18 tiles)", "8 x 2 (16 tiles)", "5 x 3 (15 tiles)", "4 x 2 (8 tiles)", "3 x 2 (6 tiles)"]);
+  fireEvent.change(zoom, { target: { value: "17" } });
+  expect(screen.queryByRole("list", { name: "Largest non-overlapping rectangles" })).not.toBeInTheDocument();
+  expect(screen.getByText("No visited rectangles.")).toBeInTheDocument();
+});
+
 test("shows the five largest yards by interior tile count for the selected zoom", async () => {
   const coordinates = [[0, 3], [4, 4], [9, 5], [15, 6], [22, 7], [30, 8], [39, 9]].flatMap(([startX, side]) =>
     Array.from({ length: side }, (_, dx) =>
@@ -145,6 +169,7 @@ test("shows the five largest yards by interior tile count for the selected zoom"
 test("counts all visited rows across columns for the selected zoom only", () => {
   const visitedArea: VisitedArea = {
     zoom: 2,
+    rectangles: new Map([[1, []], [2, []]]),
     yards: new Map([[1, []], [2, []]]),
     squares: new Map([[1, []], [2, []]]),
     clusters: new Map([
@@ -177,6 +202,7 @@ test("shows zero coverage for an empty analysis", async () => {
   expect(screen.getByText("No visited clusters.")).toBeInTheDocument();
   expect(screen.getByText("No visited squares.")).toBeInTheDocument();
   expect(screen.getByText("No visited yards.")).toBeInTheDocument();
+  expect(screen.getByText("No visited rectangles.")).toBeInTheDocument();
 });
 
 test("reports invalid data explicitly and allows retry", async () => {
@@ -221,6 +247,7 @@ describe("map mask", () => {
   const originalGetContext = Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype, "getContext")!;
   const area: VisitedArea = {
     zoom: 2,
+    rectangles: new Map([[2, []], [17, []]]),
     yards: new Map([[2, []], [17, []]]),
     squares: new Map([[2, []], [17, []]]),
     clusters: new Map([[2, [{ size: 1, bounds: areaTileBounds(0, 1, 2) }]], [17, []]]),
@@ -296,7 +323,7 @@ describe("map mask", () => {
     });
   });
 
-  test("draws square outlines in opaque black with 3px width and a 6 6 dash array", () => {
+  test("draws square outlines in opaque red with 3px width and a 6 6 dash array", () => {
     new VisitedAreaLayer({
       ...area,
       squares: new Map([[2, [{
@@ -305,19 +332,36 @@ describe("map mask", () => {
       }]]]),
     }, map).createTile(Object.assign(L.point(0, 0), { z: 1 }));
     const squareStroke = strokes.find((stroke) => stroke.rectangle);
-    expect(squareStroke).toMatchObject({ color: "#000000ff", width: 3, dash: [6, 6] });
+    expect(squareStroke).toMatchObject({ color: "#400000ff", width: 3, dash: [6, 6] });
     expect(squareStroke?.rectangle?.[0]).toBeCloseTo(0);
     expect(squareStroke?.rectangle?.[1]).toBeCloseTo(0);
     expect(squareStroke?.rectangle?.[2]).toBeCloseTo(256);
     expect(squareStroke?.rectangle?.[3]).toBeCloseTo(256);
   });
 
-  test("does not draw square outlines when no squares qualify", () => {
+  test("does not draw square or rectangle outlines when none qualify", () => {
     new VisitedAreaLayer(area, map).createTile(Object.assign(L.point(0, 0), { z: 1 }));
     expect(strokes.filter((stroke) => stroke.rectangle)).toHaveLength(0);
   });
 
-  test("draws actual concave yard edges in opaque black with 3px width and a 3 3 dash array", () => {
+  test("draws rectangle outlines in opaque blue with 3px width and a 6 6 dash array", () => {
+    new VisitedAreaLayer({
+      ...area,
+      rectangles: new Map([[2, [{
+        width: 3,
+        height: 1,
+        bounds: { ...areaTileBounds(0, 1, 2), east: areaTileBounds(2, 1, 2).east },
+      }]]]),
+    }, map).createTile(Object.assign(L.point(0, 0), { z: 1 }));
+    const rectangleStroke = strokes.find((stroke) => stroke.rectangle);
+    expect(rectangleStroke).toMatchObject({ color: "#000040ff", width: 3, dash: [6, 6] });
+    expect(rectangleStroke?.rectangle?.[0]).toBeCloseTo(0);
+    expect(rectangleStroke?.rectangle?.[1]).toBeCloseTo(128);
+    expect(rectangleStroke?.rectangle?.[2]).toBeCloseTo(384);
+    expect(rectangleStroke?.rectangle?.[3]).toBeCloseTo(128);
+  });
+
+  test("draws actual concave yard edges in opaque green with 3px width and a 3 3 dash array", () => {
     const yard: VisitedYard = {
       size: 3,
       bounds: {
@@ -335,7 +379,7 @@ describe("map mask", () => {
       ...area, zoom: 4, yards: new Map([[4, [yard]]]),
     }, map).createTile(Object.assign(L.point(0, 0), { z: 1 }));
     const yardStroke = strokes.find((stroke) => stroke.dash.join() === "3,3");
-    expect(yardStroke).toMatchObject({ color: "#000000ff", width: 3, dash: [3, 3] });
+    expect(yardStroke).toMatchObject({ color: "#004000ff", width: 3, dash: [3, 3] });
     expect(yardStroke?.path).toHaveLength(16);
     expect(yardStroke?.path).toEqual(expect.arrayContaining([
       ["M", 192, 192], ["L", 224, 192], ["M", 192, 192], ["L", 192, 224],
@@ -343,7 +387,7 @@ describe("map mask", () => {
     expect(yardStroke?.path).not.toContainEqual(["L", 224, 224]);
   });
 
-  test("only outlines the top five squares and yards", () => {
+  test("only outlines the top five rectangles, squares, and yards with their respective colors", () => {
     const yard: VisitedYard = {
       size: 1, bounds: areaTileBounds(0, 1, 2), outline: [[0, 1, 1, 1]],
     };
@@ -352,10 +396,16 @@ describe("map mask", () => {
       squares: new Map([[2, Array.from({ length: 6 }, () => ({
         side: 2, bounds: { ...areaTileBounds(0, 0, 2), east: 0, south: 0 },
       }))]]),
+      rectangles: new Map([[2, Array.from({ length: 6 }, () => ({
+        width: 2, height: 2, bounds: { ...areaTileBounds(0, 0, 2), east: 0, south: 0 },
+      }))]]),
       yards: new Map([[2, Array.from({ length: 6 }, () => yard)]]),
     }, map).createTile(Object.assign(L.point(0, 0), { z: 1 }));
-    expect(strokes.filter((stroke) => stroke.rectangle)).toHaveLength(5);
-    expect(strokes.find((stroke) => stroke.dash.join() === "3,3")?.path).toHaveLength(10);
+    expect(strokes.filter((stroke) => stroke.rectangle && stroke.color === "#400000ff")).toHaveLength(5);
+    expect(strokes.filter((stroke) => stroke.rectangle && stroke.color === "#000040ff")).toHaveLength(5);
+    expect(strokes.find((stroke) => stroke.color === "#004000ff")?.path).toHaveLength(10);
+    expect(strokes.filter((stroke) => stroke.rectangle).map((stroke) => stroke.color))
+      .toEqual([...Array(5).fill("#000040ff"), ...Array(5).fill("#400000ff")]);
   });
 
   test("renders subpixel-spaced 1px tile borders without iterating over invisible lines", () => {
@@ -367,7 +417,7 @@ describe("map mask", () => {
     expect(strokes.filter((stroke) => stroke.width === 1)).toHaveLength(0);
   });
 
-  test("refreshes outlines when analysis results change without changing tiles or zoom", () => {
+  test.each(["squares", "rectangles"] as const)("refreshes %s outlines when only those results change", (kind) => {
     const view = render(
       <DataContext.Provider value={{ ...context, visitedArea: area }}>
         <VisitedAreaOverlay />
@@ -379,9 +429,15 @@ describe("map mask", () => {
         ...context,
         visitedArea: {
           ...area,
-          squares: new Map([[2, [{
-            side: 2, bounds: { ...areaTileBounds(0, 0, 2), east: 0, south: 0 },
-          }]]]),
+          ...(kind === "squares" ? {
+            squares: new Map([[2, [{
+              side: 2, bounds: { ...areaTileBounds(0, 0, 2), east: 0, south: 0 },
+            }]]]),
+          } : {
+            rectangles: new Map([[2, [{
+              width: 2, height: 2, bounds: { ...areaTileBounds(0, 0, 2), east: 0, south: 0 },
+            }]]]),
+          }),
         },
       }}>
         <VisitedAreaOverlay />
@@ -466,6 +522,29 @@ describe("map mask", () => {
     fireEvent.change(screen.getByRole("combobox"), { target: { value: "17" } });
     expect(fitBounds).toHaveBeenCalledTimes(2);
     expect(screen.getByText("No visited yards.")).toBeInTheDocument();
+  });
+
+  test("rectangle links fit the full bounds even with the overlay hidden", () => {
+    const fitBounds = jest.spyOn(map, "fitBounds");
+    const rectangle = { width: 6, height: 3, bounds: { west: -122, east: -121, north: 48, south: 47 } };
+    render(<PanelHarness initialArea={{
+      ...area,
+      overlayVisible: false,
+      rectangles: new Map([[2, [rectangle]], [17, []]]),
+    }} withMap />);
+    const link = within(screen.getByRole("list", { name: "Largest non-overlapping rectangles" }))
+      .getByRole("link", { name: "6 x 3 (18 tiles)" });
+    expect(link).toHaveAttribute("href", "#mapview");
+    expect(fitBounds).not.toHaveBeenCalled();
+    fireEvent.click(link);
+    expect(fitBounds).toHaveBeenLastCalledWith([[47, -122], [48, -121]], { padding: [16, 16] });
+    expect(map.getBounds().contains([[47, -122], [48, -121]])).toBe(true);
+    fireEvent.click(link);
+    expect(fitBounds).toHaveBeenCalledTimes(2);
+    expect(screen.getByRole("switch", { name: "Show map overlay" })).not.toBeChecked();
+    fireEvent.change(screen.getByRole("combobox"), { target: { value: "17" } });
+    expect(fitBounds).toHaveBeenCalledTimes(2);
+    expect(screen.getByText("No visited rectangles.")).toBeInTheDocument();
   });
 
   test("updates the overlay on zoom changes, passes clicks through, and removes it on reset", () => {

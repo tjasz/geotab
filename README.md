@@ -35,6 +35,12 @@ Squares are selected largest-first, excluding the tiles in each
 selected square before finding the next. Equal-size ties are resolved by
 westernmost, then northernmost position. The panel shows dimensions and tile
 counts (for example, `6 x 6 (36 tiles)`); click an entry to fit the map to it.
+The panel also ranks up to five fully visited, non-overlapping **rectangles**
+at each zoom by tile area, using the same largest-first exclusion rule.
+Rectangles may be squares or one-tile-wide strips, but 1 x 1 tiles are excluded.
+Dimensions are shown as width x height with a tile count, and each entry links
+to its full map bounds. Equal-area ties prefer westernmost, then northernmost
+position, then greater width.
 Analysis also finds **yards**: four-connected groups of visited interior tiles
 whose four side-sharing neighbors are all visited. This removes one boundary
 layer before clustering; diagonal neighbors need not be visited. Buffer tiles
@@ -42,21 +48,24 @@ are excluded from the yard's count and bounds. For example, a fully visited
 6 x 6 block has a 4 x 4 yard of 16 tiles. The panel links to the five largest
 yards at the selected zoom. Thin paths and tiles on the world boundary cannot
 form a yard without all four neighbors.
-The progress indicator remains visible through clustering, square, and yard analysis.
+The progress indicator remains visible through clustering, square, yard, and rectangle analysis.
 The tiles use the standard Web Mercator XYZ grid, spanning -180 to 180 longitude
 and approximately -85.051129 to 85.051129 latitude (X increases eastward,
 Y southward). Latitude boundaries follow the Mercator projection, not equal
 latitude steps. Coordinates closer to the poles are clamped to this latitude range.
 Tiles containing simplified vertices or the added segment samples are visited;
 polygon interiors are not filled. Unvisited tiles are shaded `#00000080`.
-The overlay draws solid black 1px tile borders, 3px dashed (`6 6`) outlines
-around the five largest squares, and 3px dotted (`3 3`) outlines following
-the actual tile edges of the five largest yards, including holes and concavities.
-All borders use `#000000ff` and leave map interactions unobstructed.
+The overlay draws solid black (`#000000ff`) 1px tile borders. The five largest
+rectangles have blue (`#000040ff`) 3px dashed (`6 6`) outlines; the five largest
+squares have red (`#400000ff`) outlines with the same width and dash pattern.
+The five largest yards have green (`#004000ff`) 3px dotted (`3 3`) outlines
+following their actual tile edges, including holes and concavities.
+Squares and yards are drawn above rectangles where boundaries overlap.
+All borders leave map interactions unobstructed.
 Use **Show map overlay** in the panel to hide or restore the shading, grid,
 and outlines without clearing the results. The switch is on by default and
 its setting persists when changing analysis zoom or inspecting a feature;
-cluster, square, and yard links still navigate the map while the overlay is hidden.
+cluster, square, rectangle, and yard links still navigate the map while the overlay is hidden.
 Results and the selected zoom remain in the data context while inspecting
 features; changing the loaded data clears the analysis. Filtering does not
 change the analysis scope.

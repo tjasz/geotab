@@ -8,6 +8,7 @@ export type VisitedTiles = Map<number, Map<number, Map<number, true>>>;
 export type VisitedRegion = { bounds: ReturnType<typeof areaTileBounds> };
 export type VisitedCluster = VisitedRegion & { size: number };
 export type VisitedSquare = VisitedRegion & { side: number };
+export type VisitedRectangle = VisitedRegion & { width: number; height: number };
 export type TileEdge = [number, number, number, number];
 export type VisitedYard = VisitedCluster & { outline: TileEdge[] };
 export type VisitedAreaResults = {
@@ -15,9 +16,10 @@ export type VisitedAreaResults = {
   clusters: Map<number, VisitedCluster[]>;
   squares: Map<number, VisitedSquare[]>;
   yards: Map<number, VisitedYard[]>;
+  rectangles: Map<number, VisitedRectangle[]>;
 };
 export type VisitedArea = VisitedAreaResults & { zoom: number; focusedArea?: VisitedRegion; overlayVisible?: boolean };
-export type AnalysisProgress = { phase: "features" | "clusters" | "squares" | "yards"; completed: number; total: number };
+export type AnalysisProgress = { phase: "features" | "clusters" | "squares" | "yards" | "rectangles"; completed: number; total: number };
 
 function checkCancelled(signal: AbortSignal) {
   if (signal.aborted) throw new DOMException("Analysis cancelled", "AbortError");
@@ -73,6 +75,13 @@ function tileRectangleBounds(minX: number, minY: number, maxX: number, maxY: num
     west: northwest.west, north: northwest.north,
     east: southeast.east, south: southeast.south,
   };
+}
+
+function sortedTileColumns(columns: Map<number, Map<number, true>>) {
+  return [...columns].sort(([a], [b]) => a - b).map(([x, rows]) => ({
+    x,
+    ys: [...rows.keys()].sort((a, b) => a - b),
+  }));
 }
 
 function simplifiedGeometry(geometry: gj.Geometry): gj.Geometry;
@@ -195,7 +204,8 @@ export async function analyseVisitedArea(
   const clusters = await findTileClusters(tiles, onProgress, signal);
   const squares = await findTileSquares(tiles, onProgress, signal);
   const yards = await findTileYards(tiles, onProgress, signal);
-  return { tiles, clusters, squares, yards };
+  const rectangles = await findTileRectangles(tiles, onProgress, signal);
+  return { tiles, clusters, squares, yards, rectangles };
 }
 
 export function findTileClusters(
@@ -328,10 +338,7 @@ export async function findTileSquares(
   let lastYield = performance.now();
   for (const [zoom, columns] of tiles) {
     checkCancelled(signal);
-    const orderedColumns = [...columns].sort(([a], [b]) => a - b).map(([x, rows]) => ({
-      x,
-      ys: [...rows.keys()].sort((a, b) => a - b),
-    }));
+    const orderedColumns = sortedTileColumns(columns);
     const selected: { x: number; y: number; side: number }[] = [];
     while (selected.length < 5) {
       let largest: { x: number; y: number; side: number } | undefined;
@@ -368,6 +375,101 @@ export async function findTileSquares(
     result.set(zoom, selected.map(({ x, y, side }) => ({
       side,
       bounds: tileRectangleBounds(x, y, x + side - 1, y + side - 1, zoom),
+    })));
+    progress(result.size);
+  }
+  checkCancelled(signal);
+  return result;
+}
+
+export async function findTileRectangles(
+  tiles: VisitedTiles,
+  onProgress: (progress: AnalysisProgress) => void,
+  signal: AbortSignal,
+): Promise<Map<number, VisitedRectangle[]>> {
+  checkCancelled(signal);
+  const result = new Map<number, VisitedRectangle[]>();
+  const progress = (completed: number) => onProgress({ phase: "rectangles", completed, total: tiles.size });
+  progress(0);
+  await yieldToBrowser();
+  let lastYield = performance.now();
+  type TileRectangle = { x: number; y: number; width: number; height: number };
+  for (const [zoom, columns] of tiles) {
+    checkCancelled(signal);
+    const orderedColumns = sortedTileColumns(columns);
+    const selected: TileRectangle[] = [];
+    while (selected.length < 5) {
+      const best: { rectangle?: TileRectangle } = {};
+      let previous = new Map<number, number>();
+      let previousX = -2;
+      for (const { x, ys } of orderedColumns) {
+        if (x !== previousX + 1) previous = new Map();
+        const current = new Map<number, number>();
+        const stack: { startY: number; width: number }[] = [];
+        const consider = (startY: number, endY: number, width: number) => {
+          const height = endY - startY;
+          const area = width * height;
+          if (area < 2) return;
+          const left = x - width + 1;
+          const largest = best.rectangle;
+          const largestArea = largest ? largest.width * largest.height : 0;
+          if (
+            !largest || area > largestArea ||
+            (area === largestArea && (
+              left < largest.x ||
+              (left === largest.x && (
+                startY < largest.y || (startY === largest.y && width > largest.width)
+              ))
+            ))
+          ) {
+            best.rectangle = { x: left, y: startY, width, height };
+          }
+        };
+        const flush = (endY: number) => {
+          while (stack.length) {
+            const bar = stack[stack.length - 1];
+            stack.pop();
+            consider(bar.startY, endY, bar.width);
+          }
+        };
+        let lastY = -2;
+        for (const y of ys) {
+          const covered = selected.some((rectangle) =>
+            x >= rectangle.x && x < rectangle.x + rectangle.width &&
+            y >= rectangle.y && y < rectangle.y + rectangle.height,
+          );
+          if (!covered) {
+            if (y !== lastY + 1) flush(lastY + 1);
+            const width = (previous.get(y) ?? 0) + 1;
+            current.set(y, width);
+            let startY = y;
+            // A monotonic histogram finds the largest filled rectangle ending at this column.
+            while (stack.length && stack[stack.length - 1].width > width) {
+              const bar = stack[stack.length - 1];
+              stack.pop();
+              consider(bar.startY, y, bar.width);
+              startY = bar.startY;
+            }
+            if (!stack.length || stack[stack.length - 1].width < width) stack.push({ startY, width });
+            lastY = y;
+          }
+          if (performance.now() - lastYield >= 8) {
+            await yieldToBrowser();
+            checkCancelled(signal);
+            lastYield = performance.now();
+          }
+        }
+        flush(lastY + 1);
+        previous = current;
+        previousX = x;
+      }
+      if (!best.rectangle) break;
+      selected.push(best.rectangle);
+    }
+    result.set(zoom, selected.map(({ x, y, width, height }) => ({
+      width,
+      height,
+      bounds: tileRectangleBounds(x, y, x + width - 1, y + height - 1, zoom),
     })));
     progress(result.size);
   }

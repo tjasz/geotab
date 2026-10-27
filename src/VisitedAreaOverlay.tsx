@@ -5,7 +5,7 @@ import { DataContext } from "./dataContext";
 import { areaTileBounds, VisitedArea } from "./visited-area";
 
 export class VisitedAreaLayer extends L.GridLayer {
-  constructor(private area: Pick<VisitedArea, "tiles" | "zoom" | "squares" | "yards">, private map: L.Map) {
+  constructor(private area: Pick<VisitedArea, "tiles" | "zoom" | "squares" | "yards" | "rectangles">, private map: L.Map) {
     super({ pane: "overlayPane", zIndex: 300 });
   }
 
@@ -57,15 +57,24 @@ export class VisitedAreaLayer extends L.GridLayer {
       ctx.stroke();
     }
 
-    ctx.lineWidth = 3;
-    ctx.setLineDash([6, 6]);
-    for (const square of (this.area.squares.get(this.area.zoom) ?? []).slice(0, 5)) {
-      const { west, east, north, south } = square.bounds;
+    const strokeBounds = ({ west, east, north, south }: ReturnType<typeof areaTileBounds>) => {
       const topLeft = this.map.project([north, west], coords.z).subtract(origin);
       const bottomRight = this.map.project([south, east], coords.z).subtract(origin);
       ctx.strokeRect(topLeft.x, topLeft.y, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y);
+    };
+    ctx.lineWidth = 3;
+    ctx.setLineDash([6, 6]);
+    ctx.strokeStyle = "#000040ff";
+    for (const rectangle of (this.area.rectangles.get(this.area.zoom) ?? []).slice(0, 5)) {
+      strokeBounds(rectangle.bounds);
     }
 
+    ctx.strokeStyle = "#400000ff";
+    for (const square of (this.area.squares.get(this.area.zoom) ?? []).slice(0, 5)) {
+      strokeBounds(square.bounds);
+    }
+
+    ctx.strokeStyle = "#004000ff";
     ctx.setLineDash([3, 3]);
     ctx.beginPath();
     for (const yard of (this.area.yards.get(this.area.zoom) ?? []).slice(0, 5)) {
@@ -92,15 +101,16 @@ export default function VisitedAreaOverlay() {
   const focusedArea = visitedArea?.focusedArea;
   const squares = visitedArea?.squares;
   const yards = visitedArea?.yards;
+  const rectangles = visitedArea?.rectangles;
   const overlayVisible = visitedArea?.overlayVisible !== false;
 
   useEffect(() => {
-    if (!overlayVisible || !tiles || zoom === undefined || !squares || !yards) return;
-    const layer = new VisitedAreaLayer({ tiles, zoom, squares, yards }, map);
+    if (!overlayVisible || !tiles || zoom === undefined || !squares || !yards || !rectangles) return;
+    const layer = new VisitedAreaLayer({ tiles, zoom, squares, yards, rectangles }, map);
     layer.addTo(map);
     layer.getContainer()!.style.pointerEvents = "none";
     return () => { map.removeLayer(layer); };
-  }, [map, tiles, zoom, squares, yards, overlayVisible]);
+  }, [map, tiles, zoom, squares, yards, rectangles, overlayVisible]);
 
   useEffect(() => {
     if (!focusedArea) return;

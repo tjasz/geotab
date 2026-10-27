@@ -8,6 +8,7 @@ const PROGRESS_LABELS: Record<AnalysisProgress["phase"], string> = {
   clusters: "Finding clusters: ",
   squares: "Finding squares: ",
   yards: "Finding yards: ",
+  rectangles: "Finding rectangles: ",
 };
 
 export default function VisitedAreaPanel() {
@@ -20,6 +21,7 @@ export default function VisitedAreaPanel() {
   const clusters = visitedArea?.clusters.get(visitedArea.zoom) ?? [];
   const squares = visitedArea?.squares.get(visitedArea.zoom) ?? [];
   const yards = visitedArea?.yards.get(visitedArea.zoom) ?? [];
+  const rectangles = visitedArea?.rectangles.get(visitedArea.zoom) ?? [];
   const visitedTileCount = useMemo(() => {
     let count = 0;
     if (visitedArea) {
@@ -119,6 +121,25 @@ export default function VisitedAreaPanel() {
               ))}
             </ol>
           ) : <p>No visited squares.</p>}
+          <h3>Largest non-overlapping rectangles</h3>
+          {rectangles.length ? (
+            <ol aria-label="Largest non-overlapping rectangles">
+              {rectangles.map((rectangle, index) => (
+                <li key={index}>
+                  <a
+                    href="#mapview"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      setVisitedArea({ ...visitedArea, focusedArea: { bounds: rectangle.bounds } });
+                    }}
+                  >
+                    {rectangle.width.toLocaleString()} x {rectangle.height.toLocaleString()}
+                    {" "}({(rectangle.width * rectangle.height).toLocaleString()} tiles)
+                  </a>
+                </li>
+              ))}
+            </ol>
+          ) : <p>No visited rectangles.</p>}
           <h3>Largest yards</h3>
           {yards.length ? (
             <ol aria-label="Largest yards">
