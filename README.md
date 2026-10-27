@@ -11,6 +11,22 @@ It fills two key niches that are unsatisfied by existing solutions.
    For example, with a data set of mountain peaks, the size of the marker can be based on
    the peak's elevation, and its color based on the peak's prominence.
 
+## Visited areas
+
+When no detail feature is selected, open the bottom **Visited Areas** panel and
+click **Analyse**. A progress indicator tracks analysis of all loaded features.
+Lines and polygon rings are simplified on a copy using Douglas-Peucker with a
+30-meter tolerance; point and multipoint locations are retained.
+
+After analysis, select an **Area zoom** from 1 through 17. Each level quarters
+the longitude/latitude grid spanning -180 to 180 longitude and -90 to 90 latitude
+(X increases eastward, Y southward). This is not the Web Mercator tile grid.
+Tiles containing simplified vertices are visited; segments between vertices
+and polygon interiors are not filled. Unvisited tiles are shaded `#00000080`.
+Results and the selected zoom remain in the data context while inspecting
+features; changing the loaded data clears the analysis. Filtering does not
+change the analysis scope.
+
 ## Inspiration
 
 Although geotab fulfills unique needs that are not met by existing solutions,

@@ -33,6 +33,7 @@ import { SvgPatternRenderer } from "./PatternRenderer/SvgPatternRenderer"
 import DataCellValue from "./table/DataCellValue"
 import FormatPaintControl from "./symbology/FormatPaintControl"
 import MapboxRouteEditor from "./MapboxRouteEditor";
+import VisitedAreaOverlay from "./VisitedAreaOverlay";
 
 function EditControl({ position = "topleft" }) {
   const context = useContext(DataContext);
@@ -345,6 +346,7 @@ function MapView(props) {
         editable={true} // Make the map editable
       >
         <ChangeView />
+        <VisitedAreaOverlay />
         <ScaleControl position="bottomleft" />
         {context.detailFeature?.cursor &&
           <Marker position={{

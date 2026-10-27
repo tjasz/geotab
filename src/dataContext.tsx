@@ -3,6 +3,7 @@ import * as GeoJson from "./geojson-types";
 import { Column } from "./column";
 import { ConditionGroup } from "./filter";
 import { Symbology } from "./symbology/painter";
+import { VisitedArea } from "./visited-area";
 
 export type GeotabMetadata = {
   columns: Column[]; // TODO define column definition type
@@ -48,6 +49,8 @@ export type DataContextType = {
   columns: Column[];
   symbology: Symbology | null;
   detailFeature?: DetailFeature;
+  visitedArea?: VisitedArea;
+  setVisitedArea: { (visitedArea: VisitedArea | undefined): void };
   featureListeners: FeatureListenerTable;
   setData: { (updaterOrValue: UpdaterOrValue<GeoJson.Feature[]>): void };
   setFilter: { (newFilter: UpdaterOrValue<ConditionGroup | undefined>): void };

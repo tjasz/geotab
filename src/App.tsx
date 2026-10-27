@@ -24,6 +24,8 @@ import DataView from "./dataview";
 import MapView from "./mapview";
 import TableView from "./table/tableview";
 import ElevationProfile from "./ElevationProfile";
+import VisitedAreaPanel from "./VisitedAreaPanel";
+import { VisitedArea } from "./visited-area";
 
 interface IAppProps { }
 
@@ -51,6 +53,7 @@ class App extends React.Component<IAppProps, IState> {
       setColumns: this.setColumns.bind(this),
       setSymbology: this.setSymbology.bind(this),
       setDetailFeature: this.setDetailFeature.bind(this),
+      setVisitedArea: this.setVisitedArea.bind(this),
       setFeatureListener: this.setListener.bind(this),
       setFromJson: this.setFromJson.bind(this),
     };
@@ -65,6 +68,7 @@ class App extends React.Component<IAppProps, IState> {
     );
     this.setState({
       data: newData,
+      visitedArea: undefined,
       filteredData: newData?.filter((row) =>
         evaluateFilter(row, this.state?.filter),
       ),
@@ -96,6 +100,7 @@ class App extends React.Component<IAppProps, IState> {
     );
     this.setState({
       data: newData,
+      visitedArea: undefined,
       filter: newFilter,
       filteredData: newData?.filter((row) => evaluateFilter(row, newFilter)),
     });
@@ -121,6 +126,9 @@ class App extends React.Component<IAppProps, IState> {
     );
     this.setState({ detailFeature: newDetailFeature });
   }
+  setVisitedArea(visitedArea: VisitedArea | undefined) {
+    this.setState({ visitedArea });
+  }
   setListener(view: "table" | "map", id: string, f: FeatureListener) {
     if (this.state === null) return;
     this.state.featureListeners[view][id] = f;
@@ -134,6 +142,7 @@ class App extends React.Component<IAppProps, IState> {
         if (json.geotabMetadata !== undefined) {
           this.setState({
             data: flattened,
+            visitedArea: undefined,
             filter: json.geotabMetadata.filter,
             filteredData: flattened.filter((row) =>
               evaluateFilter(row, json.geotabMetadata!.filter),
@@ -145,6 +154,7 @@ class App extends React.Component<IAppProps, IState> {
         } else {
           this.setState({
             data: this.state ? this.state.data.concat(flattened) : flattened,
+            visitedArea: undefined,
             filteredData: flattened.filter((row) =>
               evaluateFilter(row, this.state?.filter),
             ),
@@ -160,6 +170,7 @@ class App extends React.Component<IAppProps, IState> {
           : flattened;
         this.setState({
           data: newData,
+          visitedArea: undefined,
           filteredData: newData.filter((row) =>
             evaluateFilter(row, this.state?.filter),
           ),
@@ -242,9 +253,11 @@ const AppBody: React.FC<{ detailFeature?: GeoJson.Feature }> = ({ detailFeature 
         rightPanelTitle="Table"
         rightPanelExpandedInitially={!!urlSrc}
         bottomPanel={
-          detailFeature && <ElevationProfile geometry={detailFeature.geometry} height={200} useResponsiveContainer />
+          detailFeature
+            ? <ElevationProfile geometry={detailFeature.geometry} height={200} useResponsiveContainer />
+            : <VisitedAreaPanel />
         }
-        bottomPanelTitle={`Elevation Profile - ${getFeatureName(detailFeature)}`}
+        bottomPanelTitle={detailFeature ? `Elevation Profile - ${getFeatureName(detailFeature)}` : "Visited Areas"}
       >
         <MapView style={{ width: "100%" }} />
       </PanelView>
