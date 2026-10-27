@@ -24,6 +24,11 @@ Point and multipoint locations are retained without connecting them.
 After analysis, select an **Area zoom** from 1 through 17. Each level quarters
 the grid, and the summary below the dropdown shows the visited tile count,
 the total `4**z` tiles, and the percentage visited at the selected zoom.
+After collecting tiles, analysis uses breadth-first search at each zoom to find
+clusters connected horizontally or vertically (not diagonally). The panel lists
+the five largest clusters at the selected zoom, ranked by tile count.
+Click a cluster's tile count to fit the map to the full extent of that cluster.
+The progress indicator remains visible through this clustering phase.
 The tiles use the standard Web Mercator XYZ grid, spanning -180 to 180 longitude
 and approximately -85.051129 to 85.051129 latitude (X increases eastward,
 Y southward). Latitude boundaries follow the Mercator projection, not equal

@@ -1,14 +1,15 @@
 import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { DataContext } from "./dataContext";
-import { analyseVisitedArea, AREA_ZOOMS } from "./visited-area";
+import { analyseVisitedArea, AnalysisProgress, AREA_ZOOMS } from "./visited-area";
 
 export default function VisitedAreaPanel() {
   const context = useContext(DataContext);
-  const [completed, setCompleted] = useState<number>();
+  const [progress, setProgress] = useState<AnalysisProgress>();
   const [error, setError] = useState<string>();
   const controller = useRef<AbortController>();
   const data = context?.data;
   const visitedArea = context?.visitedArea;
+  const clusters = visitedArea?.clusters.get(visitedArea.zoom) ?? [];
   const visitedTileCount = useMemo(() => {
     let count = 0;
     if (visitedArea) {
@@ -20,7 +21,7 @@ export default function VisitedAreaPanel() {
   }, [visitedArea]);
 
   useEffect(() => {
-    setCompleted(undefined);
+    setProgress(undefined);
     setError(undefined);
     return () => controller.current?.abort();
   }, [data]);
@@ -31,16 +32,16 @@ export default function VisitedAreaPanel() {
     const run = new AbortController();
     controller.current = run;
     setError(undefined);
-    setCompleted(0);
+    setProgress({ phase: "features", completed: 0, total: context.data.length });
     try {
-      const tiles = await analyseVisitedArea(context.data, setCompleted, run.signal);
-      if (!run.signal.aborted) setVisitedArea({ tiles, zoom: 1 });
+      const results = await analyseVisitedArea(context.data, setProgress, run.signal);
+      if (!run.signal.aborted) setVisitedArea({ ...results, zoom: 1 });
     } catch (reason) {
       if (!run.signal.aborted) {
         setError(reason instanceof Error ? reason.message : String(reason));
       }
     } finally {
-      if (!run.signal.aborted) setCompleted(undefined);
+      if (!run.signal.aborted) setProgress(undefined);
     }
   };
 
@@ -52,7 +53,7 @@ export default function VisitedAreaPanel() {
             Area zoom{" "}
             <select
               value={visitedArea.zoom}
-              onChange={(event) => setVisitedArea({ ...visitedArea, zoom: Number(event.target.value) })}
+              onChange={(event) => setVisitedArea({ ...visitedArea, zoom: Number(event.target.value), focusedCluster: undefined })}
             >
               {AREA_ZOOMS.map((z) => <option key={z} value={z}>{z}</option>)}
             </select>
@@ -61,16 +62,35 @@ export default function VisitedAreaPanel() {
             Tiles visited: {visitedTileCount.toLocaleString()} / {(4 ** visitedArea.zoom).toLocaleString()}
             {" "}({(100 * visitedTileCount / 4 ** visitedArea.zoom).toLocaleString(undefined, { maximumSignificantDigits: 3 })}%)
           </p>
+          <h3>Largest contiguous clusters</h3>
+          {clusters.length ? (
+            <ol aria-label="Largest contiguous clusters">
+              {clusters.slice(0, 5).map((cluster, index) => (
+                <li key={index}>
+                  <a
+                    href="#mapview"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      setVisitedArea({ ...visitedArea, focusedCluster: { ...cluster } });
+                    }}
+                  >
+                    {cluster.size.toLocaleString()} {cluster.size === 1 ? "tile" : "tiles"}
+                  </a>
+                </li>
+              ))}
+            </ol>
+          ) : <p>No visited clusters.</p>}
         </>
       ) : (
-        <button type="button" disabled={completed !== undefined} onClick={analyse}>
+        <button type="button" disabled={progress !== undefined} onClick={analyse}>
           Analyse
         </button>
       )}
-      {completed !== undefined && (
+      {progress && (
         <div role="status">
-          <progress aria-label="Area analysis progress" value={completed} max={Math.max(1, context.data.length)} />
-          {" "}{completed} / {context.data.length} features
+          <progress aria-label="Area analysis progress" value={progress.completed} max={Math.max(1, progress.total)} />
+          {" "}{progress.phase === "clusters" ? "Finding clusters: " : ""}
+          {progress.completed} / {progress.total} {progress.phase === "clusters" ? "zoom levels" : "features"}
         </div>
       )}
       {error && <p role="alert">{error}</p>}

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import L from "leaflet";
 import { useMap } from "react-leaflet";
 import { DataContext, DataContextType } from "./dataContext";
@@ -33,11 +33,17 @@ const context: NonNullable<DataContextType> = {
   setVisitedArea: jest.fn(),
 };
 
-function PanelHarness({ features = data, show = true }: { features?: Feature[]; show?: boolean }) {
-  const [visitedArea, setVisitedArea] = useState<VisitedArea>();
+function PanelHarness({ features = data, show = true, initialArea, withMap = false }: {
+  features?: Feature[];
+  show?: boolean;
+  initialArea?: VisitedArea;
+  withMap?: boolean;
+}) {
+  const [visitedArea, setVisitedArea] = useState<VisitedArea | undefined>(initialArea);
   return (
     <DataContext.Provider value={{ ...context, data: features, visitedArea, setVisitedArea }}>
       {show && <VisitedAreaPanel />}
+      {withMap && <VisitedAreaOverlay />}
     </DataContext.Provider>
   );
 }
@@ -50,17 +56,50 @@ test("shows progress, stores analysis, and preserves zoom across panel remounts"
   const zoom = await screen.findByRole("combobox", { name: "Area zoom" });
   expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
   expect(screen.getAllByRole("option")).toHaveLength(17);
+  expect(within(screen.getByRole("list", { name: "Largest contiguous clusters" })).getAllByRole("listitem"))
+    .toHaveLength(1);
+  expect(screen.getByText("1 tile")).toBeInTheDocument();
   expect(screen.getByText("Tiles visited: 1 / 4 (25%)")).toBeInTheDocument();
   fireEvent.change(zoom, { target: { value: "17" } });
   expect(screen.getByText("Tiles visited: 1 / 17,179,869,184 (0.00000000582%)")).toBeInTheDocument();
   view.rerender(<PanelHarness show={false} />);
   view.rerender(<PanelHarness />);
   expect(screen.getByRole("combobox")).toHaveValue("17");
+  expect(screen.getByText("1 tile")).toBeInTheDocument();
+});
+
+test("shows only the five largest clusters and updates them for the selected zoom", async () => {
+  const coordinates = [1, 6, 2, 5, 3, 7, 4].flatMap((size, row) =>
+    Array.from({ length: size }, (_, x) => {
+      const bounds = areaTileBounds(x, row * 2, 5);
+      return [(bounds.west + bounds.east) / 2, (bounds.north + bounds.south) / 2];
+    }),
+  );
+  render(<PanelHarness features={[{
+    ...data[0],
+    geometry: { type: GeometryType.MultiPoint, coordinates },
+  }]} />);
+  fireEvent.click(screen.getByRole("button"));
+  const zoom = await screen.findByRole("combobox");
+  fireEvent.change(zoom, { target: { value: "5" } });
+  const list = screen.getByRole("list", { name: "Largest contiguous clusters" });
+  expect(within(list).getAllByRole("listitem").map((item) => item.textContent))
+    .toEqual(["7 tiles", "6 tiles", "5 tiles", "4 tiles", "3 tiles"]);
+  fireEvent.change(zoom, { target: { value: "17" } });
+  expect(within(screen.getByRole("list")).getAllByRole("listitem").map((item) => item.textContent))
+    .toEqual(["1 tile", "1 tile", "1 tile", "1 tile", "1 tile"]);
 });
 
 test("counts all visited rows across columns for the selected zoom only", () => {
   const visitedArea: VisitedArea = {
     zoom: 2,
+    clusters: new Map([
+      [1, [{ size: 1, bounds: areaTileBounds(0, 0, 1) }]],
+      [2, [{
+        size: 3,
+        bounds: { ...areaTileBounds(0, 0, 2), east: areaTileBounds(1, 0, 2).east, south: 0 },
+      }]],
+    ]),
     tiles: new Map([
       [1, new Map([[0, new Map([[0, true]])]])],
       [2, new Map([
@@ -81,6 +120,7 @@ test("shows zero coverage for an empty analysis", async () => {
   render(<PanelHarness features={[]} />);
   fireEvent.click(screen.getByRole("button", { name: "Analyse" }));
   expect(await screen.findByText("Tiles visited: 0 / 4 (0%)")).toBeInTheDocument();
+  expect(screen.getByText("No visited clusters.")).toBeInTheDocument();
 });
 
 test("reports invalid data explicitly and allows retry", async () => {
@@ -119,6 +159,7 @@ describe("map mask", () => {
   const originalGetContext = Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype, "getContext")!;
   const area: VisitedArea = {
     zoom: 2,
+    clusters: new Map([[2, [{ size: 1, bounds: areaTileBounds(0, 1, 2) }]], [17, []]]),
     tiles: new Map([
       [2, new Map([[0, new Map([[1, true]])]])],
       [17, new Map()],
@@ -126,7 +167,12 @@ describe("map mask", () => {
   };
 
   beforeEach(() => {
-    map = L.map(document.createElement("div")).setView([0, 0], 1);
+    const container = document.createElement("div");
+    Object.defineProperties(container, {
+      clientWidth: { value: 1024 },
+      clientHeight: { value: 768 },
+    });
+    map = L.map(container).setView([0, 0], 1);
     jest.mocked(useMap).mockReturnValue(map);
     canvasContext.fillRect.mockClear();
     canvasContext.clearRect.mockClear();
@@ -157,6 +203,34 @@ describe("map mask", () => {
     canvasContext.clearRect.mockClear();
     layer.createTile(Object.assign(L.point(1, 1), { z: 1 }));
     expect(canvasContext.clearRect).not.toHaveBeenCalled();
+  });
+
+  test("cluster links fit the correct bounds, can be clicked repeatedly, and preserve the overlay", () => {
+    const fitBounds = jest.spyOn(map, "fitBounds");
+    const first = { size: 3, bounds: { west: -122, east: -121, north: 48, south: 47 } };
+    const second = { size: 1, bounds: areaTileBounds(0, 1, 2) };
+    render(<PanelHarness initialArea={{
+      ...area,
+      clusters: new Map([[2, [first, second]], [17, []]]),
+    }} withMap />);
+    const layers: L.Layer[] = [];
+    map.eachLayer((layer) => layers.push(layer));
+    expect(fitBounds).not.toHaveBeenCalled();
+    const link = screen.getByRole("link", { name: "3 tiles" });
+    expect(link).toHaveAttribute("href", "#mapview");
+    fireEvent.click(link);
+    expect(fitBounds).toHaveBeenLastCalledWith([[47, -122], [48, -121]], { padding: [16, 16] });
+    expect(map.getBounds().contains([[47, -122], [48, -121]])).toBe(true);
+    expect(map.hasLayer(layers[0])).toBe(true);
+    fireEvent.click(link);
+    expect(fitBounds).toHaveBeenCalledTimes(2);
+    fireEvent.click(screen.getByRole("link", { name: "1 tile" }));
+    expect(fitBounds).toHaveBeenCalledTimes(3);
+    expect(fitBounds).toHaveBeenLastCalledWith([
+      [second.bounds.south, second.bounds.west], [second.bounds.north, second.bounds.east],
+    ], { padding: [16, 16] });
+    fireEvent.change(screen.getByRole("combobox"), { target: { value: "17" } });
+    expect(fitBounds).toHaveBeenCalledTimes(3);
   });
 
   test("updates the overlay on zoom changes, passes clicks through, and removes it on reset", () => {

@@ -1,5 +1,5 @@
 import L from "leaflet";
-import { analyseVisitedArea, areaTile, areaTileBounds, AREA_ZOOMS, MAX_MERCATOR_LATITUDE } from "./visited-area";
+import { analyseVisitedArea, areaTile, areaTileBounds, AREA_ZOOMS, findTileClusters, MAX_MERCATOR_LATITUDE, VisitedTiles } from "./visited-area";
 import { Feature, FeatureType, Geometry, GeometryType } from "./geojson-types";
 
 const feature = (type: GeometryType, coordinates: Geometry["coordinates"]): Feature => ({
@@ -8,7 +8,7 @@ const feature = (type: GeometryType, coordinates: Geometry["coordinates"]): Feat
   geometry: { type, coordinates } as Geometry,
 });
 const analyse = (features: Feature[]) =>
-  analyseVisitedArea(features, () => {}, new AbortController().signal);
+  analyseVisitedArea(features, () => {}, new AbortController().signal).then((result) => result.tiles);
 
 test("uses Web Mercator XYZ tiles with north-to-south Y and clamps world edges", () => {
   expect(areaTile([-180, 90], 1)).toEqual({ x: 0, y: 0 });
@@ -59,7 +59,7 @@ test.each([[NaN, 0], [0, Infinity], [181, 0], [0, -91], []])(
 
 test("creates maps at every zoom, deduplicates points, and reports progress", async () => {
   const progress = jest.fn();
-  const tiles = await analyseVisitedArea(
+  const { tiles, clusters } = await analyseVisitedArea(
     [feature(GeometryType.Point, [-122, 47]), feature(GeometryType.Point, [-122, 47])],
     progress,
     new AbortController().signal,
@@ -68,8 +68,16 @@ test("creates maps at every zoom, deduplicates points, and reports progress", as
   for (const z of AREA_ZOOMS) {
     const { x, y } = areaTile([-122, 47], z);
     expect(tiles.get(z)).toEqual(new Map([[x, new Map([[y, true]])]]));
+    expect(clusters.get(z)?.map((cluster) => cluster.size)).toEqual([1]);
   }
-  expect(progress.mock.calls).toEqual([[0], [1], [2]]);
+  expect(progress.mock.calls.slice(0, 3)).toEqual([
+    [{ phase: "features", completed: 0, total: 2 }],
+    [{ phase: "features", completed: 1, total: 2 }],
+    [{ phase: "features", completed: 2, total: 2 }],
+  ]);
+  expect(progress.mock.calls.slice(3)).toEqual(
+    Array.from({ length: 18 }, (_, completed) => [{ phase: "clusters", completed, total: 17 }]),
+  );
 });
 
 test.each([
@@ -187,4 +195,94 @@ test("initializes empty results and supports cancellation", async () => {
   controller.abort();
   await expect(analyseVisitedArea([feature(GeometryType.Point, [0, 0])], () => {}, controller.signal))
     .rejects.toMatchObject({ name: "AbortError" });
+});
+
+describe("contiguous tile clusters", () => {
+  const tilesAt = (zoom: number, points: number[][]): VisitedTiles => {
+    const columns = new Map<number, Map<number, true>>();
+    for (const [x, y] of points) {
+      let rows = columns.get(x);
+      if (!rows) {
+        rows = new Map();
+        columns.set(x, rows);
+      }
+      rows.set(y, true);
+    }
+    return new Map([[zoom, columns]]);
+  };
+  const clusters = async (tiles: VisitedTiles) => {
+    const result = await findTileClusters(tiles, () => {}, new AbortController().signal);
+    return new Map([...result].map(([zoom, entries]) => [zoom, entries.map((cluster) => cluster.size)]));
+  };
+
+  test("BFS joins horizontal and vertical neighbors, excludes diagonals, and counts cycles once", async () => {
+    const points = [[0, 0], [1, 0], [0, 1], [1, 1], [2, 1], [3, 2], [4, 2], [7, 7]];
+    const tiles = tilesAt(3, points);
+    expect(await clusters(tiles)).toEqual(new Map([[3, [5, 2, 1]]]));
+    for (const [x, y] of points) {
+      expect(tiles.get(3)?.get(x)?.get(y)).toBe(true);
+    }
+  });
+
+  test("finds every cluster and sorts by numeric size descending", async () => {
+    const sizes = [1, 6, 2, 5, 3, 7, 4];
+    const points = sizes.flatMap((size, row) =>
+      Array.from({ length: size }, (_, x) => [x, row * 2]),
+    );
+    expect(await clusters(tilesAt(5, points))).toEqual(new Map([[5, [7, 6, 5, 4, 3, 2, 1]]]));
+  });
+
+  test("keeps zoom levels separate and does not wrap across world boundaries", async () => {
+    const tiles = new Map([
+      ...tilesAt(1, [[0, 0], [1, 0], [0, 1], [1, 1]]),
+      ...tilesAt(17, [[0, 0], [131071, 0], [0, 131071], [131071, 131071]]),
+    ]);
+    expect(await clusters(tiles)).toEqual(new Map([[1, [4]], [17, [1, 1, 1, 1]]]));
+  });
+
+  test("returns empty cluster lists for empty zoom levels", async () => {
+    const { clusters } = await analyseVisitedArea([], () => {}, new AbortController().signal);
+    expect([...clusters.keys()]).toEqual(AREA_ZOOMS);
+    expect([...clusters.values()].every((entries) => entries.length === 0)).toBe(true);
+  });
+
+  test("stores cluster results as part of feature analysis", async () => {
+    const coordinates = [[100, 100], [101, 100], [101, 101], [110, 110]].map(([x, y]) => {
+      const bounds = areaTileBounds(x, y, 17);
+      return [(bounds.west + bounds.east) / 2, (bounds.north + bounds.south) / 2];
+    });
+    const { clusters } = await analyseVisitedArea(
+      [feature(GeometryType.MultiPoint, coordinates)], () => {}, new AbortController().signal,
+    );
+    expect(clusters.get(17)?.map((cluster) => cluster.size)).toEqual([3, 1]);
+    expect(clusters.get(1)?.map((cluster) => cluster.size)).toEqual([1]);
+  });
+
+  test("retains the full tile extents with the correct clusters after sorting", async () => {
+    const result = await findTileClusters(
+      tilesAt(2, [[0, 0], [1, 1], [2, 1], [1, 2], [2, 2]]),
+      () => {},
+      new AbortController().signal,
+    );
+    expect(result.get(2)).toEqual([
+      {
+        size: 4,
+        bounds: {
+          west: -90, east: 90,
+          north: areaTileBounds(1, 1, 2).north,
+          south: areaTileBounds(2, 2, 2).south,
+        },
+      },
+      { size: 1, bounds: areaTileBounds(0, 0, 2) },
+    ]);
+  });
+
+  test("supports cancellation during the clustering phase", async () => {
+    const controller = new AbortController();
+    const progress = jest.fn(() => controller.abort());
+    await expect(findTileClusters(tilesAt(3, [[0, 0]]), progress, controller.signal))
+      .rejects.toMatchObject({ name: "AbortError" });
+    expect(progress).toHaveBeenCalledTimes(1);
+    expect(progress).toHaveBeenCalledWith({ phase: "clusters", completed: 0, total: 1 });
+  });
 });

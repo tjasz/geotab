@@ -5,7 +5,16 @@ const MAX_AREA_ZOOM = 17;
 export const AREA_ZOOMS = Array.from({ length: MAX_AREA_ZOOM }, (_, i) => i + 1);
 export const MAX_MERCATOR_LATITUDE = Math.atan(Math.sinh(Math.PI)) * 180 / Math.PI;
 export type VisitedTiles = Map<number, Map<number, Map<number, true>>>;
-export type VisitedArea = { tiles: VisitedTiles; zoom: number };
+export type VisitedCluster = { size: number; bounds: ReturnType<typeof areaTileBounds> };
+export type VisitedAreaResults = { tiles: VisitedTiles; clusters: Map<number, VisitedCluster[]> };
+export type VisitedArea = VisitedAreaResults & { zoom: number; focusedCluster?: VisitedCluster };
+export type AnalysisProgress = { phase: "features" | "clusters"; completed: number; total: number };
+
+function checkCancelled(signal: AbortSignal) {
+  if (signal.aborted) throw new DOMException("Analysis cancelled", "AbortError");
+}
+
+const yieldToBrowser = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
 
 type ProjectedPoint = { x: number; y: number };
 
@@ -132,19 +141,16 @@ function* geometryPoints(geometry: gj.Geometry | gj.GeometryCollection): Generat
 
 export async function analyseVisitedArea(
   features: gj.Feature[],
-  onProgress: (completed: number) => void,
+  onProgress: (progress: AnalysisProgress) => void,
   signal: AbortSignal,
-): Promise<VisitedTiles> {
+): Promise<VisitedAreaResults> {
   const tiles: VisitedTiles = new Map(AREA_ZOOMS.map((z) => [z, new Map()]));
-  const checkCancelled = () => {
-    if (signal.aborted) throw new DOMException("Analysis cancelled", "AbortError");
-  };
-  const yieldToBrowser = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
-  onProgress(0);
+  checkCancelled(signal);
+  onProgress({ phase: "features", completed: 0, total: features.length });
   await yieldToBrowser();
   let lastYield = performance.now();
   for (let i = 0; i < features.length; i++) {
-    checkCancelled();
+    checkCancelled(signal);
     const feature = { ...features[i], geometry: simplifiedGeometry(features[i].geometry) };
     for (const point of geometryPoints(feature.geometry)) {
       for (const [z, columns] of tiles) {
@@ -158,16 +164,84 @@ export async function analyseVisitedArea(
       }
       if (performance.now() - lastYield >= 8) {
         await yieldToBrowser();
-        checkCancelled();
+        checkCancelled(signal);
         lastYield = performance.now();
       }
     }
-    onProgress(i + 1);
+    onProgress({ phase: "features", completed: i + 1, total: features.length });
     if (performance.now() - lastYield >= 8) {
       await yieldToBrowser();
       lastYield = performance.now();
     }
   }
-  checkCancelled();
-  return tiles;
+  const clusters = await findTileClusters(tiles, onProgress, signal);
+  return { tiles, clusters };
+}
+
+export async function findTileClusters(
+  tiles: VisitedTiles,
+  onProgress: (progress: AnalysisProgress) => void,
+  signal: AbortSignal,
+): Promise<Map<number, VisitedCluster[]>> {
+  checkCancelled(signal);
+  const result = new Map<number, VisitedCluster[]>();
+  const progress = (completed: number) => onProgress({ phase: "clusters", completed, total: tiles.size });
+  progress(0);
+  await yieldToBrowser();
+  let lastYield = performance.now();
+  for (const [zoom, columns] of tiles) {
+    checkCancelled(signal);
+    const size = 2 ** zoom;
+    const seen = new Set<number>();
+    const clusters: VisitedCluster[] = [];
+    for (const [x, rows] of columns) {
+      for (const y of rows.keys()) {
+        const key = x * size + y;
+        if (seen.has(key)) continue;
+        const queue = [key];
+        seen.add(key);
+        let minX = x;
+        let maxX = x;
+        let minY = y;
+        let maxY = y;
+        for (let head = 0; head < queue.length; head++) {
+          const currentX = Math.floor(queue[head] / size);
+          const currentY = queue[head] % size;
+          minX = Math.min(minX, currentX);
+          maxX = Math.max(maxX, currentX);
+          minY = Math.min(minY, currentY);
+          maxY = Math.max(maxY, currentY);
+          for (const [nextX, nextY] of [
+            [currentX - 1, currentY], [currentX + 1, currentY],
+            [currentX, currentY - 1], [currentX, currentY + 1],
+          ]) {
+            if (nextX < 0 || nextX >= size || nextY < 0 || nextY >= size) continue;
+            const nextKey = nextX * size + nextY;
+            if (!seen.has(nextKey) && columns.get(nextX)?.has(nextY)) {
+              seen.add(nextKey);
+              queue.push(nextKey);
+            }
+          }
+          if (performance.now() - lastYield >= 8) {
+            await yieldToBrowser();
+            checkCancelled(signal);
+            lastYield = performance.now();
+          }
+        }
+        const northwest = areaTileBounds(minX, minY, zoom);
+        const southeast = areaTileBounds(maxX, maxY, zoom);
+        clusters.push({
+          size: queue.length,
+          bounds: {
+            west: northwest.west, north: northwest.north,
+            east: southeast.east, south: southeast.south,
+          },
+        });
+      }
+    }
+    result.set(zoom, clusters.sort((a, b) => b.size - a.size));
+    progress(result.size);
+  }
+  checkCancelled(signal);
+  return result;
 }

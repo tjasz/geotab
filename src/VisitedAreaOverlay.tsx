@@ -5,7 +5,7 @@ import { DataContext } from "./dataContext";
 import { areaTileBounds, VisitedArea } from "./visited-area";
 
 export class VisitedAreaLayer extends L.GridLayer {
-  constructor(private area: VisitedArea, private map: L.Map) {
+  constructor(private area: Pick<VisitedArea, "tiles" | "zoom">, private map: L.Map) {
     super({ pane: "overlayPane", zIndex: 300 });
   }
 
@@ -41,14 +41,23 @@ export class VisitedAreaLayer extends L.GridLayer {
 export default function VisitedAreaOverlay() {
   const map = useMap();
   const visitedArea = useContext(DataContext)?.visitedArea;
+  const tiles = visitedArea?.tiles;
+  const zoom = visitedArea?.zoom;
+  const focusedCluster = visitedArea?.focusedCluster;
 
   useEffect(() => {
-    if (!visitedArea) return;
-    const layer = new VisitedAreaLayer(visitedArea, map);
+    if (!tiles || zoom === undefined) return;
+    const layer = new VisitedAreaLayer({ tiles, zoom }, map);
     layer.addTo(map);
     layer.getContainer()!.style.pointerEvents = "none";
     return () => { map.removeLayer(layer); };
-  }, [map, visitedArea]);
+  }, [map, tiles, zoom]);
+
+  useEffect(() => {
+    if (!focusedCluster) return;
+    const { west, east, north, south } = focusedCluster.bounds;
+    map.fitBounds([[south, west], [north, east]], { padding: [16, 16] });
+  }, [map, focusedCluster]);
 
   return null;
 }
