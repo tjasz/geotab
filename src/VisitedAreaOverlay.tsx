@@ -43,7 +43,7 @@ export default function VisitedAreaOverlay() {
   const visitedArea = useContext(DataContext)?.visitedArea;
   const tiles = visitedArea?.tiles;
   const zoom = visitedArea?.zoom;
-  const focusedCluster = visitedArea?.focusedCluster;
+  const focusedArea = visitedArea?.focusedArea;
 
   useEffect(() => {
     if (!tiles || zoom === undefined) return;
@@ -54,10 +54,10 @@ export default function VisitedAreaOverlay() {
   }, [map, tiles, zoom]);
 
   useEffect(() => {
-    if (!focusedCluster) return;
-    const { west, east, north, south } = focusedCluster.bounds;
+    if (!focusedArea) return;
+    const { west, east, north, south } = focusedArea.bounds;
     map.fitBounds([[south, west], [north, east]], { padding: [16, 16] });
-  }, [map, focusedCluster]);
+  }, [map, focusedArea]);
 
   return null;
 }

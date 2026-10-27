@@ -28,7 +28,12 @@ After collecting tiles, analysis uses breadth-first search at each zoom to find
 clusters connected horizontally or vertically (not diagonally). The panel lists
 the five largest clusters at the selected zoom, ranked by tile count.
 Click a cluster's tile count to fit the map to the full extent of that cluster.
-The progress indicator remains visible through this clustering phase.
+Analysis also finds up to five fully visited, non-overlapping tile squares at
+each zoom. Squares are selected largest-first, excluding the tiles in each
+selected square before finding the next. Equal-size ties are resolved by
+westernmost, then northernmost position. The panel shows dimensions and tile
+counts (for example, `6 x 6 (36 tiles)`); click an entry to fit the map to it.
+The progress indicator remains visible through clustering and square analysis.
 The tiles use the standard Web Mercator XYZ grid, spanning -180 to 180 longitude
 and approximately -85.051129 to 85.051129 latitude (X increases eastward,
 Y southward). Latitude boundaries follow the Mercator projection, not equal

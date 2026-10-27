@@ -1,5 +1,5 @@
 import L from "leaflet";
-import { analyseVisitedArea, areaTile, areaTileBounds, AREA_ZOOMS, findTileClusters, MAX_MERCATOR_LATITUDE, VisitedTiles } from "./visited-area";
+import { analyseVisitedArea, areaTile, areaTileBounds, AREA_ZOOMS, findTileClusters, findTileSquares, MAX_MERCATOR_LATITUDE, VisitedSquare, VisitedTiles } from "./visited-area";
 import { Feature, FeatureType, Geometry, GeometryType } from "./geojson-types";
 
 const feature = (type: GeometryType, coordinates: Geometry["coordinates"]): Feature => ({
@@ -9,6 +9,19 @@ const feature = (type: GeometryType, coordinates: Geometry["coordinates"]): Feat
 });
 const analyse = (features: Feature[]) =>
   analyseVisitedArea(features, () => {}, new AbortController().signal).then((result) => result.tiles);
+
+function tilesAt(zoom: number, points: number[][]): VisitedTiles {
+  const columns = new Map<number, Map<number, true>>();
+  for (const [x, y] of points) {
+    let rows = columns.get(x);
+    if (!rows) {
+      rows = new Map();
+      columns.set(x, rows);
+    }
+    rows.set(y, true);
+  }
+  return new Map([[zoom, columns]]);
+}
 
 test("uses Web Mercator XYZ tiles with north-to-south Y and clamps world edges", () => {
   expect(areaTile([-180, 90], 1)).toEqual({ x: 0, y: 0 });
@@ -59,7 +72,7 @@ test.each([[NaN, 0], [0, Infinity], [181, 0], [0, -91], []])(
 
 test("creates maps at every zoom, deduplicates points, and reports progress", async () => {
   const progress = jest.fn();
-  const { tiles, clusters } = await analyseVisitedArea(
+  const { tiles, clusters, squares } = await analyseVisitedArea(
     [feature(GeometryType.Point, [-122, 47]), feature(GeometryType.Point, [-122, 47])],
     progress,
     new AbortController().signal,
@@ -69,14 +82,18 @@ test("creates maps at every zoom, deduplicates points, and reports progress", as
     const { x, y } = areaTile([-122, 47], z);
     expect(tiles.get(z)).toEqual(new Map([[x, new Map([[y, true]])]]));
     expect(clusters.get(z)?.map((cluster) => cluster.size)).toEqual([1]);
+    expect(squares.get(z)).toEqual([{ side: 1, bounds: areaTileBounds(x, y, z) }]);
   }
   expect(progress.mock.calls.slice(0, 3)).toEqual([
     [{ phase: "features", completed: 0, total: 2 }],
     [{ phase: "features", completed: 1, total: 2 }],
     [{ phase: "features", completed: 2, total: 2 }],
   ]);
-  expect(progress.mock.calls.slice(3)).toEqual(
+  expect(progress.mock.calls.slice(3, 21)).toEqual(
     Array.from({ length: 18 }, (_, completed) => [{ phase: "clusters", completed, total: 17 }]),
+  );
+  expect(progress.mock.calls.slice(21)).toEqual(
+    Array.from({ length: 18 }, (_, completed) => [{ phase: "squares", completed, total: 17 }]),
   );
 });
 
@@ -198,18 +215,6 @@ test("initializes empty results and supports cancellation", async () => {
 });
 
 describe("contiguous tile clusters", () => {
-  const tilesAt = (zoom: number, points: number[][]): VisitedTiles => {
-    const columns = new Map<number, Map<number, true>>();
-    for (const [x, y] of points) {
-      let rows = columns.get(x);
-      if (!rows) {
-        rows = new Map();
-        columns.set(x, rows);
-      }
-      rows.set(y, true);
-    }
-    return new Map([[zoom, columns]]);
-  };
   const clusters = async (tiles: VisitedTiles) => {
     const result = await findTileClusters(tiles, () => {}, new AbortController().signal);
     return new Map([...result].map(([zoom, entries]) => [zoom, entries.map((cluster) => cluster.size)]));
@@ -222,6 +227,90 @@ describe("contiguous tile clusters", () => {
     for (const [x, y] of points) {
       expect(tiles.get(3)?.get(x)?.get(y)).toBe(true);
     }
+  });
+
+  describe("fully visited non-overlapping squares", () => {
+    const squarePoints = (x: number, y: number, side: number) =>
+      Array.from({ length: side }, (_, dx) =>
+        Array.from({ length: side }, (_, dy) => [x + dx, y + dy]),
+      ).flat();
+    const expectedSquare = (x: number, y: number, side: number, zoom: number): VisitedSquare => ({
+      side,
+      bounds: {
+        ...areaTileBounds(x, y, zoom),
+        east: areaTileBounds(x + side - 1, y + side - 1, zoom).east,
+        south: areaTileBounds(x + side - 1, y + side - 1, zoom).south,
+      },
+    });
+    const squares = (tiles: VisitedTiles) =>
+      findTileSquares(tiles, () => {}, new AbortController().signal);
+
+    test("finds a complete 6 x 6 square without listing its contained squares", async () => {
+      const points = squarePoints(5, 7, 6);
+      const tiles = tilesAt(5, points.slice().reverse());
+      expect(await squares(tiles)).toEqual(new Map([[5, [expectedSquare(5, 7, 6, 5)]]]));
+      expect([...tiles.get(5)!.values()].reduce((sum, rows) => sum + rows.size, 0)).toBe(36);
+    });
+
+    test("selects the top five disjoint squares in descending size", async () => {
+      const blocks = [[0, 0, 1], [3, 0, 2], [6, 0, 3], [10, 0, 4], [15, 0, 5], [21, 0, 6]];
+      const tiles = tilesAt(5, blocks.flatMap(([x, y, side]) => squarePoints(x, y, side)));
+      expect((await squares(tiles)).get(5)).toEqual(
+        blocks.slice().reverse().slice(0, 5).map(([x, y, side]) => expectedSquare(x, y, side, 5)),
+      );
+    });
+
+    test("does not share tiles between touching squares", async () => {
+      const points = [...squarePoints(0, 0, 4), ...squarePoints(4, 0, 4)];
+      expect((await squares(tilesAt(4, points)))).toEqual(new Map([
+        [4, [expectedSquare(0, 0, 4, 4), expectedSquare(4, 0, 4, 4)]],
+      ]));
+    });
+
+    test("does not bridge missing rows, columns, diagonal gaps, or world edges", async () => {
+      const points = [[0, 0], [1, 0], [0, 2], [1, 2], [3, 3], [131071, 131071]];
+      expect((await squares(tilesAt(17, points))).get(17)).toEqual(
+        [[0, 0], [0, 2], [1, 0], [1, 2], [3, 3]].map(([x, y]) => expectedSquare(x, y, 1, 17)),
+      );
+    });
+
+    test("matches an exhaustive largest-first search on small grids with holes", async () => {
+      for (let seed = 0; seed < 16; seed++) {
+        const points = squarePoints(0, 0, 5).filter(([x, y]) => (seed * 11 + x * 3 + y * 5 + x * y) % 7 < 5);
+        const remaining = new Set(points.map(([x, y]) => `${x},${y}`));
+        const expected: VisitedSquare[] = [];
+        while (expected.length < 5 && remaining.size) {
+          let best: { x: number; y: number; side: number } | undefined;
+          for (let side = 5; side >= 1 && !best; side--) {
+            for (let x = 0; x <= 5 - side && !best; x++) {
+              for (let y = 0; y <= 5 - side && !best; y++) {
+                if (squarePoints(x, y, side).every(([px, py]) => remaining.has(`${px},${py}`))) {
+                  best = { x, y, side };
+                }
+              }
+            }
+          }
+          if (!best) throw new Error("Exhaustive search failed to find a remaining tile.");
+          expected.push(expectedSquare(best.x, best.y, best.side, 3));
+          for (const [x, y] of squarePoints(best.x, best.y, best.side)) remaining.delete(`${x},${y}`);
+        }
+        expect((await squares(tilesAt(3, points))).get(3)).toEqual(expected);
+      }
+    });
+
+    test("initializes empty results at all zooms", async () => {
+      const { squares } = await analyseVisitedArea([], () => {}, new AbortController().signal);
+      expect([...squares.keys()]).toEqual(AREA_ZOOMS);
+      expect([...squares.values()].every((entries) => entries.length === 0)).toBe(true);
+    });
+
+    test("supports cancellation during the squares phase", async () => {
+      const controller = new AbortController();
+      const progress = jest.fn(() => controller.abort());
+      await expect(findTileSquares(tilesAt(3, [[0, 0]]), progress, controller.signal))
+        .rejects.toMatchObject({ name: "AbortError" });
+      expect(progress).toHaveBeenCalledWith({ phase: "squares", completed: 0, total: 1 });
+    });
   });
 
   test("finds every cluster and sorts by numeric size descending", async () => {

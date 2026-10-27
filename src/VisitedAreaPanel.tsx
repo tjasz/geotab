@@ -10,6 +10,7 @@ export default function VisitedAreaPanel() {
   const data = context?.data;
   const visitedArea = context?.visitedArea;
   const clusters = visitedArea?.clusters.get(visitedArea.zoom) ?? [];
+  const squares = visitedArea?.squares.get(visitedArea.zoom) ?? [];
   const visitedTileCount = useMemo(() => {
     let count = 0;
     if (visitedArea) {
@@ -53,7 +54,7 @@ export default function VisitedAreaPanel() {
             Area zoom{" "}
             <select
               value={visitedArea.zoom}
-              onChange={(event) => setVisitedArea({ ...visitedArea, zoom: Number(event.target.value), focusedCluster: undefined })}
+              onChange={(event) => setVisitedArea({ ...visitedArea, zoom: Number(event.target.value), focusedArea: undefined })}
             >
               {AREA_ZOOMS.map((z) => <option key={z} value={z}>{z}</option>)}
             </select>
@@ -71,7 +72,7 @@ export default function VisitedAreaPanel() {
                     href="#mapview"
                     onClick={(event) => {
                       event.preventDefault();
-                      setVisitedArea({ ...visitedArea, focusedCluster: { ...cluster } });
+                      setVisitedArea({ ...visitedArea, focusedArea: { bounds: cluster.bounds } });
                     }}
                   >
                     {cluster.size.toLocaleString()} {cluster.size === 1 ? "tile" : "tiles"}
@@ -80,6 +81,25 @@ export default function VisitedAreaPanel() {
               ))}
             </ol>
           ) : <p>No visited clusters.</p>}
+          <h3>Largest non-overlapping squares</h3>
+          {squares.length ? (
+            <ol aria-label="Largest non-overlapping squares">
+              {squares.map((square, index) => (
+                <li key={index}>
+                  <a
+                    href="#mapview"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      setVisitedArea({ ...visitedArea, focusedArea: { bounds: square.bounds } });
+                    }}
+                  >
+                    {square.side.toLocaleString()} x {square.side.toLocaleString()}
+                    {" "}({(square.side ** 2).toLocaleString()} {square.side === 1 ? "tile" : "tiles"})
+                  </a>
+                </li>
+              ))}
+            </ol>
+          ) : <p>No visited squares.</p>}
         </>
       ) : (
         <button type="button" disabled={progress !== undefined} onClick={analyse}>
@@ -89,8 +109,8 @@ export default function VisitedAreaPanel() {
       {progress && (
         <div role="status">
           <progress aria-label="Area analysis progress" value={progress.completed} max={Math.max(1, progress.total)} />
-          {" "}{progress.phase === "clusters" ? "Finding clusters: " : ""}
-          {progress.completed} / {progress.total} {progress.phase === "clusters" ? "zoom levels" : "features"}
+          {" "}{progress.phase === "features" ? "" : progress.phase === "clusters" ? "Finding clusters: " : "Finding squares: "}
+          {progress.completed} / {progress.total} {progress.phase === "features" ? "features" : "zoom levels"}
         </div>
       )}
       {error && <p role="alert">{error}</p>}

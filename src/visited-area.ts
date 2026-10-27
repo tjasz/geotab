@@ -5,10 +5,16 @@ const MAX_AREA_ZOOM = 17;
 export const AREA_ZOOMS = Array.from({ length: MAX_AREA_ZOOM }, (_, i) => i + 1);
 export const MAX_MERCATOR_LATITUDE = Math.atan(Math.sinh(Math.PI)) * 180 / Math.PI;
 export type VisitedTiles = Map<number, Map<number, Map<number, true>>>;
-export type VisitedCluster = { size: number; bounds: ReturnType<typeof areaTileBounds> };
-export type VisitedAreaResults = { tiles: VisitedTiles; clusters: Map<number, VisitedCluster[]> };
-export type VisitedArea = VisitedAreaResults & { zoom: number; focusedCluster?: VisitedCluster };
-export type AnalysisProgress = { phase: "features" | "clusters"; completed: number; total: number };
+export type VisitedRegion = { bounds: ReturnType<typeof areaTileBounds> };
+export type VisitedCluster = VisitedRegion & { size: number };
+export type VisitedSquare = VisitedRegion & { side: number };
+export type VisitedAreaResults = {
+  tiles: VisitedTiles;
+  clusters: Map<number, VisitedCluster[]>;
+  squares: Map<number, VisitedSquare[]>;
+};
+export type VisitedArea = VisitedAreaResults & { zoom: number; focusedArea?: VisitedRegion };
+export type AnalysisProgress = { phase: "features" | "clusters" | "squares"; completed: number; total: number };
 
 function checkCancelled(signal: AbortSignal) {
   if (signal.aborted) throw new DOMException("Analysis cancelled", "AbortError");
@@ -54,6 +60,15 @@ export function areaTileBounds(x: number, y: number, zoom: number) {
     east: ((x + 1) / size) * 360 - 180,
     north: latitude(y),
     south: latitude(y + 1),
+  };
+}
+
+function tileRectangleBounds(minX: number, minY: number, maxX: number, maxY: number, zoom: number) {
+  const northwest = areaTileBounds(minX, minY, zoom);
+  const southeast = areaTileBounds(maxX, maxY, zoom);
+  return {
+    west: northwest.west, north: northwest.north,
+    east: southeast.east, south: southeast.south,
   };
 }
 
@@ -175,7 +190,8 @@ export async function analyseVisitedArea(
     }
   }
   const clusters = await findTileClusters(tiles, onProgress, signal);
-  return { tiles, clusters };
+  const squares = await findTileSquares(tiles, onProgress, signal);
+  return { tiles, clusters, squares };
 }
 
 export async function findTileClusters(
@@ -228,18 +244,73 @@ export async function findTileClusters(
             lastYield = performance.now();
           }
         }
-        const northwest = areaTileBounds(minX, minY, zoom);
-        const southeast = areaTileBounds(maxX, maxY, zoom);
         clusters.push({
           size: queue.length,
-          bounds: {
-            west: northwest.west, north: northwest.north,
-            east: southeast.east, south: southeast.south,
-          },
+          bounds: tileRectangleBounds(minX, minY, maxX, maxY, zoom),
         });
       }
     }
     result.set(zoom, clusters.sort((a, b) => b.size - a.size));
+    progress(result.size);
+  }
+  checkCancelled(signal);
+  return result;
+}
+
+export async function findTileSquares(
+  tiles: VisitedTiles,
+  onProgress: (progress: AnalysisProgress) => void,
+  signal: AbortSignal,
+): Promise<Map<number, VisitedSquare[]>> {
+  checkCancelled(signal);
+  const result = new Map<number, VisitedSquare[]>();
+  const progress = (completed: number) => onProgress({ phase: "squares", completed, total: tiles.size });
+  progress(0);
+  await yieldToBrowser();
+  let lastYield = performance.now();
+  for (const [zoom, columns] of tiles) {
+    checkCancelled(signal);
+    const orderedColumns = [...columns].sort(([a], [b]) => a - b).map(([x, rows]) => ({
+      x,
+      ys: [...rows.keys()].sort((a, b) => a - b),
+    }));
+    const selected: { x: number; y: number; side: number }[] = [];
+    while (selected.length < 5) {
+      let largest: { x: number; y: number; side: number } | undefined;
+      let previous = new Map<number, number>();
+      let previousX = -2;
+      for (const { x, ys } of orderedColumns) {
+        if (x !== previousX + 1) previous = new Map();
+        const current = new Map<number, number>();
+        for (const y of ys) {
+          const covered = selected.some((square) =>
+            x >= square.x && x < square.x + square.side &&
+            y >= square.y && y < square.y + square.side,
+          );
+          if (!covered) {
+            // Largest filled square ending here requires all three adjacent squares.
+            const side = 1 + Math.min(previous.get(y) ?? 0, current.get(y - 1) ?? 0, previous.get(y - 1) ?? 0);
+            current.set(y, side);
+            if (!largest || side > largest.side) {
+              largest = { x: x - side + 1, y: y - side + 1, side };
+            }
+          }
+          if (performance.now() - lastYield >= 8) {
+            await yieldToBrowser();
+            checkCancelled(signal);
+            lastYield = performance.now();
+          }
+        }
+        previous = current;
+        previousX = x;
+      }
+      if (!largest) break;
+      selected.push(largest);
+    }
+    result.set(zoom, selected.map(({ x, y, side }) => ({
+      side,
+      bounds: tileRectangleBounds(x, y, x + side - 1, y + side - 1, zoom),
+    })));
     progress(result.size);
   }
   checkCancelled(signal);
