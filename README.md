@@ -19,6 +19,9 @@ Lines and polygon rings are simplified on a copy using Douglas-Peucker with a
 30-meter tolerance; point and multipoint locations are retained.
 
 After analysis, select an **Area zoom** from 1 through 17. Each level quarters
+the grid, and the summary below the dropdown shows the visited tile count,
+the total `4**z` tiles, and the percentage visited at the selected zoom.
+The tiles partition
 the longitude/latitude grid spanning -180 to 180 longitude and -90 to 90 latitude
 (X increases eastward, Y southward). This is not the Web Mercator tile grid.
 Tiles containing simplified vertices are visited; segments between vertices

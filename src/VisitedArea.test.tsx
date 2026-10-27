@@ -50,10 +50,37 @@ test("shows progress, stores analysis, and preserves zoom across panel remounts"
   const zoom = await screen.findByRole("combobox", { name: "Area zoom" });
   expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
   expect(screen.getAllByRole("option")).toHaveLength(17);
+  expect(screen.getByText("Tiles visited: 1 / 4 (25%)")).toBeInTheDocument();
   fireEvent.change(zoom, { target: { value: "17" } });
+  expect(screen.getByText("Tiles visited: 1 / 17,179,869,184 (0.00000000582%)")).toBeInTheDocument();
   view.rerender(<PanelHarness show={false} />);
   view.rerender(<PanelHarness />);
   expect(screen.getByRole("combobox")).toHaveValue("17");
+});
+
+test("counts all visited rows across columns for the selected zoom only", () => {
+  const visitedArea: VisitedArea = {
+    zoom: 2,
+    tiles: new Map([
+      [1, new Map([[0, new Map([[0, true]])]])],
+      [2, new Map([
+        [0, new Map([[0, true], [1, true]])],
+        [1, new Map([[0, true]])],
+      ])],
+    ]),
+  };
+  render(
+    <DataContext.Provider value={{ ...context, visitedArea }}>
+      <VisitedAreaPanel />
+    </DataContext.Provider>,
+  );
+  expect(screen.getByText("Tiles visited: 3 / 16 (18.8%)")).toBeInTheDocument();
+});
+
+test("shows zero coverage for an empty analysis", async () => {
+  render(<PanelHarness features={[]} />);
+  fireEvent.click(screen.getByRole("button", { name: "Analyse" }));
+  expect(await screen.findByText("Tiles visited: 0 / 4 (0%)")).toBeInTheDocument();
 });
 
 test("reports invalid data explicitly and allows retry", async () => {

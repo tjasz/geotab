@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { DataContext } from "./dataContext";
 import { analyseVisitedArea, AREA_ZOOMS } from "./visited-area";
 
@@ -8,6 +8,16 @@ export default function VisitedAreaPanel() {
   const [error, setError] = useState<string>();
   const controller = useRef<AbortController>();
   const data = context?.data;
+  const visitedArea = context?.visitedArea;
+  const visitedTileCount = useMemo(() => {
+    let count = 0;
+    if (visitedArea) {
+      for (const rows of visitedArea.tiles.get(visitedArea.zoom)?.values() ?? []) {
+        count += rows.size;
+      }
+    }
+    return count;
+  }, [visitedArea]);
 
   useEffect(() => {
     setCompleted(undefined);
@@ -16,7 +26,7 @@ export default function VisitedAreaPanel() {
   }, [data]);
 
   if (!context) return null;
-  const { visitedArea, setVisitedArea } = context;
+  const { setVisitedArea } = context;
   const analyse = async () => {
     const run = new AbortController();
     controller.current = run;
@@ -37,15 +47,21 @@ export default function VisitedAreaPanel() {
   return (
     <div style={{ padding: 16 }}>
       {visitedArea ? (
-        <label>
-          Area zoom{" "}
-          <select
-            value={visitedArea.zoom}
-            onChange={(event) => setVisitedArea({ ...visitedArea, zoom: Number(event.target.value) })}
-          >
-            {AREA_ZOOMS.map((z) => <option key={z} value={z}>{z}</option>)}
-          </select>
-        </label>
+        <>
+          <label>
+            Area zoom{" "}
+            <select
+              value={visitedArea.zoom}
+              onChange={(event) => setVisitedArea({ ...visitedArea, zoom: Number(event.target.value) })}
+            >
+              {AREA_ZOOMS.map((z) => <option key={z} value={z}>{z}</option>)}
+            </select>
+          </label>
+          <p>
+            Tiles visited: {visitedTileCount.toLocaleString()} / {(4 ** visitedArea.zoom).toLocaleString()}
+            {" "}({(100 * visitedTileCount / 4 ** visitedArea.zoom).toLocaleString(undefined, { maximumSignificantDigits: 3 })}%)
+          </p>
+        </>
       ) : (
         <button type="button" disabled={completed !== undefined} onClick={analyse}>
           Analyse
