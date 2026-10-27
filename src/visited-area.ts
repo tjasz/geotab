@@ -1,26 +1,40 @@
 import * as gj from "./geojson-types";
 import { douglasPeucker } from "./geojson-calc";
 
-export const AREA_ZOOMS = Array.from({ length: 17 }, (_, i) => i + 1);
+const MAX_AREA_ZOOM = 17;
+export const AREA_ZOOMS = Array.from({ length: MAX_AREA_ZOOM }, (_, i) => i + 1);
 export const MAX_MERCATOR_LATITUDE = Math.atan(Math.sinh(Math.PI)) * 180 / Math.PI;
 export type VisitedTiles = Map<number, Map<number, Map<number, true>>>;
 export type VisitedArea = { tiles: VisitedTiles; zoom: number };
 
-export function areaTile([longitude, latitude]: gj.Coordinate, zoom: number) {
+type ProjectedPoint = { x: number; y: number };
+
+function projectCoordinate([longitude, latitude]: gj.Coordinate): ProjectedPoint {
   if (
     !Number.isFinite(longitude) || !Number.isFinite(latitude) ||
     longitude < -180 || longitude > 180 || latitude < -90 || latitude > 90
   ) {
     throw new Error("Area analysis requires coordinates within longitude -180 to 180 and latitude -90 to 90.");
   }
-  const size = 2 ** zoom;
   const clampedLatitude = Math.max(-MAX_MERCATOR_LATITUDE, Math.min(MAX_MERCATOR_LATITUDE, latitude));
   const radians = clampedLatitude * Math.PI / 180;
   const projectedY = (1 - Math.asinh(Math.tan(radians)) / Math.PI) / 2;
   return {
-    x: Math.min(size - 1, Math.floor(((longitude + 180) / 360) * size)),
-    y: Math.max(0, Math.min(size - 1, Math.floor(projectedY * size))),
+    x: (longitude + 180) / 360,
+    y: Math.max(0, Math.min(1, projectedY)),
   };
+}
+
+function projectedTile(point: ProjectedPoint, zoom: number) {
+  const size = 2 ** zoom;
+  return {
+    x: Math.min(size - 1, Math.floor(point.x * size)),
+    y: Math.min(size - 1, Math.floor(point.y * size)),
+  };
+}
+
+export function areaTile(coordinate: gj.Coordinate, zoom: number) {
+  return projectedTile(projectCoordinate(coordinate), zoom);
 }
 
 export function areaTileBounds(x: number, y: number, zoom: number) {
@@ -58,19 +72,57 @@ function simplifiedGeometry(geometry: gj.Geometry | gj.GeometryCollection): gj.G
   }
 }
 
-function* geometryPoints(geometry: gj.Geometry | gj.GeometryCollection): Generator<gj.Coordinate> {
+function* linePoints(coordinates: gj.Coordinate[]): Generator<ProjectedPoint> {
+  if (!coordinates.length) return;
+  const size = 2 ** MAX_AREA_ZOOM;
+  let start = projectCoordinate(coordinates[0]);
+  yield start;
+  for (let i = 1; i < coordinates.length; i++) {
+    const end = projectCoordinate(coordinates[i]);
+    const dx = (end.x - start.x) * size;
+    const dy = (end.y - start.y) * size;
+    const x = start.x * size;
+    const y = start.y * size;
+    let boundaryX = dx > 0 ? Math.floor(x) + 1 : Math.ceil(x) - 1;
+    let boundaryY = dy > 0 ? Math.floor(y) + 1 : Math.ceil(y) - 1;
+    let previous = 0;
+    while (previous < 1) {
+      const crossingX = dx === 0 ? Infinity : (boundaryX - x) / dx;
+      const crossingY = dy === 0 ? Infinity : (boundaryY - y) / dy;
+      const next = Math.min(1, crossingX, crossingY);
+      // Sample inside every crossed tile, including arbitrarily short corner crossings.
+      const fraction = (previous + next) / 2;
+      yield {
+        x: start.x + (end.x - start.x) * fraction,
+        y: start.y + (end.y - start.y) * fraction,
+      };
+      if (crossingX <= next) boundaryX += Math.sign(dx);
+      if (crossingY <= next) boundaryY += Math.sign(dy);
+      previous = next;
+    }
+    yield end;
+    start = end;
+  }
+}
+
+function* geometryPoints(geometry: gj.Geometry | gj.GeometryCollection): Generator<ProjectedPoint> {
   if (geometry.type === gj.GeometryType.GeometryCollection) {
     for (const child of (geometry as gj.GeometryCollection).geometries) {
       yield* geometryPoints(child);
     }
     return;
   }
-  function* coordinates(value: unknown): Generator<gj.Coordinate> {
+  function* coordinates(value: unknown): Generator<ProjectedPoint> {
     if (!Array.isArray(value)) {
       throw new Error("Invalid geometry coordinates.");
     }
     if (typeof value[0] === "number") {
-      yield value;
+      yield projectCoordinate(value);
+    } else if (
+      geometry.type !== gj.GeometryType.MultiPoint &&
+      Array.isArray(value[0]) && typeof value[0][0] === "number"
+    ) {
+      yield* linePoints(value as gj.Coordinate[]);
     } else {
       for (const child of value) yield* coordinates(child);
     }
@@ -96,7 +148,7 @@ export async function analyseVisitedArea(
     const feature = { ...features[i], geometry: simplifiedGeometry(features[i].geometry) };
     for (const point of geometryPoints(feature.geometry)) {
       for (const [z, columns] of tiles) {
-        const { x, y } = areaTile(point, z);
+        const { x, y } = projectedTile(point, z);
         let rows = columns.get(x);
         if (!rows) {
           rows = new Map();

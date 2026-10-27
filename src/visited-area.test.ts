@@ -107,10 +107,76 @@ test("handles all geometry types and collections without connecting separate par
   expect([...tiles.get(17)!.values()].reduce((sum, rows) => sum + rows.size, 0)).toBe(points.length);
 });
 
-test("does not mark segment interiors visited", async () => {
-  const tiles = await analyse([feature(GeometryType.LineString, [[-100, 0], [100, 0]])]);
-  const { x, y } = areaTile([0, 0], 17);
-  expect(tiles.get(17)?.get(x)?.has(y)).not.toBe(true);
+test.each([0, 47, 85, -85])("visits every tile along straight east-west tracks at latitude %p", async (latitude) => {
+  const start = [-0.02, latitude];
+  const end = [0.02, latitude];
+  const source = feature(GeometryType.LineString, [start, [0, latitude], end]);
+  const before = JSON.stringify(source);
+  const tiles = await analyse([source]);
+  for (const z of AREA_ZOOMS) {
+    const first = areaTile(start, z);
+    const last = areaTile(end, z);
+    for (let x = first.x; x <= last.x; x++) {
+      expect(tiles.get(z)?.get(x)?.has(first.y)).toBe(true);
+    }
+    expect(tiles.get(z)?.size).toBe(last.x - first.x + 1);
+  }
+  expect(JSON.stringify(source)).toBe(before);
+});
+
+test.each([1, -1])("visits every tile along north-south tracks near 85 degrees (direction %p)", async (direction) => {
+  const points = [[0, 84.999], [0, 85.001]];
+  if (direction < 0) points.reverse();
+  const tiles = await analyse([feature(GeometryType.LineString, points)]);
+  const first = areaTile(points[0], 17);
+  const last = areaTile(points[1], 17);
+  const rows = tiles.get(17)?.get(first.x);
+  for (let y = Math.min(first.y, last.y); y <= Math.max(first.y, last.y); y++) {
+    expect(rows?.has(y)).toBe(true);
+  }
+  expect(rows?.size).toBe(Math.abs(first.y - last.y) + 1);
+});
+
+test.each([false, true])("covers tiny diagonal corner crossings without gaps (reversed %p)", async (reversed) => {
+  const coordinate = (x: number, y: number) => {
+    const point = L.CRS.EPSG3857.pointToLatLng(L.point(x * 256, y * 256), 17);
+    return [point.lng, point.lat];
+  };
+  const points = [coordinate(100.1, 100.1001), coordinate(102.9, 102.9001)];
+  if (reversed) points.reverse();
+  const tiles = await analyse([feature(GeometryType.LineString, points)]);
+  expect(tiles.get(17)).toEqual(new Map([
+    [100, new Map([[100, true], [101, true]])],
+    [101, new Map([[101, true], [102, true]])],
+    [102, new Map([[102, true]])],
+  ]));
+});
+
+test("does not connect independent lines or polygon rings during sampling", async () => {
+  const left = [[-0.02, 47], [-0.01, 47]];
+  const right = [[0.01, 47], [0.02, 47]];
+  for (const type of [GeometryType.MultiLineString, GeometryType.Polygon]) {
+    const tiles = await analyse([feature(type, [left, right])]);
+    const middle = areaTile([0, 47], 17);
+    expect(tiles.get(17)?.get(middle.x)?.has(middle.y)).not.toBe(true);
+    for (const line of [left, right]) {
+      const first = areaTile(line[0], 17);
+      const last = areaTile(line[1], 17);
+      for (let x = first.x; x <= last.x; x++) {
+        expect(tiles.get(17)?.get(x)?.has(first.y)).toBe(true);
+      }
+    }
+  }
+});
+
+test("samples repeated coordinates and world-edge segments without leaving the grid", async () => {
+  const points = [[180, 90], [180, 90], [179.99, 90]];
+  const tiles = await analyse([feature(GeometryType.LineString, points)]);
+  const first = areaTile(points[2], 17);
+  expect(tiles.get(17)?.size).toBe(131072 - first.x);
+  for (const rows of tiles.get(17)!.values()) {
+    expect([...rows.keys()]).toEqual([0]);
+  }
 });
 
 test("initializes empty results and supports cancellation", async () => {

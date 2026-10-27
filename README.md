@@ -16,7 +16,10 @@ It fills two key niches that are unsatisfied by existing solutions.
 When no detail feature is selected, open the bottom **Visited Areas** panel and
 click **Analyse**. A progress indicator tracks analysis of all loaded features.
 Lines and polygon rings are simplified on a copy using Douglas-Peucker with a
-30-meter tolerance; point and multipoint locations are retained.
+30-meter tolerance, then sampled inside every zoom-17 tile crossed by each
+segment in Web Mercator space. This preserves continuous coverage even for
+straight tracks, tiny corner crossings, and tracks near 85 degrees latitude.
+Point and multipoint locations are retained without connecting them.
 
 After analysis, select an **Area zoom** from 1 through 17. Each level quarters
 the grid, and the summary below the dropdown shows the visited tile count,
@@ -25,8 +28,8 @@ The tiles use the standard Web Mercator XYZ grid, spanning -180 to 180 longitude
 and approximately -85.051129 to 85.051129 latitude (X increases eastward,
 Y southward). Latitude boundaries follow the Mercator projection, not equal
 latitude steps. Coordinates closer to the poles are clamped to this latitude range.
-Tiles containing simplified vertices are visited; segments between vertices
-and polygon interiors are not filled. Unvisited tiles are shaded `#00000080`.
+Tiles containing simplified vertices or the added segment samples are visited;
+polygon interiors are not filled. Unvisited tiles are shaded `#00000080`.
 Results and the selected zoom remain in the data context while inspecting
 features; changing the loaded data clears the analysis. Filtering does not
 change the analysis scope.
