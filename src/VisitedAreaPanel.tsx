@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { FormControlLabel, Switch } from "@mui/material";
 import { DataContext } from "./dataContext";
 import { analyseVisitedArea, AnalysisProgress, AREA_ZOOMS } from "./visited-area";
 
@@ -67,6 +68,16 @@ export default function VisitedAreaPanel() {
               {AREA_ZOOMS.map((z) => <option key={z} value={z}>{z}</option>)}
             </select>
           </label>
+          <FormControlLabel
+            label="Show map overlay"
+            control={
+              <Switch
+                checked={visitedArea.overlayVisible !== false}
+                onChange={(event) => setVisitedArea({ ...visitedArea, overlayVisible: event.target.checked })}
+                inputProps={{ role: "switch" }}
+              />
+            }
+          />
           <p>
             Tiles visited: {visitedTileCount.toLocaleString()} / {(4 ** visitedArea.zoom).toLocaleString()}
             {" "}({(100 * visitedTileCount / 4 ** visitedArea.zoom).toLocaleString(undefined, { maximumSignificantDigits: 3 })}%)

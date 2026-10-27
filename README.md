@@ -51,6 +51,10 @@ The overlay draws solid black 1px tile borders, 3px dashed (`6 6`) outlines
 around the five largest squares, and 3px dotted (`3 3`) outlines following
 the actual tile edges of the five largest yards, including holes and concavities.
 All borders use `#000000ff` and leave map interactions unobstructed.
+Use **Show map overlay** in the panel to hide or restore the shading, grid,
+and outlines without clearing the results. The switch is on by default and
+its setting persists when changing analysis zoom or inspecting a feature;
+cluster, square, and yard links still navigate the map while the overlay is hidden.
 Results and the selected zoom remain in the data context while inspecting
 features; changing the loaded data clears the analysis. Filtering does not
 change the analysis scope.

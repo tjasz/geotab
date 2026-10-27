@@ -62,10 +62,13 @@ test("shows progress, stores analysis, and preserves zoom across panel remounts"
   expect(screen.getByText("Tiles visited: 1 / 4 (25%)")).toBeInTheDocument();
   fireEvent.change(zoom, { target: { value: "17" } });
   expect(screen.getByText("Tiles visited: 1 / 17,179,869,184 (0.00000000582%)")).toBeInTheDocument();
+  expect(screen.getByRole("switch", { name: "Show map overlay" })).toBeChecked();
+  fireEvent.click(screen.getByRole("switch", { name: "Show map overlay" }));
   view.rerender(<PanelHarness show={false} />);
   view.rerender(<PanelHarness />);
   expect(screen.getByRole("combobox")).toHaveValue("17");
   expect(screen.getByText("1 tile")).toBeInTheDocument();
+  expect(screen.getByRole("switch", { name: "Show map overlay" })).not.toBeChecked();
 });
 
 test("shows only the five largest clusters and updates them for the selected zoom", async () => {
@@ -478,5 +481,37 @@ describe("map mask", () => {
       </DataContext.Provider>,
     );
     expect(layers()).toHaveLength(0);
+  });
+
+  test("overlay switch removes and restores all drawing without clearing analysis or disabling links", () => {
+    const fitBounds = jest.spyOn(map, "fitBounds");
+    const layers = () => {
+      const result: VisitedAreaLayer[] = [];
+      map.eachLayer((layer) => {
+        if (layer instanceof VisitedAreaLayer) result.push(layer);
+      });
+      return result;
+    };
+    render(<PanelHarness initialArea={area} withMap />);
+    const toggle = screen.getByRole("switch", { name: "Show map overlay" });
+    expect(toggle).toBeChecked();
+    expect(layers()).toHaveLength(1);
+    fireEvent.click(toggle);
+    expect(toggle).not.toBeChecked();
+    expect(layers()).toHaveLength(0);
+    expect(screen.getByText("Tiles visited: 1 / 16 (6.25%)")).toBeInTheDocument();
+    fireEvent.click(within(screen.getByRole("list", { name: "Largest contiguous clusters" })).getByRole("link"));
+    expect(fitBounds).toHaveBeenCalledTimes(1);
+    expect(layers()).toHaveLength(0);
+    fireEvent.change(screen.getByRole("combobox"), { target: { value: "17" } });
+    expect(toggle).not.toBeChecked();
+    expect(layers()).toHaveLength(0);
+    fireEvent.click(toggle);
+    expect(toggle).toBeChecked();
+    expect(layers()).toHaveLength(1);
+    expect(screen.getByRole("combobox")).toHaveValue("17");
+    fireEvent.change(screen.getByRole("combobox"), { target: { value: "2" } });
+    expect(screen.getByText("Tiles visited: 1 / 16 (6.25%)")).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "Largest non-overlapping squares" })).toBeInTheDocument();
   });
 });

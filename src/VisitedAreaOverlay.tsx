@@ -92,14 +92,15 @@ export default function VisitedAreaOverlay() {
   const focusedArea = visitedArea?.focusedArea;
   const squares = visitedArea?.squares;
   const yards = visitedArea?.yards;
+  const overlayVisible = visitedArea?.overlayVisible !== false;
 
   useEffect(() => {
-    if (!tiles || zoom === undefined || !squares || !yards) return;
+    if (!overlayVisible || !tiles || zoom === undefined || !squares || !yards) return;
     const layer = new VisitedAreaLayer({ tiles, zoom, squares, yards }, map);
     layer.addTo(map);
     layer.getContainer()!.style.pointerEvents = "none";
     return () => { map.removeLayer(layer); };
-  }, [map, tiles, zoom, squares, yards]);
+  }, [map, tiles, zoom, squares, yards, overlayVisible]);
 
   useEffect(() => {
     if (!focusedArea) return;

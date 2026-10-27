@@ -16,7 +16,7 @@ export type VisitedAreaResults = {
   squares: Map<number, VisitedSquare[]>;
   yards: Map<number, VisitedYard[]>;
 };
-export type VisitedArea = VisitedAreaResults & { zoom: number; focusedArea?: VisitedRegion };
+export type VisitedArea = VisitedAreaResults & { zoom: number; focusedArea?: VisitedRegion; overlayVisible?: boolean };
 export type AnalysisProgress = { phase: "features" | "clusters" | "squares" | "yards"; completed: number; total: number };
 
 function checkCancelled(signal: AbortSignal) {
