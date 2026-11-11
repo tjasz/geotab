@@ -63,9 +63,15 @@ squares have red (`#400000ff`) outlines with the same width and dash pattern.
 The five largest yards have green (`#004000ff`) 3px dotted (`3 3`) outlines
 following their actual tile edges, including holes and concavities.
 Squares and yards are drawn above rectangles where boundaries overlap.
-All borders leave map interactions unobstructed.
+Each outlined item has a black-text label on a semitransparent white rounded
+rectangle with a corner radius of half its height. Labels abbreviate the type
+and rank as `R4`, `S3`, or `Y5`, followed by the count without a "tiles" suffix
+and (for squares and rectangles) dimensions, for example `R4: 24 (6 x 4)`.
+Labels are centered in the lower-right cell; for irregular yards this is the
+rightmost cell in the bottom row. Labels sharing a cell are stacked.
+All borders and labels leave map interactions unobstructed.
 Use **Show map overlay** in the panel to hide or restore the shading, grid,
-and outlines without clearing the results. The switch is on by default and
+outlines, and labels without clearing the results. The switch is on by default and
 its setting persists when changing analysis zoom or inspecting a feature;
 cluster, square, rectangle, and yard links still navigate the map while the overlay is hidden.
 Results and the selected zoom remain in the data context while inspecting

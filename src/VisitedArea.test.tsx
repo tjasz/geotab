@@ -262,6 +262,9 @@ describe("map mask", () => {
     fillStyle: "", strokeStyle: "", lineWidth: 0,
     fillRect: jest.fn(), clearRect: jest.fn(), strokeRect: jest.fn(),
     setLineDash: jest.fn(), beginPath: jest.fn(), moveTo: jest.fn(), lineTo: jest.fn(), stroke: jest.fn(),
+    font: "", textAlign: "", textBaseline: "",
+    measureText: jest.fn<{ width: number }, [string]>(),
+    arc: jest.fn(), closePath: jest.fn(), fill: jest.fn(), fillText: jest.fn(),
   };
   const originalGetContext = Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype, "getContext")!;
   const area: VisitedArea = {
@@ -279,6 +282,7 @@ describe("map mask", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     strokes.length = 0;
+    canvasContext.measureText.mockImplementation((text: string) => ({ width: text.length * 6 }));
     let dash: number[] = [];
     let path: Command[] = [];
     canvasContext.setLineDash.mockImplementation((value: number[]) => { dash = value.slice(); });
@@ -379,6 +383,71 @@ describe("map mask", () => {
   test("does not draw square or rectangle outlines when none qualify", () => {
     new VisitedAreaLayer(area, map).createTile(Object.assign(L.point(0, 0), { z: 1 }));
     expect(strokes.filter((stroke) => stroke.rectangle)).toHaveLength(0);
+    expect(canvasContext.fillText).not.toHaveBeenCalled();
+    expect(canvasContext.arc).not.toHaveBeenCalled();
+  });
+
+  test("stacks abbreviated labels with white rounded rectangles of radius half their height and black text", () => {
+    const bounds = { ...areaTileBounds(0, 0, 2), east: 0, south: 0 };
+    canvasContext.fill.mockImplementationOnce(() => expect(canvasContext.fillStyle).toBe("#ffffffcc"));
+    canvasContext.fill.mockImplementationOnce(() => expect(canvasContext.fillStyle).toBe("#ffffffcc"));
+    new VisitedAreaLayer({
+      ...area,
+      squares: new Map([[2, [{ side: 2, bounds }]]]),
+      rectangles: new Map([[2, [{ width: 2, height: 2, bounds }]]]),
+    }, map).createTile(Object.assign(L.point(0, 0), { z: 1 }));
+    expect(canvasContext.fillText.mock.calls).toEqual([
+      ["R1: 4 (2 x 2)", 192, 177],
+      ["S1: 4 (2 x 2)", 192, 207],
+    ]);
+    const textHalfWidth = "R1: 4 (2 x 2)".length * 3;
+    expect(canvasContext.arc.mock.calls).toEqual([
+      [192 + textHalfWidth, 177, 14, -Math.PI / 2, Math.PI / 2],
+      [192 - textHalfWidth, 177, 14, Math.PI / 2, 3 * Math.PI / 2],
+      [192 + textHalfWidth, 207, 14, -Math.PI / 2, Math.PI / 2],
+      [192 - textHalfWidth, 207, 14, Math.PI / 2, 3 * Math.PI / 2],
+    ]);
+    expect(canvasContext.closePath).toHaveBeenCalledTimes(2);
+    expect(canvasContext.fillStyle).toBe("#000000");
+    expect(canvasContext.font).toBe("12px sans-serif");
+    expect(canvasContext.textAlign).toBe("center");
+    expect(canvasContext.textBaseline).toBe("middle");
+  });
+
+  test("continues labels across canvas tile boundaries without changing their world position", () => {
+    const layer = new VisitedAreaLayer({
+      ...area,
+      zoom: 3,
+      squares: new Map([[3, [{
+        side: 2, bounds: {
+          ...areaTileBounds(2, 0, 3),
+          east: areaTileBounds(3, 1, 3).east,
+          south: areaTileBounds(3, 1, 3).south,
+        },
+      }]]]),
+    }, map);
+    layer.createTile(Object.assign(L.point(0, 0), { z: 1 }));
+    layer.createTile(Object.assign(L.point(1, 0), { z: 1 }));
+    layer.createTile(Object.assign(L.point(0, 0), { z: 2 }));
+    expect(canvasContext.fillText.mock.calls).toEqual([
+      ["S1: 4 (2 x 2)", 224, 96],
+      ["S1: 4 (2 x 2)", -32, 96],
+    ]);
+  });
+
+  test("labels only the five outlined results, preserving their ranks", () => {
+    const rectangle = { width: 2, height: 1, bounds: {
+      ...areaTileBounds(0, 1, 2), east: areaTileBounds(1, 1, 2).east,
+    } };
+    new VisitedAreaLayer({
+      ...area,
+      rectangles: new Map([[2, Array.from({ length: 6 }, () => rectangle)]]),
+    }, map).createTile(Object.assign(L.point(0, 0), { z: 1 }));
+    expect(canvasContext.fillText.mock.calls.map(([text]) => text)).toEqual([
+      "R1: 2 (2 x 1)", "R2: 2 (2 x 1)",
+      "R3: 2 (2 x 1)", "R4: 2 (2 x 1)",
+      "R5: 2 (2 x 1)",
+    ]);
   });
 
   test("draws rectangle outlines in opaque blue with 3px width and a 6 6 dash array", () => {
@@ -422,6 +491,7 @@ describe("map mask", () => {
       ["M", 192, 192], ["L", 224, 192], ["M", 192, 192], ["L", 192, 224],
     ]));
     expect(yardStroke?.path).not.toContainEqual(["L", 224, 224]);
+    expect(canvasContext.fillText).toHaveBeenCalledWith("Y1: 3", 176, 208);
   });
 
   test("only outlines the top five rectangles, squares, and yards with their respective colors", () => {

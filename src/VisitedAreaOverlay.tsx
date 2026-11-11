@@ -62,23 +62,45 @@ export class VisitedAreaLayer extends L.GridLayer {
       const bottomRight = this.map.project([south, east], coords.z).subtract(origin);
       ctx.strokeRect(topLeft.x, topLeft.y, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y);
     };
+    const labels = new Map<string, { x: number; y: number; texts: string[] }>();
+    const addLabel = (x: number, y: number, text: string) => {
+      const key = `${x},${y}`;
+      let label = labels.get(key);
+      if (!label) {
+        label = { x: (x + 0.5) * tilePixels - origin.x, y: (y + 0.5) * tilePixels - origin.y, texts: [] };
+        labels.set(key, label);
+      }
+      label.texts.push(text);
+    };
+    const addBoundsLabel = (bounds: ReturnType<typeof areaTileBounds>, text: string) => {
+      const southeast = this.map.project([bounds.south, bounds.east], coords.z);
+      addLabel(Math.round(southeast.x / tilePixels) - 1, Math.round(southeast.y / tilePixels) - 1, text);
+    };
     ctx.lineWidth = 3;
     ctx.setLineDash([6, 6]);
     ctx.strokeStyle = "#000040ff";
-    for (const rectangle of (this.area.rectangles.get(this.area.zoom) ?? []).slice(0, 5)) {
+    for (const [index, rectangle] of (this.area.rectangles.get(this.area.zoom) ?? []).slice(0, 5).entries()) {
       strokeBounds(rectangle.bounds);
+      addBoundsLabel(rectangle.bounds, `R${index + 1}: ${(rectangle.width * rectangle.height).toLocaleString()} (${rectangle.width.toLocaleString()} x ${rectangle.height.toLocaleString()})`);
     }
 
     ctx.strokeStyle = "#400000ff";
-    for (const square of (this.area.squares.get(this.area.zoom) ?? []).slice(0, 5)) {
+    for (const [index, square] of (this.area.squares.get(this.area.zoom) ?? []).slice(0, 5).entries()) {
       strokeBounds(square.bounds);
+      addBoundsLabel(square.bounds, `S${index + 1}: ${(square.side ** 2).toLocaleString()} (${square.side.toLocaleString()} x ${square.side.toLocaleString()})`);
     }
 
     ctx.strokeStyle = "#004000ff";
     ctx.setLineDash([3, 3]);
     ctx.beginPath();
-    for (const yard of (this.area.yards.get(this.area.zoom) ?? []).slice(0, 5)) {
+    for (const [index, yard] of (this.area.yards.get(this.area.zoom) ?? []).slice(0, 5).entries()) {
+      let labelX = -1;
+      let labelY = -1;
       for (const [x1, y1, x2, y2] of yard.outline) {
+        if (y1 === y2 && (y1 > labelY || (y1 === labelY && Math.max(x1, x2) > labelX))) {
+          labelX = Math.max(x1, x2);
+          labelY = y1;
+        }
         const left = Math.min(x1, x2) * tilePixels - origin.x;
         const right = Math.max(x1, x2) * tilePixels - origin.x;
         const top = Math.min(y1, y2) * tilePixels - origin.y;
@@ -87,8 +109,30 @@ export class VisitedAreaLayer extends L.GridLayer {
         ctx.moveTo(x1 * tilePixels - origin.x, y1 * tilePixels - origin.y);
         ctx.lineTo(x2 * tilePixels - origin.x, y2 * tilePixels - origin.y);
       }
+      if (labelX >= 0) addLabel(labelX - 1, labelY - 1, `Y${index + 1}: ${yard.size.toLocaleString()}`);
     }
     ctx.stroke();
+    if (labels.size) {
+      ctx.font = "12px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      for (const { x, y, texts } of labels.values()) {
+        texts.forEach((text, index) => {
+          const centerY = y + (index - (texts.length - 1) / 2) * 30;
+          const halfWidth = ctx.measureText(text).width / 2 + 14;
+          if (x + halfWidth < 0 || x - halfWidth > size.x || centerY + 14 < 0 || centerY - 14 > size.y) return;
+          // Draw on every intersecting canvas so pills remain seamless across tile boundaries.
+          ctx.beginPath();
+          ctx.arc(x + halfWidth - 14, centerY, 14, -Math.PI / 2, Math.PI / 2);
+          ctx.arc(x - halfWidth + 14, centerY, 14, Math.PI / 2, 3 * Math.PI / 2);
+          ctx.closePath();
+          ctx.fillStyle = "#ffffffcc";
+          ctx.fill();
+          ctx.fillStyle = "#000000";
+          ctx.fillText(text, x, centerY);
+        });
+      }
+    }
     return canvas;
   }
 }
