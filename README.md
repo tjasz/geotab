@@ -69,6 +69,10 @@ and rank as `R4`, `S3`, or `Y5`, followed by the count without a "tiles" suffix
 and (for squares and rectangles) dimensions, for example `R4: 24 (6 x 4)`.
 Labels are centered in the lower-right cell; for irregular yards this is the
 rightmost cell in the bottom row. Labels sharing a cell are stacked.
+The five largest contiguous clusters also have labels such as `C1: 120`.
+Each cluster label uses the member tile nearest its bounding-box midpoint in
+tile coordinates, so it remains on the cluster even when the midpoint is empty.
+Equal-distance ties prefer the westernmost, then northernmost tile.
 All borders and labels leave map interactions unobstructed.
 Use **Show map overlay** in the panel to hide or restore the shading, grid,
 outlines, and labels without clearing the results. The switch is on by default and

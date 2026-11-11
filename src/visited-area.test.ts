@@ -346,6 +346,39 @@ test("initializes empty results and supports cancellation", async () => {
 });
 
 describe("contiguous tile clusters", () => {
+  test.each([
+    {
+      name: "filled block",
+      points: Array.from({ length: 3 }, (_, x) => Array.from({ length: 3 }, (_, y) => [x, y])).flat(),
+      expected: { x: 1, y: 1 },
+    },
+    {
+      name: "concave cluster",
+      points: [[0, 0], [1, 0], [2, 0], [3, 0], [3, 1], [3, 2], [3, 3]],
+      expected: { x: 1, y: 0 },
+    },
+    {
+      name: "ring around another cluster",
+      points: [
+        ...Array.from({ length: 5 }, (_, x) => [[x, 0], [x, 4]]).flat(),
+        ...Array.from({ length: 3 }, (_, y) => [[0, y + 1], [4, y + 1]]).flat(),
+        [2, 2],
+      ],
+      expected: { x: 0, y: 2 },
+    },
+    {
+      name: "single tile",
+      points: [[5, 6]],
+      expected: { x: 5, y: 6 },
+    },
+  ])("selects a central member tile for a $name, independent of input order", async ({ points, expected }) => {
+    for (const members of [points, [...points].reverse()]) {
+      const result = await findTileClusters(tilesAt(3, members), () => {}, new AbortController().signal);
+      expect(result.get(3)?.[0].labelTile).toEqual(expected);
+      expect(points).toContainEqual([expected.x, expected.y]);
+    }
+  });
+
   const clusters = async (tiles: VisitedTiles) => {
     const result = await findTileClusters(tiles, () => {}, new AbortController().signal);
     return new Map([...result].map(([zoom, entries]) => [zoom, entries.map((cluster) => cluster.size)]));
@@ -606,13 +639,14 @@ describe("contiguous tile clusters", () => {
     expect(result.get(2)).toEqual([
       {
         size: 4,
+        labelTile: { x: 1, y: 1 },
         bounds: {
           west: -90, east: 90,
           north: areaTileBounds(1, 1, 2).north,
           south: areaTileBounds(2, 2, 2).south,
         },
       },
-      { size: 1, bounds: areaTileBounds(0, 0, 2) },
+      { size: 1, bounds: areaTileBounds(0, 0, 2), labelTile: { x: 0, y: 0 } },
     ]);
   });
 

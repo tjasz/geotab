@@ -5,7 +5,7 @@ import { DataContext } from "./dataContext";
 import { areaTileBounds, VisitedArea } from "./visited-area";
 
 export class VisitedAreaLayer extends L.GridLayer {
-  constructor(private area: Pick<VisitedArea, "tiles" | "zoom" | "squares" | "yards" | "rectangles">, private map: L.Map) {
+  constructor(private area: Pick<VisitedArea, "tiles" | "zoom" | "clusters" | "squares" | "yards" | "rectangles">, private map: L.Map) {
     super({ pane: "overlayPane", zIndex: 300 });
   }
 
@@ -112,6 +112,9 @@ export class VisitedAreaLayer extends L.GridLayer {
       if (labelX >= 0) addLabel(labelX - 1, labelY - 1, `Y${index + 1}: ${yard.size.toLocaleString()}`);
     }
     ctx.stroke();
+    for (const [index, cluster] of (this.area.clusters.get(this.area.zoom) ?? []).slice(0, 5).entries()) {
+      addLabel(cluster.labelTile.x, cluster.labelTile.y, `C${index + 1}: ${cluster.size.toLocaleString()}`);
+    }
     if (labels.size) {
       ctx.font = "12px sans-serif";
       ctx.textAlign = "center";
@@ -143,18 +146,19 @@ export default function VisitedAreaOverlay() {
   const tiles = visitedArea?.tiles;
   const zoom = visitedArea?.zoom;
   const focusedArea = visitedArea?.focusedArea;
+  const clusters = visitedArea?.clusters;
   const squares = visitedArea?.squares;
   const yards = visitedArea?.yards;
   const rectangles = visitedArea?.rectangles;
   const overlayVisible = visitedArea?.overlayVisible !== false;
 
   useEffect(() => {
-    if (!overlayVisible || !tiles || zoom === undefined || !squares || !yards || !rectangles) return;
-    const layer = new VisitedAreaLayer({ tiles, zoom, squares, yards, rectangles }, map);
+    if (!overlayVisible || !tiles || zoom === undefined || !clusters || !squares || !yards || !rectangles) return;
+    const layer = new VisitedAreaLayer({ tiles, zoom, clusters, squares, yards, rectangles }, map);
     layer.addTo(map);
     layer.getContainer()!.style.pointerEvents = "none";
     return () => { map.removeLayer(layer); };
-  }, [map, tiles, zoom, squares, yards, rectangles, overlayVisible]);
+  }, [map, tiles, zoom, clusters, squares, yards, rectangles, overlayVisible]);
 
   useEffect(() => {
     if (!focusedArea) return;

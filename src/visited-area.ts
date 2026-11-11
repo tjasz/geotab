@@ -6,11 +6,11 @@ export const AREA_ZOOMS = Array.from({ length: MAX_AREA_ZOOM }, (_, i) => i + 1)
 export const MAX_MERCATOR_LATITUDE = Math.atan(Math.sinh(Math.PI)) * 180 / Math.PI;
 export type VisitedTiles = Map<number, Map<number, Map<number, true>>>;
 export type VisitedRegion = { bounds: ReturnType<typeof areaTileBounds> };
-export type VisitedCluster = VisitedRegion & { size: number };
+export type VisitedCluster = VisitedRegion & { size: number; labelTile: { x: number; y: number } };
 export type VisitedSquare = VisitedRegion & { side: number };
 export type VisitedRectangle = VisitedRegion & { width: number; height: number };
 export type TileEdge = [number, number, number, number];
-export type VisitedYard = VisitedCluster & { outline: TileEdge[] };
+export type VisitedYard = VisitedRegion & { size: number; outline: TileEdge[] };
 export type VisitedAreaResults = {
   tiles: VisitedTiles;
   clusters: Map<number, VisitedCluster[]>;
@@ -241,9 +241,9 @@ async function findContiguousRegions(
   onProgress: (progress: AnalysisProgress) => void,
   signal: AbortSignal,
   requireBuffer: boolean,
-): Promise<Map<number, VisitedCluster[]>> {
+): Promise<Map<number, (VisitedCluster | VisitedYard)[]>> {
   checkCancelled(signal);
-  const result = new Map<number, VisitedCluster[]>();
+  const result = new Map<number, (VisitedCluster | VisitedYard)[]>();
   const progress = (completed: number) => onProgress({
     phase: requireBuffer ? "yards" : "clusters", completed, total: tiles.size,
   });
@@ -254,7 +254,7 @@ async function findContiguousRegions(
     checkCancelled(signal);
     const size = 2 ** zoom;
     const seen = new Set<number>();
-    const clusters: VisitedCluster[] = [];
+    const clusters: (VisitedCluster | VisitedYard)[] = [];
     const included = (x: number, y: number) => columns.get(x)?.has(y) && (
       !requireBuffer || (
         columns.get(x - 1)?.has(y) && columns.get(x + 1)?.has(y) &&
@@ -311,11 +311,33 @@ async function findContiguousRegions(
             lastYield = performance.now();
           }
         }
-        clusters.push({
+        const region = {
           size: queue.length,
           bounds: tileRectangleBounds(minX, minY, maxX, maxY, zoom),
-          ...(requireBuffer ? { outline } : {}),
-        });
+        };
+        if (requireBuffer) {
+          clusters.push({ ...region, outline });
+        } else {
+          const centerX = (minX + maxX) / 2;
+          const centerY = (minY + maxY) / 2;
+          let nearestKey = key;
+          let nearestDistance = Infinity;
+          for (const member of queue) {
+            const memberX = Math.floor(member / size);
+            const memberY = member % size;
+            const distance = (memberX - centerX) ** 2 + (memberY - centerY) ** 2;
+            if (distance < nearestDistance || (distance === nearestDistance && member < nearestKey)) {
+              nearestKey = member;
+              nearestDistance = distance;
+            }
+            if (performance.now() - lastYield >= 8) {
+              await yieldToBrowser();
+              checkCancelled(signal);
+              lastYield = performance.now();
+            }
+          }
+          clusters.push({ ...region, labelTile: { x: Math.floor(nearestKey / size), y: nearestKey % size } });
+        }
       }
     }
     result.set(zoom, clusters.sort((a, b) => b.size - a.size));

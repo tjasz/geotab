@@ -192,9 +192,10 @@ test("counts all visited rows across columns for the selected zoom only", () => 
     yards: new Map([[1, []], [2, []]]),
     squares: new Map([[1, []], [2, []]]),
     clusters: new Map([
-      [1, [{ size: 1, bounds: areaTileBounds(0, 0, 1) }]],
+      [1, [{ size: 1, bounds: areaTileBounds(0, 0, 1), labelTile: { x: 0, y: 0 } }]],
       [2, [{
         size: 3,
+        labelTile: { x: 0, y: 0 },
         bounds: { ...areaTileBounds(0, 0, 2), east: areaTileBounds(1, 0, 2).east, south: 0 },
       }]],
     ]),
@@ -272,7 +273,7 @@ describe("map mask", () => {
     rectangles: new Map([[2, []], [17, []]]),
     yards: new Map([[2, []], [17, []]]),
     squares: new Map([[2, []], [17, []]]),
-    clusters: new Map([[2, [{ size: 1, bounds: areaTileBounds(0, 1, 2) }]], [17, []]]),
+    clusters: new Map([[2, []], [17, []]]),
     tiles: new Map([
       [2, new Map([[0, new Map([[1, true]])]])],
       [17, new Map()],
@@ -450,6 +451,42 @@ describe("map mask", () => {
     ]);
   });
 
+  test("labels only the top five clusters at their central member tiles", () => {
+    const clusters = Array.from({ length: 6 }, (_, index) => ({
+      size: 6 - index,
+      bounds: areaTileBounds(index, 0, 4),
+      labelTile: { x: index, y: 0 },
+    }));
+    new VisitedAreaLayer({
+      ...area, zoom: 4, clusters: new Map([[4, clusters]]),
+    }, map).createTile(Object.assign(L.point(0, 0), { z: 1 }));
+    expect(canvasContext.fillText.mock.calls).toEqual([
+      ["C1: 6", 16, 16], ["C2: 5", 48, 16], ["C3: 4", 80, 16],
+      ["C4: 3", 112, 16], ["C5: 2", 144, 16],
+    ]);
+  });
+
+  test("refreshes the overlay when only cluster results change", () => {
+    const view = render(
+      <DataContext.Provider value={{ ...context, visitedArea: area }}>
+        <VisitedAreaOverlay />
+      </DataContext.Provider>,
+    );
+    const removeLayer = jest.spyOn(map, "removeLayer");
+    view.rerender(
+      <DataContext.Provider value={{ ...context, visitedArea: {
+        ...area,
+        clusters: new Map([[2, [{
+          size: 1, bounds: areaTileBounds(0, 1, 2), labelTile: { x: 0, y: 1 },
+        }]]]),
+      } }}>
+        <VisitedAreaOverlay />
+      </DataContext.Provider>,
+    );
+    expect(removeLayer).toHaveBeenCalledTimes(1);
+    expect(canvasContext.fillText).toHaveBeenCalledWith("C1: 1", 64, 192);
+  });
+
   test("draws rectangle outlines in opaque blue with 3px width and a 6 6 dash array", () => {
     new VisitedAreaLayer({
       ...area,
@@ -555,8 +592,8 @@ describe("map mask", () => {
 
   test("cluster links fit the correct bounds, can be clicked repeatedly, and preserve the overlay", () => {
     const fitBounds = jest.spyOn(map, "fitBounds");
-    const first = { size: 3, bounds: { west: -122, east: -121, north: 48, south: 47 } };
-    const second = { size: 1, bounds: areaTileBounds(0, 1, 2) };
+    const first = { size: 3, bounds: { west: -122, east: -121, north: 48, south: 47 }, labelTile: { x: 0, y: 1 } };
+    const second = { size: 1, bounds: areaTileBounds(0, 1, 2), labelTile: { x: 0, y: 1 } };
     render(<PanelHarness initialArea={{
       ...area,
       clusters: new Map([[2, [first, second]], [17, []]]),
@@ -693,7 +730,10 @@ describe("map mask", () => {
       });
       return result;
     };
-    render(<PanelHarness initialArea={area} withMap />);
+    render(<PanelHarness initialArea={{
+      ...area,
+      clusters: new Map([[2, [{ size: 1, bounds: areaTileBounds(0, 1, 2), labelTile: { x: 0, y: 1 } }]], [17, []]]),
+    }} withMap />);
     const toggle = screen.getByRole("switch", { name: "Show map overlay" });
     expect(toggle).toBeChecked();
     expect(layers()).toHaveLength(1);
