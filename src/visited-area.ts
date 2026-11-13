@@ -1,5 +1,4 @@
 import * as gj from "./geojson-types";
-import { douglasPeucker } from "./geojson-calc";
 
 const MAX_AREA_ZOOM = 18;
 export const AREA_ZOOMS = Array.from({ length: MAX_AREA_ZOOM }, (_, i) => i + 1);
@@ -84,30 +83,6 @@ function sortedTileColumns(columns: Map<number, Map<number, true>>) {
   }));
 }
 
-function simplifiedGeometry(geometry: gj.Geometry): gj.Geometry;
-function simplifiedGeometry(geometry: gj.Geometry | gj.GeometryCollection): gj.Geometry | gj.GeometryCollection;
-function simplifiedGeometry(geometry: gj.Geometry | gj.GeometryCollection): gj.Geometry | gj.GeometryCollection {
-  const line = (coordinates: gj.Coordinate[]) =>
-    douglasPeucker(coordinates, 30).map((point) => point.slice());
-  switch (geometry.type) {
-    case gj.GeometryType.Point:
-      return { ...geometry, coordinates: (geometry as gj.Point).coordinates.slice() };
-    case gj.GeometryType.MultiPoint:
-      return { ...geometry, coordinates: (geometry as gj.MultiPoint).coordinates.map((point) => point.slice()) };
-    case gj.GeometryType.LineString:
-      return { ...geometry, coordinates: line((geometry as gj.LineString).coordinates) };
-    case gj.GeometryType.MultiLineString:
-    case gj.GeometryType.Polygon:
-      return { ...geometry, coordinates: (geometry as gj.Polygon).coordinates.map(line) };
-    case gj.GeometryType.MultiPolygon:
-      return { ...geometry, coordinates: (geometry as gj.MultiPolygon).coordinates.map((polygon) => polygon.map(line)) };
-    case gj.GeometryType.GeometryCollection:
-      return { ...geometry, geometries: (geometry as gj.GeometryCollection).geometries.map((child) => simplifiedGeometry(child)) };
-    default:
-      throw new Error(`Unsupported geometry type: ${geometry.type}`);
-  }
-}
-
 function* linePoints(coordinates: gj.Coordinate[]): Generator<ProjectedPoint> {
   if (!coordinates.length) return;
   const size = 2 ** MAX_AREA_ZOOM;
@@ -178,8 +153,7 @@ export async function analyseVisitedArea(
   let lastYield = performance.now();
   for (let i = 0; i < features.length; i++) {
     checkCancelled(signal);
-    const feature = { ...features[i], geometry: simplifiedGeometry(features[i].geometry) };
-    for (const point of geometryPoints(feature.geometry)) {
+    for (const point of geometryPoints(features[i].geometry)) {
       for (const [z, columns] of tiles) {
         const { x, y } = projectedTile(point, z);
         let rows = columns.get(x);

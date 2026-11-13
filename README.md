@@ -15,8 +15,8 @@ It fills two key niches that are unsatisfied by existing solutions.
 
 When no detail feature is selected, open the bottom **Visited Areas** panel and
 click **Analyse**. A progress indicator tracks analysis of all loaded features.
-Lines and polygon rings are simplified on a copy using Douglas-Peucker with a
-30-meter tolerance, then sampled inside every zoom-18 tile crossed by each
+Lines and polygon rings are analyzed without simplification or modification,
+and sampled inside every zoom-18 tile crossed by each original
 segment in Web Mercator space. This preserves continuous coverage even for
 straight tracks, tiny corner crossings, and tracks near 85 degrees latitude.
 Point and multipoint locations are retained without connecting them.
@@ -55,7 +55,7 @@ The tiles use the standard Web Mercator XYZ grid, spanning -180 to 180 longitude
 and approximately -85.051129 to 85.051129 latitude (X increases eastward,
 Y southward). Latitude boundaries follow the Mercator projection, not equal
 latitude steps. Coordinates closer to the poles are clamped to this latitude range.
-Tiles containing simplified vertices or the added segment samples are visited;
+Tiles containing original vertices or the added segment samples are visited;
 polygon interiors are not filled. Unvisited tiles are shaded `#00000080`.
 The overlay draws solid black (`#000000ff`) 1px tile borders. The five largest
 rectangles have blue (`#000040ff`) 3px dashed (`6 6`) outlines; the five largest

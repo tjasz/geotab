@@ -222,15 +222,14 @@ test("computes all statistics at z=18 using tile indices beyond the z=17 range",
   })]);
 });
 
-test.each([
-  [0.00026, false],
-  [0.00028, true],
-])("simplifies at 30 meters without changing source coordinates (%p)", async (latitude, retained) => {
+test.each([0.00026, 0.00028])("retains track bends without changing source coordinates (%p)", async (latitude) => {
   const source = feature(GeometryType.LineString, [[0, 0], [0.01, latitude], [0.02, 0]]);
   const before = JSON.stringify(source);
   const tiles = await analyse([source]);
-  const { x, y } = areaTile([0.01, latitude], 17);
-  expect(tiles.get(17)?.get(x)?.has(y) ?? false).toBe(retained);
+  for (const zoom of [17, 18]) {
+    const { x, y } = areaTile([0.01, latitude], zoom);
+    expect(tiles.get(zoom)?.get(x)?.has(y)).toBe(true);
+  }
   expect(JSON.stringify(source)).toBe(before);
 });
 
